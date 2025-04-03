@@ -1,0 +1,30 @@
+Package: gtregression
+Type: Package
+Title: Publication-Ready Cohort Study Tables
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Rubeshkumar", "Polani",
+      email = "rubesh.pc@gmail.com",
+      role = c("aut", "cre")
+    )
+  )
+Description: Functions to create publication-ready cohort study tables with risk ratios using gtsummary and risks packages.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+epends: 
+    R (>= 4.0)
+Imports:
+    dplyr,
+    gt,
+    gtsummary,
+    risks,
+    purrr,
+    broom,
+    broom.helpers,
+    magrittr
+Suggests:
+    testthat (>= 3.0.0)
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3
