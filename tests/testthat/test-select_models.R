@@ -25,7 +25,7 @@ test_that("select_models works for valid approaches and directions", {
   exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "insulin_cat", "dpf_cat")
 
   approaches <- c("logit", "robpoisson")
-  directions <- c("forward", "backward")
+  directions <- c("forward", "backward", "both")
 
   for (appr in approaches) {
     for (dir in directions) {
@@ -65,12 +65,12 @@ test_that("select_models validates outcome types appropriately", {
   )
   df$x <- factor(df$x)
 
-  # Should pass
+  # Should pass (no error expected)
   expect_error(select_models(df, outcome = "y_bin", exposures = "x", approach = "logit"), NA)
   expect_error(select_models(df, outcome = "y_count", exposures = "x", approach = "poisson"), NA)
   expect_error(select_models(df, outcome = "y_cont", exposures = "x", approach = "linear"), NA)
 
-  # Should fail
+  # Should fail (wrong outcome type for given model)
   expect_error(select_models(df, outcome = "y_bin", exposures = "x", approach = "poisson"))
   expect_error(select_models(df, outcome = "y_cont", exposures = "x", approach = "logit"))
   expect_error(select_models(df, outcome = "y_count", exposures = "x", approach = "linear"))
@@ -86,5 +86,5 @@ test_that("select_models supports negative binomial regression", {
                           approach = "negbin", direction = "forward")
 
   expect_true("results_table" %in% names(result))
-  expect_s3_class(result$best_model, "negbin")
+  expect_s3_class(result$best_model, "glm")  # MASS::glm.nb returns class 'glm'
 })
