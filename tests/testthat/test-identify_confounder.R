@@ -1,11 +1,10 @@
 library(testthat)
-library(gtregression)  # Your package
+library(gtregression)
 library(mlbench)
 library(MASS)
 library(dplyr)
 
 test_that("identify_confounder works with MH and change methods across approaches", {
-  # Load and prepare Pima dataset
   data("PimaIndiansDiabetes2", package = "mlbench")
 
   pima_data <- PimaIndiansDiabetes2 %>%
@@ -31,14 +30,13 @@ test_that("identify_confounder works with MH and change methods across approache
   exposure <- "glucose_cat"
   potential_confounders <- c("bmi", "age_cat", "npreg_cat", "bp_cat")
 
-  # Test both methods
   methods <- c("mh", "change")
   approaches <- c("robpoisson", "log-binomial")
 
   for (method in methods) {
     for (approach in approaches) {
       if (method == "mh") {
-        # Only test one confounder at a time
+        # Only works with one confounder
         conf_mh <- identify_confounder(
           data = pima_data,
           outcome = outcome,
@@ -49,13 +47,32 @@ test_that("identify_confounder works with MH and change methods across approache
         )
 
         expect_type(conf_mh, "list")
-        expect_named(conf_mh, c("crude", "mantel_haenszel", "percent_change", "is_confounder", "effect_modification", "stratum_estimates"))
-        expect_true(is.numeric(conf_mh$crude))
-        expect_true(is.logical(conf_mh$is_confounder))
+        expect_named(conf_mh, c(
+          "crude", "mantel_haenszel", "percent_change", "is_confounder",
+          "effect_modification", "stratum_estimates", "skipped_strata", "reason"
+        ), ignore.order = TRUE)
+
+        expect_true(is.numeric(conf_mh$crude) || is.na(conf_mh$crude))
+        expect_true(is.logical(conf_mh$is_confounder) || is.na(conf_mh$is_confounder))
+        expect_true(is.character(conf_mh$skipped_strata) || length(conf_mh$skipped_strata) == 0)
 
       } else {
-        # Change-in-estimate method supports multiple confounders
-        conf_tbl <- identify_confounder(
+        # One confounder: expect list
+        conf_change_list <- identify_confounder(
+          data = pima_data,
+          outcome = outcome,
+          exposure = exposure,
+          potential_confounder = "bmi",
+          approach = approach,
+          method = method
+        )
+
+        expect_type(conf_change_list, "list")
+        expect_named(conf_change_list, c("crude", "adjusted", "percent_change", "is_confounder"), ignore.order = TRUE)
+        expect_true(is.numeric(conf_change_list$crude))
+
+        # Multiple confounders: expect tibble
+        conf_change_tbl <- identify_confounder(
           data = pima_data,
           outcome = outcome,
           exposure = exposure,
@@ -64,15 +81,16 @@ test_that("identify_confounder works with MH and change methods across approache
           method = method
         )
 
-        expect_s3_class(conf_tbl, "tbl_df")
-        expect_true(all(c("covariate", "crude_est", "adjusted_est", "pct_change", "is_confounder") %in% names(conf_tbl)))
-        expect_true(nrow(conf_tbl) >= 1)
+        expect_s3_class(conf_change_tbl, "tbl_df")
+        expect_true(all(c("covariate", "crude_est", "adjusted_est", "pct_change", "is_confounder") %in% names(conf_change_tbl)))
+        expect_true(nrow(conf_change_tbl) >= 1)
       }
     }
   }
 
-  # Also test for count data using Negative Binomial regression
+  # Count data with negbin + change
   data("quine", package = "MASS")
+  quine <- quine %>% mutate(across(c(Eth, Sex, Age, Lrn), as.factor))
 
   conf_tbl_nb <- identify_confounder(
     data = quine,
