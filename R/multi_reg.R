@@ -128,5 +128,6 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     gtsummary::remove_abbreviation(remove_abbreviation) %>%
     gtsummary::modify_abbreviation(abbreviation)
 
+  print(final_tbl)
   return(final_tbl)
 }

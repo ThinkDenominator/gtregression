@@ -76,5 +76,6 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   }
 
   merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
+  print(merged_tbl)
   return(merged_tbl)
 }

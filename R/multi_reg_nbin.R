@@ -72,5 +72,6 @@ multi_reg_nbin <- function(data, outcome, exposures, summary = FALSE) {
     gtsummary::modify_header(estimate = "**Adjusted IRR**") %>%
     gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label)))
 
+  print(final_tbl)
   return(final_tbl)
 }

@@ -56,5 +56,6 @@ stratified_uni_nbin <- function(data, outcome, exposures, stratifier, summary = 
   }
 
   merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
+  print(merged_tbl)
   return(merged_tbl)
 }

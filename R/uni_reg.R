@@ -13,7 +13,6 @@
 #'
 #' @return A `gtsummary::tbl_stack` object of exponentiated unadjusted estimates.
 #' @export
-
 uni_reg <- function(data, outcome, exposures, approach = "logit", summary= FALSE) {
   # Dependencies (attach only what's needed)
   requireNamespace("risks", quietly = TRUE)
