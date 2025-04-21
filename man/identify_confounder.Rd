@@ -11,7 +11,7 @@ identify_confounder(
   potential_confounder,
   approach = "logit",
   threshold = 10,
-  method = c("mh", "change")
+  method = c("change", "mh")
 )
 }
 \arguments{
@@ -26,13 +26,17 @@ identify_confounder(
 \item{approach}{Regression approach: one of "logit", "log-binomial", "poisson", "negbin", "linear", "robpoisson", "margstd_boot", or "margstd_delta".}
 
 \item{threshold}{Numeric value specifying the percentage change in effect size considered meaningful for confounding (default is 10).}
+
+\item{method}{Method for confounder identification: "mh" for Mantel-Haenszel, "change" for change-in-estimate (default).}
 }
 \value{
-A list (invisible) containing crude and stratified estimates, percent change, and logical indicators for confounding and effect modification. Also prints an interpretation summary to the console.
+A list (invisible) containing crude and adjusted or stratified estimates, percent change,
+logical indicators for confounding and effect modification, and reason for NA values if applicable.
 }
 \description{
 This function estimates the crude (unadjusted) effect of an exposure on a binary, count, or continuous outcome
-and compares it with Mantel-Haenszel estimates from stratified models using a potential confounder.
+and compares it with Mantel-Haenszel estimates from stratified models using a potential confounder,
+or with adjusted models using the change-in-estimate method.
 It evaluates confounding based on the percent change in effect size and provides a heuristic check for effect modification.
 Supports multiple regression approaches including logit, log-binomial, Poisson, negative binomial, robust Poisson, and marginal standardization methods.
 }
