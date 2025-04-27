@@ -5,6 +5,8 @@
 #' @param tbl A `gtsummary` object (from `uni_reg`, `multi_reg`, etc.).
 #' @param title Optional title.
 #' @param ref_line Reference line (default = 1).
+#' @param order_y Optional character vector for custom y-axis header order.
+#' @param log_x Logical. Log-transform the x-axis (default = FALSE).
 #' @param xlim Optional x-axis limits.
 #' @param breaks Optional x-axis breaks.
 #' @param point_color Point color.
@@ -17,6 +19,8 @@
 plot_reg <- function(tbl,
                      title = NULL,
                      ref_line = 1,
+                     order_y = NULL,
+                     log_x = FALSE,
                      xlim = NULL,
                      breaks = NULL,
                      point_color = "#1F77B4",
@@ -28,13 +32,17 @@ plot_reg <- function(tbl,
     stop("Please install the ggtext package: install.packages('ggtext')")
   }
 
+  if (log_x && ref_line != 1) {
+    warning("Reference line should be at 1 when log_x = TRUE for log-scaled plots.")
+  }
+
   df <- tbl$table_body
 
   # Safe fallback if no model column present
   model_col <- if ("model" %in% names(df)) df$model else rep(NA, nrow(df))
   approach <- na.omit(model_col)[1]
 
-  # Identify multivariate: if more than one exposure in inputs
+  # Identify multivariate
   is_multi <- !"tbls" %in% names(tbl)
 
   # Determine base label from approach
@@ -48,9 +56,11 @@ plot_reg <- function(tbl,
     "Estimate"
   )
 
+  # Add (log scale) if needed
   x_axis_label <- if (is_multi) paste("Adjusted", base_label) else base_label
+  if (log_x) x_axis_label <- paste0(x_axis_label, " (log scale)")
 
-  # Add clean labels for plotting
+  # Add clean labels
   df <- df %>%
     dplyr::mutate(
       is_header = is.na(reference_row),
@@ -62,14 +72,29 @@ plot_reg <- function(tbl,
       )
     )
 
-  # Filter based on user preference
+  # Filter rows
   df <- df %>%
-    dplyr::filter(is_header | !is.na(estimate) | (reference_row & show_ref)) %>%
+    dplyr::filter(is_header | !is.na(estimate) | (reference_row & show_ref))
+
+  # Now reorder properly if order_y is given
+  if (!is.null(order_y)) {
+    df <- df %>%
+      dplyr::mutate(
+        header_order = dplyr::case_when(
+          is_header ~ match(variable, order_y),
+          TRUE ~ NA_real_
+        )
+      ) %>%
+      tidyr::fill(header_order, .direction = "down") %>%
+      dplyr::arrange(header_order, dplyr::row_number())
+  }
+
+  # Always reassign row IDs AFTER filtering and ordering
+  df <- df %>%
     dplyr::mutate(row_id = factor(dplyr::row_number(), levels = rev(dplyr::row_number())))
 
   label_map <- df$label_clean
   names(label_map) <- df$row_id
-
 
   # Plot
   p <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = row_id)) +
@@ -100,9 +125,9 @@ plot_reg <- function(tbl,
       plot.margin = ggplot2::margin(10, 40, 10, 10)
     )
 
-  # Axis customizations
   if (!is.null(xlim)) p <- p + ggplot2::coord_cartesian(xlim = xlim)
   if (!is.null(breaks)) p <- p + ggplot2::scale_x_continuous(breaks = breaks)
+  if (log_x) p <- p + ggplot2::scale_x_log10()
 
   return(p)
 }
