@@ -10,14 +10,16 @@ plot_reg_combine(
   title_uni = "Unadjusted",
   title_multi = "Adjusted",
   ref_line = 1,
-  xlim_uni = NULL,
-  breaks_uni = NULL,
-  xlim_multi = NULL,
-  breaks_multi = NULL,
+  order_y = NULL,
+  log_x = FALSE,
   point_color = "#1F77B4",
   errorbar_color = "#4C4C4C",
   base_size = 14,
-  show_ref = TRUE
+  show_ref = TRUE,
+  xlim_uni = NULL,
+  breaks_uni = NULL,
+  xlim_multi = NULL,
+  breaks_multi = NULL
 )
 }
 \arguments{
@@ -31,9 +33,9 @@ plot_reg_combine(
 
 \item{ref_line}{Reference line (default = 1).}
 
-\item{xlim_uni, breaks_uni}{Axis limits and breaks for univariate plot.}
+\item{order_y}{Optional character vector for custom y-axis header order.}
 
-\item{xlim_multi, breaks_multi}{Axis limits and breaks for multivariate plot.}
+\item{log_x}{Logical. Log-transform x-axis (default = FALSE).}
 
 \item{point_color}{Point color.}
 
@@ -41,11 +43,13 @@ plot_reg_combine(
 
 \item{base_size}{Font size.}
 
-\item{show_ref}{Logical. Whether to show reference categories.}
+\item{show_ref}{Logical. Whether to show reference categories. Default is TRUE.}
+
+\item{xlim_uni, breaks_uni, xlim_multi, breaks_multi}{Axis customizations.}
 }
 \value{
 A combined `ggplot` object.
 }
 \description{
-Visualize Univariate and Multivariate Regression Side-by-Side
+Creates side-by-side forest plots from univariate and multivariate gtsummary objects.
 }

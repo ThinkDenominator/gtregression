@@ -8,27 +8,19 @@
 #' @param exposures A vector of predictor variables.
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
-#'   `"robpoisson"` (RR), `"margstd_boot"` (RR), `"margstd_delta"` (RR), `"linear"` (Beta coefficients)
-#' @param summary Logical; if `TRUE`, prints model summary after fitting. Default is `FALSE`.
+#'   `"robpoisson"` (RR), `"linear"` (Beta coefficients)
+#' @param summary Logical; if `TRUE`, prints model summary and diagnostics. Default is `FALSE`.
 #'
 #' @return A `gtsummary::tbl_regression` object with adjusted effect estimates.
 #' @export
-
 multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FALSE) {
-  requireNamespace("risks", quietly = TRUE)
-  requireNamespace("gtsummary", quietly = TRUE)
-  requireNamespace("dplyr", quietly = TRUE)
-  requireNamespace("stats", quietly = TRUE)
+  `%>%` <- magrittr::`%>%`
 
-  valid_approaches <- c("logit", "log-binomial", "poisson",
-                        "robpoisson", "margstd_boot", "margstd_delta", "linear")
-
+  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
   if (!(approach %in% valid_approaches)) {
     stop("Invalid approach: ", approach,
          "\nValid options: ", paste(valid_approaches, collapse = ", "))
   }
-
-  message("Running multi_reg using approach: ", approach)
 
   effect_label <- dplyr::case_when(
     approach == "logit" ~ "**Adjusted OR**",
@@ -37,76 +29,58 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     TRUE ~ "**Adjusted RR**"
   )
 
-  remove_abbreviation <- dplyr::case_when(
-    approach == "log-binomial" ~ "RR = Relative Risk",
-    approach %in% c("logit", "margstd_boot", "margstd_delta") ~ "OR = Odds Ratio",
-    approach %in% c("poisson", "robpoisson") ~ "IRR = Incidence Rate Ratio",
-    approach == "linear" ~ "CI = Confidence Interval"
-  )
-
   abbreviation <- dplyr::case_when(
     approach == "logit" ~ "OR = Odds Ratio",
-    approach %in% c("log-binomial", "margstd_boot", "margstd_delta", "robpoisson") ~ "RR = Relative Risk",
+    approach %in% c("log-binomial", "robpoisson") ~ "RR = Relative Risk",
     approach == "poisson" ~ "IRR = Incidence Rate Ratio",
     approach == "linear" ~ "Beta = Linear Regression Coefficient, CI = Confidence Interval"
   )
 
-  # Outcome validation
+  remove_abbreviation <- dplyr::case_when(
+    approach == "log-binomial" ~ "RR = Relative Risk",
+    approach == "logit" ~ "OR = Odds Ratio",
+    approach %in% c("poisson", "robpoisson") ~ "IRR = Incidence Rate Ratio",
+    approach == "linear" ~ "CI = Confidence Interval"
+  )
+
+  # Outcome checks
   outcome_vec <- data[[outcome]]
 
-  is_binary <- function(x) {
-    if (is.factor(x)) {
-      return(length(levels(x)) == 2)
-    } else if (is.numeric(x)) {
-      return(all(x %in% c(0, 1), na.rm = TRUE))
-    } else if (is.logical(x)) {
-      return(TRUE)
-    }
-    return(FALSE)
+  is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
+    (is.factor(x) && length(levels(x)) == 2)
+
+  is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
+
+  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
+
+  if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
+    stop("Binary outcome required for the selected approach: ", approach)
   }
 
-  is_count <- function(x) {
-    is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
+  if (approach == "poisson" && !is_count(outcome_vec)) {
+    stop("Poisson regression requires a count outcome (non-negative integers).")
   }
 
-  is_continuous <- function(x) {
-    is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
+  if (approach == "linear" && !is_continuous(outcome_vec)) {
+    stop("Continuous numeric outcome required for linear regression.")
   }
 
-  if (approach %in% c("logit", "log-binomial", "robpoisson", "margstd_boot", "margstd_delta")) {
-    if (!is_binary(outcome_vec)) {
-      stop("The outcome must be binary for the selected approach: ", approach)
-    }
-  }
-
-  if (approach == "poisson") {
-    if (!is_count(outcome_vec)) {
-      stop("Poisson regression requires a count outcome (non-negative integers).")
-    }
-  }
-
-  if (approach == "linear") {
-    if (!is_continuous(outcome_vec)) {
-      stop("Linear regression requires a continuous numeric outcome.")
-    }
-  }
-
-  # Build model formula
+  # Formula
   formula_str <- paste(outcome, "~", paste(exposures, collapse = " + "))
-  model_formula <- as.formula(formula_str)
+  model_formula <- stats::as.formula(formula_str)
 
   # Fit model
   fit_model <- tryCatch({
     if (approach == "logit") {
-      stats::glm(model_formula, data = data, family = binomial(link = "logit"))
+      stats::glm(model_formula, data = data, family = binomial("logit"))
     } else if (approach == "log-binomial") {
-      stats::glm(model_formula, data = data, family = binomial(link = "log"))
+      stats::glm(model_formula, data = data, family = binomial("log"))
     } else if (approach == "poisson") {
-      stats::glm(model_formula, data = data, family = poisson(link = "log"))
+      stats::glm(model_formula, data = data, family = poisson("log"))
     } else if (approach == "linear") {
       stats::lm(model_formula, data = data)
     } else {
-      risks::riskratio(formula = model_formula, data = data, approach = approach)
+      risks::riskratio(formula = model_formula, data = data, approach = "robpoisson")
     }
   }, error = function(e) {
     warning("Model fitting failed: ", e$message)
@@ -114,20 +88,67 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
   })
 
   if (is.null(fit_model)) {
-    stop("Could not fit the model.")
+    stop("Could not fit the model. Please try different approach.")
   }
 
+  # Optional: diagnostics for linear
+  reg_check_linear <- function(model) {
+    lmtest <- getNamespace("lmtest")
+    car <- getNamespace("car")
+
+    cat("\n📊 Diagnostics for multivariable linear regression:\n")
+
+    # Breusch-Pagan
+    bp <- lmtest::bptest(model)
+    cat("• Breusch-Pagan test (Heteroskedasticity): p =", signif(bp$p.value, 4), "\n")
+    if (bp$p.value < 0.05) {
+      cat("  ↪ Heteroskedasticity detected. Residual variance may not be constant.\n")
+    } else {
+      cat("  ↪ No evidence of heteroskedasticity. Residuals appear homoscedastic.\n")
+    }
+
+    # Shapiro-Wilk
+    sw <- shapiro.test(residuals(model))
+    cat("• Shapiro-Wilk test (Normality of residuals): p =", signif(sw$p.value, 4), "\n")
+    if (sw$p.value < 0.05) {
+      cat("  ↪ Residuals may not be normally distributed. Caution with small samples.\n")
+    } else {
+      cat("  ↪ Residuals appear normally distributed.\n")
+    }
+
+    # Ramsey RESET
+    reset <- lmtest::resettest(model, power = 2:3, type = "fitted")
+    cat("• Ramsey RESET test (Functional form): p =", signif(reset$p.value, 4), "\n")
+    if (reset$p.value < 0.05) {
+      cat("  ↪ Model may be mis-specified. Consider adding nonlinear terms or interactions.\n")
+    } else {
+      cat("  ↪ Functional form appears adequate.\n")
+    }
+
+    # Cook’s distance
+    cooks <- cooks.distance(model)
+    n <- nobs(model)
+    high_infl <- sum(cooks > (4 / n), na.rm = TRUE)
+    cat("• Cook’s Distance: ", high_infl, "observation(s) > 4/n (", round(4 / n, 4), ")\n")
+    if (high_infl > 0) {
+      cat("  ↪ There are influential points. Review for data quality or leverage.\n")
+    } else {
+      cat("  ↪ No strong influential observations.\n")
+    }
+  }
+
+  # Summary output
   if (summary) {
-    cat("\n Model Summary:\n")
+    cat("\nSummary for multivariable model:\n")
     print(summary(fit_model))
+    if (approach == "linear") reg_check_linear(fit_model)
   }
 
-  final_tbl <- gtsummary::tbl_regression(fit_model, exponentiate = !(approach == "linear")) %>%
+  final_tbl <- gtsummary::tbl_regression(fit_model, exponentiate = approach != "linear") %>%
     gtsummary::modify_header(estimate = effect_label) %>%
     gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label))) %>%
     gtsummary::remove_abbreviation(remove_abbreviation) %>%
     gtsummary::modify_abbreviation(abbreviation)
 
-  print(final_tbl)
   return(final_tbl)
 }

@@ -15,9 +15,9 @@ multi_reg(data, outcome, exposures, approach = "logit", summary = FALSE)
 
 \item{approach}{Modeling approach to use. One of:
 `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
-`"robpoisson"` (RR), `"margstd_boot"` (RR), `"margstd_delta"` (RR), `"linear"` (Beta coefficients)}
+`"robpoisson"` (RR), `"linear"` (Beta coefficients)}
 
-\item{summary}{Logical; if `TRUE`, prints model summary after fitting. Default is `FALSE`.}
+\item{summary}{Logical; if `TRUE`, prints model summary and diagnostics. Default is `FALSE`.}
 }
 \value{
 A `gtsummary::tbl_regression` object with adjusted effect estimates.

@@ -22,7 +22,7 @@ select_models(
 \item{approach}{Regression method: "logit", "log-binomial", "poisson",
 "robpoisson", "negbin", or "linear".}
 
-\item{direction}{Direction of stepwise selection: "forward", "backward", or "both".}
+\item{direction}{Direction of selection: "forward" (add one-by-one), "backward" (drop one-by-one), or "both" (stepwise in both directions). Default is "forward".}
 }
 \value{
 A list with model summaries, including:

@@ -16,6 +16,12 @@
 #'
 #' @return A `ggplot2` object.
 #' @export
+#' @importFrom dplyr mutate case_when filter row_number arrange if_else
+#' @importFrom tidyr fill
+#' @importFrom ggplot2 ggplot aes geom_errorbarh geom_point geom_vline
+#'   scale_y_discrete labs theme_minimal element_blank element_text margin
+#'   coord_cartesian scale_x_continuous scale_x_log10
+#' @importFrom ggtext element_markdown
 plot_reg <- function(tbl,
                      title = NULL,
                      ref_line = 1,
@@ -27,25 +33,13 @@ plot_reg <- function(tbl,
                      errorbar_color = "#4C4C4C",
                      base_size = 14,
                      show_ref = TRUE) {
-  # Ensure ggtext is installed
-  if (!requireNamespace("ggtext", quietly = TRUE)) {
-    stop("Please install the ggtext package: install.packages('ggtext')")
-  }
-
-  if (log_x && ref_line != 1) {
-    warning("Reference line should be at 1 when log_x = TRUE for log-scaled plots.")
-  }
 
   df <- tbl$table_body
 
-  # Safe fallback if no model column present
   model_col <- if ("model" %in% names(df)) df$model else rep(NA, nrow(df))
   approach <- na.omit(model_col)[1]
-
-  # Identify multivariate
   is_multi <- !"tbls" %in% names(tbl)
 
-  # Determine base label from approach
   base_label <- switch(
     approach,
     "log-binomial" = "Risk Ratio",
@@ -56,50 +50,39 @@ plot_reg <- function(tbl,
     "Estimate"
   )
 
-  # Add (log scale) if needed
   x_axis_label <- if (is_multi) paste("Adjusted", base_label) else base_label
   if (log_x) x_axis_label <- paste0(x_axis_label, " (log scale)")
 
-  # Add clean labels
-  df <- df %>%
-    dplyr::mutate(
-      is_header = is.na(reference_row),
-      label_clean = dplyr::case_when(
-        is_header ~ paste0("**", variable, "**"),
-        reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", label, " <span style='color:gray'>(ref)</span>"),
-        !reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", label),
-        TRUE ~ NA_character_
-      )
-    )
+  df <- dplyr::mutate(df,
+                      is_header = is.na(.data$reference_row),
+                      label_clean = dplyr::case_when(
+                        is_header ~ paste0("**", .data$variable, "**"),
+                        .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
+                        !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
+                        TRUE ~ NA_character_
+                      )
+  )
 
-  # Filter rows
-  df <- df %>%
-    dplyr::filter(is_header | !is.na(estimate) | (reference_row & show_ref))
+  df <- dplyr::filter(df, .data$is_header | !is.na(.data$estimate) | (.data$reference_row & show_ref))
 
-  # Now reorder properly if order_y is given
   if (!is.null(order_y)) {
-    df <- df %>%
-      dplyr::mutate(
-        header_order = dplyr::case_when(
-          is_header ~ match(variable, order_y),
-          TRUE ~ NA_real_
-        )
-      ) %>%
-      tidyr::fill(header_order, .direction = "down") %>%
-      dplyr::arrange(header_order, dplyr::row_number())
+    df <- dplyr::mutate(df,
+                        header_order = dplyr::case_when(
+                          .data$is_header ~ match(.data$variable, order_y),
+                          TRUE ~ NA_real_
+                        )
+    )
+    df <- tidyr::fill(df, .data$header_order, .direction = "down")
+    df <- dplyr::arrange(df, .data$header_order, dplyr::row_number())
   }
 
-  # Always reassign row IDs AFTER filtering and ordering
-  df <- df %>%
-    dplyr::mutate(row_id = factor(dplyr::row_number(), levels = rev(dplyr::row_number())))
-
+  df <- dplyr::mutate(df, row_id = factor(dplyr::row_number(), levels = rev(dplyr::row_number())))
   label_map <- df$label_clean
   names(label_map) <- df$row_id
 
-  # Plot
-  p <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = row_id)) +
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = .data$estimate, y = .data$row_id)) +
     ggplot2::geom_errorbarh(
-      ggplot2::aes(xmin = conf.low, xmax = conf.high),
+      ggplot2::aes(xmin = .data$conf.low, xmax = .data$conf.high),
       height = 0.2,
       color = errorbar_color
     ) +

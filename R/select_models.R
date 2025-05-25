@@ -8,7 +8,7 @@
 #' @param exposures A character vector of predictor variables.
 #' @param approach Regression method: "logit", "log-binomial", "poisson",
 #'   "robpoisson", "negbin", or "linear".
-#' @param direction Direction of stepwise selection: "forward", "backward", or "both".
+#' @param direction Direction of selection: "forward" (add one-by-one), "backward" (drop one-by-one), or "both" (stepwise in both directions). Default is "forward".
 #'
 #' @return A list with model summaries, including:
 #'   - `results_table`: a tibble of metrics
@@ -28,11 +28,11 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
   is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
 
   if (approach %in% c("logit", "log-binomial", "robpoisson", "margstd_boot", "margstd_delta")) {
-    if (!is_binary(outcome_vec)) stop("❌ This approach requires a binary outcome.")
+    if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
   } else if (approach %in% c("poisson", "negbin")) {
-    if (!is_count(outcome_vec)) stop("❌ Count outcome required for Poisson or negbin.")
+    if (!is_count(outcome_vec)) stop("Count outcome required for Poisson or negbin.")
   } else if (approach == "linear") {
-    if (!is_continuous(outcome_vec)) stop("❌ Continuous numeric outcome required for linear regression.")
+    if (!is_continuous(outcome_vec)) stop("Continuous numeric outcome required for linear regression.")
   }
 
   # Model fitting wrapper
@@ -72,7 +72,7 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
   } else if (direction == "both") {
     selected_vars <- c()
   } else {
-    stop("❌ Invalid direction: choose from 'forward', 'backward', or 'both'")
+    stop("Invalid direction: choose from 'forward', 'backward', or 'both'")
   }
 
   repeat {

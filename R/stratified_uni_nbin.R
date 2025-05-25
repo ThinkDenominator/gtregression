@@ -12,16 +12,28 @@
 #' @return A `gtsummary::tbl_merge` table with one column per stratum.
 #' @export
 stratified_uni_nbin <- function(data, outcome, exposures, stratifier, summary = FALSE) {
-  requireNamespace("gtsummary", quietly = TRUE)
-  requireNamespace("dplyr", quietly = TRUE)
+  # Load magrittr for CRAN-safe pipe
+  if (!requireNamespace("magrittr", quietly = TRUE)) {
+    stop("The 'magrittr' package is required for piping (%>%). Please install it.")
+  }
 
+  `%>%` <- magrittr::`%>%`
+
+  # Check inputs
   if (!stratifier %in% names(data)) stop("Stratifier not found in the dataset.")
   if (!outcome %in% names(data)) stop("Outcome variable not found in the dataset.")
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in the dataset.")
 
+  # Count outcome validation
+  is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
+  if (!is_count(data[[outcome]])) {
+    stop("Negative binomial regression requires a count outcome (non-negative integers).")
+  }
+
   message("Running stratified negative binomial regression by: ", stratifier)
 
-  data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
+  # Exclude NA in stratifier
+  data <- data %>% dplyr::filter(!is.na(.data[[stratifier]]))
   strata_levels <- unique(data[[stratifier]])
 
   tbl_list <- list()
@@ -30,7 +42,7 @@ stratified_uni_nbin <- function(data, outcome, exposures, stratifier, summary = 
   for (lev in strata_levels) {
     message("Stratum: ", stratifier, " = ", lev)
 
-    data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
+    data_stratum <- data %>% dplyr::filter(.data[[stratifier]] == lev)
 
     result <- tryCatch({
       uni_reg_nbin(

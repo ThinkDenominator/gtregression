@@ -2,7 +2,7 @@
 % Please edit documentation in R/identify_confounder.R
 \name{identify_confounder}
 \alias{identify_confounder}
-\title{Identify Confounder Using Crude and Stratified Models}
+\title{Identify Confounder Using Change-in-Estimate Method}
 \usage{
 identify_confounder(
   data,
@@ -10,8 +10,7 @@ identify_confounder(
   exposure,
   potential_confounder,
   approach = "logit",
-  threshold = 10,
-  method = c("change", "mh")
+  threshold = 10
 )
 }
 \arguments{
@@ -19,24 +18,22 @@ identify_confounder(
 
 \item{outcome}{The name of the outcome variable (binary, count, or continuous depending on approach).}
 
-\item{exposure}{The name of the exposure variable (must be binary or categorical).}
+\item{exposure}{The name of the exposure variable.}
 
-\item{potential_confounder}{A single variable to stratify by for confounder assessment.}
+\item{potential_confounder}{One or more covariates to test as potential confounders.}
 
-\item{approach}{Regression approach: one of "logit", "log-binomial", "poisson", "negbin", "linear", "robpoisson", "margstd_boot", or "margstd_delta".}
+\item{approach}{Regression approach: one of "logit", "log-binomial", "poisson", "negbin",
+"linear", "robpoisson", "margstd_boot", or "margstd_delta".}
 
 \item{threshold}{Numeric value specifying the percentage change in effect size considered meaningful for confounding (default is 10).}
-
-\item{method}{Method for confounder identification: "mh" for Mantel-Haenszel, "change" for change-in-estimate (default).}
 }
 \value{
-A list (invisible) containing crude and adjusted or stratified estimates, percent change,
-logical indicators for confounding and effect modification, and reason for NA values if applicable.
+A tibble or list containing crude and adjusted estimates, percent change,
+and an indicator of confounding.
 }
 \description{
-This function estimates the crude (unadjusted) effect of an exposure on a binary, count, or continuous outcome
-and compares it with Mantel-Haenszel estimates from stratified models using a potential confounder,
-or with adjusted models using the change-in-estimate method.
-It evaluates confounding based on the percent change in effect size and provides a heuristic check for effect modification.
-Supports multiple regression approaches including logit, log-binomial, Poisson, negative binomial, robust Poisson, and marginal standardization methods.
+Estimates the crude and adjusted effect of an exposure on an outcome,
+then checks for confounding using the change-in-estimate method.
+Supports multiple regression approaches including logit, log-binomial,
+Poisson, negative binomial, robust Poisson, and linear regression.
 }

@@ -20,7 +20,7 @@ check_convergence(
 \item{outcome}{The name of the outcome variable.}
 
 \item{approach}{Regression approach: one of "logit", "log-binomial", "poisson",
-"robpoisson", "margstd_boot", "margstd_delta", or "negbin".}
+"robpoisson" or "negbin".}
 
 \item{multivariate}{Logical. If TRUE, checks convergence for a multivariate model.}
 }
@@ -31,4 +31,7 @@ A data frame with columns: Exposure, Model, Converged, Max.prob.
 This function checks convergence status and maximum predicted probability
 for each exposure (univariate) or combined exposures (multivariate)
 using a specified regression approach.
+}
+\details{
+For `robpoisson`, predicted probabilities may occasionally exceed 1. These are valid for estimating risk ratios but should not be interpreted as actual probabilities.
 }

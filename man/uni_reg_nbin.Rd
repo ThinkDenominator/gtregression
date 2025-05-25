@@ -16,9 +16,9 @@ uni_reg_nbin(data, outcome, exposures, summary = FALSE)
 \item{summary}{Logical; if `TRUE`, prints model summaries. Default is `FALSE`.}
 }
 \value{
-A stacked summary table of negative binomial models.
+A `gtsummary::tbl_stack` object of exponentiated unadjusted IRRs.
 }
 \description{
-This function fits negative binomial regression models for multiple exposures.
-It returns a publication-ready table using `gtsummary`.
+Fits negative binomial regression models for each exposure on a count outcome.
+Returns a publication-ready stacked table using `gtsummary`.
 }

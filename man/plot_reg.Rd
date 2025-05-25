@@ -8,6 +8,8 @@ plot_reg(
   tbl,
   title = NULL,
   ref_line = 1,
+  order_y = NULL,
+  log_x = FALSE,
   xlim = NULL,
   breaks = NULL,
   point_color = "#1F77B4",
@@ -22,6 +24,10 @@ plot_reg(
 \item{title}{Optional title.}
 
 \item{ref_line}{Reference line (default = 1).}
+
+\item{order_y}{Optional character vector for custom y-axis header order.}
+
+\item{log_x}{Logical. Log-transform the x-axis (default = FALSE).}
 
 \item{xlim}{Optional x-axis limits.}
 

@@ -16,15 +16,14 @@ stratified_uni_reg(
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The name of the outcome variable (binary or count).}
+\item{outcome}{The name of the outcome variable.}
 
 \item{exposures}{A character vector of predictor variables.}
 
 \item{stratifier}{The name of the variable to stratify results by.}
 
 \item{approach}{Modeling approach to use. One of:
-`"logit"`, `"log-binomial"`, `"poisson"`, `"robpoisson"`,
-`"margstd_boot"`, `"margstd_delta"`, `"linear"`}
+`"logit"`, `"log-binomial"`, `"poisson"`, `"robpoisson"`, `"linear"`}
 
 \item{summary}{Logical; if `TRUE`, prints model summaries for each stratum. Default is `FALSE`.}
 }
@@ -32,6 +31,6 @@ stratified_uni_reg(
 A `gtsummary::tbl_merge` object with unadjusted estimates per stratum.
 }
 \description{
-Performs univariate regression for each exposure on a binary or count outcome,
-stratified by a specified variable. One table column per stratum.
+Performs univariate regression for each exposure on a binary, count, or continuous outcome,
+stratified by a specified variable. Produces one column per stratum.
 }

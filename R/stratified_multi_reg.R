@@ -14,11 +14,10 @@
 #' @export
 stratified_multi_reg <- function(data, outcome, exposures, stratifier,
                                  approach = "logit", summary = FALSE) {
-  requireNamespace("gtsummary", quietly = TRUE)
-  requireNamespace("dplyr", quietly = TRUE)
+
 
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson",
-                        "margstd_boot", "margstd_delta", "linear")
+                         "linear")
 
   if (!(approach %in% valid_approaches)) {
     stop("Invalid approach: ", approach,

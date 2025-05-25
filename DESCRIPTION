@@ -17,14 +17,22 @@ epends:
     R (>= 4.0)
 Imports:
     dplyr,
-    gt,
     gtsummary,
     risks,
     purrr,
     broom,
     broom.helpers,
-    magrittr
+    magrittr,
+    MASS,
+    rlang,
+    stats,
+    lmtest,
+    car,
+    patchwork,
+    ggtext
 Suggests:
     testthat (>= 3.0.0)
 RoxygenNote: 7.3.2
 Config/testthat/edition: 3
+Depends: 
+    R (>= 3.5)

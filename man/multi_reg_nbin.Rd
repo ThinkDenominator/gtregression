@@ -9,15 +9,15 @@ multi_reg_nbin(data, outcome, exposures, summary = FALSE)
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The name of the outcome variable (count).}
+\item{outcome}{The name of the count outcome variable.}
 
 \item{exposures}{A vector of predictor variables.}
 
 \item{summary}{Logical; if `TRUE`, prints model summary. Default is `FALSE`.}
 }
 \value{
-A publication-ready `gtsummary` table with "Adjusted IRR".
+A `gtsummary::tbl_regression` object with exponentiated estimates labeled as Adjusted IRRs.
 }
 \description{
-This function calculates adjusted risk ratios for multiple exposures using **Negative Binomial Regression**.
+Calculates adjusted incidence rate ratios (IRRs) using Negative Binomial Regression.
 }

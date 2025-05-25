@@ -32,9 +32,7 @@ plot_reg_combine <- function(tbl_uni,
                              breaks_uni = NULL,
                              xlim_multi = NULL,
                              breaks_multi = NULL) {
-  # Load required packages
-  if (!requireNamespace("ggtext", quietly = TRUE)) stop("Please install 'ggtext'")
-  if (!requireNamespace("patchwork", quietly = TRUE)) stop("Please install 'patchwork'")
+
 
   if (log_x && ref_line != 1) {
     warning("Reference line should be at 1 when log_x = TRUE for log-scaled plots.")

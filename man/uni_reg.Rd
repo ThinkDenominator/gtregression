@@ -15,7 +15,7 @@ uni_reg(data, outcome, exposures, approach = "logit", summary = FALSE)
 
 \item{approach}{Modeling approach to use. One of:
 `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
-`"robpoisson"` (RR), `"margstd_boot"` (RR), `"margstd_delta"` (RR), `"linear"` (Beta coefficients)}
+`"robpoisson"` (RR), `"linear"` (Beta coefficients)}
 
 \item{summary}{Logical; if `TRUE`, prints model summaries for each univariate model. Default is `FALSE`.}
 }
@@ -25,4 +25,7 @@ A `gtsummary::tbl_stack` object of exponentiated unadjusted estimates.
 \description{
 Performs univariate regression for each exposure on a binary or count outcome.
 Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR), or Incidence Rate Ratios (IRR).
+}
+\details{
+This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `risks`.
 }

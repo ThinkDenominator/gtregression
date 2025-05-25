@@ -4,14 +4,13 @@ test_that("uni_reg computes estimates correctly across approaches", {
   library(risks)
   library(dplyr)
   library(gtsummary)
-  library(MASS)
-  library(broom)
-  library(broom.helpers)
 
+  # Load dataset
   data("PimaIndiansDiabetes2", package = "mlbench")
 
+  # Create derived dataset
   pima_data <- PimaIndiansDiabetes2 %>%
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) %>% # Convert outcome to numeric binary
+    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) %>%
     mutate(
       bmi = case_when(
         mass < 25 ~ "Normal",
@@ -57,54 +56,66 @@ test_that("uni_reg computes estimates correctly across approaches", {
       dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))
     )
 
-  # Define exposures
-  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat", "triceps_cat",
-                 "insulin_cat", "dpf_cat")
+  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
+  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
 
-  # Define valid approaches that match `uni_rr()`
-  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "margstd_boot", "margstd_delta", "linear")
+  # ✅ Linear regression: functional + diagnostic output
 
-  # Test linear regression on mtcars
-  result_lm <- uni_reg(data = mtcars, outcome = "mpg", exposures = c("wt", "hp"), approach = "linear")
-  expect_s3_class(result_lm, "tbl_stack")
+    result_lm <- uni_reg(
+      data = PimaIndiansDiabetes2,
+      outcome = "mass",
+      exposures = c("age", "glucose", "pressure"),
+      approach = "linear",
+      summary = TRUE
+    )
+    expect_s3_class(result_lm, "tbl_stack")
 
-  # Loop through all valid approaches
+  # ✅ Loop through all valid approaches
   for (approach in valid_approaches) {
     message("Testing approach: ", approach)
+    outcome_var <- if (approach == "linear") "mass" else "diabetes"
 
-    result <- tryCatch({
-      uni_reg(data = pima_data, outcome = "diabetes", exposures = exposures, approach = approach, summary = FALSE)
-    }, error = function(e) {
-      message("Expected error for approach: ", approach, " - ", e$message)
-      return(NULL)
+    expect_silent({
+      result <- uni_reg(
+        data = pima_data,
+        outcome = outcome_var,
+        exposures = exposures,
+        approach = approach,
+        summary = FALSE
+      )
     })
 
-    if (!is.null(result)) {
-      expect_s3_class(result, "tbl_stack")
-      expect_true(any(grepl("estimate", names(result$table_body))), "Estimate column missing")
-    }
+    expect_s3_class(result, "tbl_stack")
+    expect_true("estimate" %in% names(result$table_body))
   }
 
-  # Test outcome validation: should fail if outcome is not appropriate
+  # ✅ Expected error: outcome must be binary for logit
   expect_error(
-    uni_reg(data = mtcars, outcome = "cyl", exposures = c("wt"), approach = "logit"),
-    "The outcome must be binary"
+    uni_reg(data = PimaIndiansDiabetes2, outcome = "mass", exposures = c("age"), approach = "logit"),
+    "Binary outcome required"
   )
 
+  # ✅ Expected error: outcome must be continuous for linear
+  expect_error(
+    uni_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "linear"),
+    "Continuous numeric outcome required"
+  )
+
+  # ✅ Poisson regression example
   expect_s3_class(
     uni_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "poisson"),
     "tbl_stack"
   )
 
-  expect_error(
-    uni_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "linear"),
-    "Linear regression requires a continuous numeric outcome"
-  )
-
-  # Test summary option
-  expect_message(
-    uni_reg(data = mtcars, outcome = "mpg", exposures = c("wt", "hp"), approach = "linear", summary = TRUE),
-    "Printing model summaries"
+  # ✅ Linear regression prints summary message
+  expect_output(
+    uni_reg(
+      data = PimaIndiansDiabetes2,
+      outcome = "mass",
+      exposures = c("age", "glucose"),
+      approach = "linear",
+      summary = TRUE
+    ),
+    "Summary for"
   )
 })
-

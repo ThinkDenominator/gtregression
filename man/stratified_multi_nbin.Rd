@@ -21,6 +21,6 @@ stratified_multi_nbin(data, outcome, exposures, stratifier, summary = FALSE)
 A `gtsummary::tbl_merge` table with one column per stratum.
 }
 \description{
-Performs multivariable negative binomial regression of exposures on outcome,
+Performs multivariable negative binomial regression of exposures on a count outcome,
 stratified by a specified variable. NAs in the stratifier are excluded.
 }

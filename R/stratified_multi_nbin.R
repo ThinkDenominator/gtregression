@@ -1,6 +1,6 @@
 #' Stratified Multivariable Negative Binomial Regression
 #'
-#' Performs multivariable negative binomial regression of exposures on outcome,
+#' Performs multivariable negative binomial regression of exposures on a count outcome,
 #' stratified by a specified variable. NAs in the stratifier are excluded.
 #'
 #' @param data A data frame containing the variables.
@@ -12,9 +12,12 @@
 #' @return A `gtsummary::tbl_merge` table with one column per stratum.
 #' @export
 stratified_multi_nbin <- function(data, outcome, exposures, stratifier, summary = FALSE) {
-  requireNamespace("gtsummary", quietly = TRUE)
-  requireNamespace("dplyr", quietly = TRUE)
+  pkgs <- c("dplyr", "gtsummary", "rlang")
+  for (pkg in pkgs) {
+    if (!requireNamespace(pkg, quietly = TRUE)) stop("Package '", pkg, "' is required.")
+  }
 
+  # Validate inputs
   if (!stratifier %in% names(data)) stop("Stratifier not found in the dataset.")
   if (!outcome %in% names(data)) stop("Outcome variable not found in the dataset.")
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in the dataset.")
@@ -28,8 +31,7 @@ stratified_multi_nbin <- function(data, outcome, exposures, stratifier, summary 
   spanners <- character()
 
   for (lev in strata_levels) {
-    message("Stratum: ", stratifier, " = ", lev)
-
+    message("🔹 Stratum: ", stratifier, " = ", lev)
     data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 
     result <- tryCatch({
@@ -55,7 +57,5 @@ stratified_multi_nbin <- function(data, outcome, exposures, stratifier, summary 
     return(NULL)
   }
 
-  merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
-  print(merged_tbl)
-  return(merged_tbl)
+  gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
 }

@@ -1,29 +1,24 @@
 #' Stratified Univariate Regression (Odds, Risk, or Rate Ratios)
 #'
-#' Performs univariate regression for each exposure on a binary or count outcome,
-#' stratified by a specified variable. One table column per stratum.
+#' Performs univariate regression for each exposure on a binary, count, or continuous outcome,
+#' stratified by a specified variable. Produces one column per stratum.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome The name of the outcome variable (binary or count).
+#' @param outcome The name of the outcome variable.
 #' @param exposures A character vector of predictor variables.
 #' @param stratifier The name of the variable to stratify results by.
 #' @param approach Modeling approach to use. One of:
-#'   `"logit"`, `"log-binomial"`, `"poisson"`, `"robpoisson"`,
-#'   `"margstd_boot"`, `"margstd_delta"`, `"linear"`
+#'   `"logit"`, `"log-binomial"`, `"poisson"`, `"robpoisson"`, `"linear"`
 #' @param summary Logical; if `TRUE`, prints model summaries for each stratum. Default is `FALSE`.
 #'
 #' @return A `gtsummary::tbl_merge` object with unadjusted estimates per stratum.
 #' @export
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit", summary = FALSE) {
-  requireNamespace("gtsummary", quietly = TRUE)
-  requireNamespace("dplyr", quietly = TRUE)
-  requireNamespace("purrr", quietly = TRUE)
+  `%>%` <- magrittr::`%>%`
 
-  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson",
-                        "margstd_boot", "margstd_delta", "linear")
-
-  if (!(approach %in% valid_approaches)) {
+  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
+  if (!approach %in% valid_approaches) {
     stop("Invalid approach: ", approach,
          "\nValid options: ", paste(valid_approaches, collapse = ", "))
   }
@@ -34,6 +29,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
 
   message("Running stratified univariate regression by: ", stratifier)
 
+  # Drop missing strata
   data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
   strata_levels <- unique(data[[stratifier]])
 
@@ -41,27 +37,17 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   spanners <- character()
 
   for (lev in strata_levels) {
-    message("Stratum: ", stratifier, " = ", lev)
-
+    message("  > Stratum: ", stratifier, " = ", lev)
     data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 
     result <- tryCatch({
-      if ("summary" %in% names(formals(uni_reg))) {
-        uni_reg(
-          data = data_stratum,
-          outcome = outcome,
-          exposures = exposures,
-          approach = approach,
-          summary = summary
-        )
-      } else {
-        uni_reg(
-          data = data_stratum,
-          outcome = outcome,
-          exposures = exposures,
-          approach = approach
-        )
-      }
+      uni_reg(
+        data = data_stratum,
+        outcome = outcome,
+        exposures = exposures,
+        approach = approach,
+        summary = summary
+      )
     }, error = function(e) {
       warning("Skipping stratum ", lev, ": ", e$message)
       NULL
@@ -79,6 +65,5 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   }
 
   merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
-  print(merged_tbl)
   return(merged_tbl)
 }
