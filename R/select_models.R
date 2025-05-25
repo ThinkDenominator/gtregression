@@ -9,7 +9,11 @@
 #' @param approach Regression method: "logit", "log-binomial", "poisson",
 #'   "robpoisson", "negbin", or "linear".
 #' @param direction Direction of selection: "forward" (add one-by-one), "backward" (drop one-by-one), or "both" (stepwise in both directions). Default is "forward".
-#'
+#' @importFrom stats AIC BIC anova as.formula binomial coef cooks.distance deviance glm glm.control lm logLik na.omit nobs poisson predict residuals shapiro.test
+#' @importFrom utils data
+#' @importFrom tibble tibble
+#' @importFrom dplyr bind_rows
+#' @importFrom rlang .data
 #' @return A list with model summaries, including:
 #'   - `results_table`: a tibble of metrics
 #'   - `best_model`: the final model object
@@ -17,9 +21,6 @@
 #'
 #' @export
 select_models <- function(data, outcome, exposures, approach = "logit", direction = "forward") {
-  library(dplyr)
-  library(stats)
-  library(MASS)
 
   # Validate outcome type
   outcome_vec <- data[[outcome]]

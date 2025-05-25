@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(gtcohort)
+library(gtregression)
 
-test_check("gtcohort")
+test_check("gtregression")

@@ -12,8 +12,8 @@
 #'   \item{V4}{Indicator for 4th visit (binary)}
 #'   \item{subject}{Patient ID (factor)}
 #'   \item{period}{Follow-up period number (integer)}
-#'   \item{visit}{Visit number (factor)}
-#'   \item{time}{Time in weeks (numeric)}
+#'   \item{lbase}{Log of baseline seizures (numeric)}
+#'   \item{lage}{Log of age (numeric)}
 #' }
 #'
 #' @source \pkg{MASS} package. Original data from Thall and Vail (1990), *Biometrics*.

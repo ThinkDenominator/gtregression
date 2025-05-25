@@ -1,7 +1,21 @@
-^\.Rproj$
-^\.Rhistory$
-^README\.Rmd$
-^README - Rubes\.md$
-^\.DS_Store$
-^^\.*~$$
-^\.Rproj\.user$
+^\\.Rproj$                 # project file
+^\\.Rproj\\.user$          # RStudio project metadata
+^\\.Rhistory$              # R history
+^\\.RData$                 # R workspace
+^\\.RDataTmp.*$            # temporary R workspace files
+^\\.DS_Store$              # macOS system file
+
+^gtregression\\.Rproj$     # specific project file
+^README\\.Rmd$             # optional, if not building README from Rmd
+^README - Rubes\\.md$      # personal file
+^LICENSE\\.md$             # optional, CRAN uses LICENSE not LICENSE.md
+^renv$                    # renv project folder
+^renv\\.lock$              # renv lock file
+
+^doc$                      # auto-generated docs
+^Meta$                     # leftover meta info from builds
+
+^tests/testthat\\.Rout\\.fail$  # failed test outputs
+^tests/testthat\\.Rout$         # test outputs
+
+^.*~$                      # backup files (e.g. from editors)

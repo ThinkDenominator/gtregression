@@ -24,103 +24,96 @@ students, and public health professionals in LMICs through
 user-friendly, well-documented tools that minimize coding burden and
 maximize interpretability.
 
-We strongly believe in the democratization of data science, and aim to
-promote the use of open-source resources for impactful and equitable
-research across the globe.
+We believe in the democratization of data science and aim to promote
+open-source resources for impactful and equitable research globally.
 
 ## Features
 
-- Supports multiple regression types:  
-  Logistic (logit)  
-  Log-binomial  
-  Poisson / Robust Poisson  
-  Negative Binomial  
-  Linear Regression
-
-- Univariable and multivariable regression  
-
-- Confounder identification using crude, adjusted, and stratified
-  estimates  
-
-- Stepwise model selection with AIC/BIC/adjusted R²  
-
-- Stratified regression functions  
-
-- Integration with `gtsummary` for formatted tables  
-
-- Built-in healthcare datasets for training: `PimaIndiansDiabetes2`,
-  `birthwt`, `epil`
+- Supports multiple regression approaches:
+  - Logistic (logit)
+  - Log-binomial
+  - Poisson / Robust Poisson
+  - Negative Binomial
+  - Linear Regression
+- Univariable and multivariable regression
+- Confounder identification using crude and adjusted estimates
+- Stepwise model selection (AIC/BIC/adjusted R²)
+- Stratified regression support
+- Formatted outputs using `gtsummary`
+- Built-in example datasets: `PimaIndiansDiabetes2`, `birthwt`, `epil`
 
 ## Installation
 
-``` r
-# Install from GitHub (requires devtools)
-devtools::install_github("drrubesh/gtregression")
-```
+\`\`\`r
 
-``` r
+\# Install from GitHub
+
+devtools::install_github(“drrubesh/gtregression”)
+
+\`\`\`
+
 ## Quick Start
+
+\`\`\`r
+
 library(gtregression)
 
-# Logistic regression example
-data(PimaIndiansDiabetes2)
-multi_reg(
-  data = PimaIndiansDiabetes2,
-  outcome = "diabetes",
-  exposures = c("age", "mass", "glucose"),
-  approach = "logit"
-)
-```
+## Logistic regression
 
-``` r
-# Negative binomial regression example
-data(epil)
-multi_reg_nbin(
-  data = epil,
-  outcome = "y",
-  exposures = c("trt", "base", "age")
-)
-```
+data(PimaIndiansDiabetes2, package = “mlbench”)  
+  
+multi_reg( data = PimaIndiansDiabetes2,  
+outcome = “diabetes”,  
+exposures = c(“age”, “mass”, “glucose”), approach = “logit” )
 
-## Functions
+## Negative binomial regression
 
-| Function Name | Description |
-|----|----|
-| `uni_reg()` | Univariable regression with multiple approaches |
-| `multi_reg()` | Multivariable regression |
-| `select_models()` | Stepwise model selection with AIC/BIC |
-| `identify_confounder()` | Confounder evaluation using stratified methods |
-| `check_convergence()` | A quick check to test model convergence |
-| `interaction_models()` | Compare models with and without interactions |
-| `stratified_uni_reg()` | Stratified univariable regression |
-| `stratified_multi_reg()` | Stratified multivariable regression |
-| `uni_reg_nbin()` | Univariable negative binomial regression |
-| `multi_reg_nbin()` | Multivariable negative binomial regression |
-| `stratified_uni_nbin()` | Stratified univariable negative binomial regression |
-| `stratified_multi_nbin()` | Stratified multivariable negative binomial regression |
+data(epil, package = “MASS”)  
+  
+multi_reg_nbin( data = epil, outcome = “y”, exposures = c(“trt”, “base”,
+“age”) )
+
+\`\`\`
+
+# Key Functions
+
+| Function Name             | Purpose                                        |
+|---------------------------|------------------------------------------------|
+| `uni_reg()`               | Univariable regression (OR/RR/IRR/β)           |
+| `multi_reg()`             | Multivariable regression                       |
+| `select_models()`         | Stepwise model selection                       |
+| `identify_confounder()`   | Confounding assessment via % change            |
+| `check_convergence()`     | Evaluate model convergence and max probability |
+| `interaction_models()`    | Compare models with and without interactions   |
+| `stratified_uni_reg()`    | Stratified univariable regression              |
+| `stratified_multi_reg()`  | Stratified multivariable regression            |
+| `uni_reg_nbin()`          | Univariable negative binomial regression       |
+| `multi_reg_nbin()`        | Multivariable negative binomial regression     |
+| `stratified_uni_nbin()`   | Stratified univariable NB regression           |
+| `stratified_multi_nbin()` | Stratified multivariable NB regression         |
 
 ## Contributing
 
-We welcome issues, feature requests, and contributions.
+We welcome issues, feature requests, and pull requests.
 
-Fork the repository
+1.  Fork the repository
 
-Create a new branch: git checkout -b feature/my-feature
+2.  Create a new branch: git checkout -b feature/my-feature
 
-Commit your changes: git commit -m “Add feature”
+3.  Commit your changes: git commit -m “Add feature”
 
-Push to GitHub: git push origin feature/my-feature
+4.  Push to GitHub: git push origin feature/my-feature
 
-Open a Pull Request
+5.  Open a Pull Request
 
 ## Authors
 
-Rubeshkumar Polani Chandrasekar – @drrubesh
+Rubeshkumar Polani Chandrasekar — @drrubesh
 
 Yuvaraj Krishnamoorthy
 
 Marie Gilbert Majella
 
-## License
+License MIT License. See LICENSE for details.
 
-MIT License. See LICENSE for details.
+------------------------------------------------------------------------

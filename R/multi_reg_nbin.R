@@ -14,15 +14,14 @@ multi_reg_nbin <- function(data, outcome, exposures, summary = FALSE) {
 
   message("Running multi_reg_nbin for Negative Binomial Regression")
 
-  # Validate outcome
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
+  is_count <- function(x) {
+    is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
+  }
 
-  if (!outcome %in% names(data)) stop("Outcome variable not found.")
-  if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
-  if (!is_count(data[[outcome]])) stop("Negative binomial regression requires a count outcome (non-negative integers).")
-
-  # Build formula
-  model_formula <- stats::as.formula(paste(outcome, "~", paste(exposures, collapse = " + ")))
+  # Input validation
+  if (!outcome %in% names(data)) stop("Outcome variable not found in data.")
+  if (!all(exposures %in% names(data))) stop("One or more exposures not found in data.")
+  if (!is_count(data[[outcome]])) stop("Negative binomial regression requires a non-negative count outcome.")
 
   # Remove missing values
   data_clean <- data %>%
@@ -30,32 +29,42 @@ multi_reg_nbin <- function(data, outcome, exposures, summary = FALSE) {
     tidyr::drop_na(dplyr::any_of(exposures))
 
   if (nrow(data_clean) == 0) {
-    warning("No valid data available after removing missing values.")
+    warning("No valid observations remaining after removing missing values.")
     return(NULL)
   }
+
+  # Check exposure variation
+  insufficient_vars <- exposures[sapply(data_clean[exposures], function(x) length(unique(x)) < 2)]
+  if (length(insufficient_vars) > 0) {
+    warning("Skipping model: exposure(s) with insufficient variation: ", paste(insufficient_vars, collapse = ", "))
+    return(NULL)
+  }
+
+  # Build model formula
+  model_formula <- stats::as.formula(paste(outcome, "~", paste(exposures, collapse = " + ")))
 
   # Fit model
   fit_model <- tryCatch({
     MASS::glm.nb(model_formula, data = data_clean, control = glm.control(maxit = 200))
   }, warning = function(w) {
-    warning("Negative binomial model warning: ", w$message)
+    warning("Model warning: ", w$message)
     return(NULL)
   }, error = function(e) {
-    warning("Negative binomial model failed: ", e$message)
+    warning("Model failed: ", e$message)
     return(NULL)
   })
 
   if (is.null(fit_model)) {
-    warning("Skipping output due to model fitting failure.")
+    message("Model fitting failed. No results to return.")
     return(NULL)
   }
 
   if (summary) {
-    cat("\nSummary for multivariable negative binomial model:\n")
+    cat("\nModel summary:\n")
     print(summary(fit_model))
   }
 
-  # Return gtsummary table
+  # Format results
   result <- gtsummary::tbl_regression(fit_model, exponentiate = TRUE) %>%
     gtsummary::modify_header(estimate = "**Adjusted IRR**") %>%
     gtsummary::modify_abbreviation("IRR = Incidence Rate Ratio") %>%

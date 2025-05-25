@@ -8,7 +8,7 @@ test_that("uni_reg computes estimates correctly across approaches", {
   # Load dataset
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  # Create derived dataset
+  # Prepare the dataset
   pima_data <- PimaIndiansDiabetes2 %>%
     mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) %>%
     mutate(
@@ -59,29 +59,29 @@ test_that("uni_reg computes estimates correctly across approaches", {
   exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
 
-  # ✅ Linear regression: functional + diagnostic output
-
-    result_lm <- uni_reg(
-      data = PimaIndiansDiabetes2,
-      outcome = "mass",
-      exposures = c("age", "glucose", "pressure"),
-      approach = "linear",
-      summary = TRUE
-    )
-    expect_s3_class(result_lm, "tbl_stack")
+  # ✅ Linear regression example with diagnostics
+  result_lm <- suppressWarnings(uni_reg(
+    data = PimaIndiansDiabetes2,
+    outcome = "mass",
+    exposures = c("age", "glucose", "pressure"),
+    approach = "linear",
+    summary = TRUE
+  ))
+  expect_s3_class(result_lm, "tbl_stack")
 
   # ✅ Loop through all valid approaches
   for (approach in valid_approaches) {
-    message("Testing approach: ", approach)
     outcome_var <- if (approach == "linear") "mass" else "diabetes"
 
     expect_silent({
-      result <- uni_reg(
-        data = pima_data,
-        outcome = outcome_var,
-        exposures = exposures,
-        approach = approach,
-        summary = FALSE
+      result <- suppressWarnings(
+        uni_reg(
+          data = pima_data,
+          outcome = outcome_var,
+          exposures = exposures,
+          approach = approach,
+          summary = FALSE
+        )
       )
     })
 
@@ -103,19 +103,19 @@ test_that("uni_reg computes estimates correctly across approaches", {
 
   # ✅ Poisson regression example
   expect_s3_class(
-    uni_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "poisson"),
+    suppressWarnings(uni_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "poisson")),
     "tbl_stack"
   )
 
   # ✅ Linear regression prints summary message
   expect_output(
-    uni_reg(
+    suppressWarnings(uni_reg(
       data = PimaIndiansDiabetes2,
       outcome = "mass",
       exposures = c("age", "glucose"),
       approach = "linear",
       summary = TRUE
-    ),
+    )),
     "Summary for"
   )
 })

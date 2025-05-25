@@ -1,7 +1,6 @@
 #' Compare models with and without interaction term
 #'
-#' This function compares two models — one with and one without an interaction term —
-#' to evaluate whether the interaction between exposure and a potential effect modifier
+#' This function compares two models: one with and one without an interaction term to evaluate whether the interaction between exposure and a potential effect modifier
 #' significantly improves model fit.
 #'
 #' @param data A data frame.
@@ -91,16 +90,16 @@ interaction_models <- function(data, outcome, exposure, covariates = NULL,
   }
 
   if (verbose) {
-    cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+    cat("---------------------------------------------------\n")
     cat("Interaction Term Assessment using", test_label, "\n")
     cat("Model without interaction:\n   ", format(base_formula), "\n")
     cat("Model with interaction:\n   ", format(int_formula), "\n")
-    cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+    cat("-----------------------------------------------------\n")
     cat("P-value:", format(round(p_value, 4), nsmall = 4), "\n")
     cat(ifelse(p_value < 0.05,
                "Interaction is statistically significant. Consider including it.\n",
                "Interaction is not statistically significant. Simpler model may be preferred.\n"))
-    cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+    cat("----------------------------------------------------\n")
   }
 
   invisible(list(

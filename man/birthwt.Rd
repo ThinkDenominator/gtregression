@@ -27,7 +27,7 @@ Also available in \pkg{MASS} and described in detail in its documentation.
 birthwt
 }
 \description{
-A dataset from the `{MASS}` package containing risk factors associated with low birth weight (LBW) in newborns.
+A dataset from the \pkg{MASS} package containing risk factors associated with low birth weight (LBW) in newborns.
 Originally collected at Baystate Medical Center, Springfield, Massachusetts, USA.
 }
 \details{

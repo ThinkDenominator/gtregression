@@ -11,6 +11,7 @@
 #'   `"robpoisson"` (RR), `"linear"` (Beta coefficients)
 #' @param summary Logical; if `TRUE`, prints model summaries for each univariate model. Default is `FALSE`.
 #' @importFrom magrittr %>%
+#' @importFrom broom tidy
 #' @details This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `risks`.
 #' @return A `gtsummary::tbl_stack` object of exponentiated unadjusted estimates.
 #' @export
@@ -95,47 +96,48 @@ uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALS
   }
 
   reg_check_linear <- function(model, exposure) {
-    cat("\n📊 Diagnostics for", exposure, "(linear regression):\n")
+    cat("\n*** Diagnostics for multivariable linear regression: ***\n")
     lmtest <- getNamespace("lmtest")
     car <- getNamespace("car")
 
-    # Breusch-Pagan test
+    # Breusch-Pagan
     bp <- lmtest::bptest(model)
-    cat("• Breusch-Pagan test (Heteroskedasticity): p =", signif(bp$p.value, 4), "\n")
+    cat("* Breusch-Pagan test (Heteroskedasticity): p =", signif(bp$p.value, 4), "\n")
     if (bp$p.value < 0.05) {
-      cat("  ↪ Heteroskedasticity detected. Residual variance may not be constant.\n")
+      cat("  -> Heteroskedasticity detected. Residual variance may not be constant.\n")
     } else {
-      cat("  ↪ No evidence of heteroskedasticity. Residuals appear homoscedastic.\n")
+      cat("  -> No evidence of heteroskedasticity. Residuals appear homoscedastic.\n")
     }
 
-    # Shapiro-Wilk test
+    # Shapiro-Wilk
     sw <- shapiro.test(residuals(model))
-    cat("• Shapiro-Wilk test (Normality of residuals): p =", signif(sw$p.value, 4), "\n")
+    cat("* Shapiro-Wilk test (Normality of residuals): p =", signif(sw$p.value, 4), "\n")
     if (sw$p.value < 0.05) {
-      cat("  ↪ Residuals may not be normally distributed. Caution with small samples.\n")
+      cat("  -> Residuals may not be normally distributed. Caution with small samples.\n")
     } else {
-      cat("  ↪ Residuals appear normally distributed.\n")
+      cat("  -> Residuals appear normally distributed.\n")
     }
 
-    # Ramsey RESET test
+    # Ramsey RESET
     reset <- lmtest::resettest(model, power = 2:3, type = "fitted")
-    cat("• Ramsey RESET test (Functional form): p =", signif(reset$p.value, 4), "\n")
+    cat("* Ramsey RESET test (Functional form): p =", signif(reset$p.value, 4), "\n")
     if (reset$p.value < 0.05) {
-      cat("  ↪ Model may be mis-specified. Consider adding nonlinear terms or interactions.\n")
+      cat("  -> Model may be mis-specified. Consider adding nonlinear terms or interactions.\n")
     } else {
-      cat("  ↪ Functional form appears adequate.\n")
+      cat("  -> Functional form appears adequate.\n")
     }
 
-    # Cook’s distance
+    # Cook's distance
     cooks <- cooks.distance(model)
     n <- nobs(model)
     high_infl <- sum(cooks > (4 / n), na.rm = TRUE)
-    cat("• Cook’s Distance: ", high_infl, "observation(s) > 4/n (", round(4 / n, 4), ")\n")
+    cat("* Cook's Distance: ", high_infl, " observation(s) > 4/n (", round(4 / n, 4), ")\n")
     if (high_infl > 0) {
-      cat("  ↪ There are influential points. Review for data quality or leverage.\n")
+      cat("  -> There are influential points. Review for data quality or leverage.\n")
     } else {
-      cat("  ↪ No strong influential observations.\n")
+      cat("  -> No strong influential observations.\n")
     }
+
   }
 
 
@@ -160,7 +162,11 @@ uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALS
     })
   }
 
-  tbl_list <- purrr::map(model_list, ~gtsummary::tbl_regression(.x, exponentiate = approach != "linear"))
+  tbl_list <- purrr::map(model_list,
+                         ~gtsummary::tbl_regression(.x,
+                                                    exponentiate = approach != "linear",
+                                                    conf.method = "wald",
+                                                    tidy_fun = broom::tidy))
   stacked <- gtsummary::tbl_stack(purrr::map(tbl_list, ~gtsummary::modify_header(.x, estimate = label_est)))
 
   result <- stacked %>%

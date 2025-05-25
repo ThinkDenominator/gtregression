@@ -36,7 +36,6 @@ interaction_models(
 A list of model objects, p-value, and interpretation.
 }
 \description{
-This function compares two models — one with and one without an interaction term —
-to evaluate whether the interaction between exposure and a potential effect modifier
+This function compares two models: one with and one without an interaction term to evaluate whether the interaction between exposure and a potential effect modifier
 significantly improves model fit.
 }

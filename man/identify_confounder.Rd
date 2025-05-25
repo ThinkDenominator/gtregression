@@ -22,8 +22,7 @@ identify_confounder(
 
 \item{potential_confounder}{One or more covariates to test as potential confounders.}
 
-\item{approach}{Regression approach: one of "logit", "log-binomial", "poisson", "negbin",
-"linear", "robpoisson", "margstd_boot", or "margstd_delta".}
+\item{approach}{Regression approach: one of "logit", "log-binomial", "poisson", "negbin", "linear", "robpoisson"}
 
 \item{threshold}{Numeric value specifying the percentage change in effect size considered meaningful for confounding (default is 10).}
 }

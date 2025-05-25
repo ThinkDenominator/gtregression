@@ -1,6 +1,6 @@
 #' Birth Weight Data (`birthwt`)
 #'
-#' A dataset from the `{MASS}` package containing risk factors associated with low birth weight (LBW) in newborns.
+#' A dataset from the \pkg{MASS} package containing risk factors associated with low birth weight (LBW) in newborns.
 #' Originally collected at Baystate Medical Center, Springfield, Massachusetts, USA.
 #'
 #' The outcome variable is binary (`low`): birth weight < 2500g (yes = 1) or not (no = 0).

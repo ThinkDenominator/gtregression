@@ -20,13 +20,16 @@ test_that("stratified_uni_reg returns a gtsummary tbl_merge object with logit", 
       ), levels = c("Normal", "High"))
     )
 
-  result <- stratified_uni_reg(
-    data = pima_data,
-    outcome = "diabetes",
-    exposures = c("age_cat", "bmi"),
-    stratifier = "glucose_cat",
-    approach = "logit"
+  result <- suppressWarnings(
+    stratified_uni_reg(
+      data = pima_data,
+      outcome = "diabetes",
+      exposures = c("age_cat", "bmi"),
+      stratifier = "glucose_cat",
+      approach = "logit"
+    )
   )
+
 
   expect_s3_class(result, "tbl_merge")
   expect_true("gtsummary" %in% class(result))
@@ -40,17 +43,21 @@ test_that("stratified_uni_reg excludes NA values in stratifier", {
            glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal"))) %>%
     mutate(age_cat = factor(age_cat)) %>%
     mutate(bmi = factor(ifelse(mass >= 30, "Obese", "Not obese"))) %>%
-    mutate(glucose_cat = forcats::fct_explicit_na(glucose_cat))
+    mutate(glucose_cat = forcats::fct_na_value_to_level(glucose_cat, level = "(Missing)"))
+
 
   pima_data$glucose_cat[1:5] <- NA  # Add some missing
 
-  result <- stratified_uni_reg(
-    data = pima_data,
-    outcome = "diabetes",
-    exposures = c("age_cat", "bmi"),
-    stratifier = "glucose_cat",
-    approach = "logit"
+  result <- suppressWarnings(
+    stratified_uni_reg(
+      data = pima_data,
+      outcome = "diabetes",
+      exposures = c("age_cat", "bmi"),
+      stratifier = "glucose_cat",
+      approach = "logit"
+    )
   )
+
 
   expect_s3_class(result, "tbl_merge")
 })
@@ -96,13 +103,16 @@ test_that("stratified_uni_reg works with robpoisson", {
       bmi = factor(ifelse(mass >= 30, "Obese", "Not obese"))
     )
 
-  result <- stratified_uni_reg(
-    data = pima_data,
-    outcome = "diabetes",
-    exposures = c("age_cat", "bmi"),
-    stratifier = "glucose_cat",
-    approach = "robpoisson"
+  result <- suppressWarnings(
+    stratified_uni_reg(
+      data = pima_data,
+      outcome = "diabetes",
+      exposures = c("age_cat", "bmi"),
+      stratifier = "glucose_cat",
+      approach = "robpoisson"
+    )
   )
+
 
   expect_s3_class(result, "tbl_merge")
 })

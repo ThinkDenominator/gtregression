@@ -10,8 +10,8 @@
 #'   `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
 #'   `"robpoisson"` (RR), `"linear"` (Beta coefficients)
 #' @param summary Logical; if `TRUE`, prints model summary and diagnostics. Default is `FALSE`.
-#'
 #' @return A `gtsummary::tbl_regression` object with adjusted effect estimates.
+#' @importFrom broom tidy
 #' @export
 multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FALSE) {
   `%>%` <- magrittr::`%>%`
@@ -65,6 +65,15 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     stop("Continuous numeric outcome required for linear regression.")
   }
 
+  # Clean missing data
+  data_clean <- data %>%
+    dplyr::filter(!is.na(.data[[outcome]])) %>%
+    tidyr::drop_na(dplyr::any_of(exposures))
+
+  if (nrow(data_clean) == 0) {
+    stop("No complete cases remaining after removing missing values.")
+  }
+
   # Formula
   formula_str <- paste(outcome, "~", paste(exposures, collapse = " + "))
   model_formula <- stats::as.formula(formula_str)
@@ -72,15 +81,15 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
   # Fit model
   fit_model <- tryCatch({
     if (approach == "logit") {
-      stats::glm(model_formula, data = data, family = binomial("logit"))
+      stats::glm(model_formula, data = data_clean, family = binomial("logit"))
     } else if (approach == "log-binomial") {
-      stats::glm(model_formula, data = data, family = binomial("log"))
+      stats::glm(model_formula, data = data_clean, family = binomial("log"))
     } else if (approach == "poisson") {
-      stats::glm(model_formula, data = data, family = poisson("log"))
+      stats::glm(model_formula, data = data_clean, family = poisson("log"))
     } else if (approach == "linear") {
-      stats::lm(model_formula, data = data)
+      stats::lm(model_formula, data = data_clean)
     } else {
-      risks::riskratio(formula = model_formula, data = data, approach = "robpoisson")
+      risks::riskratio(formula = model_formula, data = data_clean, approach = "robpoisson")
     }
   }, error = function(e) {
     warning("Model fitting failed: ", e$message)
@@ -88,7 +97,7 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
   })
 
   if (is.null(fit_model)) {
-    stop("Could not fit the model. Please try different approach.")
+    stop("Could not fit the model. Please try a different approach or check your data.")
   }
 
   # Optional: diagnostics for linear
@@ -96,55 +105,48 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     lmtest <- getNamespace("lmtest")
     car <- getNamespace("car")
 
-    cat("\n📊 Diagnostics for multivariable linear regression:\n")
+    cat("\n*** Diagnostics for multivariable linear regression: ***\n")
 
     # Breusch-Pagan
     bp <- lmtest::bptest(model)
-    cat("• Breusch-Pagan test (Heteroskedasticity): p =", signif(bp$p.value, 4), "\n")
-    if (bp$p.value < 0.05) {
-      cat("  ↪ Heteroskedasticity detected. Residual variance may not be constant.\n")
-    } else {
-      cat("  ↪ No evidence of heteroskedasticity. Residuals appear homoscedastic.\n")
-    }
+    cat("* Breusch-Pagan test (Heteroskedasticity): p =", signif(bp$p.value, 4), "\n")
+    cat(ifelse(bp$p.value < 0.05,
+               "  -> Heteroskedasticity detected. Residual variance may not be constant.\n",
+               "  -> No evidence of heteroskedasticity.\n"))
 
     # Shapiro-Wilk
     sw <- shapiro.test(residuals(model))
-    cat("• Shapiro-Wilk test (Normality of residuals): p =", signif(sw$p.value, 4), "\n")
-    if (sw$p.value < 0.05) {
-      cat("  ↪ Residuals may not be normally distributed. Caution with small samples.\n")
-    } else {
-      cat("  ↪ Residuals appear normally distributed.\n")
-    }
+    cat("* Shapiro-Wilk test (Normality): p =", signif(sw$p.value, 4), "\n")
+    cat(ifelse(sw$p.value < 0.05,
+               "  -> Residuals may not be normally distributed.\n",
+               "  -> Residuals appear normally distributed.\n"))
 
     # Ramsey RESET
     reset <- lmtest::resettest(model, power = 2:3, type = "fitted")
-    cat("• Ramsey RESET test (Functional form): p =", signif(reset$p.value, 4), "\n")
-    if (reset$p.value < 0.05) {
-      cat("  ↪ Model may be mis-specified. Consider adding nonlinear terms or interactions.\n")
-    } else {
-      cat("  ↪ Functional form appears adequate.\n")
-    }
+    cat("* Ramsey RESET test (Functional form): p =", signif(reset$p.value, 4), "\n")
+    cat(ifelse(reset$p.value < 0.05,
+               "  -> Model may be mis-specified.\n",
+               "  -> Functional form appears adequate.\n"))
 
-    # Cook’s distance
+    # Cook's Distance
     cooks <- cooks.distance(model)
-    n <- nobs(model)
-    high_infl <- sum(cooks > (4 / n), na.rm = TRUE)
-    cat("• Cook’s Distance: ", high_infl, "observation(s) > 4/n (", round(4 / n, 4), ")\n")
-    if (high_infl > 0) {
-      cat("  ↪ There are influential points. Review for data quality or leverage.\n")
-    } else {
-      cat("  ↪ No strong influential observations.\n")
-    }
+    high_infl <- sum(cooks > 4 / nobs(model), na.rm = TRUE)
+    cat("* Cook's Distance: ", high_infl, " influential point(s)\n")
   }
 
-  # Summary output
   if (summary) {
-    cat("\nSummary for multivariable model:\n")
+    cat("\n Model Summary:\n")
     print(summary(fit_model))
     if (approach == "linear") reg_check_linear(fit_model)
   }
 
-  final_tbl <- gtsummary::tbl_regression(fit_model, exponentiate = approach != "linear") %>%
+  final_tbl <- gtsummary::tbl_regression(
+    fit_model,
+    exponentiate = approach != "linear",
+    conf.level = 0.95,
+    conf.method = "wald",
+    tidy_fun = broom::tidy
+  ) %>%
     gtsummary::modify_header(estimate = effect_label) %>%
     gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label))) %>%
     gtsummary::remove_abbreviation(remove_abbreviation) %>%

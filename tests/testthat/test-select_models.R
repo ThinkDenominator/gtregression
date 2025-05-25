@@ -1,10 +1,9 @@
-library(testthat)
-library(gtregression)
-library(dplyr)
-library(mlbench)
-library(MASS)
-
 test_that("select_models works for valid approaches and directions", {
+  library(testthat)
+  library(gtregression)
+  library(dplyr)
+  library(mlbench)
+  library(MASS)
   data("PimaIndiansDiabetes2", package = "mlbench")
   pima_data <- PimaIndiansDiabetes2 %>%
     mutate(

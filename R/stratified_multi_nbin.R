@@ -31,7 +31,7 @@ stratified_multi_nbin <- function(data, outcome, exposures, stratifier, summary 
   spanners <- character()
 
   for (lev in strata_levels) {
-    message("🔹 Stratum: ", stratifier, " = ", lev)
+    message("**Stratum**: ", stratifier, " = ", lev)
     data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 
     result <- tryCatch({

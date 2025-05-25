@@ -27,8 +27,13 @@ uni_reg_nbin <- function(data, outcome, exposures, summary = FALSE) {
         dplyr::filter(!is.na(.data[[exposure]]), !is.na(.data[[outcome]])) %>%
         droplevels()
 
-      if (is.factor(data_clean[[exposure]]) && length(unique(data_clean[[exposure]])) < 2) {
-        warning("Skipping ", exposure, ": insufficient levels.")
+      if (nrow(data_clean) == 0) {
+        warning("Skipping ", exposure, ": no complete cases.")
+        return(NULL)
+      }
+
+      if (length(unique(data_clean[[exposure]])) < 2) {
+        warning("Skipping ", exposure, ": insufficient variation.")
         return(NULL)
       }
 

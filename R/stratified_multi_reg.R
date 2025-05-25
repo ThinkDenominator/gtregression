@@ -37,7 +37,7 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   spanners <- character()
 
   for (lev in strata_levels) {
-    message("🔹 Stratum: ", stratifier, " = ", lev)
+    message("**Stratum**: ", stratifier, " = ", lev)
 
     data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 

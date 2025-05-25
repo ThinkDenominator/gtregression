@@ -9,16 +9,18 @@
 #' @param outcome The name of the outcome variable (binary, count, or continuous depending on approach).
 #' @param exposure The name of the exposure variable.
 #' @param potential_confounder One or more covariates to test as potential confounders.
-#' @param approach Regression approach: one of "logit", "log-binomial", "poisson", "negbin",
-#' "linear", "robpoisson", "margstd_boot", or "margstd_delta".
+#' @param approach Regression approach: one of "logit", "log-binomial", "poisson", "negbin", "linear", "robpoisson"
 #' @param threshold Numeric value specifying the percentage change in effect size considered meaningful for confounding (default is 10).
 #'
 #' @return A tibble or list containing crude and adjusted estimates, percent change,
 #' and an indicator of confounding.
 #' @export
+#' @importFrom stats glm binomial poisson lm coef as.formula
+#' @importFrom MASS glm.nb
+#' @importFrom tibble tibble
+#' @importFrom dplyr bind_rows
 identify_confounder <- function(data, outcome, exposure, potential_confounder,
                                 approach = "logit", threshold = 10) {
-
   outcome_vec <- data[[outcome]]
 
   is_binary <- function(x) {
@@ -32,7 +34,8 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
     is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
   }
 
-  if (approach %in% c("logit", "log-binomial", "robpoisson", "margstd_boot", "margstd_delta")) {
+  # Validate outcome
+  if (approach %in% c("logit", "log-binomial", "robpoisson")) {
     if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
   }
   if (approach == "poisson" && (!is_count(outcome_vec) || is_binary(outcome_vec))) {
@@ -45,8 +48,6 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
     stop("Linear regression requires a continuous outcome.")
   }
 
-  crude_approach <- if (approach %in% c("margstd_boot", "margstd_delta")) "log-binomial" else approach
-
   get_model <- function(data, formula, approach) {
     switch(approach,
            "logit" = glm(formula, data = data, family = binomial("logit")),
@@ -55,8 +56,6 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
            "negbin" = MASS::glm.nb(formula, data = data),
            "linear" = lm(formula, data = data),
            "robpoisson" = risks::riskratio(formula = formula, data = data, approach = "robpoisson"),
-           "margstd_boot" = risks::riskratio(formula = formula, data = data, approach = "margstd_boot"),
-           "margstd_delta" = risks::riskratio(formula = formula, data = data, approach = "margstd_delta"),
            stop("Unsupported approach.")
     )
   }
@@ -79,11 +78,11 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
     return(NA)
   }
 
-  # Run crude model
-  crude_model <- tryCatch(get_model(data, as.formula(paste(outcome, "~", exposure)), crude_approach), error = function(e) NULL)
-  crude_est <- if (!is.null(crude_model)) extract_estimate(crude_model, exposure, crude_approach) else NA
+  # Crude model
+  crude_model <- tryCatch(get_model(data, as.formula(paste(outcome, "~", exposure)), approach), error = function(e) NULL)
+  crude_est <- if (!is.null(crude_model)) extract_estimate(crude_model, exposure, approach) else NA
 
-  # Handle multiple potential confounders
+  # Multiple potential confounders
   if (length(potential_confounder) > 1) {
     results <- lapply(potential_confounder, function(var) {
       adj_fmla <- as.formula(paste(outcome, "~", paste(c(exposure, var), collapse = " + ")))
@@ -105,31 +104,31 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
 
     print(result_tbl)
     cat("\nNotes:\n")
-    cat("• Confounding is suggested if % change ≥", threshold, "% (default threshold).\n")
-    cat("• This method does not assess effect modification.\n")
-    cat("• Ideally, confounders should be guided by DAGs or domain knowledge.\n")
+    cat("* Confounding is suggested if percent change >=", threshold, "%.\n")
+    cat("* This method does not assess effect modification.\n")
+    cat("* Use DAGs or domain knowledge to support confounder identification.\n")
 
     return(invisible(result_tbl))
   }
 
-  # Fallback for single confounder
+  # Single confounder
   adj_fmla <- as.formula(paste(outcome, "~", paste(c(exposure, potential_confounder), collapse = " + ")))
   adj_model <- tryCatch(get_model(data, adj_fmla, approach), error = function(e) NULL)
   adj_est <- if (!is.null(adj_model)) extract_estimate(adj_model, exposure, approach) else NA
   pct_change <- if (is.na(adj_est) || is.na(crude_est)) NA else abs((adj_est - crude_est) / crude_est) * 100
   is_conf <- if (!is.na(pct_change)) pct_change >= threshold else NA
 
-  cat("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+  cat("\n------------------------------------------------------------\n")
   cat("Crude Estimate:              ", format(round(crude_est, 3), nsmall = 3), "\n")
   cat("Adjusted Estimate:           ", format(round(adj_est, 3), nsmall = 3), "\n")
-  cat("% Change from Crude:         ", format(round(pct_change, 2), nsmall = 2), "%\n")
-  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-  cat("Confounding (change-in-estimate):", ifelse(is_conf, "Yes", "No"), "\n")
-  cat("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+  cat("Percent Change from Crude:   ", format(round(pct_change, 2), nsmall = 2), "%\n")
+  cat("------------------------------------------------------------\n")
+  cat("Confounding:                 ", ifelse(is_conf, "Yes", "No"), "\n")
+  cat("------------------------------------------------------------\n")
   cat("Notes:\n")
-  cat("• Confounding is suggested if % change ≥", threshold, "% (default threshold).\n")
-  cat("• This method does not assess effect modification.\n")
-  cat("• Ideally, confounders should be guided by DAGs or domain knowledge.\n")
+  cat("* Confounding is suggested if percent change >=", threshold, "%.\n")
+  cat("* This method does not assess effect modification.\n")
+  cat("* Use DAGs or domain knowledge to support confounder identification.\n")
 
   return(invisible(list(
     crude = crude_est,

@@ -14,9 +14,10 @@
 #' @param base_size Font size.
 #' @param show_ref Logical. Whether to show reference categories. Default is TRUE.
 #' @param xlim_uni,breaks_uni,xlim_multi,breaks_multi Axis customizations.
-#'
+#' @importFrom patchwork wrap_plots plot_layout
 #' @return A combined `ggplot` object.
 #' @export
+#'
 plot_reg_combine <- function(tbl_uni,
                              tbl_multi,
                              title_uni = "Unadjusted",
@@ -33,7 +34,6 @@ plot_reg_combine <- function(tbl_uni,
                              xlim_multi = NULL,
                              breaks_multi = NULL) {
 
-
   if (log_x && ref_line != 1) {
     warning("Reference line should be at 1 when log_x = TRUE for log-scaled plots.")
   }
@@ -41,7 +41,6 @@ plot_reg_combine <- function(tbl_uni,
   df_uni <- tbl_uni$table_body
   df_multi <- tbl_multi$table_body
 
-  # Common label map
   label_df <- df_uni %>%
     dplyr::mutate(
       is_header = is.na(reference_row),
@@ -54,7 +53,6 @@ plot_reg_combine <- function(tbl_uni,
     ) %>%
     dplyr::distinct(variable, label_clean)
 
-  # Order if requested
   if (!is.null(order_y)) {
     label_df <- label_df %>%
       dplyr::mutate(
@@ -70,7 +68,6 @@ plot_reg_combine <- function(tbl_uni,
   label_df <- label_df %>%
     dplyr::mutate(row_id = factor(dplyr::row_number(), levels = rev(dplyr::row_number())))
 
-  # Helper function to build plot
   build_plot <- function(df, label_df, plot_title, xlim = NULL, breaks = NULL, x_label = "Effect Size") {
     df <- df %>%
       dplyr::mutate(
@@ -123,7 +120,6 @@ plot_reg_combine <- function(tbl_uni,
     return(p)
   }
 
-  # Determine x-axis label based on model
   get_label <- function(approach, adj = FALSE) {
     label <- switch(
       approach,
@@ -148,11 +144,9 @@ plot_reg_combine <- function(tbl_uni,
     x_axis_label_multi <- paste0(x_axis_label_multi, " (log scale)")
   }
 
-  # Build plots
   p1 <- build_plot(df_uni, label_df, title_uni, xlim_uni, breaks_uni, x_axis_label_uni)
   p2 <- build_plot(df_multi, label_df, title_multi, xlim_multi, breaks_multi, x_axis_label_multi) +
     ggplot2::theme(axis.text.y = ggplot2::element_blank())
 
-  combined <- p1 + p2 + patchwork::plot_layout(ncol = 2, widths = c(1.2, 1))
-  return(combined)
+  patchwork::wrap_plots(p1, p2, ncol = 2, widths = c(1.2, 1))
 }
