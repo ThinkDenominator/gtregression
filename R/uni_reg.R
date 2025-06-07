@@ -39,6 +39,8 @@ uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALS
   if (!outcome %in% names(data)) stop("Outcome variable not found in dataset.")
   if (!all(exposures %in% names(data))) stop("One or more exposure variables not found in dataset.")
 
+  # outcome validation
+
   outcome_vec <- data[[outcome]]
 
   is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
@@ -51,9 +53,12 @@ uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALS
   if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
     stop("Binary outcome required for the selected approach: ", approach)
   }
-  if (approach == "poisson" && !is_count(outcome_vec)) {
-    stop("Count outcome (non-negative integers) required for Poisson regression.")
+
+  if (approach == "poisson") {
+    if (is_binary(outcome_vec)) stop("Poisson regression is not appropriate for binary outcomes.")
+    if (!is_count(outcome_vec)) stop("Poisson requires a count outcome.")
   }
+
   if (approach == "linear" && !is_continuous(outcome_vec)) {
     stop("Continuous numeric outcome required for linear regression.")
   }
@@ -172,6 +177,9 @@ uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALS
   result <- stacked %>%
     gtsummary::remove_abbreviation(remove_abbrev) %>%
     gtsummary::modify_abbreviation(abbreviation)
+
+  attr(result, "approach") <- approach
+  attr(result, "source") <- "uni_reg"
 
   return(result)
 }

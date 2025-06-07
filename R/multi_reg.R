@@ -43,7 +43,7 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     approach == "linear" ~ "CI = Confidence Interval"
   )
 
-  # Outcome checks
+  # Outcome validation
   outcome_vec <- data[[outcome]]
 
   is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
@@ -57,8 +57,9 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     stop("Binary outcome required for the selected approach: ", approach)
   }
 
-  if (approach == "poisson" && !is_count(outcome_vec)) {
-    stop("Poisson regression requires a count outcome (non-negative integers).")
+  if (approach == "poisson") {
+    if (is_binary(outcome_vec)) stop("Poisson regression is not appropriate for binary outcomes.")
+    if (!is_count(outcome_vec)) stop("Poisson requires a count outcome.")
   }
 
   if (approach == "linear" && !is_continuous(outcome_vec)) {
@@ -151,6 +152,9 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label))) %>%
     gtsummary::remove_abbreviation(remove_abbreviation) %>%
     gtsummary::modify_abbreviation(abbreviation)
+
+  attr(final_tbl, "approach") <- approach
+  attr(final_tbl, "source") <- "multi_reg"
 
   return(final_tbl)
 }

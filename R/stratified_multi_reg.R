@@ -28,6 +28,30 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   if (!outcome %in% names(data)) stop("Outcome variable not found in the dataset.")
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in the dataset.")
 
+  # outcome validation
+
+  outcome_vec <- data[[outcome]]
+
+  is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
+    (is.factor(x) && length(levels(x)) == 2)
+
+  is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
+
+  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
+
+  if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
+    stop("Binary outcome required for the selected approach: ", approach)
+  }
+
+  if (approach == "poisson") {
+    if (is_binary(outcome_vec)) stop("Poisson regression is not appropriate for binary outcomes.")
+    if (!is_count(outcome_vec)) stop("Poisson requires a count outcome.")
+  }
+
+  if (approach == "linear" && !is_continuous(outcome_vec)) {
+    stop("Continuous numeric outcome required for linear regression.")
+  }
+
   message("Running stratified multivariable regression by: ", stratifier)
 
   data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
@@ -75,6 +99,8 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   }
 
   merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
+  attr(merged_tbl, "approach") <- approach
+  attr(merged_tbl, "source") <- "stratified_multi_reg"
   print(merged_tbl)
   return(merged_tbl)
 }

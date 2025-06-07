@@ -12,16 +12,25 @@
 multi_reg_nbin <- function(data, outcome, exposures, summary = FALSE) {
   `%>%` <- magrittr::`%>%`
 
-  message("Running multi_reg_nbin for Negative Binomial Regression")
-
-  is_count <- function(x) {
-    is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
-  }
-
   # Input validation
-  if (!outcome %in% names(data)) stop("Outcome variable not found in data.")
-  if (!all(exposures %in% names(data))) stop("One or more exposures not found in data.")
-  if (!is_count(data[[outcome]])) stop("Negative binomial regression requires a non-negative count outcome.")
+
+  if (!outcome %in% names(data)) stop("Outcome variable not found.")
+  if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
+
+
+  # Outcome validation
+  outcome_vec <- data[[outcome]]
+
+  is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
+  is_binary <- function(x) {
+    is.atomic(x) && is.numeric(x) &&
+      all(!is.na(x)) &&
+      all(x %in% c(0, 1))
+  }
+  if (is_binary(outcome_vec)) stop("Negative binomial regression is not appropriate for binary outcomes.")
+  if (!is_count(data[[outcome]])) stop("Outcome must be a non-negative count variable.")
+
+  message("Running multi_reg_nbin for Negative Binomial Regression")
 
   # Remove missing values
   data_clean <- data %>%
@@ -69,6 +78,9 @@ multi_reg_nbin <- function(data, outcome, exposures, summary = FALSE) {
     gtsummary::modify_header(estimate = "**Adjusted IRR**") %>%
     gtsummary::modify_abbreviation("IRR = Incidence Rate Ratio") %>%
     gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label)))
+
+  attr(result, "approach") <- "nbin"
+  attr(result, "source") <- "multi_reg_nbin"
 
   return(result)
 }

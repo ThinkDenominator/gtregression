@@ -2,7 +2,7 @@
 #'
 #' Handles both univariate and multivariate models with hierarchical labels.
 #'
-#' @param tbl A `gtsummary` object (from `uni_reg`, `multi_reg`, etc.).
+#' @param tbl A gtsummary object (from uni_reg, multi_reg, etc.).
 #' @param title Optional title.
 #' @param ref_line Reference line (default = 1).
 #' @param order_y Optional character vector for custom y-axis header order.
@@ -14,7 +14,7 @@
 #' @param base_size Font size.
 #' @param show_ref Logical. Whether to show reference categories. Default is TRUE.
 #'
-#' @return A `ggplot2` object.
+#' @return A ggplot2 object.
 #' @export
 #' @importFrom dplyr mutate case_when filter row_number arrange if_else
 #' @importFrom tidyr fill
@@ -36,21 +36,26 @@ plot_reg <- function(tbl,
 
   df <- tbl$table_body
 
-  model_col <- if ("model" %in% names(df)) df$model else rep(NA, nrow(df))
-  approach <- na.omit(model_col)[1]
-  is_multi <- !"tbls" %in% names(tbl)
+  # Extract the model source type and approach
+  source_type <- attr(tbl, "source_type")
+  approach <- attr(tbl, "approach")
 
-  base_label <- switch(
-    approach,
-    "log-binomial" = "Risk Ratio",
-    "robpoisson"   = "Risk Ratio",
-    "poisson"      = "Incidence Rate Ratio",
-    "logit"        = "Odds Ratio",
-    "linear"       = "Coefficient",
-    "Estimate"
+  # Auto-identify uni or multi regression
+  is_multi <- identical(source_type, "multi_reg") || identical(source_type, "multi_reg_nbin")
+
+  # Decide base label based on approach
+  base_label <- dplyr::case_when(
+    approach == "logit" ~ "Odds Ratio",
+    approach == "log-binomial" ~ "Risk Ratio",
+    approach == "poisson" ~ "Incidence Rate Ratio",
+    approach == "robpoisson" ~ "Risk Ratio",
+    approach == "negbin" ~ "Incidence Rate Ratio",
+    approach == "linear" ~ "Beta Coefficient",
+    TRUE ~ "Effect Size" # fallback
   )
-
+  # Adjusted label if multivariable
   x_axis_label <- if (is_multi) paste("Adjusted", base_label) else base_label
+  # log scale for log transformed x axis
   if (log_x) x_axis_label <- paste0(x_axis_label, " (log scale)")
 
   df <- dplyr::mutate(df,
@@ -72,8 +77,8 @@ plot_reg <- function(tbl,
                           TRUE ~ NA_real_
                         )
     )
-    df <- tidyr::fill(df, .data$header_order, .direction = "down")
-    df <- dplyr::arrange(df, .data$header_order, dplyr::row_number())
+    df <- tidyr::fill(df, header_order, .direction = "down")
+    df <- dplyr::arrange(df, header_order, dplyr::row_number())
   }
 
   df <- dplyr::mutate(df, row_id = factor(dplyr::row_number(), levels = rev(dplyr::row_number())))

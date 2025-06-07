@@ -25,7 +25,7 @@ test_that("multi_reg_nbin computes adjusted IRRs using negative binomial regress
   if (!is_count(quine_data[[outcome]])) skip("Outcome is not a count variable.")
 
 
-  # ✅ Test with summary = FALSE
+  # Test with summary = FALSE
   result <- tryCatch({suppressWarnings(
     multi_reg_nbin(data = quine_data, outcome = outcome, exposures = exposures))
   }, error = function(e) {
@@ -39,21 +39,28 @@ test_that("multi_reg_nbin computes adjusted IRRs using negative binomial regress
     expect_s3_class(result, "tbl_regression")
     expect_true(nrow(result$table_body) > 0, info = "No rows in regression output.")
     expect_true("estimate" %in% names(result$table_body), info = "Missing 'estimate' column.")
+    expect_true(!is.null(attr(result, "approach")))
+    expect_true(!is.null(attr(result, "source")))
+
+    expect_equal(attr(result, "approach"), "nbin")
+    expect_equal(attr(result, "source"), "multi_reg_nbin")
+    expect_length(attr(result, "approach"), 1)
+    expect_length(attr(result, "source"), 1)
   }
 
-  # ✅ Test with summary = TRUE
+  # Test with summary = TRUE
   expect_error(
     multi_reg_nbin(data = quine_data, outcome = outcome, exposures = exposures, summary = TRUE),
     NA,
     info = "summary = TRUE caused an unexpected error"
   )
 
-  # ❌ Invalid outcome type (non-count)
+  # Invalid outcome type (non-count)
   quine_data$not_count <- rnorm(nrow(quine_data))  # Continuous outcome
 
   expect_error(
     multi_reg_nbin(data = quine_data, outcome = "not_count", exposures = exposures),
-    regexp = "count outcome",
+    regexp = "Outcome must be a non-negative count variable.",
     info = "Expected error when outcome is not count"
   )
 })

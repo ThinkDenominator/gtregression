@@ -19,7 +19,7 @@ plot_reg(
 )
 }
 \arguments{
-\item{tbl}{A `gtsummary` object (from `uni_reg`, `multi_reg`, etc.).}
+\item{tbl}{A gtsummary object (from uni_reg, multi_reg, etc.).}
 
 \item{title}{Optional title.}
 
@@ -42,7 +42,7 @@ plot_reg(
 \item{show_ref}{Logical. Whether to show reference categories. Default is TRUE.}
 }
 \value{
-A `ggplot2` object.
+A ggplot2 object.
 }
 \description{
 Handles both univariate and multivariate models with hierarchical labels.

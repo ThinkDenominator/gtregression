@@ -7,5 +7,5 @@
 utils::globalVariables(c(
   ".data",
   "reference_row", "variable", "label_clean", "header_order", "row_id",
-  "estimate", "conf.low", "conf.high"
+  "estimate", "conf.low", "conf.high", "approach"
 ))

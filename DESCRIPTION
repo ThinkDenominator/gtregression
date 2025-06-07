@@ -33,7 +33,10 @@ Imports:
     sandwich,
     tibble,
     broom,
-    broom.helpers
+    broom.helpers,
+    gt,
+    officer,
+    flextable
 VignetteBuilder: knitr
 Suggests:
     testthat (>= 3.0.0),

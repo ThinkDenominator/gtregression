@@ -1,4 +1,4 @@
-test_that("plot_reg works with default settings", {
+test_that("plot_reg works with default settings and correct X-axis labels", {
   local_edition(3)
 
   library(ggplot2)
@@ -43,6 +43,29 @@ test_that("plot_reg works with default settings", {
 
   exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
 
+  approaches_labels <- list(
+    "logit" = "Odds Ratio",
+    "log-binomial" = "Risk Ratio",
+    "robpoisson" = "Risk Ratio",
+    "linear" = "Coefficient"
+  )
+
+  for (approach in names(approaches_labels)) {
+    outcome_var <- if (approach == "linear") "mass" else "diabetes"
+
+    tbl_uni <- gtregression::uni_reg(pima_data, outcome = outcome_var, exposures = exposures, approach = approach)
+    p <- gtregression::plot_reg(tbl_uni)
+
+    expect_s3_class(p, "ggplot")
+
+    # Extract x-axis label from plot
+    x_label <- p$labels$x
+    expected_label <- approaches_labels[[approach]]
+
+    expect_match(x_label, expected_label, fixed = TRUE)
+  }
+
+  # Also test plot_reg_combine()
   tbl_uni <- gtregression::uni_reg(pima_data, outcome = "diabetes", exposures = exposures, approach = "robpoisson")
   tbl_multi <- gtregression::multi_reg(pima_data, outcome = "diabetes", exposures = exposures, approach = "robpoisson")
 

@@ -13,13 +13,25 @@
 uni_reg_nbin <- function(data, outcome, exposures, summary = FALSE) {
   `%>%` <- magrittr::`%>%`
 
-  message("Running uni_reg_nbin using negative binomial regression...")
-
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
+  # Input validation
 
   if (!outcome %in% names(data)) stop("Outcome variable not found.")
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
+
+
+  # Outcome validation
+  outcome_vec <- data[[outcome]]
+
+  is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
+  is_binary <- function(x) {
+    is.atomic(x) && is.numeric(x) &&
+      all(!is.na(x)) &&
+      all(x %in% c(0, 1))
+  }
+  if (is_binary(outcome_vec)) stop("Negative binomial regression is not appropriate for binary outcomes.")
   if (!is_count(data[[outcome]])) stop("Outcome must be a non-negative count variable.")
+
+  message("Running uni_reg_nbin using negative binomial regression...")
 
   fit_model <- function(exposure) {
     tryCatch({
@@ -65,6 +77,8 @@ uni_reg_nbin <- function(data, outcome, exposures, summary = FALSE) {
   final_tbl <- gtsummary::tbl_stack(model_list) %>%
     gtsummary::modify_header(estimate = "**IRR**") %>%
     gtsummary::modify_abbreviation("IRR = Incidence Rate Ratio")
+  attr(final_tbl, "approach") <- "nbin"
+  attr(final_tbl, "source") <- "uni_reg_nbin"
 
   return(final_tbl)
 }

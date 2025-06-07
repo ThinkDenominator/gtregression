@@ -21,6 +21,17 @@ stratified_multi_nbin <- function(data, outcome, exposures, stratifier, summary 
   if (!stratifier %in% names(data)) stop("Stratifier not found in the dataset.")
   if (!outcome %in% names(data)) stop("Outcome variable not found in the dataset.")
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in the dataset.")
+  # Outcome validation
+  outcome_vec <- data[[outcome]]
+
+  is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
+  is_binary <- function(x) {
+    is.atomic(x) && is.numeric(x) &&
+      all(!is.na(x)) &&
+      all(x %in% c(0, 1))
+  }
+  if (is_binary(outcome_vec)) stop("Negative binomial regression is not appropriate for binary outcomes.")
+  if (!is_count(data[[outcome]])) stop("Outcome must be a non-negative count variable.")
 
   message("Running stratified multivariable negative binomial regression by: ", stratifier)
 
@@ -56,6 +67,8 @@ stratified_multi_nbin <- function(data, outcome, exposures, stratifier, summary 
     warning("No valid models across strata.")
     return(NULL)
   }
+  attr(tbl_list, "approach") <- approach
+  attr(tbl_list, "source") <- "stratified_multi_nbin"
 
   gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
 }

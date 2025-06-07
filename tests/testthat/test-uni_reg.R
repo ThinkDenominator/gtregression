@@ -59,7 +59,7 @@ test_that("uni_reg computes estimates correctly across approaches", {
   exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
 
-  # ✅ Linear regression example with diagnostics
+  # Linear regression example with diagnostics
   result_lm <- suppressWarnings(uni_reg(
     data = PimaIndiansDiabetes2,
     outcome = "mass",
@@ -69,45 +69,68 @@ test_that("uni_reg computes estimates correctly across approaches", {
   ))
   expect_s3_class(result_lm, "tbl_stack")
 
-  # ✅ Loop through all valid approaches
+
+  # Loop through all valid approaches
   for (approach in valid_approaches) {
     outcome_var <- if (approach == "linear") "mass" else "diabetes"
 
-    expect_silent({
-      result <- suppressWarnings(
+    if (approach == "poisson") {
+      expect_error(
         uni_reg(
           data = pima_data,
           outcome = outcome_var,
           exposures = exposures,
           approach = approach,
           summary = FALSE
-        )
+        ),
+        regexp = "Poisson regression is not appropriate for binary outcomes"
       )
-    })
+    } else {
+      expect_silent({
+        result <- suppressWarnings(
+          uni_reg(
+            data = pima_data,
+            outcome = outcome_var,
+            exposures = exposures,
+            approach = approach,
+            summary = FALSE
+          )
+        )
+      })
 
-    expect_s3_class(result, "tbl_stack")
-    expect_true("estimate" %in% names(result$table_body))
+      expect_s3_class(result, "tbl_stack")
+      expect_true("estimate" %in% names(result$table_body))
+
+      # Check attributes
+      expect_true(!is.null(attr(result, "approach")))
+      expect_true(!is.null(attr(result, "source")))
+      expect_equal(attr(result, "approach"), approach)
+      expect_equal(attr(result, "source"), "uni_reg")
+      expect_length(attr(result, "approach"), 1)
+      expect_length(attr(result, "source"), 1)
+    }
   }
 
-  # ✅ Expected error: outcome must be binary for logit
+
+  # Expected error: outcome must be binary for logit
   expect_error(
     uni_reg(data = PimaIndiansDiabetes2, outcome = "mass", exposures = c("age"), approach = "logit"),
     "Binary outcome required"
   )
 
-  # ✅ Expected error: outcome must be continuous for linear
+  # Expected error: outcome must be continuous for linear
   expect_error(
     uni_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "linear"),
     "Continuous numeric outcome required"
   )
 
-  # ✅ Poisson regression example
+  # Poisson regression example
   expect_s3_class(
-    suppressWarnings(uni_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "poisson")),
+    suppressWarnings(uni_reg(data = pima_data, outcome = "glucose", exposures = c("bmi"), approach = "poisson")),
     "tbl_stack"
   )
 
-  # ✅ Linear regression prints summary message
+  # Linear regression prints summary message
   expect_output(
     suppressWarnings(uni_reg(
       data = PimaIndiansDiabetes2,
