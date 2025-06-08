@@ -7,8 +7,8 @@
 plot_reg_combine(
   tbl_uni,
   tbl_multi,
-  title_uni = "Unadjusted",
-  title_multi = "Adjusted",
+  title_uni = NULL,
+  title_multi = NULL,
   ref_line = 1,
   order_y = NULL,
   log_x = FALSE,
@@ -23,9 +23,9 @@ plot_reg_combine(
 )
 }
 \arguments{
-\item{tbl_uni}{A `gtsummary` object from `uni_reg()`.}
+\item{tbl_uni}{A `gtsummary` object from `uni_reg()` or similar.}
 
-\item{tbl_multi}{A `gtsummary` object from `multi_reg()`.}
+\item{tbl_multi}{A `gtsummary` object from `multi_reg()` or similar.}
 
 \item{title_uni}{Optional title for univariate plot.}
 

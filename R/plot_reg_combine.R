@@ -2,8 +2,8 @@
 #'
 #' Creates side-by-side forest plots from univariate and multivariate gtsummary objects.
 #'
-#' @param tbl_uni A `gtsummary` object from `uni_reg()`.
-#' @param tbl_multi A `gtsummary` object from `multi_reg()`.
+#' @param tbl_uni A `gtsummary` object from `uni_reg()` or similar.
+#' @param tbl_multi A `gtsummary` object from `multi_reg()` or similar.
 #' @param title_uni Optional title for univariate plot.
 #' @param title_multi Optional title for multivariate plot.
 #' @param ref_line Reference line (default = 1).
@@ -15,13 +15,18 @@
 #' @param show_ref Logical. Whether to show reference categories. Default is TRUE.
 #' @param xlim_uni,breaks_uni,xlim_multi,breaks_multi Axis customizations.
 #' @importFrom patchwork wrap_plots plot_layout
+#' @importFrom dplyr mutate case_when filter row_number arrange if_else
+#' @importFrom tidyr fill
+#' @importFrom ggplot2 ggplot aes geom_errorbarh geom_point geom_vline
+#'   scale_y_discrete labs theme_minimal element_blank element_text margin
+#'   coord_cartesian scale_x_continuous scale_x_log10
+#' @importFrom ggtext element_markdown
 #' @return A combined `ggplot` object.
 #' @export
-#'
 plot_reg_combine <- function(tbl_uni,
                              tbl_multi,
-                             title_uni = "Unadjusted",
-                             title_multi = "Adjusted",
+                             title_uni = NULL,
+                             title_multi = NULL,
                              ref_line = 1,
                              order_y = NULL,
                              log_x = FALSE,
@@ -34,60 +39,76 @@ plot_reg_combine <- function(tbl_uni,
                              xlim_multi = NULL,
                              breaks_multi = NULL) {
 
-  if (log_x && ref_line != 1) {
-    warning("Reference line should be at 1 when log_x = TRUE for log-scaled plots.")
+  # Extract attributes
+  approach_uni <- attr(tbl_uni, "approach")
+  source_type_uni <- attr(tbl_uni, "source")
+
+  approach_multi <- attr(tbl_multi, "approach")
+  source_type_multi <- attr(tbl_multi, "source")
+
+  # Define valid uni and multi source types
+  valid_uni_types <- c("uni_reg", "uni_reg_nbin")
+  valid_multi_types <- c("multi_reg", "multi_reg_nbin")
+
+  is_uni <- source_type_uni %in% valid_uni_types
+  is_multi <- source_type_multi %in% valid_multi_types
+
+  # Label generator based on approach and source_type
+  get_label <- function(approach, source_type) {
+    base_label <- dplyr::case_when(
+      approach == "logit" ~ "Odds Ratio",
+      approach == "log-binomial" ~ "Risk Ratio",
+      approach == "poisson" ~ "Incidence Rate Ratio",
+      approach == "robpoisson" ~ "Risk Ratio",
+      approach == "negbin" ~ "Incidence Rate Ratio",
+      approach == "linear" ~ "Beta Coefficient",
+      TRUE ~ "Effect Size" # fallback
+    )
+    if (source_type %in% valid_multi_types) {
+      paste("Adjusted", base_label)
+    } else {
+      base_label
+    }
   }
 
-  df_uni <- tbl_uni$table_body
-  df_multi <- tbl_multi$table_body
+  x_axis_label_uni <- get_label(approach_uni, source_type_uni)
+  x_axis_label_multi <- get_label(approach_multi, source_type_multi)
 
-  label_df <- df_uni %>%
-    dplyr::mutate(
-      is_header = is.na(reference_row),
-      label_clean = dplyr::case_when(
-        is_header ~ paste0("**", variable, "**"),
-        reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", label, " <span style='color:gray'>(ref)</span>"),
-        !reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", label),
-        TRUE ~ NA_character_
-      )
-    ) %>%
-    dplyr::distinct(variable, label_clean)
-
-  if (!is.null(order_y)) {
-    label_df <- label_df %>%
-      dplyr::mutate(
-        header_order = dplyr::case_when(
-          grepl("\\*\\*", label_clean) ~ match(gsub("\\*\\*", "", variable), order_y),
-          TRUE ~ NA_real_
-        )
-      ) %>%
-      tidyr::fill(header_order, .direction = "down") %>%
-      dplyr::arrange(header_order, dplyr::row_number())
+  if (log_x) {
+    x_axis_label_uni <- paste0(x_axis_label_uni, " (log scale)")
+    x_axis_label_multi <- paste0(x_axis_label_multi, " (log scale)")
   }
 
-  label_df <- label_df %>%
-    dplyr::mutate(row_id = factor(dplyr::row_number(), levels = rev(dplyr::row_number())))
+  # Helper function to build a single plot
+  build_plot <- function(tbl, plot_title, xlim = NULL, breaks = NULL, x_label = "Effect Size") {
+    df <- tbl$table_body
+    df <- dplyr::mutate(df,
+                        is_header = is.na(.data$reference_row),
+                        label_clean = dplyr::case_when(
+                          is_header ~ paste0("**", .data$variable, "**"),
+                          .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
+                          !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
+                          TRUE ~ NA_character_
+                        ))
+    df <- dplyr::filter(df, .data$is_header | !is.na(.data$estimate) | (.data$reference_row & show_ref))
 
-  build_plot <- function(df, label_df, plot_title, xlim = NULL, breaks = NULL, x_label = "Effect Size") {
-    df <- df %>%
-      dplyr::mutate(
-        is_header = is.na(reference_row),
-        label_clean = dplyr::case_when(
-          is_header ~ paste0("**", variable, "**"),
-          reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", label, " <span style='color:gray'>(ref)</span>"),
-          !reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", label),
-          TRUE ~ NA_character_
-        )
-      ) %>%
-      dplyr::left_join(label_df, by = c("variable", "label_clean")) %>%
-      dplyr::filter(!is.na(row_id))
+    if (!is.null(order_y)) {
+      df <- dplyr::mutate(df,
+                          header_order = dplyr::case_when(
+                            .data$is_header ~ match(.data$variable, order_y),
+                            TRUE ~ NA_real_
+                          ))
+      df <- tidyr::fill(df, header_order, .direction = "down")
+      df <- dplyr::arrange(df, header_order, dplyr::row_number())
+    }
 
-    label_map <- label_df$label_clean
-    names(label_map) <- label_df$row_id
+    df <- dplyr::mutate(df, row_id = factor(dplyr::row_number(), levels = rev(dplyr::row_number())))
+    label_map <- df$label_clean
+    names(label_map) <- df$row_id
 
-    p <- ggplot2::ggplot(df, ggplot2::aes(x = estimate, y = row_id)) +
+    p <- ggplot2::ggplot(df, ggplot2::aes(x = .data$estimate, y = .data$row_id)) +
       ggplot2::geom_errorbarh(
-        ggplot2::aes(xmin = conf.low, xmax = conf.high),
+        ggplot2::aes(xmin = .data$conf.low, xmax = .data$conf.high),
         height = 0.2,
         color = errorbar_color
       ) +
@@ -99,7 +120,7 @@ plot_reg_combine <- function(tbl_uni,
         stroke = 0.6
       ) +
       ggplot2::geom_vline(xintercept = ref_line, linetype = "dashed", color = "gray60") +
-      ggplot2::scale_y_discrete(labels = label_map, drop = FALSE) +
+      ggplot2::scale_y_discrete(labels = label_map) +
       ggplot2::labs(
         title = plot_title,
         x = x_label,
@@ -120,33 +141,9 @@ plot_reg_combine <- function(tbl_uni,
     return(p)
   }
 
-  get_label <- function(approach, adj = FALSE) {
-    label <- switch(
-      approach,
-      "log-binomial" = "Risk Ratio",
-      "robpoisson"   = "Risk Ratio",
-      "poisson"      = "Incidence Rate Ratio",
-      "logit"        = "Odds Ratio",
-      "linear"       = "Coefficient",
-      "Estimate"
-    )
-    if (adj) paste("Adjusted", label) else label
-  }
-
-  approach_uni <- na.omit(df_uni$model)[1]
-  approach_multi <- na.omit(df_multi$model)[1]
-
-  x_axis_label_uni <- get_label(approach_uni, adj = FALSE)
-  x_axis_label_multi <- get_label(approach_multi, adj = TRUE)
-
-  if (log_x) {
-    x_axis_label_uni <- paste0(x_axis_label_uni, " (log scale)")
-    x_axis_label_multi <- paste0(x_axis_label_multi, " (log scale)")
-  }
-
-  p1 <- build_plot(df_uni, label_df, title_uni, xlim_uni, breaks_uni, x_axis_label_uni)
-  p2 <- build_plot(df_multi, label_df, title_multi, xlim_multi, breaks_multi, x_axis_label_multi) +
-    ggplot2::theme(axis.text.y = ggplot2::element_blank())
+  p1 <- build_plot(tbl_uni, plot_title = title_uni, xlim = xlim_uni, breaks = breaks_uni, x_label = x_axis_label_uni)
+  p2 <- build_plot(tbl_multi, plot_title = title_multi, xlim = xlim_multi, breaks = breaks_multi, x_label = x_axis_label_multi) +
+    ggplot2::theme(axis.text.y = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank())
 
   patchwork::wrap_plots(p1, p2, ncol = 2, widths = c(1.2, 1))
 }

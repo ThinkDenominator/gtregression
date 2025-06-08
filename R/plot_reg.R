@@ -37,11 +37,14 @@ plot_reg <- function(tbl,
   df <- tbl$table_body
 
   # Extract the model source type and approach
-  source_type <- attr(tbl, "source_type")
+  source_type <- attr(tbl, "source")
   approach <- attr(tbl, "approach")
 
   # Auto-identify uni or multi regression
-  is_multi <- identical(source_type, "multi_reg") || identical(source_type, "multi_reg_nbin")
+  valid_uni_types <- c("uni_reg", "uni_reg_nbin")
+  valid_multi_types <- c("multi_reg", "multi_reg_nbin")
+
+  is_multi <- source_type %in% valid_multi_types
 
   # Decide base label based on approach
   base_label <- dplyr::case_when(
