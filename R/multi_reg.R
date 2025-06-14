@@ -9,11 +9,13 @@
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
 #'   `"robpoisson"` (RR), `"linear"` (Beta coefficients)
-#' @param summary Logical; if `TRUE`, prints model summary and diagnostics. Default is `FALSE`.
 #' @return A `gtsummary::tbl_regression` object with adjusted effect estimates.
 #' @importFrom broom tidy
 #' @export
-multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FALSE) {
+multi_reg <- function(data,
+                      outcome,
+                      exposures,
+                      approach = "logit") {
   `%>%` <- magrittr::`%>%`
 
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
@@ -57,9 +59,8 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     stop("Binary outcome required for the selected approach: ", approach)
   }
 
-  if (approach == "poisson") {
-    if (is_binary(outcome_vec)) stop("Poisson regression is not appropriate for binary outcomes.")
-    if (!is_count(outcome_vec)) stop("Poisson requires a count outcome.")
+  if (approach == "poisson"&& !is_count(outcome_vec)) {
+    stop("Count outcome required for Poisson regression.")
   }
 
   if (approach == "linear" && !is_continuous(outcome_vec)) {
@@ -101,47 +102,45 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     stop("Could not fit the model. Please try a different approach or check your data.")
   }
 
-  # Optional: diagnostics for linear
-  reg_check_linear <- function(model) {
+  # Reg check function for linear regression just like in STATA
+
+  reg_check_linear <- function(model, exposure) {
     lmtest <- getNamespace("lmtest")
-    car <- getNamespace("car")
 
-    cat("\n*** Diagnostics for multivariable linear regression: ***\n")
-
-    # Breusch-Pagan
+    # Tests
     bp <- lmtest::bptest(model)
-    cat("* Breusch-Pagan test (Heteroskedasticity): p =", signif(bp$p.value, 4), "\n")
-    cat(ifelse(bp$p.value < 0.05,
-               "  -> Heteroskedasticity detected. Residual variance may not be constant.\n",
-               "  -> No evidence of heteroskedasticity.\n"))
-
-    # Shapiro-Wilk
     sw <- shapiro.test(residuals(model))
-    cat("* Shapiro-Wilk test (Normality): p =", signif(sw$p.value, 4), "\n")
-    cat(ifelse(sw$p.value < 0.05,
-               "  -> Residuals may not be normally distributed.\n",
-               "  -> Residuals appear normally distributed.\n"))
-
-    # Ramsey RESET
     reset <- lmtest::resettest(model, power = 2:3, type = "fitted")
-    cat("* Ramsey RESET test (Functional form): p =", signif(reset$p.value, 4), "\n")
-    cat(ifelse(reset$p.value < 0.05,
-               "  -> Model may be mis-specified.\n",
-               "  -> Functional form appears adequate.\n"))
-
-    # Cook's Distance
     cooks <- cooks.distance(model)
-    high_infl <- sum(cooks > 4 / nobs(model), na.rm = TRUE)
-    cat("* Cook's Distance: ", high_infl, " influential point(s)\n")
-  }
+    n <- nobs(model)
+    high_infl <- sum(cooks > (4 / n), na.rm = TRUE)
 
-  if (summary) {
-    cat("\n Model Summary:\n")
-    print(summary(fit_model))
-    if (approach == "linear") reg_check_linear(fit_model)
+    tibble::tibble(
+      Exposure = exposure,
+      Test = c("Breusch-Pagan", "Shapiro-Wilk", "RESET", "Cook's Distance"),
+      Statistic = c(
+        paste0("p = ", signif(bp$p.value, 4)),
+        paste0("p = ", signif(sw$p.value, 4)),
+        paste0("p = ", signif(reset$p.value, 4)),
+        paste0(high_infl, " obs > 4/n (", round(4 / n, 4), ")")
+      ),
+      Interpretation = c(
+        if (bp$p.value < 0.05) "Heteroskedasticity detected: residual variance may not be constant." else "No evidence of heteroskedasticity.",
+        if (sw$p.value < 0.05) "Residuals may not be normally distributed. Use caution with small samples." else "Residuals appear normally distributed.",
+        if (reset$p.value < 0.05) "Model may be mis-specified. Consider adding non-linear terms or interactions." else "Functional form appears adequate.",
+        if (high_infl > 0) "Influential points detected. Review for outliers or high-leverage observations." else "No strong influential observations detected."
+      )
+    )
   }
+  model_list <- list(fit_model)
+  names(model_list) <- "multivariable_model"
 
-  final_tbl <- gtsummary::tbl_regression(
+  model_summaries <- list(summary(fit_model))
+  names(model_summaries) <- "multivariable_model"
+
+
+
+  result <- gtsummary::tbl_regression(
     fit_model,
     exponentiate = approach != "linear",
     conf.level = 0.95,
@@ -153,8 +152,38 @@ multi_reg <- function(data, outcome, exposures, approach = "logit", summary = FA
     gtsummary::remove_abbreviation(remove_abbreviation) %>%
     gtsummary::modify_abbreviation(abbreviation)
 
-  attr(final_tbl, "approach") <- approach
-  attr(final_tbl, "source") <- "multi_reg"
+  if (approach != "linear") {
+    reg_diagnostics <- "Regression diagnostics only available for 'linear' models."
+  } else {
+    reg_diagnostics <- list(multivariable_model = reg_check_linear(fit_model, "multivariable_model"))
+  }
 
-  return(final_tbl)
+  attr(result, "approach") <- approach
+  attr(result, "source") <- "multi_reg"
+  class(result) <- c("multi_reg", class(result))
+  attr(result, "models") <- model_list
+  attr(result, "model_summaries") <- model_summaries
+  attr(result, "reg_diagnostics") <- reg_diagnostics
+
+
+  result
+}
+#' @export
+`$.multi_reg` <- function(x, name) {
+  if (name == "models") {
+    model_list <- attr(x, "models")
+    lapply(model_list, print)
+    return(invisible(model_list))
+  }
+  if (name == "model_summaries") {
+    return(attr(x, "model_summaries"))
+  }
+  if (name == "reg_check"){
+    return(attr(x, "reg_diagnostics"))
+  }
+  if (name == "table") {
+    return(x)
+  }
+  # Fall back to default behavior for other gtsummary fields
+  NextMethod("$")
 }

@@ -4,7 +4,7 @@
 \alias{uni_reg_nbin}
 \title{Univariate Negative Binomial Regression}
 \usage{
-uni_reg_nbin(data, outcome, exposures, summary = FALSE)
+uni_reg_nbin(data, outcome, exposures)
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
@@ -12,11 +12,9 @@ uni_reg_nbin(data, outcome, exposures, summary = FALSE)
 \item{outcome}{The name of the count outcome variable.}
 
 \item{exposures}{A vector of predictor variables.}
-
-\item{summary}{Logical; if `TRUE`, prints model summaries. Default is `FALSE`.}
 }
 \value{
-A `gtsummary::tbl_stack` object of exponentiated unadjusted IRRs.
+A `gtsummary::tbl_stack` object of exponentiated unadjusted IRRs with `$models`, `$model_summaries`, and `$table` accessors.
 }
 \description{
 Fits negative binomial regression models for each exposure on a count outcome.

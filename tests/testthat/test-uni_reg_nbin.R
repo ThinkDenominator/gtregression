@@ -18,51 +18,41 @@ test_that("uni_reg_nbin computes unadjusted IRRs using negative binomial regress
   exposures <- c("Eth", "Sex", "Age", "Lrn")
   outcome <- "Days"
 
-  # Prevent test failure if outcome isn't count type
+  # Check outcome is count
   is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
-  if (!is_count(quine_data[[outcome]])) skip("Outcome is not a count variable.")
+  if (!is_count(quine_data[[outcome]])) skip("Outcome is not a non-negative count variable.")
 
-  # Test without summary
-  result_default <- tryCatch({
+  # Run function
+  result <- tryCatch({
     uni_reg_nbin(data = quine_data, outcome = outcome, exposures = exposures)
   }, error = function(e) {
-    message("uni_reg_nbin() failed with summary = FALSE\n", e$message)
+    message("uni_reg_nbin() failed\n", e$message)
     return(NULL)
   })
 
-  if (is.null(result_default)) {
-    skip("uni_reg_nbin() returned NULL with summary = FALSE")
+  if (is.null(result)) {
+    skip("uni_reg_nbin() returned NULL")
   } else {
-    expect_s3_class(result_default, "tbl_stack")
-    expect_true(nrow(result_default$table_body) > 0)
-    expect_true("estimate" %in% names(result_default$table_body))
-    expect_true(!is.null(attr(result_default, "approach")))
-    expect_true(!is.null(attr(result_default, "source")))
+    expect_s3_class(result, "tbl_stack")
+    expect_true(nrow(result$table_body) > 0)
+    expect_true("estimate" %in% names(result$table_body))
+    expect_true(!is.null(attr(result, "approach")))
+    expect_true(!is.null(attr(result, "source")))
 
-    expect_equal(attr(result_default, "approach"), "nbin")
-    expect_equal(attr(result_default, "source"), "uni_reg_nbin")
-    expect_length(attr(result_default, "approach"), 1)
-    expect_length(attr(result_default, "source"), 1)
-  }
+    expect_equal(attr(result, "approach"), "negbin")
+    expect_equal(attr(result, "source"), "uni_reg_nbin")
+    expect_length(attr(result, "approach"), 1)
+    expect_length(attr(result, "source"), 1)
 
-  # Test with summary = TRUE
-  result_summary <- tryCatch({
-    uni_reg_nbin(data = quine_data, outcome = outcome, exposures = exposures, summary = TRUE)
-  }, error = function(e) {
-    message("uni_reg_nbin() failed with summary = TRUE\n", e$message)
-    return(NULL)
-  })
-
-  if (is.null(result_summary)) {
-    skip("uni_reg_nbin() returned NULL with summary = TRUE")
-  } else {
-    expect_s3_class(result_summary, "tbl_stack")
+    # Accessors
+    expect_type(result$models, "list")
+    expect_type(result$model_summaries, "list")
+    expect_s3_class(result$table, "tbl_stack")
   }
 
   # Should fail: outcome is non-count
   expect_error(
     uni_reg_nbin(data = quine_data, outcome = "Sex", exposures = exposures),
-    "Outcome must be a non-negative count variable",
-    fixed = TRUE
+    regexp = "Negative binomial regression requires a non-negative count outcome"
   )
 })

@@ -4,14 +4,7 @@
 \alias{stratified_uni_reg}
 \title{Stratified Univariate Regression (Odds, Risk, or Rate Ratios)}
 \usage{
-stratified_uni_reg(
-  data,
-  outcome,
-  exposures,
-  stratifier,
-  approach = "logit",
-  summary = FALSE
-)
+stratified_uni_reg(data, outcome, exposures, stratifier, approach = "logit")
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
@@ -24,11 +17,10 @@ stratified_uni_reg(
 
 \item{approach}{Modeling approach to use. One of:
 `"logit"`, `"log-binomial"`, `"poisson"`, `"robpoisson"`, `"linear"`}
-
-\item{summary}{Logical; if `TRUE`, prints model summaries for each stratum. Default is `FALSE`.}
 }
 \value{
-A `gtsummary::tbl_merge` object with unadjusted estimates per stratum.
+A `stratified_uni_reg` object with components:
+  `table`, `models`, `model_summaries`, `reg_check`
 }
 \description{
 Performs univariate regression for each exposure on a binary, count, or continuous outcome,

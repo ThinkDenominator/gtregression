@@ -4,14 +4,7 @@
 \alias{stratified_multi_reg}
 \title{Stratified Multivariable Regression (Adjusted OR, RR, IRR, or Beta)}
 \usage{
-stratified_multi_reg(
-  data,
-  outcome,
-  exposures,
-  stratifier,
-  approach = "logit",
-  summary = FALSE
-)
+stratified_multi_reg(data, outcome, exposures, stratifier, approach = "logit")
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
@@ -22,12 +15,10 @@ stratified_multi_reg(
 
 \item{stratifier}{A categorical variable to stratify the data by.}
 
-\item{approach}{The modeling approach ("logit", "robpoisson", "poisson", "log-binomial", etc.).}
-
-\item{summary}{Logical; if `TRUE`, prints model summaries. Default is `FALSE`.}
+\item{approach}{The modeling approach ("logit", "robpoisson", "poisson", "log-binomial", "linear").}
 }
 \value{
-A `gtsummary::tbl_merge` object with one column per stratum.
+A stratified_multi_reg object with components: table, models, model_summaries, and reg_check.
 }
 \description{
 Performs multivariable regression of exposures on outcome,

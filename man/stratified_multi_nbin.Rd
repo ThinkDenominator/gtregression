@@ -4,7 +4,7 @@
 \alias{stratified_multi_nbin}
 \title{Stratified Multivariable Negative Binomial Regression}
 \usage{
-stratified_multi_nbin(data, outcome, exposures, stratifier, summary = FALSE)
+stratified_multi_nbin(data, outcome, exposures, stratifier)
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
@@ -14,11 +14,9 @@ stratified_multi_nbin(data, outcome, exposures, stratifier, summary = FALSE)
 \item{exposures}{A character vector of exposure variables.}
 
 \item{stratifier}{A categorical variable to stratify the data by.}
-
-\item{summary}{Logical; if `TRUE`, prints model summaries. Default is `FALSE`.}
 }
 \value{
-A `gtsummary::tbl_merge` table with one column per stratum.
+A `gtsummary::tbl_merge` object with attributes for models, summaries, and diagnostics.
 }
 \description{
 Performs multivariable negative binomial regression of exposures on a count outcome,

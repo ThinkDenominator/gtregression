@@ -4,7 +4,7 @@
 \alias{multi_reg}
 \title{Multivariable regression (Adjusted Odds, Risk, or Rate Ratios)}
 \usage{
-multi_reg(data, outcome, exposures, approach = "logit", summary = FALSE)
+multi_reg(data, outcome, exposures, approach = "logit")
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
@@ -16,8 +16,6 @@ multi_reg(data, outcome, exposures, approach = "logit", summary = FALSE)
 \item{approach}{Modeling approach to use. One of:
 `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
 `"robpoisson"` (RR), `"linear"` (Beta coefficients)}
-
-\item{summary}{Logical; if `TRUE`, prints model summary and diagnostics. Default is `FALSE`.}
 }
 \value{
 A `gtsummary::tbl_regression` object with adjusted effect estimates.

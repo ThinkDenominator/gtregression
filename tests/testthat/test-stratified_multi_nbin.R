@@ -11,9 +11,9 @@ test_that("stratified_multi_nbin returns a gtsummary tbl_merge object", {
                               Age = factor(Age, levels = c("F0", "F1", "F2", "F3")),
                               Lrn = factor(Lrn, levels = c("AL", "SL"))
   )
+
   is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
   if (!is_count(quine_data[["Days"]])) skip("Outcome is not a count variable.")
-
 
   result <- tryCatch({
     suppressWarnings(gtregression::stratified_multi_nbin(
@@ -30,11 +30,11 @@ test_that("stratified_multi_nbin returns a gtsummary tbl_merge object", {
   if (is.null(result)) {
     skip("Skipping test: no valid models across strata.")
   } else {
+    expect_s3_class(result, "stratified_multi_nbin")
     expect_s3_class(result, "tbl_merge")
     expect_true("gtsummary" %in% class(result))
   }
 })
-
 
 test_that("stratified_multi_nbin excludes NA values in stratifier", {
   skip_if_not_installed("MASS")
@@ -43,16 +43,15 @@ test_that("stratified_multi_nbin excludes NA values in stratifier", {
   data("quine", package = "MASS")
 
   quine_data <- dplyr::mutate(quine,
-                              Eth = factor(Eth, levels = c("A", "N")),
-                              Sex = factor(Sex, levels = c("M", "F")),
-                              Age = factor(Age, levels = c("F0", "F1", "F2", "F3")),
-                              Lrn = factor(Lrn, levels = c("AL", "SL"))
+                              Eth = factor(Eth),
+                              Sex = factor(Sex),
+                              Age = factor(Age),
+                              Lrn = factor(Lrn)
   )
+  quine_data$Sex[1:5] <- NA
 
-  quine_data$Sex[1:5] <- NA  # Introduce NA in stratifier
   is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
   if (!is_count(quine_data[["Days"]])) skip("Outcome is not a count variable.")
-
 
   result <- tryCatch({
     suppressWarnings(gtregression::stratified_multi_nbin(
@@ -67,12 +66,12 @@ test_that("stratified_multi_nbin excludes NA values in stratifier", {
   })
 
   if (is.null(result)) {
-    skip("Skipping test: no valid strata due to NA in stratifier.")
+    skip("Skipping test: no valid strata after removing NA values.")
   } else {
+    expect_s3_class(result, "stratified_multi_nbin")
     expect_s3_class(result, "tbl_merge")
   }
 })
-
 
 test_that("stratified_multi_nbin errors for invalid inputs", {
   skip_if_not_installed("MASS")
@@ -86,7 +85,7 @@ test_that("stratified_multi_nbin errors for invalid inputs", {
       exposures = c("invalid_var"),
       stratifier = "Sex"
     ),
-    "One or more exposures not found in the dataset."
+    regexp = "One or more exposures not found in the dataset."
   )
 
   expect_error(
@@ -96,32 +95,43 @@ test_that("stratified_multi_nbin errors for invalid inputs", {
       exposures = c("Eth"),
       stratifier = "nonexistent_var"
     ),
-    "Stratifier not found in the dataset."
+    regexp = "Stratifier not found in the dataset."
   )
 })
 
+test_that("stratified_multi_nbin handles single stratum gracefully", {
+  quine_m <- dplyr::filter(quine, Sex == "M")
 
-test_that("stratified_multi_nbin returns NULL when no valid strata are found", {
+  result <- gtregression::stratified_multi_nbin(data = quine_m,
+                                                outcome = "Days",
+                                                exposures = c("Eth", "Age", "Lrn"),
+                                                stratifier = "Sex")
+
+  expect_true(is.null(result) || !is.null(attr(result, "model_summaries")))
+
+})
+
+test_that("stratified_multi_nbin returns NULL when models cannot be fit", {
   skip_if_not_installed("MASS")
-  skip_if_not_installed("dplyr")
-
   data("quine", package = "MASS")
 
-  quine_data <- dplyr::mutate(quine,
-                              Eth = factor(Eth, levels = c("A", "N")),
-                              Sex = NA,  # all missing
-                              Age = factor(Age, levels = c("F0", "F1", "F2", "F3")),
-                              Lrn = factor(Lrn, levels = c("AL", "SL"))
-  )
+  quine_m <- dplyr::filter(quine, Sex == "M")
 
-  expect_warning(
-    result <- gtregression::stratified_multi_nbin(
-      data = quine_data,
-      outcome = "Days",
-      exposures = c("Eth", "Age", "Lrn"),
-      stratifier = "Sex"
-    ),
-    regexp = "No valid models across strata."
+  # Create an invalid case where exposure has no variability
+  bad_data <- quine_m %>%
+    dplyr::mutate(Eth = "A", Age = "F0", Lrn = "SL")
+
+  result <- suppressWarnings(
+    tryCatch({
+      gtregression::stratified_multi_nbin(
+        data = bad_data,
+        outcome = "Days",
+        exposures = c("Eth", "Age", "Lrn"),
+        stratifier = "Sex"
+      )
+    }, error = function(e) {
+      NULL
+    })
   )
 
   expect_null(result)

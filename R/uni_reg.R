@@ -1,21 +1,28 @@
 #' Univariate regression (Odds, Risk, or Rate Ratios)
 #'
-#' Performs univariate regression for each exposure on a binary or count outcome.
+#' Performs univariate regression for each exposure on a binary, continuous, or count outcome.
 #' Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR), or Incidence Rate Ratios (IRR).
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome The name of the outcome variable (binary or count).
+#' @param outcome The name of the outcome variable (binary, continuous, or count).
 #' @param exposures A vector of predictor variables.
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
 #'   `"robpoisson"` (RR), `"linear"` (Beta coefficients)
-#' @param summary Logical; if `TRUE`, prints model summaries for each univariate model. Default is `FALSE`.
 #' @importFrom magrittr %>%
 #' @importFrom broom tidy
 #' @details This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `risks`.
-#' @return A `gtsummary::tbl_stack` object of exponentiated unadjusted estimates.
+#' @return A `gtsummary::tbl_stack` object of exponentiated unadjusted estimates- publication ready tables
+#' @section Accessors:
+#' \describe{
+#'   \item{\code{$models}}{Extracts the underlying model objects.}
+#'   \item{\code{$model_summaries}}{Extracts tidy summaries for each model.}
+#' }
 #' @export
-uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALSE) {
+uni_reg <- function(data,
+                    outcome,
+                    exposures,
+                    approach = "logit") {
   `%>%` <- magrittr::`%>%`
   pkgs <- c("gtsummary", "purrr", "dplyr", "stats", "rlang")
   for (pkg in pkgs) {
@@ -54,9 +61,8 @@ uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALS
     stop("Binary outcome required for the selected approach: ", approach)
   }
 
-  if (approach == "poisson") {
-    if (is_binary(outcome_vec)) stop("Poisson regression is not appropriate for binary outcomes.")
-    if (!is_count(outcome_vec)) stop("Poisson requires a count outcome.")
+  if (approach == "poisson"&& !is_count(outcome_vec)) {
+    stop("Count outcome required for Poisson regression.")
   }
 
   if (approach == "linear" && !is_continuous(outcome_vec)) {
@@ -100,49 +106,35 @@ uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALS
     }
   }
 
+  # Reg check function for linear regression just like in STATA
+
   reg_check_linear <- function(model, exposure) {
-    cat("\n*** Diagnostics for multivariable linear regression: ***\n")
     lmtest <- getNamespace("lmtest")
-    car <- getNamespace("car")
 
-    # Breusch-Pagan
+    # Tests
     bp <- lmtest::bptest(model)
-    cat("* Breusch-Pagan test (Heteroskedasticity): p =", signif(bp$p.value, 4), "\n")
-    if (bp$p.value < 0.05) {
-      cat("  -> Heteroskedasticity detected. Residual variance may not be constant.\n")
-    } else {
-      cat("  -> No evidence of heteroskedasticity. Residuals appear homoscedastic.\n")
-    }
-
-    # Shapiro-Wilk
     sw <- shapiro.test(residuals(model))
-    cat("* Shapiro-Wilk test (Normality of residuals): p =", signif(sw$p.value, 4), "\n")
-    if (sw$p.value < 0.05) {
-      cat("  -> Residuals may not be normally distributed. Caution with small samples.\n")
-    } else {
-      cat("  -> Residuals appear normally distributed.\n")
-    }
-
-    # Ramsey RESET
     reset <- lmtest::resettest(model, power = 2:3, type = "fitted")
-    cat("* Ramsey RESET test (Functional form): p =", signif(reset$p.value, 4), "\n")
-    if (reset$p.value < 0.05) {
-      cat("  -> Model may be mis-specified. Consider adding nonlinear terms or interactions.\n")
-    } else {
-      cat("  -> Functional form appears adequate.\n")
-    }
-
-    # Cook's distance
     cooks <- cooks.distance(model)
     n <- nobs(model)
     high_infl <- sum(cooks > (4 / n), na.rm = TRUE)
-    cat("* Cook's Distance: ", high_infl, " observation(s) > 4/n (", round(4 / n, 4), ")\n")
-    if (high_infl > 0) {
-      cat("  -> There are influential points. Review for data quality or leverage.\n")
-    } else {
-      cat("  -> No strong influential observations.\n")
-    }
 
+    tibble::tibble(
+      Exposure = exposure,
+      Test = c("Breusch-Pagan", "Shapiro-Wilk", "RESET", "Cook's Distance"),
+      Statistic = c(
+        paste0("p = ", signif(bp$p.value, 4)),
+        paste0("p = ", signif(sw$p.value, 4)),
+        paste0("p = ", signif(reset$p.value, 4)),
+        paste0(high_infl, " obs > 4/n (", round(4 / n, 4), ")")
+      ),
+      Interpretation = c(
+        if (bp$p.value < 0.05) "Heteroskedasticity detected: residual variance may not be constant." else "No evidence of heteroskedasticity.",
+        if (sw$p.value < 0.05) "Residuals may not be normally distributed. Use caution with small samples." else "Residuals appear normally distributed.",
+        if (reset$p.value < 0.05) "Model may be mis-specified. Consider adding non-linear terms or interactions." else "Functional form appears adequate.",
+        if (high_infl > 0) "Influential points detected. Review for outliers or high-leverage observations." else "No strong influential observations detected."
+      )
+    )
   }
 
 
@@ -154,18 +146,9 @@ uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALS
   })
 
   model_list <- model_list[!sapply(model_list, is.null)]
+  names(model_list) <- exposures
 
   if (length(model_list) == 0) stop("All models failed. Please check your data or exposures.")
-
-  if (isTRUE(summary)) {
-    purrr::walk2(model_list, exposures, function(m, x) {
-      if (!is.null(m)) {
-        cat("\nSummary for", x, ":\n")
-        print(summary(m))
-        if (approach == "linear") reg_check_linear(m, x)
-      }
-    })
-  }
 
   tbl_list <- purrr::map(model_list,
                          ~gtsummary::tbl_regression(.x,
@@ -177,9 +160,41 @@ uni_reg <- function(data, outcome, exposures, approach = "logit", summary = FALS
   result <- stacked %>%
     gtsummary::remove_abbreviation(remove_abbrev) %>%
     gtsummary::modify_abbreviation(abbreviation)
+  model_summaries <- purrr::map(model_list, summary)
+  names(model_summaries) <- exposures
+
+  if (approach != "linear") {
+    reg_diagnostics <- "Regression diagnostics only available for 'linear' models."
+  } else {
+    reg_diagnostics <- purrr::imap(model_list, function(m, x) reg_check_linear(m, x))
+  }
 
   attr(result, "approach") <- approach
   attr(result, "source") <- "uni_reg"
+  class(result) <- c("uni_reg", class(result))
+  attr(result, "models") <- model_list
+  attr(result, "model_summaries") <- model_summaries
+  attr(result, "reg_diagnostics") <- reg_diagnostics
 
-  return(result)
+
+  result
+}
+#' @export
+`$.uni_reg` <- function(x, name) {
+  if (name == "models") {
+    model_list <- attr(x, "models")
+    lapply(model_list, print)
+    return(invisible(model_list))
+  }
+  if (name == "model_summaries") {
+    return(attr(x, "model_summaries"))
+  }
+  if (name == "reg_check"){
+    return(attr(x, "reg_diagnostics"))
+  }
+  if (name == "table") {
+    return(x)
+  }
+  # Fall back to default behavior for other gtsummary fields
+  NextMethod("$")
 }

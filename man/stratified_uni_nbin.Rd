@@ -4,7 +4,7 @@
 \alias{stratified_uni_nbin}
 \title{Stratified Univariate Negative Binomial Regression}
 \usage{
-stratified_uni_nbin(data, outcome, exposures, stratifier, summary = FALSE)
+stratified_uni_nbin(data, outcome, exposures, stratifier)
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
@@ -14,11 +14,9 @@ stratified_uni_nbin(data, outcome, exposures, stratifier, summary = FALSE)
 \item{exposures}{A character vector of predictor variables.}
 
 \item{stratifier}{A categorical variable to stratify the data by.}
-
-\item{summary}{Logical; if `TRUE`, prints model summaries. Default is `FALSE`.}
 }
 \value{
-A `gtsummary::tbl_merge` table with one column per stratum.
+A `gtsummary::tbl_merge` object with components: `$table`, `$models`, `$model_summaries`,
 }
 \description{
 Performs univariate negative binomial regression of exposures on outcome,

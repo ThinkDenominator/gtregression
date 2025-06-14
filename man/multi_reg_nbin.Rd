@@ -2,9 +2,9 @@
 % Please edit documentation in R/multi_reg_nbin.R
 \name{multi_reg_nbin}
 \alias{multi_reg_nbin}
-\title{Multivariable Negative Binomial Regression (Adjusted Risk Ratios)}
+\title{Multivariable Negative Binomial Regression (Adjusted IRRs)}
 \usage{
-multi_reg_nbin(data, outcome, exposures, summary = FALSE)
+multi_reg_nbin(data, outcome, exposures)
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
@@ -12,11 +12,10 @@ multi_reg_nbin(data, outcome, exposures, summary = FALSE)
 \item{outcome}{The name of the count outcome variable.}
 
 \item{exposures}{A vector of predictor variables.}
-
-\item{summary}{Logical; if `TRUE`, prints model summary. Default is `FALSE`.}
 }
 \value{
-A `gtsummary::tbl_regression` object with exponentiated estimates labeled as Adjusted IRRs.
+A `gtsummary::tbl_regression` object with exponentiated estimates labeled as Adjusted IRRs,
+along with `$models`, `$model_summaries`, and `$table`.
 }
 \description{
 Calculates adjusted incidence rate ratios (IRRs) using Negative Binomial Regression.

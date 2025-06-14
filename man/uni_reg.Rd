@@ -4,28 +4,34 @@
 \alias{uni_reg}
 \title{Univariate regression (Odds, Risk, or Rate Ratios)}
 \usage{
-uni_reg(data, outcome, exposures, approach = "logit", summary = FALSE)
+uni_reg(data, outcome, exposures, approach = "logit")
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The name of the outcome variable (binary or count).}
+\item{outcome}{The name of the outcome variable (binary, continuous, or count).}
 
 \item{exposures}{A vector of predictor variables.}
 
 \item{approach}{Modeling approach to use. One of:
 `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
 `"robpoisson"` (RR), `"linear"` (Beta coefficients)}
-
-\item{summary}{Logical; if `TRUE`, prints model summaries for each univariate model. Default is `FALSE`.}
 }
 \value{
-A `gtsummary::tbl_stack` object of exponentiated unadjusted estimates.
+A `gtsummary::tbl_stack` object of exponentiated unadjusted estimates- publication ready tables
 }
 \description{
-Performs univariate regression for each exposure on a binary or count outcome.
+Performs univariate regression for each exposure on a binary, continuous, or count outcome.
 Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR), or Incidence Rate Ratios (IRR).
 }
 \details{
 This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `risks`.
 }
+\section{Accessors}{
+
+\describe{
+  \item{\code{$models}}{Extracts the underlying model objects.}
+  \item{\code{$model_summaries}}{Extracts tidy summaries for each model.}
+}
+}
+

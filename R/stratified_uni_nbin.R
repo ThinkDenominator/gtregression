@@ -7,55 +7,37 @@
 #' @param outcome The name of the count outcome variable.
 #' @param exposures A character vector of predictor variables.
 #' @param stratifier A categorical variable to stratify the data by.
-#' @param summary Logical; if `TRUE`, prints model summaries. Default is `FALSE`.
 #'
-#' @return A `gtsummary::tbl_merge` table with one column per stratum.
+#' @return A `gtsummary::tbl_merge` object with components: `$table`, `$models`, `$model_summaries`,
 #' @export
-stratified_uni_nbin <- function(data, outcome, exposures, stratifier, summary = FALSE) {
-  # Load magrittr for CRAN-safe pipe
-  if (!requireNamespace("magrittr", quietly = TRUE)) {
-    stop("The 'magrittr' package is required for piping (%>%). Please install it.")
-  }
-
+stratified_uni_nbin <- function(data, outcome, exposures, stratifier) {
   `%>%` <- magrittr::`%>%`
 
-  # Check inputs
   if (!stratifier %in% names(data)) stop("Stratifier not found in the dataset.")
   if (!outcome %in% names(data)) stop("Outcome variable not found in the dataset.")
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in the dataset.")
 
-  # Outcome validation
-  outcome_vec <- data[[outcome]]
+  is_count <- function(x) is.numeric(x) && all(!is.na(x)) && all(x >= 0 & x == floor(x))
+  if (!is_count(data[[outcome]])) stop("Negative binomial regression requires a non-negative count outcome.")
 
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
-  is_binary <- function(x) {
-    is.atomic(x) && is.numeric(x) &&
-      all(!is.na(x)) &&
-      all(x %in% c(0, 1))
-  }
-  if (is_binary(outcome_vec)) stop("Negative binomial regression is not appropriate for binary outcomes.")
-  if (!is_count(data[[outcome]])) stop("Outcome must be a non-negative count variable.")
+  message("Running stratified univariate negative binomial regression by: ", stratifier)
 
-  message("Running stratified negative binomial regression by: ", stratifier)
-
-  # Exclude NA in stratifier
-  data <- data %>% dplyr::filter(!is.na(.data[[stratifier]]))
+  data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
   strata_levels <- unique(data[[stratifier]])
 
-  tbl_list <- list()
+  results <- list()
   spanners <- character()
 
   for (lev in strata_levels) {
-    message("Stratum: ", stratifier, " = ", lev)
+    message("  > Stratum: ", stratifier, " = ", lev)
 
-    data_stratum <- data %>% dplyr::filter(.data[[stratifier]] == lev)
+    data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 
     result <- tryCatch({
       uni_reg_nbin(
         data = data_stratum,
         outcome = outcome,
-        exposures = exposures,
-        summary = summary
+        exposures = exposures
       )
     }, error = function(e) {
       warning("Skipping stratum ", lev, ": ", e$message)
@@ -63,19 +45,39 @@ stratified_uni_nbin <- function(data, outcome, exposures, stratifier, summary = 
     })
 
     if (!is.null(result)) {
-      tbl_list[[length(tbl_list) + 1]] <- result
+      results[[lev]] <- result
       spanners <- c(spanners, paste0("**", stratifier, " = ", lev, "**"))
     }
   }
 
-  if (length(tbl_list) == 0) {
-    warning("No valid models across strata.")
-    return(NULL)
-  }
+  if (length(results) == 0) return(NULL)
+
+
+  # Extract components
+  tbl_list <- lapply(results, function(x) x$table)
+  model_list <- lapply(results, function(x) attr(x, "models"))
+  summary_list <- lapply(results, function(x) attr(x, "model_summaries"))
+
 
   merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
-  attr(merged_tbl, "approach") <- approach
-  attr(merged_tbl, "source") <- "stratified_uni_nbin"
-  print(merged_tbl)
-  return(merged_tbl)
+
+  result <- merged_tbl
+  attr(result, "models") <- model_list
+  attr(result, "model_summaries") <- summary_list
+
+  attr(result, "approach") <- "negbin"
+  attr(result, "source") <- "stratified_uni_nbin"
+  class(result) <- c("stratified_uni_nbin", class(result))
+
+  return(result)
+
 }
+#' @export
+`$.stratified_uni_nbin` <- function(x, name) {
+  if (name == "models") return(attr(x, "models"))
+  if (name == "model_summaries") return(attr(x, "model_summaries"))
+
+  if (name == "table") return(x)
+  NextMethod("$")
+}
+

@@ -30,23 +30,22 @@ test_that("stratified_uni_reg returns a gtsummary tbl_merge object with logit", 
     )
   )
 
-
   expect_s3_class(result, "tbl_merge")
   expect_true("gtsummary" %in% class(result))
 })
 
+
 test_that("stratified_uni_reg excludes NA values in stratifier", {
   data("PimaIndiansDiabetes2", package = "mlbench")
   pima_data <- PimaIndiansDiabetes2 %>%
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0),
-           age_cat = ifelse(age < 50, "Under 50", "50+"),
-           glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal"))) %>%
-    mutate(age_cat = factor(age_cat)) %>%
-    mutate(bmi = factor(ifelse(mass >= 30, "Obese", "Not obese"))) %>%
-    mutate(glucose_cat = forcats::fct_na_value_to_level(glucose_cat, level = "(Missing)"))
+    mutate(
+      diabetes = ifelse(diabetes == "pos", 1, 0),
+      age_cat = factor(ifelse(age < 50, "Under 50", "50+")),
+      glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal")),
+      bmi = factor(ifelse(mass >= 30, "Obese", "Not obese"))
+    )
 
-
-  pima_data$glucose_cat[1:5] <- NA  # Add some missing
+  pima_data$glucose_cat[1:5] <- NA  # introduce missing
 
   result <- suppressWarnings(
     stratified_uni_reg(
@@ -58,16 +57,16 @@ test_that("stratified_uni_reg excludes NA values in stratifier", {
     )
   )
 
-
   expect_s3_class(result, "tbl_merge")
 })
+
 
 test_that("stratified_uni_reg errors for invalid inputs", {
   data("PimaIndiansDiabetes2", package = "mlbench")
 
   pima_data <- PimaIndiansDiabetes2 %>%
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) %>%
-    mutate(glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal")))
+    mutate(diabetes = ifelse(diabetes == "pos", 1, 0),
+           glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal")))
 
   expect_error(
     stratified_uni_reg(
@@ -77,7 +76,7 @@ test_that("stratified_uni_reg errors for invalid inputs", {
       stratifier = "glucose_cat",
       approach = "logit"
     ),
-    "One or more exposures not found in the dataset."
+    "One or more exposures not found in dataset."
   )
 
   expect_error(
@@ -88,9 +87,10 @@ test_that("stratified_uni_reg errors for invalid inputs", {
       stratifier = "not_in_data",
       approach = "logit"
     ),
-    "Stratifier not found in the dataset."
+    "Stratifier not found in dataset."
   )
 })
+
 
 test_that("stratified_uni_reg works with robpoisson", {
   data("PimaIndiansDiabetes2", package = "mlbench")
@@ -113,27 +113,27 @@ test_that("stratified_uni_reg works with robpoisson", {
     )
   )
 
-
   expect_s3_class(result, "tbl_merge")
 })
 
-test_that("stratified_uni_reg returns NULL when no valid strata exist", {
+
+test_that("stratified_uni_reg errors when no valid strata exist", {
   data("PimaIndiansDiabetes2", package = "mlbench")
 
   pima_data <- PimaIndiansDiabetes2 %>%
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0),
-           glucose_cat = NA)
+    mutate(
+      diabetes = ifelse(diabetes == "pos", 1, 0),
+      glucose_cat = NA  # All NA in stratifier
+    )
 
-  expect_warning(
-    result <- stratified_uni_reg(
+  expect_error(
+    stratified_uni_reg(
       data = pima_data,
       outcome = "diabetes",
       exposures = c("age", "mass"),
       stratifier = "glucose_cat",
       approach = "logit"
     ),
-    "No valid models across strata."
+    regexp = "No valid models across strata."
   )
-
-  expect_null(result)
 })
