@@ -1,19 +1,27 @@
 #' Visualize Univariate and Multivariate Regression Side-by-Side
 #'
-#' Creates side-by-side forest plots from univariate and multivariate gtsummary objects.
+#' Generates side-by-side forest plots to compare univariate and multivariable regression results.
+#' Accepts `gtsummary` objects as input and returns a combined `ggplot2` object using the `patchwork` package.
 #'
-#' @param tbl_uni A `gtsummary` object from `uni_reg()` or similar.
-#' @param tbl_multi A `gtsummary` object from `multi_reg()` or similar.
-#' @param title_uni Optional title for univariate plot.
-#' @param title_multi Optional title for multivariate plot.
-#' @param ref_line Reference line (default = 1).
-#' @param order_y Optional character vector for custom y-axis header order.
-#' @param log_x Logical. Log-transform x-axis (default = FALSE).
-#' @param point_color Point color.
-#' @param errorbar_color Error bar color.
-#' @param base_size Font size.
-#' @param show_ref Logical. Whether to show reference categories. Default is TRUE.
-#' @param xlim_uni,breaks_uni,xlim_multi,breaks_multi Axis customizations.
+#' @param tbl_uni A `gtsummary` object from `uni_reg()` or similar univariate model function.
+#' @param tbl_multi A `gtsummary` object from `multi_reg()` or similar multivariable model function.
+#' @param title_uni Optional plot title for the univariate model (character).
+#' @param title_multi Optional plot title for the multivariable model (character).
+#' @param ref_line Numeric value for the reference line (default = 1).
+#' @param order_y Optional character vector to manually order the y-axis labels.
+#' @param log_x Logical. If `TRUE`, x-axis is log-transformed (default = FALSE).
+#' @param point_color Optional color for plot points.
+#' @param errorbar_color Optional color for error bars.
+#' @param base_size Numeric. Base font size for plot text elements.
+#' @param show_ref Logical. If `TRUE`, includes reference categories in the plots (default = TRUE).
+#' @param xlim_uni Optional numeric vector to set x-axis limits for univariate plot.
+#' @param breaks_uni Optional numeric vector to set x-axis breaks for univariate plot.
+#' @param xlim_multi Optional numeric vector to set x-axis limits for multivariable plot.
+#' @param breaks_multi Optional numeric vector to set x-axis breaks for multivariable plot.
+#'
+#' @return A combined `ggplot2` object with two forest plots displayed side-by-side.
+#'
+#' @export
 #' @importFrom patchwork wrap_plots plot_layout
 #' @importFrom dplyr mutate case_when filter row_number arrange if_else
 #' @importFrom tidyr fill
@@ -21,8 +29,14 @@
 #'   scale_y_discrete labs theme_minimal element_blank element_text margin
 #'   coord_cartesian scale_x_continuous scale_x_log10
 #' @importFrom ggtext element_markdown
-#' @return A combined `ggplot` object.
-#' @export
+#'
+#' @examples
+#' \dontrun{
+#' result_uni <- uni_reg(mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
+#' result_multi <- multi_reg(mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
+#' plot_reg_combine(tbl_uni = result_uni, tbl_multi = result_multi)
+#' }
+
 plot_reg_combine <- function(tbl_uni,
                              tbl_multi,
                              title_uni = NULL,
@@ -85,7 +99,7 @@ plot_reg_combine <- function(tbl_uni,
     df <- dplyr::mutate(df,
                         is_header = is.na(.data$reference_row),
                         label_clean = dplyr::case_when(
-                          is_header ~ paste0("**", .data$variable, "**"),
+                          is_header ~ paste0("**", .data$label, "**"),
                           .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
                           !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
                           TRUE ~ NA_character_
@@ -95,7 +109,7 @@ plot_reg_combine <- function(tbl_uni,
     if (!is.null(order_y)) {
       df <- dplyr::mutate(df,
                           header_order = dplyr::case_when(
-                            .data$is_header ~ match(.data$variable, order_y),
+                            .data$is_header ~ match(.data$label, order_y),
                             TRUE ~ NA_real_
                           ))
       df <- tidyr::fill(df, header_order, .direction = "down")

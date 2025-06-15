@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_reg.R
 \name{plot_reg}
 \alias{plot_reg}
-\title{Visualize a Regression Model (Forest Plot)}
+\title{Visualize a Regression Model as a Forest Plot}
 \usage{
 plot_reg(
   tbl,
@@ -19,31 +19,40 @@ plot_reg(
 )
 }
 \arguments{
-\item{tbl}{A gtsummary object (from uni_reg, multi_reg, etc.).}
+\item{tbl}{A `gtsummary` object from regression functions (e.g., `uni_reg`, `multi_reg`).}
 
-\item{title}{Optional title.}
+\item{title}{Optional plot title (character).}
 
-\item{ref_line}{Reference line (default = 1).}
+\item{ref_line}{Numeric value for the reference line (default = 1).}
 
-\item{order_y}{Optional character vector for custom y-axis header order.}
+\item{order_y}{Optional character vector specifying the custom order of the y-axis labels.}
 
-\item{log_x}{Logical. Log-transform the x-axis (default = FALSE).}
+\item{log_x}{Logical. If `TRUE`, uses a logarithmic x-axis (default = FALSE).}
 
-\item{xlim}{Optional x-axis limits.}
+\item{xlim}{Optional numeric vector specifying x-axis limits (e.g., `c(0.1, 10)`).}
 
-\item{breaks}{Optional x-axis breaks.}
+\item{breaks}{Optional numeric vector for x-axis tick breaks.}
 
-\item{point_color}{Point color.}
+\item{point_color}{Color of the points (default is automatic).}
 
-\item{errorbar_color}{Error bar color.}
+\item{errorbar_color}{Color of the error bars (default is automatic).}
 
-\item{base_size}{Font size.}
+\item{base_size}{Base font size for text elements.}
 
-\item{show_ref}{Logical. Whether to show reference categories. Default is TRUE.}
+\item{show_ref}{Logical. If `TRUE`, includes reference categories in the plot (default = TRUE).}
 }
 \value{
-A ggplot2 object.
+A `ggplot2` object representing the forest plot.
 }
 \description{
-Handles both univariate and multivariate models with hierarchical labels.
+Creates a forest plot from a `gtsummary` object. Supports both univariate and multivariable models
+with hierarchical labels for categorical variables. Designed to work seamlessly with outputs from
+functions like `uni_reg()` and `multi_reg()`.
+}
+\examples{
+\dontrun{
+library(gtregression)
+result <- uni_reg(data = mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
+plot_reg(result)
+}
 }

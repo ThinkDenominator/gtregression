@@ -1,20 +1,24 @@
 #' Save a Single Regression Table
 #'
-#' Save a gtsummary table as Word, PDF, or HTML file.
+#' Saves a `gtsummary` table as a Word, PDF, or HTML file using the `gt` and `gtsummary` packages.
 #'
-#' @param tbl A gtsummary table.
-#' @param filename File name (with or without extension).
-#' @param format One of `"docx"`, `"pdf"`, or `"html"`.
+#' @param tbl A `gtsummary` table object (e.g., output from `tbl_regression()`, `tbl_summary()`, etc.).
+#' @param filename File name to save the output. Can be provided with or without file extension.
+#' @param format Output format. One of `"docx"`, `"pdf"`, or `"html"`.
 #'
-#' @return A saved file in the working directory.
-#' @export
-#' @importFrom gt gtsave
+#' @return Saves the file to the current working directory. Does not return an object.
+#'
 #' @importFrom gtsummary as_gt
+#' @importFrom gt gtsave
+#' @export
+#'
 #' @examples
 #' \dontrun{
-#' tbl <- gtsummary::tbl_regression(glm(mpg ~ hp + wt, data = mtcars))
+#' model <- glm(mpg ~ hp + wt, data = mtcars)
+#' tbl <- gtsummary::tbl_regression(model)
 #' save_table(tbl, filename = "regression_table", format = "docx")
 #' }
+
 save_table <- function(tbl, filename = "table", format = c("docx", "pdf", "html")) {
   format <- match.arg(format)
 
@@ -31,23 +35,27 @@ save_table <- function(tbl, filename = "table", format = c("docx", "pdf", "html"
 
 #' Save a Single Plot
 #'
-#' Save a ggplot object as PNG, PDF, or JPG.
+#' Saves a `ggplot2` plot to a file in PNG, PDF, or JPG format.
 #'
-#' @param plot A ggplot object.
-#' @param filename File name (with or without extension).
-#' @param format One of `"png"`, `"pdf"`, or `"jpg"`.
-#' @param width Width of the plot in inches.
-#' @param height Height of the plot in inches.
-#' @param dpi Resolution of the plot (default is 300).
+#' @param plot A `ggplot2` object.
+#' @param filename Name of the file to save, with or without extension.
+#' @param format Output format. One of `"png"`, `"pdf"`, or `"jpg"`.
+#' @param width Width of the saved plot in inches.
+#' @param height Height of the saved plot in inches.
+#' @param dpi Resolution of the plot in dots per inch (default is 300).
 #'
-#' @return A saved plot file in the working directory.
-#' @export
+#' @return Saves the file to the current working directory. No object is returned.
+#'
 #' @importFrom ggplot2 ggsave
+#' @export
+#'
 #' @examples
 #' \dontrun{
-#' p <- ggplot2::ggplot(mtcars, ggplot2::aes(x = wt, y = mpg)) + ggplot2::geom_point()
-#' save_plot(p, filename = "scatterplot", format = "png")
+#' library(ggplot2)
+#' p <- ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
+#' save_plot(p, filename = "scatterplot", format = "png", width = 6, height = 4)
 #' }
+
 save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"), width = 8, height = 6, dpi = 300) {
   format <- match.arg(format)
 
@@ -63,23 +71,31 @@ save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"), 
 
 #' Save Multiple Tables and Plots to a Word Document
 #'
-#' Save multiple gtsummary tables and ggplot2 plots to a Word document.
+#' Saves a collection of `gtsummary` tables and `ggplot2` plots into a single Word (`.docx`) file.
 #'
-#' @param tables A list of gtsummary tables.
-#' @param plots A list of ggplot2 plots.
-#' @param filename File name (with or without `.docx` extension).
-#' @param titles Optional. A character vector of titles before each table or plot.
+#' @param tables A list of `gtsummary` tables.
+#' @param plots A list of `ggplot2` plot objects.
+#' @param filename File name for the output (with or without `.docx` extension).
+#' @param titles Optional. A character vector of titles inserted before each table or plot.
 #'
-#' @return A Word document saved in the working directory.
+#' @return A Word document saved to the working directory. No object is returned.
+#'
 #' @export
 #' @importFrom officer read_docx body_add_par body_add_gg
 #' @importFrom gtsummary as_flex_table
-#' @importFrom flextable as_flextable body_add_flextable
+#' @importFrom flextable body_add_flextable
 #' @importFrom ggplot2 ggplot
+#'
 #' @examples
 #' \dontrun{
-#' tbl <- gtsummary::tbl_regression(glm(mpg ~ hp + wt, data = mtcars))
-#' p <- ggplot2::ggplot(mtcars, ggplot2::aes(x = wt, y = mpg)) + ggplot2::geom_point()
+#' library(gtsummary)
+#' library(ggplot2)
+#'
+#' # Create table and plot
+#' tbl <- tbl_regression(glm(mpg ~ hp + wt, data = mtcars))
+#' p <- ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
+#'
+#' # Save both into a single Word document
 #' save_docx(
 #'   tables = list(tbl),
 #'   plots = list(p),
@@ -87,6 +103,7 @@ save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"), 
 #'   titles = c("Table 1: Regression", "Figure 1: Scatterplot")
 #' )
 #' }
+
 save_docx <- function(tables = NULL, plots = NULL, filename = "report.docx", titles = NULL) {
   # Add .docx if missing
   if (!grepl("\\.docx$", filename, ignore.case = TRUE)) {

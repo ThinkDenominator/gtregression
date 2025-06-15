@@ -9,16 +9,47 @@ stratified_multi_nbin(data, outcome, exposures, stratifier)
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The outcome variable (count).}
+\item{outcome}{A character string specifying the name of the count outcome variable.}
 
-\item{exposures}{A character vector of exposure variables.}
+\item{exposures}{A character vector of predictor (exposure) variables.}
 
-\item{stratifier}{A categorical variable to stratify the data by.}
+\item{stratifier}{A character string specifying the variable used for stratification (must be categorical).}
 }
 \value{
-A `gtsummary::tbl_merge` object with attributes for models, summaries, and diagnostics.
+An object of class `stratified_multi_reg_nbin` with the following components:
+\describe{
+  \item{\code{$table}}{A `gtsummary::tbl_merge` object combining stratified model tables.}
+  \item{\code{$models}}{A named list of `glm.nb` model objects per stratum.}
+  \item{\code{$model_summaries}}{A list of tidy model summaries using `broom::tidy()`.}
+  \item{\code{$reg_check}}{Optional regression diagnostics per stratum (e.g., overdispersion).}
+}
 }
 \description{
-Performs multivariable negative binomial regression of exposures on a count outcome,
-stratified by a specified variable. NAs in the stratifier are excluded.
+Performs multivariable negative binomial regression with multiple exposures on a count outcome,
+stratified by a specified variable. Observations with missing values in the stratifier are excluded.
+}
+\section{Accessors}{
+
+Use `object$table`, `object$models`, `object$model_summaries`, or `object$reg_check` to extract components.
+}
+
+\examples{
+set.seed(123)
+df <- dplyr::tibble(
+  outcome = rnbinom(200, mu = 2, size = 1),
+  exposure1 = sample(c("Low", "High"), 200, replace = TRUE),
+  exposure2 = sample(c("A", "B"), 200, replace = TRUE),
+  group = sample(c("M", "F"), 200, replace = TRUE)
+)
+strat_mod <- stratified_multi_nbin(
+  data = df,
+  outcome = "outcome",
+  exposures = c("exposure1", "exposure2"),
+  stratifier = "group"
+)
+strat_mod$table
+
+}
+\seealso{
+[multi_reg_nbin()], [stratified_uni_reg_nbin()], [check_dispersion()]
 }

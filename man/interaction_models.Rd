@@ -2,7 +2,7 @@
 % Please edit documentation in R/interaction_models.R
 \name{interaction_models}
 \alias{interaction_models}
-\title{Compare models with and without interaction term}
+\title{Compare Models With and Without Interaction Term}
 \usage{
 interaction_models(
   data,
@@ -16,26 +16,36 @@ interaction_models(
 )
 }
 \arguments{
-\item{data}{A data frame.}
+\item{data}{A data frame containing all required variables.}
 
-\item{outcome}{Outcome variable (binary, count, or continuous).}
+\item{outcome}{The name of the outcome variable (binary, count, or continuous depending on the approach).}
 
-\item{exposure}{Main exposure variable (must be length 1).}
+\item{exposure}{The name of the main exposure variable. Must be a single variable.}
 
-\item{covariates}{Optional vector of adjustment variables (default = NULL).}
+\item{covariates}{Optional character vector of additional covariates to adjust for (default = \code{NULL}).}
 
-\item{effect_modifier}{Variable to test for interaction with the exposure.}
+\item{effect_modifier}{The name of the variable to test for interaction with the exposure.}
 
-\item{approach}{Modeling approach: "logit", "log-binomial", "poisson", "robpoisson", "negbin", "linear".}
+\item{approach}{The regression modeling approach to use. One of:
+\code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+\code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.}
 
-\item{test}{Test for model comparison: "LRT" (default) or "Wald".}
+\item{test}{Type of statistical test for model comparison. Either:
+\code{"LRT"} (likelihood ratio test, default) or \code{"Wald"} (test for interaction term coefficient).}
 
-\item{verbose}{Logical, whether to print interpretation.}
+\item{verbose}{Logical; if \code{TRUE}, prints a basic interpretation of whether interaction is likely present (default = \code{FALSE}).}
 }
 \value{
-A list of model objects, p-value, and interpretation.
+A list with the following elements:
+\itemize{
+  \item \code{model_no_interaction}: The model without the interaction term.
+  \item \code{model_with_interaction}: The model with the interaction term.
+  \item \code{p_value}: The p-value for interaction (based on selected test).
+  \item \code{interpretation}: A brief text interpretation if \code{verbose = TRUE}.
+}
 }
 \description{
-This function compares two models: one with and one without an interaction term to evaluate whether the interaction between exposure and a potential effect modifier
-significantly improves model fit.
+This function fits two models—one with and one without an interaction term between an exposure and a potential effect modifier—
+and compares them using either a likelihood ratio test (LRT) or Wald test.
+It is useful for assessing whether there is statistical evidence of interaction (effect modification).
 }

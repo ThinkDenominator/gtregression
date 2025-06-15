@@ -2,25 +2,56 @@
 % Please edit documentation in R/multi_reg.R
 \name{multi_reg}
 \alias{multi_reg}
-\title{Multivariable regression (Adjusted Odds, Risk, or Rate Ratios)}
+\title{Multivariable Regression (Adjusted Odds, Risk, or Rate Ratios)}
 \usage{
 multi_reg(data, outcome, exposures, approach = "logit")
 }
 \arguments{
-\item{data}{A data frame containing the variables.}
+\item{data}{A data frame containing the analysis variables.}
 
-\item{outcome}{The name of the outcome variable (binary, count, or continuous).}
+\item{outcome}{The name of the outcome variable (binary, count, or continuous). Must be a character string.}
 
-\item{exposures}{A vector of predictor variables.}
+\item{exposures}{A character vector of predictor variables to be included in the model.}
 
 \item{approach}{Modeling approach to use. One of:
-`"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
-`"robpoisson"` (RR), `"linear"` (Beta coefficients)}
+- `"logit"` for logistic regression (OR),
+- `"log-binomial"` for log-binomial regression (RR),
+- `"poisson"` for Poisson regression (IRR),
+- `"robpoisson"` for robust Poisson regression (RR),
+- `"linear"` for linear regression (Beta coefficients).}
 }
 \value{
-A `gtsummary::tbl_regression` object with adjusted effect estimates.
+An object of class `multi_reg`, which includes:
+- A `gtsummary::tbl_regression` object with adjusted effect estimates,
+- A list of fitted model(s) accessible via `$models`,
+- Tidy model summaries accessible via `$model_summaries`.
 }
 \description{
-Performs multivariable regression with multiple exposures on a binary, count, or continuous outcome.
-Depending on `approach`, returns either Adjusted Odds Ratios (OR), Risk Ratios (RR), Incidence Rate Ratios (IRR), or Beta coefficients.
+Fits multivariable regression models for binary, count, or continuous outcomes and returns a publication-ready summary table using `gtsummary`.
+Depending on the specified `approach`, the function estimates adjusted Odds Ratios (OR), Risk Ratios (RR), Incidence Rate Ratios (IRR), or Beta coefficients.
+}
+\section{Accessors}{
+
+\describe{
+  \item{\code{$models}}{List of fitted model objects.}
+  \item{\code{$model_summaries}}{A tibble of tidy regression summaries for each model.}
+}
+}
+
+\examples{
+if (requireNamespace("mlbench", quietly = TRUE)) {
+  data(PimaIndiansDiabetes2, package = "mlbench")
+  pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = diabetes == "pos")
+  model <- multi_reg(
+    data = pima,
+    outcome = "diabetes",
+    exposures = c("age", "mass"),
+    approach = "logit"
+  )
+  print(model)
+}
+
+}
+\seealso{
+[uni_reg()], [plot_reg()], [plot_reg_combine()]
 }

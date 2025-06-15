@@ -13,24 +13,28 @@ select_models(
 )
 }
 \arguments{
-\item{data}{A data frame.}
+\item{data}{A data frame containing the outcome and predictor variables.}
 
-\item{outcome}{The outcome variable (character).}
+\item{outcome}{A character string indicating the outcome variable.}
 
-\item{exposures}{A character vector of predictor variables.}
+\item{exposures}{A character vector of predictor variables to consider in the model.}
 
-\item{approach}{Regression method: "logit", "log-binomial", "poisson",
-"robpoisson", "negbin", or "linear".}
+\item{approach}{Regression method. One of:
+\code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+\code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.}
 
-\item{direction}{Direction of selection: "forward" (add one-by-one), "backward" (drop one-by-one), or "both" (stepwise in both directions). Default is "forward".}
+\item{direction}{Stepwise selection direction. One of:
+\code{"forward"} (default), \code{"backward"}, or \code{"both"}.}
 }
 \value{
-A list with model summaries, including:
-  - `results_table`: a tibble of metrics
-  - `best_model`: the final model object
-  - `all_models`: list of all tested models
+A list with the following components:
+\itemize{
+  \item \code{results_table}: A tibble summarizing each tested model's metrics (AIC, BIC, deviance, log-likelihood, adjusted R² if applicable).
+  \item \code{best_model}: The best-fitting model object based on selection criteria.
+  \item \code{all_models}: A named list of all fitted models.
+}
 }
 \description{
-This function performs stepwise model selection (forward, backward, or both)
-across multiple regression approaches and returns a summary of tested models.
+Performs stepwise model selection using forward, backward, or both directions across different regression approaches.
+Returns a summary table with evaluation metrics (AIC, BIC, log-likelihood, deviance) and the best model.
 }

@@ -14,27 +14,28 @@ save_plot(
 )
 }
 \arguments{
-\item{plot}{A ggplot object.}
+\item{plot}{A `ggplot2` object.}
 
-\item{filename}{File name (with or without extension).}
+\item{filename}{Name of the file to save, with or without extension.}
 
-\item{format}{One of `"png"`, `"pdf"`, or `"jpg"`.}
+\item{format}{Output format. One of `"png"`, `"pdf"`, or `"jpg"`.}
 
-\item{width}{Width of the plot in inches.}
+\item{width}{Width of the saved plot in inches.}
 
-\item{height}{Height of the plot in inches.}
+\item{height}{Height of the saved plot in inches.}
 
-\item{dpi}{Resolution of the plot (default is 300).}
+\item{dpi}{Resolution of the plot in dots per inch (default is 300).}
 }
 \value{
-A saved plot file in the working directory.
+Saves the file to the current working directory. No object is returned.
 }
 \description{
-Save a ggplot object as PNG, PDF, or JPG.
+Saves a `ggplot2` plot to a file in PNG, PDF, or JPG format.
 }
 \examples{
 \dontrun{
-p <- ggplot2::ggplot(mtcars, ggplot2::aes(x = wt, y = mpg)) + ggplot2::geom_point()
-save_plot(p, filename = "scatterplot", format = "png")
+library(ggplot2)
+p <- ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
+save_plot(p, filename = "scatterplot", format = "png", width = 6, height = 4)
 }
 }

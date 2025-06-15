@@ -1,13 +1,44 @@
 #' Multivariable Negative Binomial Regression (Adjusted IRRs)
 #'
-#' Calculates adjusted incidence rate ratios (IRRs) using Negative Binomial Regression.
+#' Performs multivariable negative binomial regression using all specified exposures on a count outcome.
+#' Returns a publication-ready regression table with adjusted incidence rate ratios (IRRs) using `gtsummary`.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome The name of the count outcome variable.
-#' @param exposures A vector of predictor variables.
+#' @param outcome A character string specifying the name of the count outcome variable.
+#' @param exposures A character vector specifying the predictor (exposure) variables.
 #'
-#' @return A `gtsummary::tbl_regression` object with exponentiated estimates labeled as Adjusted IRRs,
-#' along with `$models`, `$model_summaries`, and `$table`.
+#' @return An object of class `multi_reg_nbin`, which includes:
+#' - A `gtsummary::tbl_regression` object with exponentiated IRRs,
+#' - The fitted model object accessible via `$models`,
+#' - A tidy model summary via `$model_summaries`,
+#' - The regression table via `$table`.
+#'
+#' @section Accessors:
+#' \describe{
+#'   \item{\code{$models}}{Fitted negative binomial model object (class `negbin`).}
+#'   \item{\code{$model_summaries}}{Tidy summary table of model estimates.}
+#'   \item{\code{$table}}{Formatted `gtsummary` regression table with adjusted IRRs.}
+#' }
+#'
+#' @seealso [uni_reg_nbin()], [plot_reg()], [check_dispersion()]
+#'
+#' @examples
+#' set.seed(2025)
+#' dummy_data <- data.frame(
+#'   events = MASS::rnegbin(300, mu = 3, theta = 1),
+#'   exposure = factor(sample(c("Low", "Medium", "High"), 300, replace = TRUE)),
+#'   gender = factor(sample(c("Male", "Female"), 300, replace = TRUE))
+#' )
+#'
+#' result <- multi_reg_nbin(
+#'   data = dummy_data,
+#'   outcome = "events",
+#'   exposures = c("exposure", "gender")
+#' )
+#' result$table
+#'
+#' @importFrom MASS glm.nb
+#' @importFrom broom tidy
 #' @export
 multi_reg_nbin <- function(data, outcome, exposures) {
   `%>%` <- magrittr::`%>%`

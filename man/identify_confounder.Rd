@@ -2,7 +2,7 @@
 % Please edit documentation in R/identify_confounder.R
 \name{identify_confounder}
 \alias{identify_confounder}
-\title{Identify Confounder Using Change-in-Estimate Method}
+\title{Identify Confounders Using the Change-in-Estimate Method}
 \usage{
 identify_confounder(
   data,
@@ -14,25 +14,38 @@ identify_confounder(
 )
 }
 \arguments{
-\item{data}{A data frame.}
+\item{data}{A data frame containing the variables.}
 
-\item{outcome}{The name of the outcome variable (binary, count, or continuous depending on approach).}
+\item{outcome}{The name of the outcome variable (binary, count, or continuous, depending on approach).}
 
-\item{exposure}{The name of the exposure variable.}
+\item{exposure}{The name of the main exposure variable to test.}
 
-\item{potential_confounder}{One or more covariates to test as potential confounders.}
+\item{potential_confounder}{A character vector of one or more variables to test as potential confounders.}
 
-\item{approach}{Regression approach: one of "logit", "log-binomial", "poisson", "negbin", "linear", "robpoisson"}
+\item{approach}{The regression modeling approach. One of:
+\code{"logit"} (logistic), \code{"log-binomial"}, \code{"poisson"},
+\code{"negbin"} (negative binomial), \code{"robpoisson"}, or \code{"linear"}.}
 
-\item{threshold}{Numeric value specifying the percentage change in effect size considered meaningful for confounding (default is 10).}
+\item{threshold}{A numeric value specifying the percent change in the estimate (default is 10).
+If the absolute percent change from the crude to adjusted estimate exceeds this threshold,
+the variable is flagged as a confounder.}
 }
 \value{
-A tibble or list containing crude and adjusted estimates, percent change,
-and an indicator of confounding.
+A `tibble` summarizing:
+\itemize{
+  \item Crude effect estimate (e.g., OR, RR, IRR, Beta)
+  \item Adjusted effect estimate (after including each potential confounder)
+  \item Percent change in estimate
+  \item Confounder flag (TRUE/FALSE)
+}
 }
 \description{
-Estimates the crude and adjusted effect of an exposure on an outcome,
-then checks for confounding using the change-in-estimate method.
-Supports multiple regression approaches including logit, log-binomial,
+This function evaluates whether one or more variables are confounders of the relationship between
+an exposure and outcome by comparing crude and adjusted effect estimates.
+A variable is considered a confounder if inclusion in the model changes the effect size
+by more than a specified threshold (default: 10%).
+}
+\details{
+Supports multiple regression approaches including logistic, log-binomial,
 Poisson, negative binomial, robust Poisson, and linear regression.
 }

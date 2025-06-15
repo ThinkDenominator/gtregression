@@ -1,20 +1,23 @@
-#' Visualize a Regression Model (Forest Plot)
+#' Visualize a Regression Model as a Forest Plot
 #'
-#' Handles both univariate and multivariate models with hierarchical labels.
+#' Creates a forest plot from a `gtsummary` object. Supports both univariate and multivariable models
+#' with hierarchical labels for categorical variables. Designed to work seamlessly with outputs from
+#' functions like `uni_reg()` and `multi_reg()`.
 #'
-#' @param tbl A gtsummary object (from uni_reg, multi_reg, etc.).
-#' @param title Optional title.
-#' @param ref_line Reference line (default = 1).
-#' @param order_y Optional character vector for custom y-axis header order.
-#' @param log_x Logical. Log-transform the x-axis (default = FALSE).
-#' @param xlim Optional x-axis limits.
-#' @param breaks Optional x-axis breaks.
-#' @param point_color Point color.
-#' @param errorbar_color Error bar color.
-#' @param base_size Font size.
-#' @param show_ref Logical. Whether to show reference categories. Default is TRUE.
+#' @param tbl A `gtsummary` object from regression functions (e.g., `uni_reg`, `multi_reg`).
+#' @param title Optional plot title (character).
+#' @param ref_line Numeric value for the reference line (default = 1).
+#' @param order_y Optional character vector specifying the custom order of the y-axis labels.
+#' @param log_x Logical. If `TRUE`, uses a logarithmic x-axis (default = FALSE).
+#' @param xlim Optional numeric vector specifying x-axis limits (e.g., `c(0.1, 10)`).
+#' @param breaks Optional numeric vector for x-axis tick breaks.
+#' @param point_color Color of the points (default is automatic).
+#' @param errorbar_color Color of the error bars (default is automatic).
+#' @param base_size Base font size for text elements.
+#' @param show_ref Logical. If `TRUE`, includes reference categories in the plot (default = TRUE).
 #'
-#' @return A ggplot2 object.
+#' @return A `ggplot2` object representing the forest plot.
+#'
 #' @export
 #' @importFrom dplyr mutate case_when filter row_number arrange if_else
 #' @importFrom tidyr fill
@@ -22,6 +25,14 @@
 #'   scale_y_discrete labs theme_minimal element_blank element_text margin
 #'   coord_cartesian scale_x_continuous scale_x_log10
 #' @importFrom ggtext element_markdown
+#'
+#' @examples
+#' \dontrun{
+#' library(gtregression)
+#' result <- uni_reg(data = mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
+#' plot_reg(result)
+#' }
+
 plot_reg <- function(tbl,
                      title = NULL,
                      ref_line = 1,
@@ -64,7 +75,7 @@ plot_reg <- function(tbl,
   df <- dplyr::mutate(df,
                       is_header = is.na(.data$reference_row),
                       label_clean = dplyr::case_when(
-                        is_header ~ paste0("**", .data$variable, "**"),
+                        is_header ~ paste0("**", .data$label, "**"),
                         .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
                         !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
                         TRUE ~ NA_character_
@@ -76,7 +87,7 @@ plot_reg <- function(tbl,
   if (!is.null(order_y)) {
     df <- dplyr::mutate(df,
                         header_order = dplyr::case_when(
-                          .data$is_header ~ match(.data$variable, order_y),
+                          .data$is_header ~ match(.data$label, order_y),
                           TRUE ~ NA_real_
                         )
     )

@@ -9,20 +9,51 @@ stratified_uni_reg(data, outcome, exposures, stratifier, approach = "logit")
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The name of the outcome variable.}
+\item{outcome}{A character string specifying the name of the outcome variable.}
 
-\item{exposures}{A character vector of predictor variables.}
+\item{exposures}{A character vector specifying the predictor (exposure) variables.}
 
-\item{stratifier}{The name of the variable to stratify results by.}
+\item{stratifier}{A character string specifying the variable by which to stratify the data.}
 
 \item{approach}{Modeling approach to use. One of:
-`"logit"`, `"log-binomial"`, `"poisson"`, `"robpoisson"`, `"linear"`}
+`"logit"` (Odds Ratios), `"log-binomial"` (Risk Ratios),
+`"poisson"` (Incidence Rate Ratios), `"robpoisson"` (Robust RR), `"linear"` (Beta coefficients).}
 }
 \value{
-A `stratified_uni_reg` object with components:
-  `table`, `models`, `model_summaries`, `reg_check`
+An object of class `stratified_uni_reg`, which includes:
+- `table`: A `gtsummary::tbl_stack` object with stratified results,
+- `models`: A list of fitted models for each stratum,
+- `model_summaries`: A tidy list of model summaries,
+- `reg_check`: A tibble of regression diagnostics (when available).
 }
 \description{
 Performs univariate regression for each exposure on a binary, count, or continuous outcome,
-stratified by a specified variable. Produces one column per stratum.
+stratified by a specified variable. Produces a stacked `gtsummary` table with one column per stratum,
+along with underlying models and diagnostics.
+}
+\section{Accessors}{
+
+\describe{
+  \item{\code{$table}}{Stacked stratified regression table.}
+  \item{\code{$models}}{List of fitted model objects for each stratum.}
+  \item{\code{$model_summaries}}{List of tidy model summaries.}
+  \item{\code{$reg_check}}{Diagnostic check results (when applicable).}
+}
+}
+
+\examples{
+data(PimaIndiansDiabetes2, package = "mlbench")
+pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = ifelse(diabetes == "pos", 1, 0))
+stratified_uni <- stratified_uni_reg(
+  data = pima,
+  outcome = "diabetes",
+  exposures = c("age", "mass"),
+  stratifier = "glucose",
+  approach = "logit"
+)
+stratified_uni$table
+
+}
+\seealso{
+[multi_reg()], [plot_reg()], [identify_confounder()]
 }

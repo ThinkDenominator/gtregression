@@ -44,38 +44,35 @@ open-source resources for impactful and equitable research globally.
 
 ## Installation
 
-\`\`\`r
-
-\# Install from GitHub
-
-devtools::install_github(“drrubesh/gtregression”)
-
-\`\`\`
+``` r
+# Install from GitHub
+devtools::install_github("drrubesh/gtregression")
+```
 
 ## Quick Start
 
-\`\`\`r
-
+``` r
 library(gtregression)
 
 ## Logistic regression
-
-data(PimaIndiansDiabetes2, package = “mlbench”)  
-  
-multi_reg( data = PimaIndiansDiabetes2,  
-outcome = “diabetes”,  
-exposures = c(“age”, “mass”, “glucose”), approach = “logit” )
+data(PimaIndiansDiabetes2, package = "mlbench")
+multi_reg(
+  data = PimaIndiansDiabetes2,
+  outcome = "diabetes",
+  exposures = c("age", "mass", "glucose"),
+  approach = "logit"
+)
 
 ## Negative binomial regression
+data(epil, package = "MASS")
+multi_reg_nbin(
+  data = epil,
+  outcome = "y",
+  exposures = c("trt", "base", "age")
+)
+```
 
-data(epil, package = “MASS”)  
-  
-multi_reg_nbin( data = epil, outcome = “y”, exposures = c(“trt”, “base”,
-“age”) )
-
-\`\`\`
-
-# Key Functions
+## Key Functions
 
 | Function Name             | Purpose                                        |
 |---------------------------|------------------------------------------------|
@@ -97,23 +94,42 @@ multi_reg_nbin( data = epil, outcome = “y”, exposures = c(“trt”, “base
 We welcome issues, feature requests, and pull requests.
 
 1.  Fork the repository
-
-2.  Create a new branch: git checkout -b feature/my-feature
-
-3.  Commit your changes: git commit -m “Add feature”
-
-4.  Push to GitHub: git push origin feature/my-feature
-
+2.  Create a new branch: `git checkout -b feature/my-feature`
+3.  Commit your changes: `git commit -m "Add feature"`
+4.  Push to GitHub: `git push origin feature/my-feature`
 5.  Open a Pull Request
 
 ## Authors
 
-Rubeshkumar Polani Chandrasekar — @drrubesh
+The `gtregression` package is developed and maintained by a
+collaborative team committed to making regression modeling accessible,
+especially for public health professionals and researchers in LMICs.
 
-Yuvaraj Krishnamoorthy
+- **Rubeshkumar Polani Chandrasekar**  
+  <rubesh.pc@gmail.com>  
+  ORCID: [0000-0002-0418-7592](https://orcid.org/0000-0002-0418-7592)  
+  *Creator and Author*
 
-Marie Gilbert Majella
+- **Salin K Eliyas**  
+  <salins13@gmail.com>  
+  ORCID: [0000-0002-8020-5860](https://orcid.org/0000-0002-8020-5860)  
+  *Author*
 
-License MIT License. See LICENSE for details.
+- **Manikandanesan Sakthivel**  
+  <nesanmbbs@gmail.com>  
+  ORCID: [0000-0002-5438-3970](https://orcid.org/0000-0002-5438-3970)  
+  *Author*
 
-------------------------------------------------------------------------
+- **Yuvaraj Krishnamoorthy**  
+  <yuvaraj@propulevidence.org>  
+  ORCID: [0000-0003-4688-510X](https://orcid.org/0000-0003-4688-510X)  
+  *Author*
+
+- **Marie Gilbert Majella**  
+  <gilbert2691@gmail.com>  
+  ORCID: [0000-0003-4036-5162](https://orcid.org/0000-0003-4036-5162)  
+  *Author*
+
+## License
+
+MIT License. See LICENSE for details.

@@ -9,18 +9,50 @@ stratified_multi_reg(data, outcome, exposures, stratifier, approach = "logit")
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The outcome variable (binary, count, or continuous).}
+\item{outcome}{A character string specifying the name of the outcome variable.}
 
-\item{exposures}{A character vector of exposure variables.}
+\item{exposures}{A character vector specifying the predictor (exposure) variables.}
 
-\item{stratifier}{A categorical variable to stratify the data by.}
+\item{stratifier}{A character string specifying the stratifying variable.}
 
-\item{approach}{The modeling approach ("logit", "robpoisson", "poisson", "log-binomial", "linear").}
+\item{approach}{Modeling approach to use. One of:
+`"logit"` (Adjusted Odds Ratios), `"log-binomial"` (Adjusted Risk Ratios),
+`"poisson"` (Adjusted IRRs), `"robpoisson"` (Robust RRs), or `"linear"` (Beta coefficients).}
 }
 \value{
-A stratified_multi_reg object with components: table, models, model_summaries, and reg_check.
+An object of class `stratified_multi_reg`, which includes:
+- `table`: A `gtsummary::tbl_stack` object of regression tables by stratum,
+- `models`: A named list of model objects for each stratum,
+- `model_summaries`: A list of tidy model summaries,
+- `reg_check`: Diagnostics results (if available for the model type).
 }
 \description{
-Performs multivariable regression of exposures on outcome,
-stratified by a specified variable. NAs in the stratifier are excluded.
+Performs multivariable regression with multiple exposures on a binary, count, or continuous outcome,
+stratified by a specified variable. NA values in the stratifier are excluded from analysis.
+}
+\section{Accessors}{
+
+\describe{
+  \item{\code{$table}}{Stacked table of stratified regression outputs.}
+  \item{\code{$models}}{Named list of fitted models per stratum.}
+  \item{\code{$model_summaries}}{Tidy summaries for each model.}
+  \item{\code{$reg_check}}{Regression diagnostic checks (when applicable).}
+}
+}
+
+\examples{
+data(PimaIndiansDiabetes2, package = "mlbench")
+pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = ifelse(diabetes == "pos", 1, 0))
+stratified_multi <- stratified_multi_reg(
+  data = pima,
+  outcome = "diabetes",
+  exposures = c("age", "mass"),
+  stratifier = "glucose",
+  approach = "logit"
+)
+stratified_multi$table
+
+}
+\seealso{
+[multi_reg()], [stratified_uni_reg()], [plot_reg()]
 }

@@ -23,33 +23,47 @@ plot_reg_combine(
 )
 }
 \arguments{
-\item{tbl_uni}{A `gtsummary` object from `uni_reg()` or similar.}
+\item{tbl_uni}{A `gtsummary` object from `uni_reg()` or similar univariate model function.}
 
-\item{tbl_multi}{A `gtsummary` object from `multi_reg()` or similar.}
+\item{tbl_multi}{A `gtsummary` object from `multi_reg()` or similar multivariable model function.}
 
-\item{title_uni}{Optional title for univariate plot.}
+\item{title_uni}{Optional plot title for the univariate model (character).}
 
-\item{title_multi}{Optional title for multivariate plot.}
+\item{title_multi}{Optional plot title for the multivariable model (character).}
 
-\item{ref_line}{Reference line (default = 1).}
+\item{ref_line}{Numeric value for the reference line (default = 1).}
 
-\item{order_y}{Optional character vector for custom y-axis header order.}
+\item{order_y}{Optional character vector to manually order the y-axis labels.}
 
-\item{log_x}{Logical. Log-transform x-axis (default = FALSE).}
+\item{log_x}{Logical. If `TRUE`, x-axis is log-transformed (default = FALSE).}
 
-\item{point_color}{Point color.}
+\item{point_color}{Optional color for plot points.}
 
-\item{errorbar_color}{Error bar color.}
+\item{errorbar_color}{Optional color for error bars.}
 
-\item{base_size}{Font size.}
+\item{base_size}{Numeric. Base font size for plot text elements.}
 
-\item{show_ref}{Logical. Whether to show reference categories. Default is TRUE.}
+\item{show_ref}{Logical. If `TRUE`, includes reference categories in the plots (default = TRUE).}
 
-\item{xlim_uni, breaks_uni, xlim_multi, breaks_multi}{Axis customizations.}
+\item{xlim_uni}{Optional numeric vector to set x-axis limits for univariate plot.}
+
+\item{breaks_uni}{Optional numeric vector to set x-axis breaks for univariate plot.}
+
+\item{xlim_multi}{Optional numeric vector to set x-axis limits for multivariable plot.}
+
+\item{breaks_multi}{Optional numeric vector to set x-axis breaks for multivariable plot.}
 }
 \value{
-A combined `ggplot` object.
+A combined `ggplot2` object with two forest plots displayed side-by-side.
 }
 \description{
-Creates side-by-side forest plots from univariate and multivariate gtsummary objects.
+Generates side-by-side forest plots to compare univariate and multivariable regression results.
+Accepts `gtsummary` objects as input and returns a combined `ggplot2` object using the `patchwork` package.
+}
+\examples{
+\dontrun{
+result_uni <- uni_reg(mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
+result_multi <- multi_reg(mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
+plot_reg_combine(tbl_uni = result_uni, tbl_multi = result_multi)
+}
 }

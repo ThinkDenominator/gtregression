@@ -1,13 +1,40 @@
 #' Univariate Negative Binomial Regression
 #'
-#' Fits negative binomial regression models for each exposure on a count outcome.
-#' Returns a publication-ready stacked table using `gtsummary`.
+#' Performs univariate negative binomial regression for each specified exposure on a count outcome.
+#' Returns a publication-ready stacked regression table using `gtsummary`, with incidence rate ratios (IRRs) and confidence intervals.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome The name of the count outcome variable.
-#' @param exposures A vector of predictor variables.
+#' @param outcome The name of the count outcome variable (character).
+#' @param exposures A character vector of predictor variables.
 #'
-#' @return A `gtsummary::tbl_stack` object of exponentiated unadjusted IRRs with `$models`, `$model_summaries`, and `$table` accessors.
+#' @return An object of class `uni_reg_nbin`, which includes:
+#' - A `gtsummary::tbl_stack` object with exponentiated IRRs,
+#' - A list of model objects accessible via `$models`,
+#' - Tidy summaries of models via `$model_summaries`,
+#' - The stacked table via `$table`.
+#'
+#' @section Accessors:
+#' \describe{
+#'   \item{\code{$models}}{List of fitted negative binomial model objects.}
+#'   \item{\code{$model_summaries}}{A tibble of tidy model summaries.}
+#'   \item{\code{$table}}{A `gtsummary::tbl_stack` object of unadjusted IRRs.}
+#' }
+#'
+#' @seealso [multi_reg_nbin()], [plot_reg()], [check_dispersion()]
+#'
+#' @examples
+#' set.seed(123)
+#' dummy_data <- data.frame(
+#'   y = MASS::rnegbin(200, mu = 3, theta = 1.2),
+#'   x1 = sample(c("Low", "Medium", "High"), 200, replace = TRUE),
+#'   x2 = sample(c("Yes", "No"), 200, replace = TRUE)
+#' )
+#'
+#' result <- uni_reg_nbin(data = dummy_data, outcome = "y", exposures = c("x1", "x2"))
+#' result$table
+#'
+#' @importFrom broom tidy
+#' @importFrom MASS glm.nb
 #' @export
 uni_reg_nbin <- function(data, outcome, exposures) {
   `%>%` <- magrittr::`%>%`

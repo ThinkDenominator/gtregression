@@ -17,21 +17,31 @@ uni_reg(data, outcome, exposures, approach = "logit")
 `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
 `"robpoisson"` (RR), `"linear"` (Beta coefficients)}
 }
-\value{
-A `gtsummary::tbl_stack` object of exponentiated unadjusted estimates- publication ready tables
-}
 \description{
 Performs univariate regression for each exposure on a binary, continuous, or count outcome.
 Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR), or Incidence Rate Ratios (IRR).
 }
 \details{
 This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `risks`.
+#' @return A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
+\itemize{
+  \item A publication-ready regression table (`tbl_stack`)
+  \item Accessor elements:
+    \itemize{
+      \item `$models`: Fitted regression models for each exposure
+      \item `$model_summaries`: Tidy model summaries
+      \item `$reg_check`: Diagnostics (only for linear regression)
+    }
 }
-\section{Accessors}{
-
-\describe{
-  \item{\code{$models}}{Extracts the underlying model objects.}
-  \item{\code{$model_summaries}}{Extracts tidy summaries for each model.}
 }
+\examples{
+data(PimaIndiansDiabetes2, package = "mlbench")
+library(dplyr)
+pima <- PimaIndiansDiabetes2 \%>\%
+  dplyr::mutate(diabetes = ifelse(diabetes == "pos", 1, 0))
+uni_reg(pima, outcome = "diabetes", exposures = "age", approach = "logit")
 }
-
+\seealso{
+\code{\link{multi_reg}}, \code{\link{plot_reg}}
+}
+\concept{regression functions}

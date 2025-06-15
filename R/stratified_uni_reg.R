@@ -1,18 +1,50 @@
 #' Stratified Univariate Regression (Odds, Risk, or Rate Ratios)
 #'
 #' Performs univariate regression for each exposure on a binary, count, or continuous outcome,
-#' stratified by a specified variable. Produces one column per stratum.
+#' stratified by a specified variable. Produces a stacked `gtsummary` table with one column per stratum,
+#' along with underlying models and diagnostics.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome The name of the outcome variable.
-#' @param exposures A character vector of predictor variables.
-#' @param stratifier The name of the variable to stratify results by.
+#' @param outcome A character string specifying the name of the outcome variable.
+#' @param exposures A character vector specifying the predictor (exposure) variables.
+#' @param stratifier A character string specifying the variable by which to stratify the data.
 #' @param approach Modeling approach to use. One of:
-#'   `"logit"`, `"log-binomial"`, `"poisson"`, `"robpoisson"`, `"linear"`
+#'   `"logit"` (Odds Ratios), `"log-binomial"` (Risk Ratios),
+#'   `"poisson"` (Incidence Rate Ratios), `"robpoisson"` (Robust RR), `"linear"` (Beta coefficients).
 #'
-#' @return A `stratified_uni_reg` object with components:
-#'   `table`, `models`, `model_summaries`, `reg_check`
+#' @return An object of class `stratified_uni_reg`, which includes:
+#' - `table`: A `gtsummary::tbl_stack` object with stratified results,
+#' - `models`: A list of fitted models for each stratum,
+#' - `model_summaries`: A tidy list of model summaries,
+#' - `reg_check`: A tibble of regression diagnostics (when available).
+#'
+#' @section Accessors:
+#' \describe{
+#'   \item{\code{$table}}{Stacked stratified regression table.}
+#'   \item{\code{$models}}{List of fitted model objects for each stratum.}
+#'   \item{\code{$model_summaries}}{List of tidy model summaries.}
+#'   \item{\code{$reg_check}}{Diagnostic check results (when applicable).}
+#' }
+#'
+#' @seealso [multi_reg()], [plot_reg()], [identify_confounder()]
+#'
+#' @examples
+#' data(PimaIndiansDiabetes2, package = "mlbench")
+#' pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = ifelse(diabetes == "pos", 1, 0))
+#' stratified_uni <- stratified_uni_reg(
+#'   data = pima,
+#'   outcome = "diabetes",
+#'   exposures = c("age", "mass"),
+#'   stratifier = "glucose",
+#'   approach = "logit"
+#' )
+#' stratified_uni$table
+#'
+#' @importFrom purrr map
+#' @importFrom broom tidy
+#' @importFrom gtsummary tbl_stack
 #' @export
+
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit") {
   `%>%` <- magrittr::`%>%`
@@ -31,7 +63,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
     (is.factor(x) && length(levels(x)) == 2)
   is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
+  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
 
   if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
     stop("Binary outcome required for approach: ", approach)

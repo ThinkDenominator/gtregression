@@ -1,24 +1,38 @@
-#' Identify Confounder Using Change-in-Estimate Method
+#' Identify Confounders Using the Change-in-Estimate Method
 #'
-#' Estimates the crude and adjusted effect of an exposure on an outcome,
-#' then checks for confounding using the change-in-estimate method.
-#' Supports multiple regression approaches including logit, log-binomial,
+#' This function evaluates whether one or more variables are confounders of the relationship between
+#' an exposure and outcome by comparing crude and adjusted effect estimates.
+#' A variable is considered a confounder if inclusion in the model changes the effect size
+#' by more than a specified threshold (default: 10%).
+#'
+#' Supports multiple regression approaches including logistic, log-binomial,
 #' Poisson, negative binomial, robust Poisson, and linear regression.
 #'
-#' @param data A data frame.
-#' @param outcome The name of the outcome variable (binary, count, or continuous depending on approach).
-#' @param exposure The name of the exposure variable.
-#' @param potential_confounder One or more covariates to test as potential confounders.
-#' @param approach Regression approach: one of "logit", "log-binomial", "poisson", "negbin", "linear", "robpoisson"
-#' @param threshold Numeric value specifying the percentage change in effect size considered meaningful for confounding (default is 10).
+#' @param data A data frame containing the variables.
+#' @param outcome The name of the outcome variable (binary, count, or continuous, depending on approach).
+#' @param exposure The name of the main exposure variable to test.
+#' @param potential_confounder A character vector of one or more variables to test as potential confounders.
+#' @param approach The regression modeling approach. One of:
+#'   \code{"logit"} (logistic), \code{"log-binomial"}, \code{"poisson"},
+#'   \code{"negbin"} (negative binomial), \code{"robpoisson"}, or \code{"linear"}.
+#' @param threshold A numeric value specifying the percent change in the estimate (default is 10).
+#' If the absolute percent change from the crude to adjusted estimate exceeds this threshold,
+#' the variable is flagged as a confounder.
 #'
-#' @return A tibble or list containing crude and adjusted estimates, percent change,
-#' and an indicator of confounding.
-#' @export
+#' @return A `tibble` summarizing:
+#' \itemize{
+#'   \item Crude effect estimate (e.g., OR, RR, IRR, Beta)
+#'   \item Adjusted effect estimate (after including each potential confounder)
+#'   \item Percent change in estimate
+#'   \item Confounder flag (TRUE/FALSE)
+#' }
+#'
 #' @importFrom stats glm binomial poisson lm coef as.formula
 #' @importFrom MASS glm.nb
 #' @importFrom tibble tibble
 #' @importFrom dplyr bind_rows
+#' @export
+
 identify_confounder <- function(data, outcome, exposure, potential_confounder,
                                 approach = "logit", threshold = 10) {
   outcome_vec <- data[[outcome]]
@@ -31,15 +45,15 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
     is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) && length(unique(x[!is.na(x)])) > 2
   }
   is_continuous <- function(x) {
-    is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
+    is.numeric(x) && length(unique(x)) > 10
   }
 
   # Validate outcome
   if (approach %in% c("logit", "log-binomial", "robpoisson")) {
     if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
   }
-  if (approach == "poisson" && (!is_count(outcome_vec) || is_binary(outcome_vec))) {
-    stop("Poisson requires a count outcome.")
+  if (approach == "poisson"&& !is_count(outcome_vec)) {
+    stop("Count outcome required for Poisson regression.")
   }
   if (approach == "negbin" && !is_count(outcome_vec)) {
     stop("Negative binomial requires a count outcome.")

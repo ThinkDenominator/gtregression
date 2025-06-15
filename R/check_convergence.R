@@ -1,19 +1,43 @@
-#' Check Convergence for a Specific Regression Approach
+#' Check Convergence for a Regression Model
 #'
-#' This function checks convergence status and maximum predicted probability
-#' for each exposure (univariate) or combined exposures (multivariate)
-#' using a specified regression approach.
+#' Assesses model convergence and provides diagnostics (such as maximum predicted probability)
+#' for each exposure (in univariate mode) or for the full model (in multivariable mode),
+#' depending on the regression approach used.
 #'
-#' @param data A data frame.
-#' @param exposures A character vector of predictor variables.
-#' @param outcome The name of the outcome variable.
-#' @param approach Regression approach: one of "logit", "log-binomial", "poisson",
-#' "robpoisson" or "negbin".
-#' @param multivariate Logical. If TRUE, checks convergence for a multivariate model.
+#' @param data A data frame containing the dataset.
+#' @param exposures A character vector of predictor variable names. If \code{multivariate = FALSE},
+#'   each exposure is assessed separately; otherwise, a combined model is evaluated.
+#' @param outcome A character string specifying the outcome variable.
+#' @param approach A character string specifying the regression approach. One of:
+#'   \code{"logit"}, \code{"log-binomial"}, \code{"poisson"}, \code{"robpoisson"}, or \code{"negbin"}.
+#' @param multivariate Logical. If \code{TRUE}, checks convergence for a multivariable model;
+#'   otherwise, performs checks for each univariate model.
 #'
-#' @return A data frame with columns: Exposure, Model, Converged, Max.prob.
-#' @details For `robpoisson`, predicted probabilities may occasionally exceed 1. These are valid for estimating risk ratios but should not be interpreted as actual probabilities.
+#' @return A data frame summarizing convergence diagnostics, including:
+#' \describe{
+#'   \item{\code{Exposure}}{Name of the exposure variable (or "Combined" for multivariate models).}
+#'   \item{\code{Model}}{The regression approach used.}
+#'   \item{\code{Converged}}{\code{TRUE} if the model converged successfully; \code{FALSE} otherwise.}
+#'   \item{\code{Max.prob}}{Maximum predicted probability or fitted value in the dataset.}
+#' }
+#'
+#' @details
+#' For \code{robpoisson}, predicted probabilities (fitted values) may exceed 1,
+#' which is acceptable when estimating risk ratios but should not be interpreted
+#' as actual probabilities.
+#'
+#' This function is useful for identifying convergence issues, especially for
+#' \code{"log-binomial"} models, which often fail to converge with certain data structures.
+#'
+#' @seealso [uni_reg()], [multi_reg()], [identify_confounder()],  [interaction_models()]
+#'
+#' @examples
+#' data(mtcars)
+#' mtcars$am <- as.factor(mtcars$am)
+#' check_convergence(mtcars, outcome = "am", exposures = c("hp", "mpg"), approach = "logit")
+#'
 #' @export
+
 check_convergence <- function(data, exposures, outcome, approach = "logit", multivariate = FALSE) {
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "negbin")
   if (!approach %in% valid_approaches) {

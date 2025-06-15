@@ -12,12 +12,24 @@
 #' @importFrom magrittr %>%
 #' @importFrom broom tidy
 #' @details This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `risks`.
-#' @return A `gtsummary::tbl_stack` object of exponentiated unadjusted estimates- publication ready tables
-#' @section Accessors:
-#' \describe{
-#'   \item{\code{$models}}{Extracts the underlying model objects.}
-#'   \item{\code{$model_summaries}}{Extracts tidy summaries for each model.}
+#' #' @return A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
+#' \itemize{
+#'   \item A publication-ready regression table (`tbl_stack`)
+#'   \item Accessor elements:
+#'     \itemize{
+#'       \item `$models`: Fitted regression models for each exposure
+#'       \item `$model_summaries`: Tidy model summaries
+#'       \item `$reg_check`: Diagnostics (only for linear regression)
+#'     }
 #' }
+#' @examples
+#' data(PimaIndiansDiabetes2, package = "mlbench")
+#' library(dplyr)
+#' pima <- PimaIndiansDiabetes2 %>%
+#'   dplyr::mutate(diabetes = ifelse(diabetes == "pos", 1, 0))
+#' uni_reg(pima, outcome = "diabetes", exposures = "age", approach = "logit")
+#' @seealso \code{\link{multi_reg}}, \code{\link{plot_reg}}
+#' @family regression functions
 #' @export
 uni_reg <- function(data,
                     outcome,
@@ -55,7 +67,7 @@ uni_reg <- function(data,
 
   is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
 
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
+  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
 
   if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
     stop("Binary outcome required for the selected approach: ", approach)

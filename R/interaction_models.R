@@ -1,19 +1,33 @@
-#' Compare models with and without interaction term
+#' Compare Models With and Without Interaction Term
 #'
-#' This function compares two models: one with and one without an interaction term to evaluate whether the interaction between exposure and a potential effect modifier
-#' significantly improves model fit.
+#' This function fits two models—one with and one without an interaction term between an exposure and a potential effect modifier—
+#' and compares them using either a likelihood ratio test (LRT) or Wald test.
+#' It is useful for assessing whether there is statistical evidence of interaction (effect modification).
 #'
-#' @param data A data frame.
-#' @param outcome Outcome variable (binary, count, or continuous).
-#' @param exposure Main exposure variable (must be length 1).
-#' @param covariates Optional vector of adjustment variables (default = NULL).
-#' @param effect_modifier Variable to test for interaction with the exposure.
-#' @param approach Modeling approach: "logit", "log-binomial", "poisson", "robpoisson", "negbin", "linear".
-#' @param test Test for model comparison: "LRT" (default) or "Wald".
-#' @param verbose Logical, whether to print interpretation.
+#' @param data A data frame containing all required variables.
+#' @param outcome The name of the outcome variable (binary, count, or continuous depending on the approach).
+#' @param exposure The name of the main exposure variable. Must be a single variable.
+#' @param covariates Optional character vector of additional covariates to adjust for (default = \code{NULL}).
+#' @param effect_modifier The name of the variable to test for interaction with the exposure.
+#' @param approach The regression modeling approach to use. One of:
+#'   \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+#'   \code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.
+#' @param test Type of statistical test for model comparison. Either:
+#'   \code{"LRT"} (likelihood ratio test, default) or \code{"Wald"} (test for interaction term coefficient).
+#' @param verbose Logical; if \code{TRUE}, prints a basic interpretation of whether interaction is likely present (default = \code{FALSE}).
 #'
-#' @return A list of model objects, p-value, and interpretation.
+#' @return A list with the following elements:
+#' \itemize{
+#'   \item \code{model_no_interaction}: The model without the interaction term.
+#'   \item \code{model_with_interaction}: The model with the interaction term.
+#'   \item \code{p_value}: The p-value for interaction (based on selected test).
+#'   \item \code{interpretation}: A brief text interpretation if \code{verbose = TRUE}.
+#' }
+#'
+#' @importFrom stats glm anova coef as.formula
+#' @importFrom MASS glm.nb
 #' @export
+
 interaction_models <- function(data, outcome, exposure, covariates = NULL,
                                effect_modifier, approach = "logit", test = c("LRT", "Wald"),
                                verbose = TRUE) {
@@ -26,14 +40,13 @@ interaction_models <- function(data, outcome, exposure, covariates = NULL,
   outcome_vec <- data[[outcome]]
   is_binary <- function(x) is.factor(x) && length(levels(x)) == 2 || is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)
   is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) && length(unique(x[!is.na(x)])) > 2
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
+  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
 
   if (approach %in% c("logit", "log-binomial", "robpoisson")) {
     if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
   }
-  if (approach == "poisson") {
-    if (is_binary(outcome_vec)) stop("Poisson regression is not appropriate for binary outcomes.")
-    if (!is_count(outcome_vec)) stop("Poisson requires a count outcome.")
+  if (approach == "poisson"&& !is_count(outcome_vec)) {
+    stop("Count outcome required for Poisson regression.")
   }
   if (approach == "negbin") {
     if (!is_count(outcome_vec)) stop("Negative binomial requires a count outcome.")

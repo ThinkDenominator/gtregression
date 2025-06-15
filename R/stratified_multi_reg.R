@@ -1,15 +1,48 @@
 #' Stratified Multivariable Regression (Adjusted OR, RR, IRR, or Beta)
 #'
-#' Performs multivariable regression of exposures on outcome,
-#' stratified by a specified variable. NAs in the stratifier are excluded.
+#' Performs multivariable regression with multiple exposures on a binary, count, or continuous outcome,
+#' stratified by a specified variable. NA values in the stratifier are excluded from analysis.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome The outcome variable (binary, count, or continuous).
-#' @param exposures A character vector of exposure variables.
-#' @param stratifier A categorical variable to stratify the data by.
-#' @param approach The modeling approach ("logit", "robpoisson", "poisson", "log-binomial", "linear").
+#' @param outcome A character string specifying the name of the outcome variable.
+#' @param exposures A character vector specifying the predictor (exposure) variables.
+#' @param stratifier A character string specifying the stratifying variable.
+#' @param approach Modeling approach to use. One of:
+#'   `"logit"` (Adjusted Odds Ratios), `"log-binomial"` (Adjusted Risk Ratios),
+#'   `"poisson"` (Adjusted IRRs), `"robpoisson"` (Robust RRs), or `"linear"` (Beta coefficients).
 #'
-#' @return A stratified_multi_reg object with components: table, models, model_summaries, and reg_check.
+#' @return An object of class `stratified_multi_reg`, which includes:
+#' - `table`: A `gtsummary::tbl_stack` object of regression tables by stratum,
+#' - `models`: A named list of model objects for each stratum,
+#' - `model_summaries`: A list of tidy model summaries,
+#' - `reg_check`: Diagnostics results (if available for the model type).
+#'
+#' @section Accessors:
+#' \describe{
+#'   \item{\code{$table}}{Stacked table of stratified regression outputs.}
+#'   \item{\code{$models}}{Named list of fitted models per stratum.}
+#'   \item{\code{$model_summaries}}{Tidy summaries for each model.}
+#'   \item{\code{$reg_check}}{Regression diagnostic checks (when applicable).}
+#' }
+#'
+#' @seealso [multi_reg()], [stratified_uni_reg()], [plot_reg()]
+#'
+#' @examples
+#' data(PimaIndiansDiabetes2, package = "mlbench")
+#' pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = ifelse(diabetes == "pos", 1, 0))
+#' stratified_multi <- stratified_multi_reg(
+#'   data = pima,
+#'   outcome = "diabetes",
+#'   exposures = c("age", "mass"),
+#'   stratifier = "glucose",
+#'   approach = "logit"
+#' )
+#' stratified_multi$table
+#'
+#' @importFrom dplyr filter
+#' @importFrom purrr map
+#' @importFrom broom tidy
+#' @importFrom gtsummary tbl_stack
 #' @export
 stratified_multi_reg <- function(data, outcome, exposures, stratifier,
                                  approach = "logit") {
@@ -29,7 +62,7 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
     (is.factor(x) && length(levels(x)) == 2)
   is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10 && !is_count(x)
+  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
 
   if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
     stop("Binary outcome required for the selected approach: ", approach)

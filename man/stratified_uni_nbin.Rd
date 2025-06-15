@@ -9,16 +9,46 @@ stratified_uni_nbin(data, outcome, exposures, stratifier)
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The name of the count outcome variable.}
+\item{outcome}{A character string specifying the name of the count outcome variable.}
 
-\item{exposures}{A character vector of predictor variables.}
+\item{exposures}{A character vector specifying the exposure variables.}
 
-\item{stratifier}{A categorical variable to stratify the data by.}
+\item{stratifier}{A character string specifying the stratifying variable.}
 }
 \value{
-A `gtsummary::tbl_merge` object with components: `$table`, `$models`, `$model_summaries`,
+An object of class `stratified_uni_reg_nbin` with the following components:
+\describe{
+  \item{\code{$table}}{A `gtsummary::tbl_merge` object combining tables by stratum.}
+  \item{\code{$models}}{A named list of fitted negative binomial models per stratum.}
+  \item{\code{$model_summaries}}{A list of tidy summaries for each model.}
+  \item{\code{$reg_check}}{(Optional) Diagnostics including dispersion checks.}
+}
 }
 \description{
-Performs univariate negative binomial regression of exposures on outcome,
-stratified by a specified variable. NAs in the stratifier are excluded.
+Performs univariate negative binomial regression for each exposure on a count outcome,
+stratified by a specified variable. Missing values in the stratifier are excluded.
+}
+\section{Accessors}{
+
+Use `object$table`, `object$models`, or `object$model_summaries` to extract components.
+}
+
+\examples{
+set.seed(42)
+dummy <- dplyr::tibble(
+  outcome = rnbinom(300, mu = 3, size = 1),
+  exposure = sample(c("A", "B", "C"), 300, replace = TRUE),
+  group = sample(c("X", "Y"), 300, replace = TRUE)
+)
+stratified_model <- stratified_uni_nbin(
+  data = dummy,
+  outcome = "outcome",
+  exposures = "exposure",
+  stratifier = "group"
+)
+stratified_model$table
+
+}
+\seealso{
+[uni_reg_nbin()], [stratified_multi_reg()], [check_dispersion()]
 }
