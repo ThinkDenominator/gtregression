@@ -23,25 +23,29 @@ test_that("stratified_multi_reg returns a gtsummary tbl_merge object", {
       ),
       age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
       npreg_cat = factor(ifelse(pregnant > 2, "High parity", "Low parity"),
-                         levels = c("Low parity", "High parity")),
+        levels = c("Low parity", "High parity")
+      ),
       glucose_cat = factor(case_when(
         glucose < 140 ~ "Normal",
         glucose >= 140 ~ "High"
       ), levels = c("Normal", "High"))
     )
 
-  result <- tryCatch({
-    stratified_multi_reg(
-      data = pima_data,
-      outcome = "diabetes",
-      exposures = c("bmi", "age_cat", "npreg_cat"),
-      stratifier = "glucose_cat",
-      approach = "robpoisson"
-    )
-  }, error = function(e) {
-    message("Error: ", e$message)
-    return(NULL)
-  })
+  result <- tryCatch(
+    {
+      stratified_multi_reg(
+        data = pima_data,
+        outcome = "diabetes",
+        exposures = c("bmi", "age_cat", "npreg_cat"),
+        stratifier = "glucose_cat",
+        approach = "robpoisson"
+      )
+    },
+    error = function(e) {
+      message("Error: ", e$message)
+      return(NULL)
+    }
+  )
 
   if (is.null(result)) {
     skip("Skipping test: No valid models across strata.")
@@ -72,20 +76,23 @@ test_that("stratified_multi_reg excludes NA values in stratifier", {
 
   pima_data$glucose_cat[1:5] <- NA
 
-  result <- tryCatch({
-    suppressWarnings(
-      stratified_multi_reg(
-        data = pima_data,
-        outcome = "diabetes",
-        exposures = c("bmi", "age_cat", "npreg_cat"),
-        stratifier = "glucose_cat",
-        approach = "robpoisson"
+  result <- tryCatch(
+    {
+      suppressWarnings(
+        stratified_multi_reg(
+          data = pima_data,
+          outcome = "diabetes",
+          exposures = c("bmi", "age_cat", "npreg_cat"),
+          stratifier = "glucose_cat",
+          approach = "robpoisson"
+        )
       )
-    )
-  }, error = function(e) {
-    message("Error: ", e$message)
-    return(NULL)
-  })
+    },
+    error = function(e) {
+      message("Error: ", e$message)
+      return(NULL)
+    }
+  )
 
   if (is.null(result)) {
     skip("Skipping test: No valid models across strata due to NA stratifier.")
@@ -112,20 +119,23 @@ test_that("stratified_multi_reg runs with robpoisson and produces estimates", {
       glucose_cat = factor(case_when(glucose < 140 ~ "Normal", glucose >= 140 ~ "High"))
     )
 
-  result <- tryCatch({
-    suppressWarnings(
-      stratified_multi_reg(
-        data = pima_data,
-        outcome = "diabetes",
-        exposures = c("bmi", "age_cat", "npreg_cat"),
-        stratifier = "glucose_cat",
-        approach = "robpoisson"
+  result <- tryCatch(
+    {
+      suppressWarnings(
+        stratified_multi_reg(
+          data = pima_data,
+          outcome = "diabetes",
+          exposures = c("bmi", "age_cat", "npreg_cat"),
+          stratifier = "glucose_cat",
+          approach = "robpoisson"
+        )
       )
-    )
-  }, error = function(e) {
-    message("Error: ", e$message)
-    return(NULL)
-  })
+    },
+    error = function(e) {
+      message("Error: ", e$message)
+      return(NULL)
+    }
+  )
 
   if (is.null(result)) {
     skip("Skipping test: No valid models across strata.")

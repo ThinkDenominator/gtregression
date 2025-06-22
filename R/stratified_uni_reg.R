@@ -1,5 +1,5 @@
-' Stratified Univariate Regression (Odds, Risk, or Rate Ratios)
-#'
+" Stratified Univariate Regression (Odds, Risk, or Rate Ratios)
+#"
 #' Performs univariate regression for each exposure on a binary, count, or continuous outcome,
 #' stratified by a specified variable. Produces a stacked `gtsummary` table with one column per stratum,
 #' along with underlying models and diagnostics.
@@ -30,7 +30,7 @@
 #'
 #' @examples
 #' if (requireNamespace("mlbench", quietly = TRUE) &&
-#'     requireNamespace("dplyr", quietly = TRUE)) {
+#'   requireNamespace("dplyr", quietly = TRUE)) {
 #'   data(PimaIndiansDiabetes2, package = "mlbench")
 #'   pima <- dplyr::mutate(
 #'     PimaIndiansDiabetes2,
@@ -59,8 +59,10 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit") {
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
   if (!approach %in% valid_approaches) {
-    stop("Invalid approach: ", approach,
-         "\nValid options: ", paste(valid_approaches, collapse = ", "))
+    stop(
+      "Invalid approach: ", approach,
+      "\nValid options: ", paste(valid_approaches, collapse = ", ")
+    )
   }
 
   if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.")
@@ -68,8 +70,10 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
 
   outcome_vec <- data[[outcome]]
-  is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
-    (is.factor(x) && length(levels(x)) == 2)
+  is_binary <- function(x) {
+    is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
+      (is.factor(x) && length(levels(x)) == 2)
+  }
   is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
   is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
 
@@ -98,24 +102,28 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     message("  > Stratum: ", stratifier, " = ", lev)
     data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 
-    result <- tryCatch({
-      uni <- uni_reg(
-        data = data_stratum,
-        outcome = outcome,
-        exposures = exposures,
-        approach = approach
-      )
-    }, error = function(e) {
-      warning("Skipping stratum ", lev, ": ", e$message)
-      NULL
-    })
+    result <- tryCatch(
+      {
+        uni <- uni_reg(
+          data = data_stratum,
+          outcome = outcome,
+          exposures = exposures,
+          approach = approach
+        )
+      },
+      error = function(e) {
+        warning("Skipping stratum ", lev, ": ", e$message)
+        NULL
+      }
+    )
 
     if (!is.null(result)) {
       tbls <- purrr::imap(attr(result, "models"), function(fit, var) {
         gtsummary::tbl_regression(fit,
-                                  exponentiate = approach != "linear",
-                                  conf.method = "wald",
-                                  tidy_fun = broom::tidy) |>
+          exponentiate = approach != "linear",
+          conf.method = "wald",
+          tidy_fun = broom::tidy
+        ) |>
           gtsummary::add_n(location = "label")
       })
 
@@ -144,9 +152,17 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
 
 #' @export
 `$.stratified_uni_reg` <- function(x, name) {
-  if (name == "table") return(x)
-  if (name == "models") return(attr(x, "models"))
-  if (name == "model_summaries") return(attr(x, "model_summaries"))
-  if (name == "reg_check") return(attr(x, "reg_check"))
+  if (name == "table") {
+    return(x)
+  }
+  if (name == "models") {
+    return(attr(x, "models"))
+  }
+  if (name == "model_summaries") {
+    return(attr(x, "model_summaries"))
+  }
+  if (name == "reg_check") {
+    return(attr(x, "reg_check"))
+  }
   NextMethod("$")
 }

@@ -75,9 +75,33 @@ check_convergence <- function(data, exposures, outcome, approach = "logit", mult
   if (!multivariate) {
     for (exposure in exposures) {
       fmla <- stats::as.formula(paste(outcome, "~", exposure))
-      result <- tryCatch({
-        fit <- switch(
-          approach,
+      result <- tryCatch(
+        {
+          fit <- switch(approach,
+            "logit" = glm(fmla, data = data, family = binomial("logit")),
+            "log-binomial" = glm(fmla, data = data, family = binomial("log")),
+            "poisson" = glm(fmla, data = data, family = poisson("log")),
+            "negbin" = MASS::glm.nb(fmla, data = data),
+            risks::riskratio(formula = fmla, data = data, approach = approach)
+          )
+          converged <- if ("converged" %in% names(fit)) fit$converged else if (!is.null(fit$conv)) fit$conv == 0 else NA
+          max_prob <- if ("maxprob" %in% names(fit)) fit$maxprob else max(predict(fit, type = "response"), na.rm = TRUE)
+          if (approach == "robpoisson" && max_prob > 1) {
+            warning("robpoisson: Predicted probability exceeds 1. Interpret RR estimates with caution.")
+          }
+          data.frame(Exposure = exposure, Model = approach, Converged = converged, Max.prob. = max_prob)
+        },
+        error = function(e) {
+          data.frame(Exposure = exposure, Model = approach, Converged = FALSE, Max.prob. = NA)
+        }
+      )
+      results_list[[exposure]] <- result
+    }
+  } else {
+    fmla <- stats::as.formula(paste(outcome, "~", paste(exposures, collapse = " + ")))
+    result <- tryCatch(
+      {
+        fit <- switch(approach,
           "logit" = glm(fmla, data = data, family = binomial("logit")),
           "log-binomial" = glm(fmla, data = data, family = binomial("log")),
           "poisson" = glm(fmla, data = data, family = poisson("log")),
@@ -89,32 +113,12 @@ check_convergence <- function(data, exposures, outcome, approach = "logit", mult
         if (approach == "robpoisson" && max_prob > 1) {
           warning("robpoisson: Predicted probability exceeds 1. Interpret RR estimates with caution.")
         }
-        data.frame(Exposure = exposure, Model = approach, Converged = converged, Max.prob. = max_prob)
-      }, error = function(e) {
-        data.frame(Exposure = exposure, Model = approach, Converged = FALSE, Max.prob. = NA)
-      })
-      results_list[[exposure]] <- result
-    }
-  } else {
-    fmla <- stats::as.formula(paste(outcome, "~", paste(exposures, collapse = " + ")))
-    result <- tryCatch({
-      fit <- switch(
-        approach,
-        "logit" = glm(fmla, data = data, family = binomial("logit")),
-        "log-binomial" = glm(fmla, data = data, family = binomial("log")),
-        "poisson" = glm(fmla, data = data, family = poisson("log")),
-        "negbin" = MASS::glm.nb(fmla, data = data),
-        risks::riskratio(formula = fmla, data = data, approach = approach)
-      )
-      converged <- if ("converged" %in% names(fit)) fit$converged else if (!is.null(fit$conv)) fit$conv == 0 else NA
-      max_prob <- if ("maxprob" %in% names(fit)) fit$maxprob else max(predict(fit, type = "response"), na.rm = TRUE)
-      if (approach == "robpoisson" && max_prob > 1) {
-        warning("robpoisson: Predicted probability exceeds 1. Interpret RR estimates with caution.")
+        data.frame(Exposure = paste(exposures, collapse = " + "), Model = approach, Converged = converged, Max.prob. = max_prob)
+      },
+      error = function(e) {
+        data.frame(Exposure = NA, Model = approach, Converged = FALSE, Max.prob. = NA)
       }
-      data.frame(Exposure = paste(exposures, collapse = " + "), Model = approach, Converged = converged, Max.prob. = max_prob)
-    }, error = function(e) {
-      data.frame(Exposure = NA, Model = approach, Converged = FALSE, Max.prob. = NA)
-    })
+    )
     results_list[["multivariable"]] <- result
   }
 

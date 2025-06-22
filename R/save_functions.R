@@ -18,7 +18,6 @@
 #' tbl <- gtsummary::tbl_regression(model)
 #' save_table(tbl, filename = "regression_table", format = "docx")
 #' }
-
 save_table <- function(tbl, filename = "table", format = c("docx", "pdf", "html")) {
   format <- match.arg(format)
 
@@ -52,10 +51,10 @@ save_table <- function(tbl, filename = "table", format = c("docx", "pdf", "html"
 #' @examples
 #' \dontrun{
 #' library(ggplot2)
-#' p <- ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
+#' p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+#'   geom_point()
 #' save_plot(p, filename = "scatterplot", format = "png", width = 6, height = 4)
 #' }
-
 save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"), width = 8, height = 6, dpi = 300) {
   format <- match.arg(format)
 
@@ -93,7 +92,8 @@ save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"), 
 #'
 #' # Create table and plot
 #' tbl <- tbl_regression(glm(mpg ~ hp + wt, data = mtcars))
-#' p <- ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
+#' p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+#'   geom_point()
 #'
 #' # Save both into a single Word document
 #' save_docx(
@@ -103,7 +103,6 @@ save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"), 
 #'   titles = c("Table 1: Regression", "Figure 1: Scatterplot")
 #' )
 #' }
-
 save_docx <- function(tables = NULL, plots = NULL, filename = "report.docx", titles = NULL) {
   # Add .docx if missing
   if (!grepl("\\.docx$", filename, ignore.case = TRUE)) {
@@ -153,5 +152,4 @@ save_docx <- function(tables = NULL, plots = NULL, filename = "report.docx", tit
 
   print(doc, target = filename)
   message("Word document saved as: '", filename, "' in the working directory. \n If tables or plots extend beyond the page, consider switching to landscape layout in Word (Layout > Orientation > Landscape).")
-
 }

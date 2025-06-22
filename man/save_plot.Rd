@@ -35,7 +35,8 @@ Saves a `ggplot2` plot to a file in PNG, PDF, or JPG format.
 \examples{
 \dontrun{
 library(ggplot2)
-p <- ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
+p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point()
 save_plot(p, filename = "scatterplot", format = "png", width = 6, height = 4)
 }
 }

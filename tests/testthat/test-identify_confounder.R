@@ -18,9 +18,11 @@ test_that("identify_confounder works across approaches using change-in-estimate 
       ),
       age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
       npreg_cat = factor(ifelse(pregnant > 2, "High parity", "Low parity"),
-                         levels = c("Low parity", "High parity")),
+        levels = c("Low parity", "High parity")
+      ),
       glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal"),
-                           levels = c("Normal", "High"))
+        levels = c("Normal", "High")
+      )
     )
 
   outcome <- "diabetes"

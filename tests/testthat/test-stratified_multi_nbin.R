@@ -6,26 +6,29 @@ test_that("stratified_multi_nbin returns a gtsummary tbl_merge object", {
   data("quine", package = "MASS")
 
   quine_data <- dplyr::mutate(quine,
-                              Eth = factor(Eth, levels = c("A", "N")),
-                              Sex = factor(Sex, levels = c("M", "F")),
-                              Age = factor(Age, levels = c("F0", "F1", "F2", "F3")),
-                              Lrn = factor(Lrn, levels = c("AL", "SL"))
+    Eth = factor(Eth, levels = c("A", "N")),
+    Sex = factor(Sex, levels = c("M", "F")),
+    Age = factor(Age, levels = c("F0", "F1", "F2", "F3")),
+    Lrn = factor(Lrn, levels = c("AL", "SL"))
   )
 
   is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
   if (!is_count(quine_data[["Days"]])) skip("Outcome is not a count variable.")
 
-  result <- tryCatch({
-    suppressWarnings(gtregression::stratified_multi_nbin(
-      data = quine_data,
-      outcome = "Days",
-      exposures = c("Eth", "Age", "Lrn"),
-      stratifier = "Sex"
-    ))
-  }, error = function(e) {
-    message("Error: ", e$message)
-    return(NULL)
-  })
+  result <- tryCatch(
+    {
+      suppressWarnings(gtregression::stratified_multi_nbin(
+        data = quine_data,
+        outcome = "Days",
+        exposures = c("Eth", "Age", "Lrn"),
+        stratifier = "Sex"
+      ))
+    },
+    error = function(e) {
+      message("Error: ", e$message)
+      return(NULL)
+    }
+  )
 
   skip_if(is.null(result), "No valid models across strata.")
 
@@ -41,27 +44,30 @@ test_that("stratified_multi_nbin excludes NA values in stratifier", {
   data("quine", package = "MASS")
 
   quine_data <- dplyr::mutate(quine,
-                              Eth = factor(Eth),
-                              Sex = factor(Sex),
-                              Age = factor(Age),
-                              Lrn = factor(Lrn)
+    Eth = factor(Eth),
+    Sex = factor(Sex),
+    Age = factor(Age),
+    Lrn = factor(Lrn)
   )
   quine_data$Sex[1:5] <- NA
 
   is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
   if (!is_count(quine_data[["Days"]])) skip("Outcome is not a count variable.")
 
-  result <- tryCatch({
-    suppressWarnings(gtregression::stratified_multi_nbin(
-      data = quine_data,
-      outcome = "Days",
-      exposures = c("Eth", "Age", "Lrn"),
-      stratifier = "Sex"
-    ))
-  }, error = function(e) {
-    message("Error: ", e$message)
-    return(NULL)
-  })
+  result <- tryCatch(
+    {
+      suppressWarnings(gtregression::stratified_multi_nbin(
+        data = quine_data,
+        outcome = "Days",
+        exposures = c("Eth", "Age", "Lrn"),
+        stratifier = "Sex"
+      ))
+    },
+    error = function(e) {
+      message("Error: ", e$message)
+      return(NULL)
+    }
+  )
 
   skip_if(is.null(result), "No valid strata after removing NA values.")
 
@@ -127,16 +133,19 @@ test_that("stratified_multi_nbin returns NULL when models cannot be fit", {
     dplyr::mutate(Eth = "A", Age = "F0", Lrn = "SL")
 
   result <- suppressWarnings(
-    tryCatch({
-      gtregression::stratified_multi_nbin(
-        data = bad_data,
-        outcome = "Days",
-        exposures = c("Eth", "Age", "Lrn"),
-        stratifier = "Sex"
-      )
-    }, error = function(e) {
-      NULL
-    })
+    tryCatch(
+      {
+        gtregression::stratified_multi_nbin(
+          data = bad_data,
+          outcome = "Days",
+          exposures = c("Eth", "Age", "Lrn"),
+          stratifier = "Sex"
+        )
+      },
+      error = function(e) {
+        NULL
+      }
+    )
   )
 
   expect_null(result)

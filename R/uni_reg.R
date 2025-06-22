@@ -34,7 +34,6 @@ uni_reg <- function(data,
                     outcome,
                     exposures,
                     approach = "logit") {
-
   pkgs <- c("gtsummary", "purrr", "dplyr", "stats", "rlang")
   for (pkg in pkgs) {
     if (!requireNamespace(pkg, quietly = TRUE)) stop("Package '", pkg, "' is required.")
@@ -44,7 +43,7 @@ uni_reg <- function(data,
   }
   if (approach == "linear") {
     if (!requireNamespace("car", quietly = TRUE) ||
-        !requireNamespace("lmtest", quietly = TRUE)) {
+      !requireNamespace("lmtest", quietly = TRUE)) {
       stop("Packages 'car' and 'lmtest' are required for linear regression diagnostics.")
     }
   }
@@ -61,8 +60,10 @@ uni_reg <- function(data,
 
   outcome_vec <- data[[outcome]]
 
-  is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
-    (is.factor(x) && length(levels(x)) == 2)
+  is_binary <- function(x) {
+    is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
+      (is.factor(x) && length(levels(x)) == 2)
+  }
 
   is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
 
@@ -72,7 +73,7 @@ uni_reg <- function(data,
     stop("Binary outcome required for the selected approach: ", approach)
   }
 
-  if (approach == "poisson"&& !is_count(outcome_vec)) {
+  if (approach == "poisson" && !is_count(outcome_vec)) {
     stop("Count outcome required for Poisson regression.")
   }
 
@@ -164,11 +165,12 @@ uni_reg <- function(data,
   tbl_list <- purrr::imap(model_list, function(fit, var) {
     n_model <- nobs(fit)
     gtsummary::tbl_regression(fit,
-                              exponentiate = approach != "linear",
-                              conf.method = "wald",
-                              tidy_fun = broom::tidy) |>
+      exponentiate = approach != "linear",
+      conf.method = "wald",
+      tidy_fun = broom::tidy
+    ) |>
       gtsummary::modify_header(estimate = label_est) |>
-      gtsummary::add_n(location= "label")
+      gtsummary::add_n(location = "label")
   })
 
   stacked <- gtsummary::tbl_stack(tbl_list)
@@ -205,7 +207,7 @@ uni_reg <- function(data,
   if (name == "model_summaries") {
     return(attr(x, "model_summaries"))
   }
-  if (name == "reg_check"){
+  if (name == "reg_check") {
     return(attr(x, "reg_diagnostics"))
   }
   if (name == "table") {

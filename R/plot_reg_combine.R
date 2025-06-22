@@ -36,7 +36,6 @@
 #' result_multi <- multi_reg(mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
 #' plot_reg_combine(tbl_uni = result_uni, tbl_multi = result_multi)
 #' }
-
 plot_reg_combine <- function(tbl_uni,
                              tbl_multi,
                              title_uni = NULL,
@@ -52,7 +51,6 @@ plot_reg_combine <- function(tbl_uni,
                              breaks_uni = NULL,
                              xlim_multi = NULL,
                              breaks_multi = NULL) {
-
   # Extract attributes
   approach_uni <- attr(tbl_uni, "approach")
   source_type_uni <- attr(tbl_uni, "source")
@@ -97,21 +95,23 @@ plot_reg_combine <- function(tbl_uni,
   build_plot <- function(tbl, plot_title, xlim = NULL, breaks = NULL, x_label = "Effect Size") {
     df <- tbl$table_body
     df <- dplyr::mutate(df,
-                        is_header = is.na(.data$reference_row),
-                        label_clean = dplyr::case_when(
-                          is_header ~ paste0("**", .data$label, "**"),
-                          .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
-                          !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
-                          TRUE ~ NA_character_
-                        ))
+      is_header = is.na(.data$reference_row),
+      label_clean = dplyr::case_when(
+        is_header ~ paste0("**", .data$label, "**"),
+        .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
+        !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
+        TRUE ~ NA_character_
+      )
+    )
     df <- dplyr::filter(df, .data$is_header | !is.na(.data$estimate) | (.data$reference_row & show_ref))
 
     if (!is.null(order_y)) {
       df <- dplyr::mutate(df,
-                          header_order = dplyr::case_when(
-                            .data$is_header ~ match(.data$label, order_y),
-                            TRUE ~ NA_real_
-                          ))
+        header_order = dplyr::case_when(
+          .data$is_header ~ match(.data$label, order_y),
+          TRUE ~ NA_real_
+        )
+      )
       df <- tidyr::fill(df, header_order, .direction = "down")
       df <- dplyr::arrange(df, header_order, dplyr::row_number())
     }

@@ -29,7 +29,6 @@
 #' @export
 
 select_models <- function(data, outcome, exposures, approach = "logit", direction = "forward") {
-
   # Validate outcome type
   outcome_vec <- data[[outcome]]
   is_binary <- function(x) is.factor(x) && length(levels(x)) == 2 || is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)
@@ -57,8 +56,7 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
     } else if (approach == "linear") {
       return(lm(fmla, data = data))
     } else {
-      family <- switch(
-        approach,
+      family <- switch(approach,
         "logit" = binomial(link = "logit"),
         "log-binomial" = binomial(link = "log"),
         "poisson" = poisson(link = "log"),
@@ -108,11 +106,9 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
     if (direction == "forward" && best_forward < aic_best - 1e-5) {
       selected_vars <- c(selected_vars, add_candidates[[best_forward_idx]])
       improved <- TRUE
-
     } else if (direction == "backward" && best_backward < aic_best - 1e-5) {
       selected_vars <- drop_candidates[[best_backward_idx]]
       improved <- TRUE
-
     } else if (direction == "both") {
       if (best_forward < best_backward && best_forward < aic_best - 1e-5) {
         selected_vars <- c(selected_vars, add_candidates[[best_forward_idx]])

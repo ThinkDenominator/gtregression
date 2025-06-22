@@ -68,11 +68,14 @@ multi_reg_nbin <- function(data, outcome, exposures) {
 
   # Build and fit model
   model_formula <- stats::as.formula(paste(outcome, "~", paste(exposures, collapse = " + ")))
-  fit_model <- tryCatch({
-    MASS::glm.nb(model_formula, data = data_clean, control = glm.control(maxit = 200))
-  }, error = function(e) {
-    stop("Model fitting failed: ", e$message)
-  })
+  fit_model <- tryCatch(
+    {
+      MASS::glm.nb(model_formula, data = data_clean, control = glm.control(maxit = 200))
+    },
+    error = function(e) {
+      stop("Model fitting failed: ", e$message)
+    }
+  )
 
   # Format result
   result <- fit_model |>
@@ -84,7 +87,8 @@ multi_reg_nbin <- function(data, outcome, exposures) {
   # Extract N_obs from the fitted model
   result <- result |>
     gtsummary::modify_source_note(
-      paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model"))
+      paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model")
+    )
 
   # Attach metadata and class
   attr(result, "approach") <- "negbin"

@@ -45,7 +45,7 @@ test_that("stratified_uni_reg excludes NA values in stratifier", {
       bmi = factor(ifelse(mass >= 30, "Obese", "Not obese"))
     )
 
-  pima_data$glucose_cat[1:5] <- NA  # introduce missing
+  pima_data$glucose_cat[1:5] <- NA # introduce missing
 
   result <- suppressWarnings(
     stratified_uni_reg(
@@ -65,8 +65,10 @@ test_that("stratified_uni_reg errors for invalid inputs", {
   data("PimaIndiansDiabetes2", package = "mlbench")
 
   pima_data <- PimaIndiansDiabetes2 |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0),
-           glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal")))
+    mutate(
+      diabetes = ifelse(diabetes == "pos", 1, 0),
+      glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal"))
+    )
 
   expect_error(
     stratified_uni_reg(
@@ -123,7 +125,7 @@ test_that("stratified_uni_reg errors when no valid strata exist", {
   pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
-      glucose_cat = NA  # All NA in stratifier
+      glucose_cat = NA # All NA in stratifier
     )
 
   expect_error(

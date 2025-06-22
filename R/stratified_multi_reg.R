@@ -27,7 +27,7 @@
 #' @seealso [multi_reg()], [stratified_uni_reg()], [plot_reg()]
 #' @examples
 #' if (requireNamespace("mlbench", quietly = TRUE) &&
-#'     requireNamespace("dplyr", quietly = TRUE)) {
+#'   requireNamespace("dplyr", quietly = TRUE)) {
 #'   data(PimaIndiansDiabetes2, package = "mlbench")
 #'   pima <- dplyr::mutate(
 #'     PimaIndiansDiabetes2,
@@ -54,11 +54,12 @@
 #' @export
 stratified_multi_reg <- function(data, outcome, exposures, stratifier,
                                  approach = "logit") {
-
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
   if (!(approach %in% valid_approaches)) {
-    stop("Invalid approach: ", approach,
-         "\nValid options: ", paste(valid_approaches, collapse = ", "))
+    stop(
+      "Invalid approach: ", approach,
+      "\nValid options: ", paste(valid_approaches, collapse = ", ")
+    )
   }
 
   if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.")
@@ -66,8 +67,10 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
 
   outcome_vec <- data[[outcome]]
-  is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
-    (is.factor(x) && length(levels(x)) == 2)
+  is_binary <- function(x) {
+    is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
+      (is.factor(x) && length(levels(x)) == 2)
+  }
   is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
   is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
 
@@ -98,17 +101,20 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
     message("  > Stratum: ", stratifier, " = ", lev)
     data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 
-    result <- tryCatch({
-      fit <- multi_reg(
-        data = data_stratum,
-        outcome = outcome,
-        exposures = exposures,
-        approach = approach
-      )
-    }, error = function(e) {
-      warning("Skipping stratum ", lev, ": ", e$message)
-      NULL
-    })
+    result <- tryCatch(
+      {
+        fit <- multi_reg(
+          data = data_stratum,
+          outcome = outcome,
+          exposures = exposures,
+          approach = approach
+        )
+      },
+      error = function(e) {
+        warning("Skipping stratum ", lev, ": ", e$message)
+        NULL
+      }
+    )
 
     if (!is.null(result)) {
       tbl_list[[length(tbl_list) + 1]] <- result$table
@@ -167,9 +173,17 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
 
 #' @export
 `$.stratified_multi_reg` <- function(x, name) {
-  if (name == "table") return(x)
-  if (name == "models") return(attr(x, "models"))
-  if (name == "model_summaries") return(attr(x, "model_summaries"))
-  if (name == "reg_check") return(attr(x, "reg_check"))
+  if (name == "table") {
+    return(x)
+  }
+  if (name == "models") {
+    return(attr(x, "models"))
+  }
+  if (name == "model_summaries") {
+    return(attr(x, "model_summaries"))
+  }
+  if (name == "reg_check") {
+    return(attr(x, "reg_check"))
+  }
   NextMethod("$")
 }

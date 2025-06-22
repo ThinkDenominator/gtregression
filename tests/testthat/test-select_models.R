@@ -8,12 +8,16 @@ test_that("select_models works for valid approaches and directions", {
   pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi = factor(case_when(mass < 25 ~ "Normal",
-                             mass >= 25 & mass < 30 ~ "Overweight",
-                             mass >= 30 ~ "Obese")),
-      age_cat = factor(case_when(age < 30 ~ "Young",
-                                 age < 50 ~ "Middle-aged",
-                                 TRUE ~ "Older")),
+      bmi = factor(case_when(
+        mass < 25 ~ "Normal",
+        mass >= 25 & mass < 30 ~ "Overweight",
+        mass >= 30 ~ "Obese"
+      )),
+      age_cat = factor(case_when(
+        age < 30 ~ "Young",
+        age < 50 ~ "Middle-aged",
+        TRUE ~ "Older"
+      )),
       npreg_cat = factor(ifelse(pregnant > 2, "High", "Low")),
       glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal")),
       dpf_cat = factor(ifelse(pedigree >= 0.5, "High", "Low")),
@@ -28,8 +32,10 @@ test_that("select_models works for valid approaches and directions", {
 
   for (appr in approaches) {
     for (dir in directions) {
-      result <- select_models(data = pima_data, outcome = outcome,
-                              exposures = exposures, approach = appr, direction = dir)
+      result <- select_models(
+        data = pima_data, outcome = outcome,
+        exposures = exposures, approach = appr, direction = dir
+      )
       expect_true("results_table" %in% names(result))
       expect_true("best_model" %in% names(result))
       expect_s3_class(result$results_table, "tbl_df")
@@ -49,9 +55,11 @@ test_that("select_models works for linear regression and returns adjusted R2", {
   df$x2 <- factor(df$x2)
   df$x3 <- factor(df$x3)
 
-  result <- select_models(df, outcome = "y",
-                          exposures = c("x1", "x2", "x3"),
-                          approach = "linear", direction = "forward")
+  result <- select_models(df,
+    outcome = "y",
+    exposures = c("x1", "x2", "x3"),
+    approach = "linear", direction = "forward"
+  )
   expect_true("adj_r2" %in% colnames(result$results_table))
 })
 
@@ -80,10 +88,12 @@ test_that("select_models supports negative binomial regression", {
   quine <- quine |>
     mutate(across(c(Eth, Sex, Age, Lrn), as.factor))
 
-  result <- select_models(quine, outcome = "Days",
-                          exposures = c("Eth", "Sex", "Age", "Lrn"),
-                          approach = "negbin", direction = "forward")
+  result <- select_models(quine,
+    outcome = "Days",
+    exposures = c("Eth", "Sex", "Age", "Lrn"),
+    approach = "negbin", direction = "forward"
+  )
 
   expect_true("results_table" %in% names(result))
-  expect_s3_class(result$best_model, "glm")  # MASS::glm.nb returns class 'glm'
+  expect_s3_class(result$best_model, "glm") # MASS::glm.nb returns class 'glm'
 })

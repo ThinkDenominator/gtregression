@@ -52,7 +52,7 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
   if (approach %in% c("logit", "log-binomial", "robpoisson")) {
     if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
   }
-  if (approach == "poisson"&& !is_count(outcome_vec)) {
+  if (approach == "poisson" && !is_count(outcome_vec)) {
     stop("Count outcome required for Poisson regression.")
   }
   if (approach == "negbin" && !is_count(outcome_vec)) {
@@ -64,13 +64,13 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
 
   get_model <- function(data, formula, approach) {
     switch(approach,
-           "logit" = glm(formula, data = data, family = binomial("logit")),
-           "log-binomial" = glm(formula, data = data, family = binomial("log")),
-           "poisson" = glm(formula, data = data, family = poisson("log")),
-           "negbin" = MASS::glm.nb(formula, data = data),
-           "linear" = lm(formula, data = data),
-           "robpoisson" = risks::riskratio(formula = formula, data = data, approach = "robpoisson"),
-           stop("Unsupported approach.")
+      "logit" = glm(formula, data = data, family = binomial("logit")),
+      "log-binomial" = glm(formula, data = data, family = binomial("log")),
+      "poisson" = glm(formula, data = data, family = poisson("log")),
+      "negbin" = MASS::glm.nb(formula, data = data),
+      "linear" = lm(formula, data = data),
+      "robpoisson" = risks::riskratio(formula = formula, data = data, approach = "robpoisson"),
+      stop("Unsupported approach.")
     )
   }
 
@@ -78,14 +78,18 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
     if (inherits(model, "glm") || inherits(model, "lm")) {
       coefs <- coef(model)
       idx <- grep(paste0("^", exposure), names(coefs))
-      if (length(idx) == 0) return(NA)
+      if (length(idx) == 0) {
+        return(NA)
+      }
       est <- unname(coefs[idx[1]])
       return(if (approach == "linear") est else exp(est))
     }
     if (inherits(model, "riskratio")) {
       if (!is.null(model$summary) && "term" %in% names(model$summary)) {
         idx <- grep(paste0("^", exposure), model$summary$term)
-        if (length(idx) == 0) return(NA)
+        if (length(idx) == 0) {
+          return(NA)
+        }
         return(model$summary$RR[idx[1]])
       }
     }

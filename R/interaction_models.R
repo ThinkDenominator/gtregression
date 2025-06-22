@@ -45,7 +45,7 @@ interaction_models <- function(data, outcome, exposure, covariates = NULL,
   if (approach %in% c("logit", "log-binomial", "robpoisson")) {
     if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
   }
-  if (approach == "poisson"&& !is_count(outcome_vec)) {
+  if (approach == "poisson" && !is_count(outcome_vec)) {
     stop("Count outcome required for Poisson regression.")
   }
   if (approach == "negbin") {
@@ -67,13 +67,14 @@ interaction_models <- function(data, outcome, exposure, covariates = NULL,
 
   fit_model <- function(formula) {
     switch(approach,
-           "logit" = glm(formula, data = data, family = binomial("logit")),
-           "log-binomial" = glm(formula, data = data, family = binomial("log")),
-           "poisson" = glm(formula, data = data, family = poisson(link = "log")),
-           "robpoisson" = glm(formula, data = data, family = poisson(link = "log")),
-           "negbin" = MASS::glm.nb(formula, data = data),
-           "linear" = lm(formula, data = data),
-           stop("Unsupported regression approach."))
+      "logit" = glm(formula, data = data, family = binomial("logit")),
+      "log-binomial" = glm(formula, data = data, family = binomial("log")),
+      "poisson" = glm(formula, data = data, family = poisson(link = "log")),
+      "robpoisson" = glm(formula, data = data, family = poisson(link = "log")),
+      "negbin" = MASS::glm.nb(formula, data = data),
+      "linear" = lm(formula, data = data),
+      stop("Unsupported regression approach.")
+    )
   }
 
   model1 <- tryCatch(fit_model(base_formula), error = function(e) NULL)
@@ -110,8 +111,9 @@ interaction_models <- function(data, outcome, exposure, covariates = NULL,
     cat("-----------------------------------------------------\n")
     cat("P-value:", format(round(p_value, 4), nsmall = 4), "\n")
     cat(ifelse(p_value < 0.05,
-               "Interaction is statistically significant. Consider including it.\n",
-               "Interaction is not statistically significant. Simpler model may be preferred.\n"))
+      "Interaction is statistically significant. Consider including it.\n",
+      "Interaction is not statistically significant. Simpler model may be preferred.\n"
+    ))
     cat("----------------------------------------------------\n")
   }
 

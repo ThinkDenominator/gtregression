@@ -6,17 +6,29 @@ test_that("interaction_models returns a list with expected names", {
   pima_data <- PimaIndiansDiabetes2 |>
     mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
     mutate(
-      bmi = factor(case_when(mass < 25 ~ "Normal",
-                             mass >= 25 & mass < 30 ~ "Overweight",
-                             mass >= 30 ~ "Obese"),
-                   levels = c("Normal", "Overweight", "Obese")),
-      age_cat = factor(case_when(age < 30 ~ "Young",
-                                 age >= 30 & age < 50 ~ "Middle-aged",
-                                 age >= 50 ~ "Older"),
-                       levels = c("Young", "Middle-aged", "Older")),
-      glucose_cat = factor(case_when(glucose < 140 ~ "Normal",
-                                     glucose >= 140 ~ "High"),
-                           levels = c("Normal", "High"))
+      bmi = factor(
+        case_when(
+          mass < 25 ~ "Normal",
+          mass >= 25 & mass < 30 ~ "Overweight",
+          mass >= 30 ~ "Obese"
+        ),
+        levels = c("Normal", "Overweight", "Obese")
+      ),
+      age_cat = factor(
+        case_when(
+          age < 30 ~ "Young",
+          age >= 30 & age < 50 ~ "Middle-aged",
+          age >= 50 ~ "Older"
+        ),
+        levels = c("Young", "Middle-aged", "Older")
+      ),
+      glucose_cat = factor(
+        case_when(
+          glucose < 140 ~ "Normal",
+          glucose >= 140 ~ "High"
+        ),
+        levels = c("Normal", "High")
+      )
     )
 
   result <- interaction_models(
@@ -39,11 +51,15 @@ test_that("interaction_models handles robpoisson approach", {
   pima_data <- PimaIndiansDiabetes2 |>
     mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
     mutate(
-      age_cat = factor(case_when(age < 30 ~ "Young",
-                                 age >= 30 & age < 50 ~ "Middle-aged",
-                                 age >= 50 ~ "Older")),
-      glucose_cat = factor(case_when(glucose < 140 ~ "Normal",
-                                     glucose >= 140 ~ "High"))
+      age_cat = factor(case_when(
+        age < 30 ~ "Young",
+        age >= 30 & age < 50 ~ "Middle-aged",
+        age >= 50 ~ "Older"
+      )),
+      glucose_cat = factor(case_when(
+        glucose < 140 ~ "Normal",
+        glucose >= 140 ~ "High"
+      ))
     )
 
   result <- interaction_models(
@@ -66,11 +82,15 @@ test_that("interaction_models errors with invalid approach", {
   pima_data <- PimaIndiansDiabetes2 |>
     mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
     mutate(
-      age_cat = factor(case_when(age < 30 ~ "Young",
-                                 age >= 30 & age < 50 ~ "Middle-aged",
-                                 age >= 50 ~ "Older")),
-      glucose_cat = factor(case_when(glucose < 140 ~ "Normal",
-                                     glucose >= 140 ~ "High"))
+      age_cat = factor(case_when(
+        age < 30 ~ "Young",
+        age >= 30 & age < 50 ~ "Middle-aged",
+        age >= 50 ~ "Older"
+      )),
+      glucose_cat = factor(case_when(
+        glucose < 140 ~ "Normal",
+        glucose >= 140 ~ "High"
+      ))
     )
 
   expect_error(

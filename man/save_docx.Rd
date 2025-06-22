@@ -28,7 +28,8 @@ library(ggplot2)
 
 # Create table and plot
 tbl <- tbl_regression(glm(mpg ~ hp + wt, data = mtcars))
-p <- ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
+p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point()
 
 # Save both into a single Word document
 save_docx(

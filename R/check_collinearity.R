@@ -12,8 +12,8 @@
 #' For univariate models, an error is raised indicating VIF is not applicable.
 #' @examples
 #' if (requireNamespace("gtregression", quietly = TRUE) &&
-#'     requireNamespace("mlbench", quietly = TRUE) &&
-#'     getRversion() >= "4.1.0") {
+#'   requireNamespace("mlbench", quietly = TRUE) &&
+#'   getRversion() >= "4.1.0") {
 #'   data(PimaIndiansDiabetes2, package = "mlbench")
 #'   pima <- PimaIndiansDiabetes2 |> dplyr::filter(!is.na(diabetes))
 #'   pima$diabetes <- ifelse(pima$diabetes == "pos", 1, 0)
@@ -59,7 +59,7 @@ check_collinearity <- function(model) {
 
   vif_vals <- tryCatch(car::vif(fit_model), error = function(e) NULL)
   if (is.matrix(vif_vals)) {
-    vif_vals <- vif_vals[, 1]  # extract GVIF column
+    vif_vals <- vif_vals[, 1] # extract GVIF column
   }
 
 

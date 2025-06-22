@@ -48,8 +48,10 @@ multi_reg <- function(data,
                       approach = "logit") {
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
   if (!(approach %in% valid_approaches)) {
-    stop("Invalid approach: ", approach,
-         "\nValid options: ", paste(valid_approaches, collapse = ", "))
+    stop(
+      "Invalid approach: ", approach,
+      "\nValid options: ", paste(valid_approaches, collapse = ", ")
+    )
   }
 
   effect_label <- dplyr::case_when(
@@ -76,8 +78,10 @@ multi_reg <- function(data,
   # Outcome validation
   outcome_vec <- data[[outcome]]
 
-  is_binary <- function(x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
-    (is.factor(x) && length(levels(x)) == 2)
+  is_binary <- function(x) {
+    is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
+      (is.factor(x) && length(levels(x)) == 2)
+  }
 
   is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
 
@@ -87,7 +91,7 @@ multi_reg <- function(data,
     stop("Binary outcome required for the selected approach: ", approach)
   }
 
-  if (approach == "poisson"&& !is_count(outcome_vec)) {
+  if (approach == "poisson" && !is_count(outcome_vec)) {
     stop("Count outcome required for Poisson regression.")
   }
 
@@ -109,22 +113,25 @@ multi_reg <- function(data,
   model_formula <- stats::as.formula(formula_str)
 
   # Fit model
-  fit_model <- tryCatch({
-    if (approach == "logit") {
-      stats::glm(model_formula, data = data_clean, family = binomial("logit"))
-    } else if (approach == "log-binomial") {
-      stats::glm(model_formula, data = data_clean, family = binomial("log"))
-    } else if (approach == "poisson") {
-      stats::glm(model_formula, data = data_clean, family = poisson("log"))
-    } else if (approach == "linear") {
-      stats::lm(model_formula, data = data_clean)
-    } else {
-      risks::riskratio(formula = model_formula, data = data_clean, approach = "robpoisson")
+  fit_model <- tryCatch(
+    {
+      if (approach == "logit") {
+        stats::glm(model_formula, data = data_clean, family = binomial("logit"))
+      } else if (approach == "log-binomial") {
+        stats::glm(model_formula, data = data_clean, family = binomial("log"))
+      } else if (approach == "poisson") {
+        stats::glm(model_formula, data = data_clean, family = poisson("log"))
+      } else if (approach == "linear") {
+        stats::lm(model_formula, data = data_clean)
+      } else {
+        risks::riskratio(formula = model_formula, data = data_clean, approach = "robpoisson")
+      }
+    },
+    error = function(e) {
+      warning("Model fitting failed: ", e$message)
+      return(NULL)
     }
-  }, error = function(e) {
-    warning("Model fitting failed: ", e$message)
-    return(NULL)
-  })
+  )
 
   if (is.null(fit_model)) {
     stop("Could not fit the model. Please try a different approach or check your data.")
@@ -170,11 +177,11 @@ multi_reg <- function(data,
 
   result <- fit_model |>
     gtsummary::tbl_regression(
-    exponentiate = approach != "linear",
-    conf.level = 0.95,
-    conf.method = "wald",
-    tidy_fun = broom::tidy
-  ) |>
+      exponentiate = approach != "linear",
+      conf.level = 0.95,
+      conf.method = "wald",
+      tidy_fun = broom::tidy
+    ) |>
     gtsummary::modify_header(estimate = effect_label) |>
     gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label))) |>
     gtsummary::remove_abbreviation(remove_abbreviation) |>
@@ -183,7 +190,8 @@ multi_reg <- function(data,
   # Extract N_obs from the fitted model
   result <- result |>
     gtsummary::modify_source_note(
-      paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model"))
+      paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model")
+    )
 
   if (approach != "linear") {
     reg_diagnostics <- "Regression diagnostics only available for 'linear' models."
@@ -211,7 +219,7 @@ multi_reg <- function(data,
   if (name == "model_summaries") {
     return(attr(x, "model_summaries"))
   }
-  if (name == "reg_check"){
+  if (name == "reg_check") {
     return(attr(x, "reg_diagnostics"))
   }
   if (name == "table") {

@@ -23,7 +23,7 @@
 #'
 #' @examples
 #' if (getRversion() >= "4.1.0" &&
-#'     requireNamespace("dplyr", quietly = TRUE)) {
+#'   requireNamespace("dplyr", quietly = TRUE)) {
 #'   set.seed(123)
 #'   df <- dplyr::tibble(
 #'     outcome = rnbinom(300, mu = 3, size = 1),
@@ -73,19 +73,22 @@ stratified_multi_nbin <- function(data, outcome, exposures, stratifier) {
     message("  > Stratum: ", stratifier, " = ", lev)
     data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 
-    result <- tryCatch({
-      multi_reg_nbin(
-        data = data_stratum,
-        outcome = outcome,
-        exposures = exposures
-      )
-    }, error = function(e) {
-      warning("Skipping stratum ", lev, ": ", e$message)
-      NULL
-    })
+    result <- tryCatch(
+      {
+        multi_reg_nbin(
+          data = data_stratum,
+          outcome = outcome,
+          exposures = exposures
+        )
+      },
+      error = function(e) {
+        warning("Skipping stratum ", lev, ": ", e$message)
+        NULL
+      }
+    )
 
     if (!is.null(result)) {
-      tbl_with_note <-result |>
+      tbl_with_note <- result |>
         gtsummary::modify_source_note(
           paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model.")
         )
@@ -147,9 +150,15 @@ stratified_multi_nbin <- function(data, outcome, exposures, stratifier) {
 
 #' @export
 `$.stratified_multi_nbin` <- function(x, name) {
-  if (name == "models") return(attr(x, "models"))
-  if (name == "model_summaries") return(attr(x, "model_summaries"))
+  if (name == "models") {
+    return(attr(x, "models"))
+  }
+  if (name == "model_summaries") {
+    return(attr(x, "model_summaries"))
+  }
 
-  if (name == "table") return(x)
+  if (name == "table") {
+    return(x)
+  }
   NextMethod("$")
 }

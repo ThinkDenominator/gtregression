@@ -35,7 +35,7 @@ Use `object$table`, `object$models`, `object$model_summaries`, or `object$reg_ch
 
 \examples{
 if (getRversion() >= "4.1.0" &&
-    requireNamespace("dplyr", quietly = TRUE)) {
+  requireNamespace("dplyr", quietly = TRUE)) {
   set.seed(123)
   df <- dplyr::tibble(
     outcome = rnbinom(300, mu = 3, size = 1),

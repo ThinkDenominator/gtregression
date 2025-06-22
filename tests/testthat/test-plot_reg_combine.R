@@ -56,10 +56,12 @@ test_that("plot_reg_combine works with various options", {
   exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
 
   tbl_uni <- gtregression::uni_reg(
-    pima_data, outcome = "diabetes", exposures = exposures, approach = "robpoisson"
+    pima_data,
+    outcome = "diabetes", exposures = exposures, approach = "robpoisson"
   )
   tbl_multi <- gtregression::multi_reg(
-    pima_data, outcome = "diabetes", exposures = exposures, approach = "robpoisson"
+    pima_data,
+    outcome = "diabetes", exposures = exposures, approach = "robpoisson"
   )
 
   p1 <- gtregression::plot_reg_combine(tbl_uni, tbl_multi)

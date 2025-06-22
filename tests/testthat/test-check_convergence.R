@@ -1,5 +1,4 @@
 test_that("check_convergence runs correctly for valid approaches", {
-
   data("PimaIndiansDiabetes2", package = "mlbench")
 
   pima_data <- PimaIndiansDiabetes2 |>

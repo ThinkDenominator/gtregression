@@ -78,7 +78,9 @@ test_that("plot_reg works with default settings and correct X-axis labels", {
   p3 <- gtregression::plot_reg_combine(tbl_uni = tbl_uni, tbl_multi = tbl_multi)
   expect_s3_class(p3, "ggplot")
 
-  p4 <- gtregression::plot_reg_combine(tbl_uni = tbl_uni, tbl_multi = tbl_multi,
-                                       order_y = exposures, log_x = TRUE, show_ref = TRUE)
+  p4 <- gtregression::plot_reg_combine(
+    tbl_uni = tbl_uni, tbl_multi = tbl_multi,
+    order_y = exposures, log_x = TRUE, show_ref = TRUE
+  )
   expect_s3_class(p4, "ggplot")
 })

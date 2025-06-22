@@ -57,20 +57,20 @@ modify_table <- function(gt_table,
   # 1. Variable labels
   if (!is.null(variable_labels)) {
     tbl <- gtsummary::modify_table_body(tbl, ~ dplyr::mutate(.x,
-                                                             label = dplyr::case_when(
-                                                               row_type == "label" & variable %in% names(variable_labels) ~ variable_labels[variable],
-                                                               TRUE ~ label
-                                                             )
+      label = dplyr::case_when(
+        row_type == "label" & variable %in% names(variable_labels) ~ variable_labels[variable],
+        TRUE ~ label
+      )
     ))
   }
 
   # 2. Level labels
   if (!is.null(level_labels)) {
     tbl <- gtsummary::modify_table_body(tbl, ~ dplyr::mutate(.x,
-                                                             label = dplyr::case_when(
-                                                               row_type == "level" & label %in% names(level_labels) ~ level_labels[label],
-                                                               TRUE ~ label
-                                                             )
+      label = dplyr::case_when(
+        row_type == "level" & label %in% names(level_labels) ~ level_labels[label],
+        TRUE ~ label
+      )
     ))
   }
 

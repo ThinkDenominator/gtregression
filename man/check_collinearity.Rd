@@ -22,8 +22,8 @@ Returns one VIF table per model. For univariate models, VIF is not applicable.
 }
 \examples{
 if (requireNamespace("gtregression", quietly = TRUE) &&
-    requireNamespace("mlbench", quietly = TRUE) &&
-    getRversion() >= "4.1.0") {
+  requireNamespace("mlbench", quietly = TRUE) &&
+  getRversion() >= "4.1.0") {
   data(PimaIndiansDiabetes2, package = "mlbench")
   pima <- PimaIndiansDiabetes2 |> dplyr::filter(!is.na(diabetes))
   pima$diabetes <- ifelse(pima$diabetes == "pos", 1, 0)

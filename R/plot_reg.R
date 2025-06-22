@@ -32,7 +32,6 @@
 #' result <- uni_reg(data = mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
 #' plot_reg(result)
 #' }
-
 plot_reg <- function(tbl,
                      title = NULL,
                      ref_line = 1,
@@ -44,7 +43,6 @@ plot_reg <- function(tbl,
                      errorbar_color = "#4C4C4C",
                      base_size = 14,
                      show_ref = TRUE) {
-
   df <- tbl$table_body
 
   # Extract the model source type and approach
@@ -73,23 +71,23 @@ plot_reg <- function(tbl,
   if (log_x) x_axis_label <- paste0(x_axis_label, " (log scale)")
 
   df <- dplyr::mutate(df,
-                      is_header = is.na(.data$reference_row),
-                      label_clean = dplyr::case_when(
-                        is_header ~ paste0("**", .data$label, "**"),
-                        .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
-                        !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
-                        TRUE ~ NA_character_
-                      )
+    is_header = is.na(.data$reference_row),
+    label_clean = dplyr::case_when(
+      is_header ~ paste0("**", .data$label, "**"),
+      .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
+      !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
+      TRUE ~ NA_character_
+    )
   )
 
   df <- dplyr::filter(df, .data$is_header | !is.na(.data$estimate) | (.data$reference_row & show_ref))
 
   if (!is.null(order_y)) {
     df <- dplyr::mutate(df,
-                        header_order = dplyr::case_when(
-                          .data$is_header ~ match(.data$label, order_y),
-                          TRUE ~ NA_real_
-                        )
+      header_order = dplyr::case_when(
+        .data$is_header ~ match(.data$label, order_y),
+        TRUE ~ NA_real_
+      )
     )
     df <- tidyr::fill(df, header_order, .direction = "down")
     df <- dplyr::arrange(df, header_order, dplyr::row_number())

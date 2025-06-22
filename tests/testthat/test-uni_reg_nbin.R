@@ -23,12 +23,15 @@ test_that("uni_reg_nbin computes unadjusted IRRs using negative binomial regress
   if (!is_count(quine_data[[outcome]])) skip("Outcome is not a non-negative count variable.")
 
   # Run function
-  result <- tryCatch({
-    uni_reg_nbin(data = quine_data, outcome = outcome, exposures = exposures)
-  }, error = function(e) {
-    message("uni_reg_nbin() failed\n", e$message)
-    return(NULL)
-  })
+  result <- tryCatch(
+    {
+      uni_reg_nbin(data = quine_data, outcome = outcome, exposures = exposures)
+    },
+    error = function(e) {
+      message("uni_reg_nbin() failed\n", e$message)
+      return(NULL)
+    }
+  )
 
   if (is.null(result)) {
     skip("uni_reg_nbin() returned NULL")

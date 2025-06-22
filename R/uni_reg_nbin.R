@@ -50,16 +50,21 @@ uni_reg_nbin <- function(data, outcome, exposures) {
 
   # Fit function
   fit_model <- function(exposure) {
-    tryCatch({
-      data_clean <- data |>
-        dplyr::filter(!is.na(.data[[exposure]]), !is.na(.data[[outcome]])) |>
-        droplevels()
-      if (nrow(data_clean) == 0 || length(unique(data_clean[[exposure]])) < 2) return(NULL)
-      MASS::glm.nb(stats::as.formula(paste(outcome, "~", exposure)), data = data_clean)
-    }, error = function(e) {
-      warning("Model failed for ", exposure, ": ", e$message)
-      return(NULL)
-    })
+    tryCatch(
+      {
+        data_clean <- data |>
+          dplyr::filter(!is.na(.data[[exposure]]), !is.na(.data[[outcome]])) |>
+          droplevels()
+        if (nrow(data_clean) == 0 || length(unique(data_clean[[exposure]])) < 2) {
+          return(NULL)
+        }
+        MASS::glm.nb(stats::as.formula(paste(outcome, "~", exposure)), data = data_clean)
+      },
+      error = function(e) {
+        warning("Model failed for ", exposure, ": ", e$message)
+        return(NULL)
+      }
+    )
   }
 
   model_list <- purrr::map(exposures, fit_model)
@@ -70,9 +75,10 @@ uni_reg_nbin <- function(data, outcome, exposures) {
 
   tbl_list <- purrr::imap(model_list, function(fit, var) {
     gtsummary::tbl_regression(fit,
-                              exponentiate = TRUE,
-                              conf.method = "wald",
-                              tidy_fun = broom::tidy) |>
+      exponentiate = TRUE,
+      conf.method = "wald",
+      tidy_fun = broom::tidy
+    ) |>
       gtsummary::modify_header(estimate = "**IRR**") |>
       gtsummary::add_n(location = "label")
   })

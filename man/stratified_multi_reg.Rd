@@ -42,7 +42,7 @@ stratified by a specified variable. NA values in the stratifier are excluded fro
 
 \examples{
 if (requireNamespace("mlbench", quietly = TRUE) &&
-    requireNamespace("dplyr", quietly = TRUE)) {
+  requireNamespace("dplyr", quietly = TRUE)) {
   data(PimaIndiansDiabetes2, package = "mlbench")
   pima <- dplyr::mutate(
     PimaIndiansDiabetes2,

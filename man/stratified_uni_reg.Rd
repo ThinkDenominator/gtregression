@@ -45,7 +45,7 @@ along with underlying models and diagnostics.
 
 \examples{
 if (requireNamespace("mlbench", quietly = TRUE) &&
-    requireNamespace("dplyr", quietly = TRUE)) {
+  requireNamespace("dplyr", quietly = TRUE)) {
   data(PimaIndiansDiabetes2, package = "mlbench")
   pima <- dplyr::mutate(
     PimaIndiansDiabetes2,

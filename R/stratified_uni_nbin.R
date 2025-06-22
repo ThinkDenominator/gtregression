@@ -62,16 +62,19 @@ stratified_uni_nbin <- function(data, outcome, exposures, stratifier) {
 
     data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 
-    result <- tryCatch({
-      uni_reg_nbin(
-        data = data_stratum,
-        outcome = outcome,
-        exposures = exposures
-      )
-    }, error = function(e) {
-      warning("Skipping stratum ", lev, ": ", e$message)
-      NULL
-    })
+    result <- tryCatch(
+      {
+        uni_reg_nbin(
+          data = data_stratum,
+          outcome = outcome,
+          exposures = exposures
+        )
+      },
+      error = function(e) {
+        warning("Skipping stratum ", lev, ": ", e$message)
+        NULL
+      }
+    )
 
     if (!is.null(result)) {
       results[[lev]] <- result
@@ -79,7 +82,9 @@ stratified_uni_nbin <- function(data, outcome, exposures, stratifier) {
     }
   }
 
-  if (length(results) == 0) return(NULL)
+  if (length(results) == 0) {
+    return(NULL)
+  }
 
 
   # Extract components
@@ -99,14 +104,18 @@ stratified_uni_nbin <- function(data, outcome, exposures, stratifier) {
   class(result) <- c("stratified_uni_nbin", class(result))
 
   return(result)
-
 }
 #' @export
 `$.stratified_uni_nbin` <- function(x, name) {
-  if (name == "models") return(attr(x, "models"))
-  if (name == "model_summaries") return(attr(x, "model_summaries"))
+  if (name == "models") {
+    return(attr(x, "models"))
+  }
+  if (name == "model_summaries") {
+    return(attr(x, "model_summaries"))
+  }
 
-  if (name == "table") return(x)
+  if (name == "table") {
+    return(x)
+  }
   NextMethod("$")
 }
-
