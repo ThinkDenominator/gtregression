@@ -51,8 +51,9 @@ functions like `uni_reg()` and `multi_reg()`.
 }
 \examples{
 \dontrun{
-library(gtregression)
-result <- uni_reg(data = mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
-plot_reg(result)
+data <- data_PimaIndiansDiabetes
+uni_model <- uni_reg(data, "glucose", "bmi", approach = "linear")
+plot_reg(uni_model)
 }
+#' @export
 }

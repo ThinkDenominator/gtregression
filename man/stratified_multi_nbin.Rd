@@ -33,30 +33,6 @@ stratified by a specified variable. Observations with missing values in the stra
 Use `object$table`, `object$models`, `object$model_summaries`, or `object$reg_check` to extract components.
 }
 
-\examples{
-if (getRversion() >= "4.1.0" &&
-  requireNamespace("dplyr", quietly = TRUE)) {
-  set.seed(123)
-  df <- dplyr::tibble(
-    outcome = rnbinom(300, mu = 3, size = 1),
-    exposure1 = sample(c("Low", "High"), 300, replace = TRUE),
-    exposure2 = sample(c("A", "B"), 300, replace = TRUE),
-    group = sample(c("M", "F"), 300, replace = TRUE)
-  )
-  df <- dplyr::mutate(df,
-    exposure1 = factor(exposure1),
-    exposure2 = factor(exposure2),
-    group = factor(group)
-  )
-  result <- try(gtregression::stratified_multi_nbin(
-    data = df,
-    outcome = "outcome",
-    exposures = c("exposure1", "exposure2"),
-    stratifier = "group"
-  ), silent = TRUE)
-  if (inherits(result, "stratified_multi_nbin")) print(result$table)
-}
-}
 \seealso{
 [multi_reg_nbin()], [stratified_uni_reg_nbin()], [check_dispersion()]
 }

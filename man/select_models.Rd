@@ -38,3 +38,17 @@ A list with the following components:
 Performs stepwise model selection using forward, backward, or both directions across different regression approaches.
 Returns a summary table with evaluation metrics (AIC, BIC, log-likelihood, deviance) and the best model.
 }
+\examples{
+data <- data_PimaIndiansDiabetes
+stepwise <- select_models(
+data = data,
+outcome = "glucose",
+exposures = c("age", "pregnant", "mass"),
+approach = "linear",
+direction = "forward"
+)
+summary(stepwise)
+stepwise$results_table
+stepwise$best_model
+
+}

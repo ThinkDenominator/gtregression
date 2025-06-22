@@ -49,3 +49,7 @@ This function fits two models—one with and one without an interaction term bet
 and compares them using either a likelihood ratio test (LRT) or Wald test.
 It is useful for assessing whether there is statistical evidence of interaction (effect modification).
 }
+\examples{
+data <- data_PimaIndiansDiabetes
+
+}

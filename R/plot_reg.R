@@ -17,8 +17,6 @@
 #' @param show_ref Logical. If `TRUE`, includes reference categories in the plot (default = TRUE).
 #'
 #' @return A `ggplot2` object representing the forest plot.
-#'
-#' @export
 #' @importFrom dplyr mutate case_when filter row_number arrange if_else
 #' @importFrom tidyr fill
 #' @importFrom ggplot2 ggplot aes geom_errorbarh geom_point geom_vline
@@ -28,10 +26,11 @@
 #'
 #' @examples
 #' \dontrun{
-#' library(gtregression)
-#' result <- uni_reg(data = mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
-#' plot_reg(result)
+#' data <- data_PimaIndiansDiabetes
+#' uni_model <- uni_reg(data, "glucose", "bmi", approach = "linear")
+#' plot_reg(uni_model)
 #' }
+#' #' @export
 plot_reg <- function(tbl,
                      title = NULL,
                      ref_line = 1,

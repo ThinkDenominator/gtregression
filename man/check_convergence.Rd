@@ -49,10 +49,20 @@ This function is useful for identifying convergence issues, especially for
 \code{"log-binomial"} models, which often fail to converge with certain data structures.
 }
 \examples{
-data(mtcars)
-mtcars$am <- as.factor(mtcars$am)
-check_convergence(mtcars, outcome = "am", exposures = c("hp", "mpg"), approach = "logit")
+if (requireNamespace("gtregression", quietly = TRUE)) {
+data(data_PimaIndiansDiabetes, package = "gtregression")
 
+check_convergence(data = data_PimaIndiansDiabetes,
+  exposures= c("age", "bmi"),
+  outcome= "diabetes",
+  approach= "logit")
+
+check_convergence(data = data_PimaIndiansDiabetes,
+  exposures= c("age", "bmi"),
+  outcome= "diabetes",
+  approach= "logit",
+  multivariate= TRUE)
+}
 }
 \seealso{
 [uni_reg()], [multi_reg()], [identify_confounder()],  [interaction_models()]

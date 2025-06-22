@@ -34,16 +34,19 @@ Returns a publication-ready stacked regression table using `gtsummary`, with inc
 }
 
 \examples{
-set.seed(123)
-dummy_data <- data.frame(
-  y = MASS::rnegbin(200, mu = 3, theta = 1.2),
-  x1 = sample(c("Low", "Medium", "High"), 200, replace = TRUE),
-  x2 = sample(c("Yes", "No"), 200, replace = TRUE)
-)
-
-result <- uni_reg_nbin(data = dummy_data, outcome = "y", exposures = c("x1", "x2"))
-result$table
-
+if (requireNamespace("mlbench", quietly = TRUE)) {
+  data(PimaIndiansDiabetes2, package = "mlbench")
+  pima <- dplyr::mutate(
+    PimaIndiansDiabetes2,
+    pregnant = as.integer(pregnant)
+  )
+  reg <- uni_reg_nbin(
+    data = pima,
+    outcome = "pregnant",
+    exposures = c("age", "mass")
+  )
+  reg$table
+}
 }
 \seealso{
 [multi_reg_nbin()], [plot_reg()], [check_dispersion()]

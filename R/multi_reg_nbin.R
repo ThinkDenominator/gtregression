@@ -23,19 +23,16 @@
 #' @seealso [uni_reg_nbin()], [plot_reg()], [check_dispersion()]
 #'
 #' @examples
-#' set.seed(2025)
-#' dummy_data <- data.frame(
-#'   events = MASS::rnegbin(300, mu = 3, theta = 1),
-#'   exposure = factor(sample(c("Low", "Medium", "High"), 300, replace = TRUE)),
-#'   gender = factor(sample(c("Male", "Female"), 300, replace = TRUE))
-#' )
+#' if (requireNamespace("MASS", quietly = TRUE)) {
+#'   data(Pima.tr, package = "MASS")
+#'   multi_nb <- multi_reg_nbin(
+#'     data = Pima.tr,
+#'     outcome = "glu",
+#'     exposures = c("age", "bmi")
+#'   )
+#'   multi_nb$table
+#' }
 #'
-#' result <- multi_reg_nbin(
-#'   data = dummy_data,
-#'   outcome = "events",
-#'   exposures = c("exposure", "gender")
-#' )
-#' result$table
 #'
 #' @importFrom MASS glm.nb
 #' @importFrom broom tidy

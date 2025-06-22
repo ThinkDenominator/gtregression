@@ -32,13 +32,26 @@
 #' @seealso [uni_reg()], [multi_reg()], [identify_confounder()],  [interaction_models()]
 #'
 #' @examples
-#' data(mtcars)
-#' mtcars$am <- as.factor(mtcars$am)
-#' check_convergence(mtcars, outcome = "am", exposures = c("hp", "mpg"), approach = "logit")
+#' if (requireNamespace("gtregression", quietly = TRUE)) {
+#' data(data_PimaIndiansDiabetes, package = "gtregression")
 #'
+#' check_convergence(data = data_PimaIndiansDiabetes,
+#'   exposures= c("age", "bmi"),
+#'   outcome= "diabetes",
+#'   approach= "logit")
+#'
+#' check_convergence(data = data_PimaIndiansDiabetes,
+#'   exposures= c("age", "bmi"),
+#'   outcome= "diabetes",
+#'   approach= "logit",
+#'   multivariate= TRUE)
+#' }
 #' @export
-
-check_convergence <- function(data, exposures, outcome, approach = "logit", multivariate = FALSE) {
+check_convergence <- function(data,
+                              exposures,
+                              outcome,
+                              approach = "logit",
+                              multivariate = FALSE) {
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "negbin")
   if (!approach %in% valid_approaches) {
     stop("Invalid approach. Choose from: ", paste(valid_approaches, collapse = ", "))

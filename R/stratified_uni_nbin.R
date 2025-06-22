@@ -22,20 +22,17 @@
 #' @seealso [uni_reg_nbin()], [stratified_multi_reg()], [check_dispersion()]
 #'
 #' @examples
-#' set.seed(42)
-#' dummy <- dplyr::tibble(
-#'   outcome = rnbinom(300, mu = 3, size = 1),
-#'   exposure = sample(c("A", "B", "C"), 300, replace = TRUE),
-#'   group = sample(c("X", "Y"), 300, replace = TRUE)
-#' )
-#' stratified_model <- stratified_uni_nbin(
-#'   data = dummy,
-#'   outcome = "outcome",
-#'   exposures = "exposure",
-#'   stratifier = "group"
-#' )
-#' stratified_model$table
-#'
+#' if (requireNamespace("MASS", quietly = TRUE)) {
+#'   data(Pima.tr, package = "MASS")
+#'   Pima.tr$strata <- ifelse(Pima.tr$bmi > 30, "High", "Normal")
+#'   strat_uni_nb <- stratified_uni_nbin(
+#'     data = Pima.tr,
+#'     outcome = "glu",
+#'     exposures = c("age", "ped"),
+#'     stratifier = "strata"
+#'   )
+#'   strat_uni_nb$table
+#' }
 #' @importFrom MASS glm.nb
 #' @importFrom gtsummary tbl_merge
 #' @importFrom broom tidy

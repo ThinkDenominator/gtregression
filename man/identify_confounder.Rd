@@ -49,3 +49,14 @@ by more than a specified threshold (default: 10%).
 Supports multiple regression approaches including logistic, log-binomial,
 Poisson, negative binomial, robust Poisson, and linear regression.
 }
+\examples{
+data <- data_PimaIndiansDiabetes
+identify_confounder(
+ data = data,
+ outcome = "glucose",
+ exposure = "insulin",
+ potential_confounder = "age_cat",
+ approach = "linear"
+)
+
+}

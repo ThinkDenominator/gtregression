@@ -26,6 +26,17 @@
 #'
 #' @importFrom stats glm anova coef as.formula
 #' @importFrom MASS glm.nb
+#' @examples
+#' data <- data_PimaIndiansDiabetes
+#` interaction_models(
+#`  data = data,
+#`  outcome = "glucose",
+#`  exposure = "insulin",
+#`  effect_modifier = "age_cat",
+#`  covariates = "pregnant",
+#`  approach = "linear"
+#`)
+#'
 #' @export
 
 interaction_models <- function(data, outcome, exposure, covariates = NULL,

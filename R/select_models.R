@@ -26,8 +26,20 @@
 #' @importFrom tibble tibble
 #' @importFrom dplyr bind_rows
 #' @importFrom rlang .data
+#' @examples
+#' data <- data_PimaIndiansDiabetes
+#' stepwise <- select_models(
+#' data = data,
+#' outcome = "glucose",
+#' exposures = c("age", "pregnant", "mass"),
+#' approach = "linear",
+#' direction = "forward"
+#' )
+#' summary(stepwise)
+#' stepwise$results_table
+#' stepwise$best_model
+#'
 #' @export
-
 select_models <- function(data, outcome, exposures, approach = "logit", direction = "forward") {
   # Validate outcome type
   outcome_vec <- data[[outcome]]
@@ -45,33 +57,42 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
 
   # Model fitting wrapper
   fit_model <- function(vars) {
-    fmla <- if (length(vars) > 0) {
-      as.formula(paste(outcome, "~", paste(vars, collapse = " + ")))
+    fmla_str <- if (length(vars) > 0) {
+      paste(outcome, "~", paste(vars, collapse = " + "))
     } else {
-      as.formula(paste(outcome, "~ 1"))
+      paste(outcome, "~ 1")
+    }
+    ffmla_str <- if (length(vars) > 0) {
+      paste(outcome, "~", paste(vars, collapse = " + "))
+    } else {
+      paste(outcome, "~ 1")
     }
 
-    if (approach == "negbin") {
-      return(MASS::glm.nb(fmla, data = data))
+    model <- if (approach == "negbin") {
+      MASS::glm.nb(eval(parse(text = fmla_str)), data = data)
     } else if (approach == "linear") {
-      return(lm(fmla, data = data))
+      lm(eval(parse(text = fmla_str)), data = data)
     } else {
       family <- switch(approach,
-        "logit" = binomial(link = "logit"),
-        "log-binomial" = binomial(link = "log"),
-        "poisson" = poisson(link = "log"),
-        "robpoisson" = poisson(link = "log"),
-        stop("Unsupported approach")
+                       "logit" = binomial(link = "logit"),
+                       "log-binomial" = binomial(link = "log"),
+                       "poisson" = poisson(link = "log"),
+                       "robpoisson" = poisson(link = "log"),
+                       stop("Unsupported approach")
       )
-      return(glm(fmla, family = family, data = data))
+      glm(as.formula(fmla_str), family = family, data = data)
+
     }
+
+
+    attr(model, "formula_str") <- fmla_str
+    return(model)
   }
 
   all_models <- list()
   model_metrics <- list()
   step <- 1
 
-  # INITIAL setup for each direction
   if (direction == "forward") {
     selected_vars <- c()
   } else if (direction == "backward") {
@@ -87,14 +108,14 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
     all_models[[step]] <- best_model
     aic_best <- AIC(best_model)
 
-    # Try forward step
+    # Forward candidates
     add_candidates <- setdiff(exposures, selected_vars)
     forward_models <- lapply(add_candidates, function(var) fit_model(c(selected_vars, var)))
     forward_aics <- sapply(forward_models, AIC)
     best_forward <- if (length(forward_aics)) min(forward_aics) else Inf
     best_forward_idx <- if (length(forward_aics)) which.min(forward_aics) else NA
 
-    # Try backward step
+    # Backward candidates
     drop_candidates <- if (length(selected_vars) > 1) lapply(selected_vars, function(var) setdiff(selected_vars, var)) else list()
     backward_models <- lapply(drop_candidates, fit_model)
     backward_aics <- sapply(backward_models, AIC)
@@ -119,14 +140,10 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
       }
     }
 
-    model_formula_str <- if (length(selected_vars) > 0) {
-      paste(outcome, "~", paste(selected_vars, collapse = " + "))
-    } else {
-      paste(outcome, "~ 1")
-    }
+    model_formula_str <- attr(best_model, "formula_str")
 
     if (approach == "linear") {
-      model_metrics[[step]] <- tibble(
+      model_metrics[[step]] <- tibble::tibble(
         model_id = step,
         formula = model_formula_str,
         n_predictors = length(selected_vars),
@@ -137,7 +154,7 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
         adj_r2 = summary(best_model)$adj.r.squared
       )
     } else {
-      model_metrics[[step]] <- tibble(
+      model_metrics[[step]] <- tibble::tibble(
         model_id = step,
         formula = model_formula_str,
         n_predictors = length(selected_vars),
@@ -152,12 +169,21 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
     if (!improved) break
   }
 
-  metrics_tbl <- bind_rows(model_metrics)
+  metrics_tbl <- dplyr::bind_rows(model_metrics)
   best_row <- which.min(metrics_tbl$AIC)
+  final_best_model <- all_models[[best_row]]
+  final_best_model$call$formula <- as.formula(model_formula_str)
 
   return(list(
     results_table = metrics_tbl,
-    best_model = all_models[[best_row]],
+    best_model = final_best_model,
+    all_models = all_models
+  ))
+
+
+  return(list(
+    results_table = metrics_tbl,
+    best_model = final_best_model,
     all_models = all_models
   ))
 }

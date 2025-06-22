@@ -31,6 +31,16 @@
 #' @importFrom MASS glm.nb
 #' @importFrom tibble tibble
 #' @importFrom dplyr bind_rows
+#' @examples
+#' data <- data_PimaIndiansDiabetes
+#'identify_confounder(
+#'  data = data,
+#'  outcome = "glucose",
+#'  exposure = "insulin",
+#'  potential_confounder = "age_cat",
+#'  approach = "linear"
+#')
+#'
 #' @export
 
 identify_confounder <- function(data, outcome, exposure, potential_confounder,

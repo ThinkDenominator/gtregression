@@ -32,9 +32,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' result_uni <- uni_reg(mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
-#' result_multi <- multi_reg(mtcars, outcome = "mpg", exposures = c("hp", "wt"), approach = "linear")
-#' plot_reg_combine(tbl_uni = result_uni, tbl_multi = result_multi)
+#' data <- data_PimaIndiansDiabetes
+#' uni_model <- uni_reg(data, "glucose", "bmi", approach = "linear")
+#' multi_model <- multi_reg(data, "glucose", c("bmi", "age"), approach = "linear")
+#' plot_reg_combine(tbl_uni = uni_model, tbl_multi = multi_model)
 #' }
 plot_reg_combine <- function(tbl_uni,
                              tbl_multi,
