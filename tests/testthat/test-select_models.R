@@ -5,7 +5,7 @@ test_that("select_models works for valid approaches and directions", {
   library(mlbench)
   library(MASS)
   data("PimaIndiansDiabetes2", package = "mlbench")
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       bmi = factor(case_when(mass < 25 ~ "Normal",
@@ -77,7 +77,7 @@ test_that("select_models validates outcome types appropriately", {
 
 test_that("select_models supports negative binomial regression", {
   data("quine", package = "MASS")
-  quine <- quine %>%
+  quine <- quine |>
     mutate(across(c(Eth, Sex, Age, Lrn), as.factor))
 
   result <- select_models(quine, outcome = "Days",

@@ -111,7 +111,7 @@ test_that("stratified_uni_nbin returns NULL when no valid strata are found", {
   quine_m <- dplyr::filter(quine, Sex == "M")
 
   # All exposures have no variation
-  bad_data <- quine_m %>%
+  bad_data <- quine_m |>
     dplyr::mutate(Eth = "A", Age = "F0", Lrn = "SL")
 
   result <- suppressWarnings(

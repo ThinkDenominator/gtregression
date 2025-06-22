@@ -24,20 +24,28 @@
 #'   \item{\code{$model_summaries}}{Tidy summaries for each model.}
 #'   \item{\code{$reg_check}}{Regression diagnostic checks (when applicable).}
 #' }
-#'
 #' @seealso [multi_reg()], [stratified_uni_reg()], [plot_reg()]
-#'
 #' @examples
-#' data(PimaIndiansDiabetes2, package = "mlbench")
-#' pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = ifelse(diabetes == "pos", 1, 0))
-#' stratified_multi <- stratified_multi_reg(
-#'   data = pima,
-#'   outcome = "diabetes",
-#'   exposures = c("age", "mass"),
-#'   stratifier = "glucose",
-#'   approach = "logit"
-#' )
-#' stratified_multi$table
+#' if (requireNamespace("mlbench", quietly = TRUE) &&
+#'     requireNamespace("dplyr", quietly = TRUE)) {
+#'   data(PimaIndiansDiabetes2, package = "mlbench")
+#'   pima <- dplyr::mutate(
+#'     PimaIndiansDiabetes2,
+#'     diabetes = ifelse(diabetes == "pos", 1, 0),
+#'     glucose_cat = dplyr::case_when(
+#'       glucose < 140 ~ "Normal",
+#'       glucose >= 140 ~ "High"
+#'     )
+#'   )
+#'   stratified_multi <- stratified_multi_reg(
+#'     data = pima,
+#'     outcome = "diabetes",
+#'     exposures = c("age", "mass"),
+#'     stratifier = "glucose_cat",
+#'     approach = "logit"
+#'   )
+#'   stratified_multi$table
+#' }
 #'
 #' @importFrom dplyr filter
 #' @importFrom purrr map
@@ -46,7 +54,6 @@
 #' @export
 stratified_multi_reg <- function(data, outcome, exposures, stratifier,
                                  approach = "logit") {
-  `%>%` <- magrittr::`%>%`
 
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
   if (!(approach %in% valid_approaches)) {
@@ -112,15 +119,48 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
     }
   }
 
-  if (length(tbl_list) == 0) stop("No valid models across strata.")
 
+  if (length(tbl_list) == 0) stop("No valid models across strata.")
+  # Remove existing source notes
+  tbl_list <- purrr::map(tbl_list, ~ gtsummary::remove_source_note(.x))
+
+  # Merge the cleaned tables
   merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
+
+  # Extract and clean N values from N_obs_* columns
+  n_obs_cols <- grep("^N_obs_", names(merged_tbl$table_body), value = TRUE)
+
+  n_values <- purrr::map_chr(n_obs_cols, function(col) {
+    n <- unique(na.omit(merged_tbl$table_body[[col]]))
+    as.character(round(n))
+  })
+
+
+  #
+  stratum_labels <- strata_levels
+
+  # Compose final note cleanly
+  final_note <- paste0(
+    stratifier, " = ", stratum_labels, ": N = ", n_values,
+    " complete observations included in the multivariate model"
+  )
+
+  final_note <- paste(final_note, collapse = "<br>")
+
+  # Add the note
+  merged_tbl <- gtsummary::modify_source_note(merged_tbl, final_note)
+
+
+
+
   attr(merged_tbl, "models") <- models_list
   attr(merged_tbl, "model_summaries") <- summaries_list
   attr(merged_tbl, "reg_check") <- diagnostics_list
   attr(merged_tbl, "approach") <- approach
   attr(merged_tbl, "source") <- "stratified_multi_reg"
   class(merged_tbl) <- c("stratified_multi_reg", class(merged_tbl))
+
+
 
   return(merged_tbl)
 }

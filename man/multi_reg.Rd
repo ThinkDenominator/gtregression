@@ -41,7 +41,7 @@ Depending on the specified `approach`, the function estimates adjusted Odds Rati
 \examples{
 if (requireNamespace("mlbench", quietly = TRUE)) {
   data(PimaIndiansDiabetes2, package = "mlbench")
-  pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = diabetes == "pos")
+  pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes == "pos")
   model <- multi_reg(
     data = pima,
     outcome = "diabetes",

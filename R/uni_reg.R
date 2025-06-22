@@ -9,7 +9,6 @@
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
 #'   `"robpoisson"` (RR), `"linear"` (Beta coefficients)
-#' @importFrom magrittr %>%
 #' @importFrom broom tidy
 #' @details This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `risks`.
 #' #' @return A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
@@ -25,7 +24,7 @@
 #' @examples
 #' data(PimaIndiansDiabetes2, package = "mlbench")
 #' library(dplyr)
-#' pima <- PimaIndiansDiabetes2 %>%
+#' pima <- PimaIndiansDiabetes2 |>
 #'   dplyr::mutate(diabetes = ifelse(diabetes == "pos", 1, 0))
 #' uni_reg(pima, outcome = "diabetes", exposures = "age", approach = "logit")
 #' @seealso \code{\link{multi_reg}}, \code{\link{plot_reg}}
@@ -35,7 +34,7 @@ uni_reg <- function(data,
                     outcome,
                     exposures,
                     approach = "logit") {
-  `%>%` <- magrittr::`%>%`
+
   pkgs <- c("gtsummary", "purrr", "dplyr", "stats", "rlang")
   for (pkg in pkgs) {
     if (!requireNamespace(pkg, quietly = TRUE)) stop("Package '", pkg, "' is required.")
@@ -162,16 +161,21 @@ uni_reg <- function(data,
 
   if (length(model_list) == 0) stop("All models failed. Please check your data or exposures.")
 
-  tbl_list <- purrr::map(model_list,
-                         ~gtsummary::tbl_regression(.x,
-                                                    exponentiate = approach != "linear",
-                                                    conf.method = "wald",
-                                                    tidy_fun = broom::tidy))
-  stacked <- gtsummary::tbl_stack(purrr::map(tbl_list, ~gtsummary::modify_header(.x, estimate = label_est)))
+  tbl_list <- purrr::imap(model_list, function(fit, var) {
+    n_model <- nobs(fit)
+    gtsummary::tbl_regression(fit,
+                              exponentiate = approach != "linear",
+                              conf.method = "wald",
+                              tidy_fun = broom::tidy) |>
+      gtsummary::modify_header(estimate = label_est) |>
+      gtsummary::add_n(location= "label")
+  })
 
-  result <- stacked %>%
-    gtsummary::remove_abbreviation(remove_abbrev) %>%
+  stacked <- gtsummary::tbl_stack(tbl_list)
+  result <- stacked |>
+    gtsummary::remove_abbreviation(remove_abbrev) |>
     gtsummary::modify_abbreviation(abbreviation)
+
   model_summaries <- purrr::map(model_list, summary)
   names(model_summaries) <- exposures
 

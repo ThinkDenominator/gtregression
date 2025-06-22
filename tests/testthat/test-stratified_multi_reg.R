@@ -6,7 +6,7 @@ test_that("stratified_multi_reg returns a gtsummary tbl_merge object", {
 
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       bmi = case_when(
@@ -54,7 +54,7 @@ test_that("stratified_multi_reg returns a gtsummary tbl_merge object", {
 test_that("stratified_multi_reg excludes NA values in stratifier", {
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       glucose_cat = factor(case_when(
@@ -99,7 +99,7 @@ test_that("stratified_multi_reg excludes NA values in stratifier", {
 test_that("stratified_multi_reg runs with robpoisson and produces estimates", {
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       bmi = factor(case_when(

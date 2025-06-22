@@ -2,7 +2,9 @@
 % Please edit documentation in R/stratified_uni_reg.R
 \name{stratified_uni_reg}
 \alias{stratified_uni_reg}
-\title{Stratified Univariate Regression (Odds, Risk, or Rate Ratios)}
+\title{Performs univariate regression for each exposure on a binary, count, or continuous outcome,
+stratified by a specified variable. Produces a stacked `gtsummary` table with one column per stratum,
+along with underlying models and diagnostics.}
 \usage{
 stratified_uni_reg(data, outcome, exposures, stratifier, approach = "logit")
 }
@@ -42,16 +44,26 @@ along with underlying models and diagnostics.
 }
 
 \examples{
-data(PimaIndiansDiabetes2, package = "mlbench")
-pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = ifelse(diabetes == "pos", 1, 0))
-stratified_uni <- stratified_uni_reg(
-  data = pima,
-  outcome = "diabetes",
-  exposures = c("age", "mass"),
-  stratifier = "glucose",
-  approach = "logit"
-)
-stratified_uni$table
+if (requireNamespace("mlbench", quietly = TRUE) &&
+    requireNamespace("dplyr", quietly = TRUE)) {
+  data(PimaIndiansDiabetes2, package = "mlbench")
+  pima <- dplyr::mutate(
+    PimaIndiansDiabetes2,
+    diabetes = ifelse(diabetes == "pos", 1, 0),
+    glucose_cat = dplyr::case_when(
+      glucose < 140 ~ "Normal",
+      glucose >= 140 ~ "High"
+    )
+  )
+  stratified_uni <- stratified_uni_reg(
+    data = pima,
+    outcome = "diabetes",
+    exposures = c("age", "mass"),
+    stratifier = "glucose_cat",
+    approach = "logit"
+  )
+  stratified_uni$table
+}
 
 }
 \seealso{

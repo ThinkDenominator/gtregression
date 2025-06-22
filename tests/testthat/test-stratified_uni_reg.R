@@ -1,8 +1,8 @@
 test_that("stratified_uni_reg returns a gtsummary tbl_merge object with logit", {
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) %>%
+  pima_data <- PimaIndiansDiabetes2 |>
+    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
     mutate(
       bmi = factor(case_when(
         mass < 25 ~ "Normal",
@@ -37,7 +37,7 @@ test_that("stratified_uni_reg returns a gtsummary tbl_merge object with logit", 
 
 test_that("stratified_uni_reg excludes NA values in stratifier", {
   data("PimaIndiansDiabetes2", package = "mlbench")
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       age_cat = factor(ifelse(age < 50, "Under 50", "50+")),
@@ -64,7 +64,7 @@ test_that("stratified_uni_reg excludes NA values in stratifier", {
 test_that("stratified_uni_reg errors for invalid inputs", {
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(diabetes = ifelse(diabetes == "pos", 1, 0),
            glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal")))
 
@@ -95,7 +95,7 @@ test_that("stratified_uni_reg errors for invalid inputs", {
 test_that("stratified_uni_reg works with robpoisson", {
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       age_cat = factor(ifelse(age < 50, "Under 50", "50+")),
@@ -120,7 +120,7 @@ test_that("stratified_uni_reg works with robpoisson", {
 test_that("stratified_uni_reg errors when no valid strata exist", {
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       glucose_cat = NA  # All NA in stratifier

@@ -36,7 +36,7 @@
 "data_infertility"
 
 
-#' Epilepsy Treatment and Seizure Counts (`epilepsy`)
+#' Epilepsy Treatment and Seizure Counts
 #'
 #' A clinical dataset from a randomized trial investigating the effect of a drug on the number of seizures in patients with epilepsy.
 #' Contains repeated measures data with treatment groups, baseline seizure counts, and follow-up counts.
@@ -55,10 +55,10 @@
 #' }
 #'
 #' @source \pkg{MASS} package. Original data from Thall and Vail (1990), *Biometrics*.
-"epilepsy"
+"data_epilepsy"
 
 
-#' Birth Weight Data (`birthwt`)
+#' Birth Weight Data
 #'
 #' A dataset from the \pkg{MASS} package containing risk factors associated with low birth weight (LBW) in newborns.
 #' Originally collected at Baystate Medical Center, Springfield, Massachusetts, USA.
@@ -81,10 +81,10 @@
 #'
 #' @source Hosmer, D.W., Lemeshow, S. (1989). *Applied Logistic Regression.* New York: Wiley.
 #' Also available in \pkg{MASS} and described in detail in its documentation.
-"birthwt"
+"data_birthwt"
 
 
-#' Student Absenteeism in Rural Schools (`gt_quin`)
+#' Student Absenteeism in Rural Schools
 #'
 #' This dataset contains observations on the number of days absent from school for children in rural Australia,
 #' along with student characteristics. It's commonly used to demonstrate count models such as Poisson and Negative Binomial regression.
@@ -100,10 +100,7 @@
 #'
 #' @source \pkg{MASS} package. See also Venables and Ripley (2002), *Modern Applied Statistics with S*.
 #'
-#' @examples
-#' glm(Days ~ Sex + Age + Eth, family = poisson, data = gt_quin)
-"gt_quin"
-
+"data_gt_quin"
 
 #' PimaIndians2 Diabetes Dataset
 #'
@@ -124,4 +121,4 @@
 #' }
 #'
 #' @source \url{https://www.openml.org/d/37}
-"PimaIndiansDiabetes2"
+"data_PimaIndiansDiabetes"

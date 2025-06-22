@@ -41,8 +41,6 @@
 #' @importFrom broom tidy
 #' @export
 multi_reg_nbin <- function(data, outcome, exposures) {
-  `%>%` <- magrittr::`%>%`
-
   # Validate inputs
   if (!outcome %in% names(data)) stop("Outcome variable not found.")
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
@@ -56,8 +54,8 @@ multi_reg_nbin <- function(data, outcome, exposures) {
   }
 
   # Clean data
-  data_clean <- data %>%
-    dplyr::filter(!is.na(.data[[outcome]])) %>%
+  data_clean <- data |>
+    dplyr::filter(!is.na(.data[[outcome]])) |>
     tidyr::drop_na(dplyr::any_of(exposures))
 
   if (nrow(data_clean) == 0) stop("No valid observations after removing missing values.")
@@ -77,10 +75,16 @@ multi_reg_nbin <- function(data, outcome, exposures) {
   })
 
   # Format result
-  result <- gtsummary::tbl_regression(fit_model, exponentiate = TRUE) %>%
-    gtsummary::modify_header(estimate = "**Adjusted IRR**") %>%
-    gtsummary::modify_abbreviation("IRR = Incidence Rate Ratio") %>%
+  result <- fit_model |>
+    gtsummary::tbl_regression(exponentiate = TRUE) |>
+    gtsummary::modify_header(estimate = "**Adjusted IRR**") |>
+    gtsummary::modify_abbreviation("IRR = Incidence Rate Ratio") |>
     gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label)))
+
+  # Extract N_obs from the fitted model
+  result <- result |>
+    gtsummary::modify_source_note(
+      paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model"))
 
   # Attach metadata and class
   attr(result, "approach") <- "negbin"

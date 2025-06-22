@@ -41,16 +41,26 @@ stratified by a specified variable. NA values in the stratifier are excluded fro
 }
 
 \examples{
-data(PimaIndiansDiabetes2, package = "mlbench")
-pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = ifelse(diabetes == "pos", 1, 0))
-stratified_multi <- stratified_multi_reg(
-  data = pima,
-  outcome = "diabetes",
-  exposures = c("age", "mass"),
-  stratifier = "glucose",
-  approach = "logit"
-)
-stratified_multi$table
+if (requireNamespace("mlbench", quietly = TRUE) &&
+    requireNamespace("dplyr", quietly = TRUE)) {
+  data(PimaIndiansDiabetes2, package = "mlbench")
+  pima <- dplyr::mutate(
+    PimaIndiansDiabetes2,
+    diabetes = ifelse(diabetes == "pos", 1, 0),
+    glucose_cat = dplyr::case_when(
+      glucose < 140 ~ "Normal",
+      glucose >= 140 ~ "High"
+    )
+  )
+  stratified_multi <- stratified_multi_reg(
+    data = pima,
+    outcome = "diabetes",
+    exposures = c("age", "mass"),
+    stratifier = "glucose_cat",
+    approach = "logit"
+  )
+  stratified_multi$table
+}
 
 }
 \seealso{

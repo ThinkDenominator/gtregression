@@ -1,4 +1,4 @@
-#' Stratified Univariate Regression (Odds, Risk, or Rate Ratios)
+' Stratified Univariate Regression (Odds, Risk, or Rate Ratios)
 #'
 #' Performs univariate regression for each exposure on a binary, count, or continuous outcome,
 #' stratified by a specified variable. Produces a stacked `gtsummary` table with one column per stratum,
@@ -29,16 +29,26 @@
 #' @seealso [multi_reg()], [plot_reg()], [identify_confounder()]
 #'
 #' @examples
-#' data(PimaIndiansDiabetes2, package = "mlbench")
-#' pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = ifelse(diabetes == "pos", 1, 0))
-#' stratified_uni <- stratified_uni_reg(
-#'   data = pima,
-#'   outcome = "diabetes",
-#'   exposures = c("age", "mass"),
-#'   stratifier = "glucose",
-#'   approach = "logit"
-#' )
-#' stratified_uni$table
+#' if (requireNamespace("mlbench", quietly = TRUE) &&
+#'     requireNamespace("dplyr", quietly = TRUE)) {
+#'   data(PimaIndiansDiabetes2, package = "mlbench")
+#'   pima <- dplyr::mutate(
+#'     PimaIndiansDiabetes2,
+#'     diabetes = ifelse(diabetes == "pos", 1, 0),
+#'     glucose_cat = dplyr::case_when(
+#'       glucose < 140 ~ "Normal",
+#'       glucose >= 140 ~ "High"
+#'     )
+#'   )
+#'   stratified_uni <- stratified_uni_reg(
+#'     data = pima,
+#'     outcome = "diabetes",
+#'     exposures = c("age", "mass"),
+#'     stratifier = "glucose_cat",
+#'     approach = "logit"
+#'   )
+#'   stratified_uni$table
+#' }
 #'
 #' @importFrom purrr map
 #' @importFrom broom tidy
@@ -47,8 +57,6 @@
 
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit") {
-  `%>%` <- magrittr::`%>%`
-
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
   if (!approach %in% valid_approaches) {
     stop("Invalid approach: ", approach,
@@ -103,7 +111,17 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     })
 
     if (!is.null(result)) {
-      tbl_list[[length(tbl_list) + 1]] <- result$table
+      tbls <- purrr::imap(attr(result, "models"), function(fit, var) {
+        gtsummary::tbl_regression(fit,
+                                  exponentiate = approach != "linear",
+                                  conf.method = "wald",
+                                  tidy_fun = broom::tidy) |>
+          gtsummary::add_n(location = "label")
+      })
+
+      stacked <- gtsummary::tbl_stack(tbls)
+
+      tbl_list[[length(tbl_list) + 1]] <- stacked
       models_list[[lev]] <- attr(result, "models")
       summaries_list[[lev]] <- attr(result, "model_summaries")
       diagnostics_list[[lev]] <- attr(result, "reg_check")

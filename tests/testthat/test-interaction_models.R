@@ -3,8 +3,8 @@ test_that("interaction_models returns a list with expected names", {
   library(dplyr)
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) %>%
+  pima_data <- PimaIndiansDiabetes2 |>
+    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
     mutate(
       bmi = factor(case_when(mass < 25 ~ "Normal",
                              mass >= 25 & mass < 30 ~ "Overweight",
@@ -36,8 +36,8 @@ test_that("interaction_models handles robpoisson approach", {
   library(dplyr)
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) %>%
+  pima_data <- PimaIndiansDiabetes2 |>
+    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
     mutate(
       age_cat = factor(case_when(age < 30 ~ "Young",
                                  age >= 30 & age < 50 ~ "Middle-aged",
@@ -63,8 +63,8 @@ test_that("interaction_models errors with invalid approach", {
   library(dplyr)
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) %>%
+  pima_data <- PimaIndiansDiabetes2 |>
+    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
     mutate(
       age_cat = factor(case_when(age < 30 ~ "Young",
                                  age >= 30 & age < 50 ~ "Middle-aged",

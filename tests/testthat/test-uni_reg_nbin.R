@@ -7,7 +7,7 @@ test_that("uni_reg_nbin computes unadjusted IRRs using negative binomial regress
 
   data("quine", package = "MASS")
 
-  quine_data <- quine %>%
+  quine_data <- quine |>
     mutate(
       Eth = factor(Eth, levels = c("A", "N")),
       Sex = factor(Sex, levels = c("M", "F")),

@@ -13,8 +13,8 @@ test_that("save_table(), save_plot(), and save_docx() work correctly", {
 
   # Prepare Data
   data("PimaIndiansDiabetes2", package = "gtregression")
-  pima_data <- PimaIndiansDiabetes2 %>%
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) %>%
+  pima_data <- PimaIndiansDiabetes2 |>
+    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
     mutate(bmi = case_when(
       mass < 25 ~ "Normal",
       mass >= 25 & mass < 30 ~ "Overweight",
@@ -57,8 +57,8 @@ test_that("save_table(), save_plot(), and save_docx() work correctly", {
       pedigree > 0.5 ~ "High Genetic Risk"
     ),
     dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))
-    ) %>%
-    mutate(diabetes_cat = case_when(diabetes == 1 ~ "Diabetes positive", TRUE ~ "Diabetes negative")) %>%
+    ) |>
+    mutate(diabetes_cat = case_when(diabetes == 1 ~ "Diabetes positive", TRUE ~ "Diabetes negative")) |>
     mutate(diabetes_cat = factor(diabetes_cat, levels = c("Diabetes negative", "Diabetes positive")))
 
   exposures <- c("bmi", "age_cat", "npreg_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")

@@ -27,13 +27,11 @@ test_that("stratified_multi_nbin returns a gtsummary tbl_merge object", {
     return(NULL)
   })
 
-  if (is.null(result)) {
-    skip("Skipping test: no valid models across strata.")
-  } else {
-    expect_s3_class(result, "stratified_multi_nbin")
-    expect_s3_class(result, "tbl_merge")
-    expect_true("gtsummary" %in% class(result))
-  }
+  skip_if(is.null(result), "No valid models across strata.")
+
+  expect_s3_class(result, "stratified_multi_nbin")
+  expect_s3_class(result, "tbl_merge")
+  expect_s3_class(result, "gtsummary")
 })
 
 test_that("stratified_multi_nbin excludes NA values in stratifier", {
@@ -65,12 +63,10 @@ test_that("stratified_multi_nbin excludes NA values in stratifier", {
     return(NULL)
   })
 
-  if (is.null(result)) {
-    skip("Skipping test: no valid strata after removing NA values.")
-  } else {
-    expect_s3_class(result, "stratified_multi_nbin")
-    expect_s3_class(result, "tbl_merge")
-  }
+  skip_if(is.null(result), "No valid strata after removing NA values.")
+
+  expect_s3_class(result, "stratified_multi_nbin")
+  expect_s3_class(result, "tbl_merge")
 })
 
 test_that("stratified_multi_nbin errors for invalid inputs", {
@@ -100,25 +96,34 @@ test_that("stratified_multi_nbin errors for invalid inputs", {
 })
 
 test_that("stratified_multi_nbin handles single stratum gracefully", {
-  quine_m <- dplyr::filter(quine, Sex == "M")
+  skip_if_not_installed("MASS")
+  skip_if_not_installed("dplyr")
 
-  result <- gtregression::stratified_multi_nbin(data = quine_m,
-                                                outcome = "Days",
-                                                exposures = c("Eth", "Age", "Lrn"),
-                                                stratifier = "Sex")
+  data("quine", package = "MASS")
 
-  expect_true(is.null(result) || !is.null(attr(result, "model_summaries")))
+  quine_m <- quine |> dplyr::filter(Sex == "M")
 
+  expect_error(
+    gtregression::stratified_multi_nbin(
+      data = quine_m,
+      outcome = "Days",
+      exposures = c("Eth", "Age", "Lrn"),
+      stratifier = "Sex"
+    ),
+    regexp = "No valid models across strata"
+  )
 })
 
 test_that("stratified_multi_nbin returns NULL when models cannot be fit", {
   skip_if_not_installed("MASS")
+  skip_if_not_installed("dplyr")
+
   data("quine", package = "MASS")
 
   quine_m <- dplyr::filter(quine, Sex == "M")
 
-  # Create an invalid case where exposure has no variability
-  bad_data <- quine_m %>%
+  # Create an invalid dataset with no variation
+  bad_data <- quine_m |>
     dplyr::mutate(Eth = "A", Age = "F0", Lrn = "SL")
 
   result <- suppressWarnings(

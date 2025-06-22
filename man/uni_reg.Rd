@@ -37,7 +37,7 @@ This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `r
 \examples{
 data(PimaIndiansDiabetes2, package = "mlbench")
 library(dplyr)
-pima <- PimaIndiansDiabetes2 \%>\%
+pima <- PimaIndiansDiabetes2 |>
   dplyr::mutate(diabetes = ifelse(diabetes == "pos", 1, 0))
 uni_reg(pima, outcome = "diabetes", exposures = "age", approach = "logit")
 }

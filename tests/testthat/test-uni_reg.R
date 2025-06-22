@@ -8,7 +8,7 @@ test_that("uni_reg computes estimates correctly across approaches", {
   # Load and prepare the dataset
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       bmi = case_when(

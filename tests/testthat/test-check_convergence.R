@@ -2,7 +2,7 @@ test_that("check_convergence runs correctly for valid approaches", {
 
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     dplyr::mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       bmi = dplyr::case_when(
@@ -38,7 +38,7 @@ test_that("check_convergence runs correctly for valid approaches", {
 
   data("quine", package = "MASS")
 
-  quine_data <- quine %>%
+  quine_data <- quine |>
     dplyr::mutate(Days = as.numeric(Days))
 
   count_exposures <- c("Eth", "Sex", "Age", "Lrn")

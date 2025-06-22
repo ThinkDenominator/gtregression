@@ -2,7 +2,7 @@ test_that("identify_confounder works across approaches using change-in-estimate 
   # Load and prepare data
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     dplyr::mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       bmi = dplyr::case_when(
@@ -58,7 +58,7 @@ test_that("identify_confounder works across approaches using change-in-estimate 
 
   # Test on count outcome with negative binomial
   data("quine", package = "MASS")
-  quine_data <- quine %>%
+  quine_data <- quine |>
     dplyr::mutate(across(c(Eth, Sex, Age, Lrn), as.factor))
 
   conf_tbl_nb <- identify_confounder(

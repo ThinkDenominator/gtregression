@@ -14,13 +14,12 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 4.0)
+    R (>= 4.1.0)
 Imports:
     dplyr,
     gtsummary,
     risks,
     purrr,
-    magrittr,
     MASS,
     rlang,
     stats,
@@ -44,6 +43,7 @@ Suggests:
     rmarkdown,
     mlbench,
     car,
-    forcats
+    forcats,
+    pkgdown
 RoxygenNote: 7.3.2
 Config/testthat/edition: 3

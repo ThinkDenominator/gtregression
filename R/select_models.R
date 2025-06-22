@@ -36,7 +36,7 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
   is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) && length(unique(x[!is.na(x)])) > 2
   is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
 
-  if (approach %in% c("logit", "log-binomial", "robpoisson", "margstd_boot", "margstd_delta")) {
+  if (approach %in% c("logit", "log-binomial", "robpoisson")) {
     if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
   } else if (approach %in% c("poisson", "negbin")) {
     if (!is_count(outcome_vec)) stop("Count outcome required for Poisson or negbin.")

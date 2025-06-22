@@ -37,8 +37,6 @@
 #' @importFrom MASS glm.nb
 #' @export
 uni_reg_nbin <- function(data, outcome, exposures) {
-  `%>%` <- magrittr::`%>%`
-
   # Validate outcome and exposures
   if (!outcome %in% names(data)) stop("Outcome variable not found in dataset.")
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
@@ -53,8 +51,8 @@ uni_reg_nbin <- function(data, outcome, exposures) {
   # Fit function
   fit_model <- function(exposure) {
     tryCatch({
-      data_clean <- data %>%
-        dplyr::filter(!is.na(.data[[exposure]]), !is.na(.data[[outcome]])) %>%
+      data_clean <- data |>
+        dplyr::filter(!is.na(.data[[exposure]]), !is.na(.data[[outcome]])) |>
         droplevels()
       if (nrow(data_clean) == 0 || length(unique(data_clean[[exposure]])) < 2) return(NULL)
       MASS::glm.nb(stats::as.formula(paste(outcome, "~", exposure)), data = data_clean)
@@ -70,16 +68,21 @@ uni_reg_nbin <- function(data, outcome, exposures) {
 
   if (length(model_list) == 0) stop("All models failed. Please check your data or exposures.")
 
-  tbl_list <- purrr::map(model_list,
-                         ~gtsummary::tbl_regression(.x,
-                                                    exponentiate = TRUE,
-                                                    conf.method = "wald",
-                                                    tidy_fun = broom::tidy))
-  stacked <- gtsummary::tbl_stack(purrr::map(tbl_list, ~gtsummary::modify_header(.x, estimate = "**IRR**")))
+  tbl_list <- purrr::imap(model_list, function(fit, var) {
+    gtsummary::tbl_regression(fit,
+                              exponentiate = TRUE,
+                              conf.method = "wald",
+                              tidy_fun = broom::tidy) |>
+      gtsummary::modify_header(estimate = "**IRR**") |>
+      gtsummary::add_n(location = "label")
+  })
 
-  result <- stacked %>%
-    gtsummary::remove_abbreviation("IRR = Incidence Rate Ratio") %>%
+  stacked <- gtsummary::tbl_stack(tbl_list)
+
+  result <- stacked |>
+    gtsummary::remove_abbreviation("IRR = Incidence Rate Ratio") |>
     gtsummary::modify_abbreviation("IRR = Incidence Rate Ratio")
+
 
   model_summaries <- purrr::map(model_list, summary)
   names(model_summaries) <- exposures

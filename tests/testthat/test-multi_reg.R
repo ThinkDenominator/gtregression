@@ -8,7 +8,7 @@ test_that("multi_reg computes estimates correctly across approaches", {
   # Load and prepare the dataset
   data("PimaIndiansDiabetes2", package = "mlbench")
 
-  pima_data <- PimaIndiansDiabetes2 %>%
+  pima_data <- PimaIndiansDiabetes2 |>
     mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       bmi = case_when(
@@ -50,7 +50,7 @@ test_that("multi_reg computes estimates correctly across approaches", {
     outcome_var <- if (approach == "linear") "mass" else if (approach == "poisson") "pregnant" else "diabetes"
 
     if (approach == "log-binomial") {
-      skip_on_cran()  # ⚠️ May fail due to convergence on CRAN
+      skip_on_cran()  # May fail due to convergence on CRAN
 
       expect_error(
         suppressWarnings(

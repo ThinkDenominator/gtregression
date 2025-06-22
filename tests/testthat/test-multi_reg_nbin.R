@@ -6,7 +6,7 @@ test_that("multi_reg_nbin computes adjusted IRRs using negative binomial regress
 
   data("quine", package = "MASS")
 
-  quine_data <- quine %>%
+  quine_data <- quine |>
     mutate(
       Eth = factor(Eth),
       Sex = factor(Sex),

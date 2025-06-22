@@ -42,8 +42,6 @@
 #' @export
 
 stratified_uni_nbin <- function(data, outcome, exposures, stratifier) {
-  `%>%` <- magrittr::`%>%`
-
   if (!stratifier %in% names(data)) stop("Stratifier not found in the dataset.")
   if (!outcome %in% names(data)) stop("Outcome variable not found in the dataset.")
   if (!all(exposures %in% names(data))) stop("One or more exposures not found in the dataset.")
@@ -85,12 +83,12 @@ stratified_uni_nbin <- function(data, outcome, exposures, stratifier) {
 
 
   # Extract components
-  tbl_list <- lapply(results, function(x) x$table)
+
   model_list <- lapply(results, function(x) attr(x, "models"))
   summary_list <- lapply(results, function(x) attr(x, "model_summaries"))
 
 
-  merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
+  merged_tbl <- gtsummary::tbl_merge(results, tab_spanner = spanners)
 
   result <- merged_tbl
   attr(result, "models") <- model_list

@@ -152,5 +152,6 @@ save_docx <- function(tables = NULL, plots = NULL, filename = "report.docx", tit
   }
 
   print(doc, target = filename)
-  message("Word document saved as: '", filename, "' in the working directory.")
+  message("Word document saved as: '", filename, "' in the working directory. \n If tables or plots extend beyond the page, consider switching to landscape layout in Word (Layout > Orientation > Landscape).")
+
 }

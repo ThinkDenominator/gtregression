@@ -29,7 +29,7 @@
 #' @examples
 #' if (requireNamespace("mlbench", quietly = TRUE)) {
 #'   data(PimaIndiansDiabetes2, package = "mlbench")
-#'   pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes = diabetes == "pos")
+#'   pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes == "pos")
 #'   model <- multi_reg(
 #'     data = pima,
 #'     outcome = "diabetes",
@@ -46,8 +46,6 @@ multi_reg <- function(data,
                       outcome,
                       exposures,
                       approach = "logit") {
-  `%>%` <- magrittr::`%>%`
-
   valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
   if (!(approach %in% valid_approaches)) {
     stop("Invalid approach: ", approach,
@@ -98,8 +96,8 @@ multi_reg <- function(data,
   }
 
   # Clean missing data
-  data_clean <- data %>%
-    dplyr::filter(!is.na(.data[[outcome]])) %>%
+  data_clean <- data |>
+    dplyr::filter(!is.na(.data[[outcome]])) |>
     tidyr::drop_na(dplyr::any_of(exposures))
 
   if (nrow(data_clean) == 0) {
@@ -170,17 +168,22 @@ multi_reg <- function(data,
 
 
 
-  result <- gtsummary::tbl_regression(
-    fit_model,
+  result <- fit_model |>
+    gtsummary::tbl_regression(
     exponentiate = approach != "linear",
     conf.level = 0.95,
     conf.method = "wald",
     tidy_fun = broom::tidy
-  ) %>%
-    gtsummary::modify_header(estimate = effect_label) %>%
-    gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label))) %>%
-    gtsummary::remove_abbreviation(remove_abbreviation) %>%
+  ) |>
+    gtsummary::modify_header(estimate = effect_label) |>
+    gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label))) |>
+    gtsummary::remove_abbreviation(remove_abbreviation) |>
     gtsummary::modify_abbreviation(abbreviation)
+
+  # Extract N_obs from the fitted model
+  result <- result |>
+    gtsummary::modify_source_note(
+      paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model"))
 
   if (approach != "linear") {
     reg_diagnostics <- "Regression diagnostics only available for 'linear' models."
