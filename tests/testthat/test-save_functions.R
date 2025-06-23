@@ -12,8 +12,8 @@ test_that("save_table(), save_plot(), and save_docx() work correctly", {
   library(dplyr)
 
   # Prepare Data
-  data("PimaIndiansDiabetes2", package = "gtregression")
-  pima_data <- PimaIndiansDiabetes2 |>
+  data("data_PimaIndiansDiabetes", package = "gtregression")
+  pima_data <- data_PimaIndiansDiabetes |>
     mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
     mutate(
       bmi = case_when(

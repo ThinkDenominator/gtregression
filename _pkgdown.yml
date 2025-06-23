@@ -1,0 +1,66 @@
+template:
+  bootstrap: 5
+  bootswatch: flatly
+
+url: https://drrubesh.github.io/gtregression
+
+
+home:
+  title: gtregression
+  description: Publication-ready regression tables made easy
+
+navbar:
+  structure:
+    left: [home, reference, articles]
+    right: [github]
+
+reference:
+  - title: "Regression Functions"
+    desc: "Fit univariate and multivariable models"
+    contents:
+      - uni_reg
+      - multi_reg
+      - uni_reg_nbin
+      - multi_reg_nbin
+      - stratified_uni_reg
+      - stratified_multi_reg
+      - stratified_uni_nbin
+      - stratified_multi_nbin
+
+  - title: "Model Selection & Diagnostics"
+    desc: "Model selection, collinearity, and convergence tools"
+    contents:
+      - select_models
+      - check_collinearity
+      - check_convergence
+
+  - title: "Confounding & Interaction"
+    desc: "Identify confounders and effect modifiers"
+    contents:
+      - identify_confounder
+      - interaction_models
+
+  - title: "Tables & Customization"
+    desc: "Customize regression output tables"
+    contents:
+      - modify_table
+      - save_table
+      - save_docx
+
+  - title: "Plotting"
+    desc: "Forest plots of regression models"
+    contents:
+      - plot_reg
+      - plot_reg_combine
+      - save_plot
+
+  - title: "Example Datasets"
+    desc: "Built-in datasets for demo and testing"
+    contents:
+      - data_PimaIndiansDiabetes
+      - data_gt_quin
+      - data_birthwt
+      - data_epilepsy
+      - data_infertility
+      - data_lungcancer
+

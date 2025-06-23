@@ -30,7 +30,7 @@
 #' uni_model <- uni_reg(data, "glucose", "bmi", approach = "linear")
 #' plot_reg(uni_model)
 #' }
-#' #' @export
+#' @export
 plot_reg <- function(tbl,
                      title = NULL,
                      ref_line = 1,

@@ -34,7 +34,8 @@ test_that("modify_table() works correctly with pima_data", {
   tbl_custom <- modify_table(
     uni_rr,
     variable_labels = c(age_cat = "Age", bmi = "BMI"),
-    level_labels = c(`Young` = "Young Adults", `Older` = "Older Adults"),
+    level_labels = list(age_cat= c(`Young` = "Young Adults",
+                               `Older` = "Older Adults")),
     header_labels = c(estimate = "Unadjusted RR", `p.value` = "P value"),
     caption = "Table 1: Univariate Regression",
     bold_labels = TRUE,

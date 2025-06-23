@@ -54,7 +54,7 @@ library(gtregression)
 tbl_custom <- modify_table(
   uni_rr,
   variable_labels = c(age_cat = "Age", bmi = "BMI"),
-  level_labels = c(`Young` = "Young Adults", `Old` = "Older Adults"),
+  level_labels = list(age_cat = c(`Young` = "Young Adults", `Old` = "Older Adults")),
   header_labels = c(estimate = "**Risk Ratio**", `p.value` = "***P*-value**"),
   caption = "Table 1: Univariate Regression",
   bold_labels = TRUE,

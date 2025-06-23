@@ -23,7 +23,7 @@
 #' tbl_custom <- modify_table(
 #'   uni_rr,
 #'   variable_labels = c(age_cat = "Age", bmi = "BMI"),
-#'   level_labels = c(`Young` = "Young Adults", `Old` = "Older Adults"),
+#'   level_labels = list(age_cat = c(`Young` = "Young Adults", `Old` = "Older Adults")),
 #'   header_labels = c(estimate = "**Risk Ratio**", `p.value` = "***P*-value**"),
 #'   caption = "Table 1: Univariate Regression",
 #'   bold_labels = TRUE,
@@ -34,6 +34,7 @@
 #'
 #' @importFrom gtsummary modify_table_body modify_header modify_caption bold_labels bold_levels modify_column_hide remove_source_note modify_source_note
 #' @importFrom dplyr mutate case_when
+#' @importFrom dplyr mutate case_when all_of
 #' @export
 modify_table <- function(gt_table,
                          variable_labels = NULL,
@@ -51,26 +52,41 @@ modify_table <- function(gt_table,
 
   tbl <- gt_table
 
-  # Detect source type from attribute
+  # Detect source type or fallback for merged/stacked tables
   source_type <- attr(tbl, "source")
+  if (inherits(tbl, "tbl_merge") || inherits(tbl, "tbl_stack")) {
+    source_type <- "merged"
+  }
 
   # 1. Variable labels
   if (!is.null(variable_labels)) {
     tbl <- gtsummary::modify_table_body(tbl, ~ dplyr::mutate(.x,
-      label = dplyr::case_when(
-        row_type == "label" & variable %in% names(variable_labels) ~ variable_labels[variable],
-        TRUE ~ label
-      )
+                                                             label = dplyr::case_when(
+                                                               row_type == "label" & variable %in% names(variable_labels) ~ variable_labels[variable],
+                                                               TRUE ~ label
+                                                             )
     ))
   }
 
-  # 2. Level labels
+  # 2. Level labels (safe mapping by variable and level)
   if (!is.null(level_labels)) {
     tbl <- gtsummary::modify_table_body(tbl, ~ dplyr::mutate(.x,
-      label = dplyr::case_when(
-        row_type == "level" & label %in% names(level_labels) ~ level_labels[label],
-        TRUE ~ label
-      )
+                                                             label = dplyr::case_when(
+                                                               row_type == "level" &
+                                                                 variable %in% names(level_labels) &
+                                                                 label %in% unlist(purrr::map(level_labels, names)) ~
+                                                                 purrr::map2_chr(variable, label, function(var, lev) {
+                                                                   out <- tryCatch({
+                                                                     if (!is.null(level_labels[[var]]) && lev %in% names(level_labels[[var]])) {
+                                                                       level_labels[[var]][[lev]]
+                                                                     } else {
+                                                                       lev
+                                                                     }
+                                                                   }, error = function(e) lev)
+                                                                   out
+                                                                 }),
+                                                               TRUE ~ label
+                                                             )
     ))
   }
 
@@ -84,40 +100,51 @@ modify_table <- function(gt_table,
     tbl <- gtsummary::modify_caption(tbl, caption)
   }
 
-  # 5. Bold labels
+  # 5. Bold variable labels
   if (isTRUE(bold_labels)) {
     tbl <- gtsummary::bold_labels(tbl)
   }
 
-  # 6. Bold levels
+  # 6. Bold factor levels
   if (isTRUE(bold_levels)) {
     tbl <- gtsummary::bold_levels(tbl)
   }
 
-  # 7. Remove N only if univariate table
+  # 7. Remove N columns for univariate or merged tables
   if (isTRUE(remove_N)) {
     if (source_type %in% c("uni_reg", "uni_reg_nbin")) {
       tbl <- gtsummary::modify_column_hide(tbl, stat_n)
+    } else if (inherits(tbl, "tbl_merge")) {
+      n_cols <- grep("^stat_n", names(tbl$table_body), value = TRUE)
+      if (length(n_cols) > 0) {
+        tbl <- gtsummary::modify_column_hide(tbl, all_of(n_cols))
+      } else {
+        warning("No stat_n columns found in tbl_merge object.")
+      }
     } else {
-      warning("remove_N is only applicable to univariate regression tables (uni_*). Ignored.")
+      warning("`remove_N` is ignored because the table is not a univariate or merged regression table.")
     }
   }
 
-  # 8. Remove source note only if multivariate
+
+  # 8. Remove sample size source note (for multi_reg or merged tables)
   if (isTRUE(remove_N_obs)) {
     if (source_type %in% c("multi_reg", "multi_reg_nbin")) {
       tbl <- gtsummary::remove_source_note(tbl)
+    } else if (inherits(tbl, "tbl_merge")) {
+      tbl <- gtsummary::remove_source_note(tbl)
     } else {
-      warning("remove_N_obs is only applicable to multivariate regression tables (multi_*). Ignored.")
+      warning("`remove_N_obs` is ignored because the table is not multivariable or merged.")
     }
   }
 
 
-  # 9. Add caveat below existing source notes
+  # 9. Caveat (always applied)
   if (!is.null(caveat)) {
     tbl <- gtsummary::modify_source_note(tbl, caveat)
   }
-  # 10. Remove abbreviation footnote (both uni and multi)
+
+  # 10. Remove abbreviations
   if (isTRUE(remove_abbreviations)) {
     tbl <- gtsummary::remove_abbreviation(tbl)
   }

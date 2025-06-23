@@ -1,6 +1,6 @@
 Package: gtregression
 Type: Package
-Title: Publication-Ready Cohort Study Tables
+Title: Publication-Ready Regression Tables Made Easy
 Version: 1.0.0
 Authors@R: c(
     person(given = "Rubeshkumar", family = "Polani", email = "rubesh.pc@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-0418-7592")),
@@ -47,3 +47,5 @@ Suggests:
     pkgdown
 RoxygenNote: 7.3.2
 Config/testthat/edition: 3
+URL: https://github.com/gtregression/gtregression
+BugReports: https://github.com/drrubesh/gtregression/issues

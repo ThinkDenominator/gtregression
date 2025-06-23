@@ -55,5 +55,4 @@ data <- data_PimaIndiansDiabetes
 uni_model <- uni_reg(data, "glucose", "bmi", approach = "linear")
 plot_reg(uni_model)
 }
-#' @export
 }
