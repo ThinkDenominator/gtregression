@@ -18,4 +18,8 @@
 ^tests/testthat\\.Rout\\.fail$  # failed test outputs
 ^tests/testthat\\.Rout$         # test outputs
 
-^.*~$                      # backup files (e.g. from editors)
+^.*~$                      # backup files
+^\.Rproj\.user$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
