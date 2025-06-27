@@ -18,7 +18,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="index.html">gtregression</a>
 
@@ -48,73 +48,13 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="gtregression">gtregression<a class="anchor" aria-label="anchor" href="#gtregression"></a>
-</h1></div>
-<p><code>gtregression</code> is an R package that simplifies regression modeling and generates publication-ready tables using the <code>gtsummary</code> ecosystem. It supports a variety of regression approaches with built-in tools for model diagnostics, selection, and confounder identification—all designed to provide beginner and intermediate R users with clean, interpretable output.</p>
-<p>This package was created with the aim of empowering R users in low- and middle-income countries (LMICs) by offering a simpler and more accessible coding experience. We sincerely thank the authors and contributors of foundational R packages such as <code>gtsummary</code>, <code>MASS</code>, <code>RISKS</code>, <code>dplyr</code>, and others—without whom this project would not have been possible.</p>
-<div class="section level2">
-<h2 id="vision">Vision<a class="anchor" aria-label="anchor" href="#vision"></a>
+  <main id="main" class="col-md-9"><div class="section level2">
+<h2 id="function-overview">Function Overview<a class="anchor" aria-label="anchor" href="#function-overview"></a>
 </h2>
-<p>At its core, <code>gtregression</code> is more than just a statistical tool—it is a commitment to open access, simplicity, and inclusivity in health data science. Our team is driven by the vision of empowering researchers, students, and public health professionals in LMICs through user-friendly, well-documented tools that minimize coding burden and maximize interpretability.</p>
-<p>We believe in the democratization of data science and aim to promote open-source resources for impactful and equitable research globally.</p>
-</div>
-<div class="section level2">
-<h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
-</h2>
-<ul>
-<li>Supports multiple regression approaches:
-<ul>
-<li>Logistic (logit)</li>
-<li>Log-binomial</li>
-<li>Poisson / Robust Poisson</li>
-<li>Negative Binomial</li>
-<li>Linear Regression</li>
-</ul>
-</li>
-<li>Univariable and multivariable regression</li>
-<li>Confounder identification using crude and adjusted estimates</li>
-<li>Stepwise model selection (AIC/BIC/adjusted R²)</li>
-<li>Stratified regression support</li>
-<li>Formatted outputs using <code>gtsummary</code>
-</li>
-<li>Built-in example datasets: <code>PimaIndiansDiabetes2</code>, <code>birthwt</code>, <code>epil</code>
-</li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install from GitHub</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"drrubesh/gtregression"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://drrubesh.github.io/gtregression" class="external-link">gtregression</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## Logistic regression</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">PimaIndiansDiabetes2</span>, package <span class="op">=</span> <span class="st">"mlbench"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/multi_reg.html">multi_reg</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">PimaIndiansDiabetes2</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
-<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"mass"</span>, <span class="st">"glucose"</span><span class="op">)</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## Negative binomial regression</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">epil</span>, package <span class="op">=</span> <span class="st">"MASS"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/multi_reg_nbin.html">multi_reg_nbin</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">epil</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"y"</span>,</span>
-<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"trt"</span>, <span class="st">"base"</span>, <span class="st">"age"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="key-functions">Key Functions<a class="anchor" aria-label="anchor" href="#key-functions"></a>
-</h2>
+<p>The <code>gtregression</code> package provides regression modeling, diagnostics, plots, and reporting tools designed for usability and accessibility. Here’s a summary of its core functions:</p>
+<div class="section level3">
+<h3 id="regression-modeling">Regression Modeling<a class="anchor" aria-label="anchor" href="#regression-modeling"></a>
+</h3>
 <table class="table">
 <colgroup>
 <col width="36%">
@@ -127,35 +67,11 @@
 <tbody>
 <tr>
 <td><code><a href="reference/uni_reg.html">uni_reg()</a></code></td>
-<td>Univariable regression (OR/RR/IRR/β)</td>
+<td>Univariable regression (OR, RR, IRR, or β)</td>
 </tr>
 <tr>
 <td><code><a href="reference/multi_reg.html">multi_reg()</a></code></td>
 <td>Multivariable regression</td>
-</tr>
-<tr>
-<td><code><a href="reference/select_models.html">select_models()</a></code></td>
-<td>Stepwise model selection</td>
-</tr>
-<tr>
-<td><code><a href="reference/identify_confounder.html">identify_confounder()</a></code></td>
-<td>Confounding assessment via % change</td>
-</tr>
-<tr>
-<td><code><a href="reference/check_convergence.html">check_convergence()</a></code></td>
-<td>Evaluate model convergence and max probability</td>
-</tr>
-<tr>
-<td><code><a href="reference/interaction_models.html">interaction_models()</a></code></td>
-<td>Compare models with and without interactions</td>
-</tr>
-<tr>
-<td><code><a href="reference/stratified_uni_reg.html">stratified_uni_reg()</a></code></td>
-<td>Stratified univariable regression</td>
-</tr>
-<tr>
-<td><code><a href="reference/stratified_multi_reg.html">stratified_multi_reg()</a></code></td>
-<td>Stratified multivariable regression</td>
 </tr>
 <tr>
 <td><code><a href="reference/uni_reg_nbin.html">uni_reg_nbin()</a></code></td>
@@ -164,6 +80,14 @@
 <tr>
 <td><code><a href="reference/multi_reg_nbin.html">multi_reg_nbin()</a></code></td>
 <td>Multivariable negative binomial regression</td>
+</tr>
+<tr>
+<td><code><a href="reference/stratified_uni_reg.html">stratified_uni_reg()</a></code></td>
+<td>Stratified univariable regression</td>
+</tr>
+<tr>
+<td><code><a href="reference/stratified_multi_reg.html">stratified_multi_reg()</a></code></td>
+<td>Stratified multivariable regression</td>
 </tr>
 <tr>
 <td><code><a href="reference/stratified_uni_nbin.html">stratified_uni_nbin()</a></code></td>
@@ -176,49 +100,91 @@
 </tbody>
 </table>
 </div>
-<div class="section level2">
-<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
-</h2>
-<p>We welcome issues, feature requests, and pull requests.</p>
-<ol style="list-style-type: decimal">
-<li>Fork the repository</li>
-<li>Create a new branch: <code>git checkout -b feature/my-feature</code>
-</li>
-<li>Commit your changes: <code>git commit -m "Add feature"</code>
-</li>
-<li>Push to GitHub: <code>git push origin feature/my-feature</code>
-</li>
-<li>Open a Pull Request</li>
-</ol>
+<div class="section level3">
+<h3 id="model-diagnostics-and-variable-assessment">Model Diagnostics and Variable Assessment<a class="anchor" aria-label="anchor" href="#model-diagnostics-and-variable-assessment"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="36%">
+<col width="64%">
+</colgroup>
+<thead><tr>
+<th>Function Name</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/select_models.html">select_models()</a></code></td>
+<td>Stepwise model selection (AIC/BIC/logLik)</td>
+</tr>
+<tr>
+<td><code><a href="reference/identify_confounder.html">identify_confounder()</a></code></td>
+<td>Confounding assessment via % change or MH</td>
+</tr>
+<tr>
+<td><code><a href="reference/check_convergence.html">check_convergence()</a></code></td>
+<td>Evaluate model convergence and max probability</td>
+</tr>
+<tr>
+<td><code><a href="reference/interaction_models.html">interaction_models()</a></code></td>
+<td>Compare models with and without interactions</td>
+</tr>
+<tr>
+<td><code><a href="reference/check_collinearity.html">check_collinearity()</a></code></td>
+<td>Check multicollinearity via VIF and pairwise</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section level2">
-<h2 id="authors">Authors<a class="anchor" aria-label="anchor" href="#authors"></a>
+<h2 id="plots-and-exports">Plots and Exports<a class="anchor" aria-label="anchor" href="#plots-and-exports"></a>
 </h2>
-<p>The <code>gtregression</code> package is developed and maintained by a collaborative team committed to making regression modeling accessible, especially for public health professionals and researchers in LMICs.</p>
-<ul>
-<li><p><strong>Rubeshkumar Polani Chandrasekar</strong><br><a href="mailto:rubesh.pc@gmail.com" class="email">rubesh.pc@gmail.com</a><br>
-ORCID: <a href="https://orcid.org/0000-0002-0418-7592" class="external-link">0000-0002-0418-7592</a><br><em>Creator and Author</em></p></li>
-<li><p><strong>Salin K Eliyas</strong><br><a href="mailto:salins13@gmail.com" class="email">salins13@gmail.com</a><br>
-ORCID: <a href="https://orcid.org/0000-0002-8020-5860" class="external-link">0000-0002-8020-5860</a><br><em>Author</em></p></li>
-<li><p><strong>Manikandanesan Sakthivel</strong><br><a href="mailto:nesanmbbs@gmail.com" class="email">nesanmbbs@gmail.com</a><br>
-ORCID: <a href="https://orcid.org/0000-0002-5438-3970" class="external-link">0000-0002-5438-3970</a><br><em>Author</em></p></li>
-<li><p><strong>Yuvaraj Krishnamoorthy</strong><br><a href="mailto:yuvaraj@propulevidence.org" class="email">yuvaraj@propulevidence.org</a><br>
-ORCID: <a href="https://orcid.org/0000-0003-4688-510X" class="external-link">0000-0003-4688-510X</a><br><em>Author</em></p></li>
-<li><p><strong>Marie Gilbert Majella</strong><br><a href="mailto:gilbert2691@gmail.com" class="email">gilbert2691@gmail.com</a><br>
-ORCID: <a href="https://orcid.org/0000-0003-4036-5162" class="external-link">0000-0003-4036-5162</a><br><em>Author</em></p></li>
-</ul>
+<table class="table">
+<colgroup>
+<col width="29%">
+<col width="70%">
+</colgroup>
+<thead><tr>
+<th>Function Name</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/modify_table.html">modify_table()</a></code></td>
+<td>Modify <code>gtsummary</code> tables (e.g., labels, p-values)</td>
+</tr>
+<tr>
+<td><code><a href="reference/plot_reg.html">plot_reg()</a></code></td>
+<td>Forest plot of regression model estimates</td>
+</tr>
+<tr>
+<td><code><a href="reference/plot_reg_combine.html">plot_reg_combine()</a></code></td>
+<td>Side-by-side plot of univariable and multivariable models</td>
+</tr>
+<tr>
+<td><code><a href="reference/save_table.html">save_table()</a></code></td>
+<td>Save regression tables to Word/HTML</td>
+</tr>
+<tr>
+<td><code><a href="reference/save_plot.html">save_plot()</a></code></td>
+<td>Save regression plots to file</td>
+</tr>
+<tr>
+<td><code><a href="reference/save_docx.html">save_docx()</a></code></td>
+<td>Save tables and plots in one report</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="section level2">
-<h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
-</h2>
-<p>MIT License. See LICENSE for details.</p>
-</div>
-</div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/drrubesh/gtregression/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/drrubesh/gtregression/issues" class="external-link">Report a bug</a></li>
+<li><a href="reference/index.html">Function Overview</a></li>
+<li><a href="articles/gtregression-intro.html">Why we built gtregression</a></li>
 </ul>
 </div>
 

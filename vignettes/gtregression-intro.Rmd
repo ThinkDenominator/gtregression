@@ -6,10 +6,29 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+```{r, echo=FALSE, out.width='200px'}
+knitr::include_graphics("../man/figures/gtregression_hex.png")
+```
 
 ## Introduction
 
 The `gtregression` package provides a user-friendly interface for generating publication-ready regression tables, performing model diagnostics, visualizing results, and identifying confounders. It is especially designed for beginner analysts, epidemiologists, and public health professionals—particularly those in low- and middle-income country (LMIC) settings—to promote the use of open-access tools in data analytics. This vignette demonstrates how to use key functions of the package.
+
+## Design Principles
+
+The development of `gtregression` was driven by the need to make R more approachable 
+for those who find it intimidating or overly technical. For many public health professionals, researchers, and students in LMICs, regression modeling in R can feel fragmented and difficult to interpret.
+
+We intentionally rely on existing, well-tested packages — not because we can’t code them ourselves, but because it’s better for users to stand on stable ground. Our job is to smooth the path by:
+
+- Wrapping complexity into clear function calls
+- Minimising required parameters through smart defaults
+- Offering layered outputs: readable summary + full technical object
+- Reducing time-to-insight and time-to-publish
+
+By justifying our dependencies as tools that serve the user, we maintain transparency 
+while staying focused on enhancing their experience.
+
 
 ``` r
 library(gtregression)

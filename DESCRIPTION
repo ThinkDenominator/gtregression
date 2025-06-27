@@ -3,13 +3,18 @@ Type: Package
 Title: Tools for Creating Publication-Ready Regression Tables
 Version: 1.0.0
 Authors@R: c(
-    person(given = "Rubeshkumar", family = "Polani", email = "rubesh.pc@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-0418-7592")),
+    person(given = "Rubeshkumar", family = "Polani", email = "rubesh@thinkdenominator.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-0418-7592")),
     person(given = "Salin K", family = "Eliyas", email = "salins13@gmail.com", role = "aut", comment = c(ORCID = "0000-0002-8020-5860")),
     person(given = "Manikandanesan", family = "Sakthivel", email = "nesanmbbs@gmail.com", role = "aut", comment = c(ORCID = "0000-0002-5438-3970")),
     person(given = "Yuvaraj", family = "Krishnamoorthy", email = "yuvaraj@propulevidence.org", role = "aut", comment = c(ORCID = "0000-0003-4688-510X")),
     person(given = "Marie Gilbert", family = "Majella", email = "gilbert2691@gmail.com", role = "aut", comment = c(ORCID = "0000-0003-4036-5162"))
   )
-Description: Functions to create publication-ready cohort study tables with risk ratios using gtsummary and risks packages.
+Description: 
+  gtregression enhances the user experience by simplifying complex steps to do regression in R. 
+  It wraps widely used modeling and summarization packages (such as gtsummary, risks, MASS, 
+  and stats) into a cohesive and user-friendly interface. Designed with LMIC users in mind, 
+  it reduces the need for verbose or multi-package code, offering publication-ready tables, 
+  automated diagnostics with interpretation, and sensible defaults — all aligned with reproducible and evidence-based practices.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -49,3 +54,4 @@ RoxygenNote: 7.3.2
 Config/testthat/edition: 3
 URL: https://drrubesh.github.io/gtregression
 BugReports: https://github.com/drrubesh/gtregression/issues
+Branding: man/figures/gtregression_hex.png

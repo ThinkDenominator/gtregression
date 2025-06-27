@@ -16,7 +16,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">gtregression</a>
 
@@ -61,6 +61,7 @@
 
     
     
+<p><img src="../reference/figures/gtregression_hex.png" width="200px"></p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -72,8 +73,30 @@ public health professionals—particularly those in low- and middle-income
 country (LMIC) settings—to promote the use of open-access tools in data
 analytics. This vignette demonstrates how to use key functions of the
 package.</p>
+</div>
+<div class="section level2">
+<h2 id="design-principles">Design Principles<a class="anchor" aria-label="anchor" href="#design-principles"></a>
+</h2>
+<p>The development of <code>gtregression</code> was driven by the need
+to make R more approachable for those who find it intimidating or overly
+technical. For many public health professionals, researchers, and
+students in LMICs, regression modeling in R can feel fragmented and
+difficult to interpret.</p>
+<p>We intentionally rely on existing, well-tested packages — not because
+we can’t code them ourselves, but because it’s better for users to stand
+on stable ground. Our job is to smooth the path by:</p>
+<ul>
+<li>Wrapping complexity into clear function calls</li>
+<li>Minimising required parameters through smart defaults</li>
+<li>Offering layered outputs: readable summary + full technical
+object</li>
+<li>Reducing time-to-insight and time-to-publish</li>
+</ul>
+<p>By justifying our dependencies as tools that serve the user, we
+maintain transparency while staying focused on enhancing their
+experience.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://drrubesh.github.io/gtregression" class="external-link">gtregression</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gtregression/gtregression" class="external-link">gtregression</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">

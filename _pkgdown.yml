@@ -1,10 +1,17 @@
 url: https://drrubesh.github.io/gtregression/
 template:
   bootstrap: 5
+  bootswatch: flatly
+  logo: man/figures/gtregression_hex.png
 
 home:
   title: gtregression
   description: Publication-ready regression tables made easy
+  links:
+    - text: Function Overview
+      href: reference/index.html
+    - text: Why we built gtregression
+      href: articles/gtregression-intro.html
 
 navbar:
   structure:
