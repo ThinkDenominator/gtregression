@@ -1,9 +1,6 @@
+url: ~
 template:
   bootstrap: 5
-  bootswatch: flatly
-
-url: https://drrubesh.github.io/gtregression
-
 
 home:
   title: gtregression
@@ -67,4 +64,3 @@ reference:
       - data_epilepsy
       - data_infertility
       - data_lungcancer
-
