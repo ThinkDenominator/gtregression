@@ -56,6 +56,6 @@ test_that("uni_reg_nbin computes unadjusted IRRs using negative binomial regress
   # Should fail: outcome is non-count
   expect_error(
     uni_reg_nbin(data = quine_data, outcome = "Sex", exposures = exposures),
-    regexp = "Negative binomial regression requires a non-negative count outcome"
+    regexp = "Negative binomial requires a count outcome."
   )
 })

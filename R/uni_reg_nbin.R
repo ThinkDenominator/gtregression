@@ -40,51 +40,23 @@
 #' @importFrom MASS glm.nb
 #' @export
 uni_reg_nbin <- function(data, outcome, exposures) {
+
   # Validate outcome and exposures
-  if (!outcome %in% names(data)) stop("Outcome variable not found in dataset.")
-  if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
+  .validate_nb_inputs(data, outcome, exposures)
 
-  outcome_vec <- data[[outcome]]
-  is_count <- function(x) is.numeric(x) && all(!is.na(x)) && all(x >= 0 & x == floor(x))
-
-  if (!is_count(outcome_vec)) {
-    stop("Negative binomial regression requires a non-negative count outcome (e.g., number of events).")
-  }
-
-  # Fit function
-  fit_model <- function(exposure) {
-    tryCatch(
-      {
-        data_clean <- data |>
-          dplyr::filter(!is.na(.data[[exposure]]), !is.na(.data[[outcome]])) |>
-          droplevels()
-        if (nrow(data_clean) == 0 || length(unique(data_clean[[exposure]])) < 2) {
-          return(NULL)
-        }
-        MASS::glm.nb(stats::as.formula(paste(outcome, "~", exposure)), data = data_clean)
-      },
-      error = function(e) {
-        warning("Model failed for ", exposure, ": ", e$message)
-        return(NULL)
-      }
-    )
-  }
-
-  model_list <- purrr::map(exposures, fit_model)
+  model_list <- lapply(exposures, function(exposure) {
+    .fit_uni_model_nbin(data, outcome, exposure)
+  })
   names(model_list) <- exposures
-  model_list <- model_list[!sapply(model_list, is.null)]
+  model_list <- Filter(Negate(is.null), model_list)
 
   if (length(model_list) == 0) stop("All models failed. Please check your data or exposures.")
 
-  tbl_list <- purrr::imap(model_list, function(fit, var) {
-    gtsummary::tbl_regression(fit,
-      exponentiate = TRUE,
-      conf.method = "wald",
-      tidy_fun = broom::tidy
-    ) |>
+  tbl_list <- mapply(function(fit, var) {
+    gtsummary::tbl_regression(fit, exponentiate = TRUE) |>
       gtsummary::modify_header(estimate = "**IRR**") |>
       gtsummary::add_n(location = "label")
-  })
+  }, model_list, names(model_list), SIMPLIFY = FALSE)
 
   stacked <- gtsummary::tbl_stack(tbl_list)
 
@@ -93,7 +65,7 @@ uni_reg_nbin <- function(data, outcome, exposures) {
     gtsummary::modify_abbreviation("IRR = Incidence Rate Ratio")
 
 
-  model_summaries <- purrr::map(model_list, summary)
+  model_summaries <- lapply(model_list, summary)
   names(model_summaries) <- exposures
 
   attr(result, "approach") <- "negbin"

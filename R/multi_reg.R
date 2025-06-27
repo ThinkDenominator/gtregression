@@ -41,136 +41,26 @@
 #'
 #' @importFrom broom tidy
 #' @export
-
 multi_reg <- function(data,
                       outcome,
                       exposures,
                       approach = "logit") {
-  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
-  if (!(approach %in% valid_approaches)) {
-    stop(
-      "Invalid approach: ", approach,
-      "\nValid options: ", paste(valid_approaches, collapse = ", ")
-    )
-  }
+  .validate_multi_inputs(data, outcome, exposures, approach)
 
-  effect_label <- dplyr::case_when(
-    approach == "logit" ~ "**Adjusted OR**",
-    approach == "poisson" ~ "**Adjusted IRR**",
-    approach == "linear" ~ "**Adjusted Beta**",
-    TRUE ~ "**Adjusted RR**"
-  )
+  effect_label <- .get_effect_label_adjusted(approach)
+  abbreviation <- .get_abbreviation(approach)
+  remove_abbreviation <- .get_remove_abbreviation(approach)
 
-  abbreviation <- dplyr::case_when(
-    approach == "logit" ~ "OR = Odds Ratio",
-    approach %in% c("log-binomial", "robpoisson") ~ "RR = Relative Risk",
-    approach == "poisson" ~ "IRR = Incidence Rate Ratio",
-    approach == "linear" ~ "Beta = Linear Regression Coefficient, CI = Confidence Interval"
-  )
+  fit_model <- .fit_multi_model(data, outcome, exposures, approach)
 
-  remove_abbreviation <- dplyr::case_when(
-    approach == "log-binomial" ~ "RR = Relative Risk",
-    approach == "logit" ~ "OR = Odds Ratio",
-    approach %in% c("poisson", "robpoisson") ~ "IRR = Incidence Rate Ratio",
-    approach == "linear" ~ "CI = Confidence Interval"
-  )
+  if (is.null(fit_model)) stop("Model fitting failed.")
 
-  # Outcome validation
-  outcome_vec <- data[[outcome]]
-
-  is_binary <- function(x) {
-    is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
-      (is.factor(x) && length(levels(x)) == 2)
-  }
-
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
-
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
-
-  if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
-    stop("Binary outcome required for the selected approach: ", approach)
-  }
-
-  if (approach == "poisson" && !is_count(outcome_vec)) {
-    stop("Count outcome required for Poisson regression.")
-  }
-
-  if (approach == "linear" && !is_continuous(outcome_vec)) {
-    stop("Continuous numeric outcome required for linear regression.")
-  }
-
-  # Clean missing data
-  data_clean <- data |>
-    dplyr::filter(!is.na(.data[[outcome]])) |>
-    tidyr::drop_na(dplyr::any_of(exposures))
-
-  if (nrow(data_clean) == 0) {
-    stop("No complete cases remaining after removing missing values.")
-  }
-
-  # Formula
-  formula_str <- paste(outcome, "~", paste(exposures, collapse = " + "))
-  model_formula <- stats::as.formula(formula_str)
-
-  # Fit model
-  fit_model <- tryCatch(
-    {
-      if (approach == "logit") {
-        stats::glm(model_formula, data = data_clean, family = binomial("logit"))
-      } else if (approach == "log-binomial") {
-        stats::glm(model_formula, data = data_clean, family = binomial("log"))
-      } else if (approach == "poisson") {
-        stats::glm(model_formula, data = data_clean, family = poisson("log"))
-      } else if (approach == "linear") {
-        stats::lm(model_formula, data = data_clean)
-      } else {
-        risks::riskratio(formula = model_formula, data = data_clean, approach = "robpoisson")
-      }
-    },
-    error = function(e) {
-      warning("Model fitting failed: ", e$message)
-      return(NULL)
-    }
-  )
-
-  if (is.null(fit_model)) {
-    stop("Could not fit the model. Please try a different approach or check your data.")
-  }
-
-  # Reg check function for linear regression just like in STATA
-
-  reg_check_linear <- function(model, exposure) {
-    lmtest <- getNamespace("lmtest")
-
-    # Tests
-    bp <- lmtest::bptest(model)
-    sw <- shapiro.test(residuals(model))
-    reset <- lmtest::resettest(model, power = 2:3, type = "fitted")
-    cooks <- cooks.distance(model)
-    n <- nobs(model)
-    high_infl <- sum(cooks > (4 / n), na.rm = TRUE)
-
-    tibble::tibble(
-      Exposure = exposure,
-      Test = c("Breusch-Pagan", "Shapiro-Wilk", "RESET", "Cook's Distance"),
-      Statistic = c(
-        paste0("p = ", signif(bp$p.value, 4)),
-        paste0("p = ", signif(sw$p.value, 4)),
-        paste0("p = ", signif(reset$p.value, 4)),
-        paste0(high_infl, " obs > 4/n (", round(4 / n, 4), ")")
-      ),
-      Interpretation = c(
-        if (bp$p.value < 0.05) "Heteroskedasticity detected: residual variance may not be constant." else "No evidence of heteroskedasticity.",
-        if (sw$p.value < 0.05) "Residuals may not be normally distributed. Use caution with small samples." else "Residuals appear normally distributed.",
-        if (reset$p.value < 0.05) "Model may be mis-specified. Consider adding non-linear terms or interactions." else "Functional form appears adequate.",
-        if (high_infl > 0) "Influential points detected. Review for outliers or high-leverage observations." else "No strong influential observations detected."
-      )
-    )
-  }
   model_list <- list(fit_model)
+
   names(model_list) <- "multivariable_model"
 
   model_summaries <- list(summary(fit_model))
+
   names(model_summaries) <- "multivariable_model"
 
 
@@ -183,7 +73,7 @@ multi_reg <- function(data,
       tidy_fun = broom::tidy
     ) |>
     gtsummary::modify_header(estimate = effect_label) |>
-    gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label))) |>
+    gtsummary::modify_table_body(~ { .x$label <- as.character(.x$label); .x }) |>
     gtsummary::remove_abbreviation(remove_abbreviation) |>
     gtsummary::modify_abbreviation(abbreviation)
 
@@ -193,10 +83,10 @@ multi_reg <- function(data,
       paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model")
     )
 
-  if (approach != "linear") {
-    reg_diagnostics <- "Regression diagnostics only available for 'linear' models."
+  reg_diagnostics <- if (approach == "linear") {
+    list(multivariable_model = .reg_check_linear(fit_model, "multivariable_model"))
   } else {
-    reg_diagnostics <- list(multivariable_model = reg_check_linear(fit_model, "multivariable_model"))
+    "Regression diagnostics only available for 'linear' models."
   }
 
   attr(result, "approach") <- approach

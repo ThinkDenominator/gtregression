@@ -1,6 +1,6 @@
 Package: gtregression
 Type: Package
-Title: Publication-Ready Regression Tables Made Easy
+Title: Tools for Creating Publication-Ready Regression Tables
 Version: 1.0.0
 Authors@R: c(
     person(given = "Rubeshkumar", family = "Polani", email = "rubesh.pc@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-0418-7592")),

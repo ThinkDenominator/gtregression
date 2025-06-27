@@ -42,36 +42,10 @@
 interaction_models <- function(data, outcome, exposure, covariates = NULL,
                                effect_modifier, approach = "logit", test = c("LRT", "Wald"),
                                verbose = TRUE) {
-  if (!approach %in% c("logit", "log-binomial", "poisson", "robpoisson", "negbin", "linear")) {
-    stop("Invalid approach")
-  }
+  .validate_approach(approach)
+  .validate_outcome_by_approach(data[[outcome]], approach)
 
   test <- match.arg(test)
-
-  outcome_vec <- data[[outcome]]
-  is_binary <- function(x) is.factor(x) && length(levels(x)) == 2 || is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) && length(unique(x[!is.na(x)])) > 2
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
-
-  if (approach %in% c("logit", "log-binomial", "robpoisson")) {
-    if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
-  }
-  if (approach == "poisson" && !is_count(outcome_vec)) {
-    stop("Count outcome required for Poisson regression.")
-  }
-  if (approach == "negbin") {
-    if (!is_count(outcome_vec)) stop("Negative binomial requires a count outcome.")
-  }
-  if (approach == "linear") {
-    if (!is_continuous(outcome_vec)) stop("Linear regression requires a continuous outcome.")
-  }
-
-  if (length(exposure) != 1) stop("Please provide exactly one exposure variable.")
-
-  if (test == "Wald" && !requireNamespace("lmtest", quietly = TRUE)) {
-    stop("The 'lmtest' package is required for Wald test. Please install it.")
-  }
-
   rhs <- c(exposure, effect_modifier, covariates)
   base_formula <- as.formula(paste(outcome, "~", paste(rhs, collapse = " + ")))
   int_formula <- as.formula(paste(outcome, "~", paste(rhs, collapse = " + "), "+", paste0(exposure, ":", effect_modifier)))

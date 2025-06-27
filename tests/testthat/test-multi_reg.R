@@ -61,7 +61,7 @@ test_that("multi_reg computes estimates correctly across approaches", {
             approach = "log-binomial"
           )
         ),
-        regexp = "Could not fit the model"
+        regexp = "Model fitting failed"
       )
     } else {
       result <- suppressWarnings(
@@ -84,12 +84,12 @@ test_that("multi_reg computes estimates correctly across approaches", {
   # Validate known input errors
   expect_error(
     multi_reg(data = pima_data, outcome = "mass", exposures = c("age_cat"), approach = "logit"),
-    "Binary outcome required"
+    "This approach requires a binary outcome."
   )
 
   expect_error(
     multi_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "linear"),
-    "Continuous numeric outcome required"
+    "Linear regression requires a continuous outcome."
   )
 
   # Valid Poisson test with count outcome

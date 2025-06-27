@@ -38,30 +38,8 @@
 #' @importFrom broom tidy
 #' @export
 multi_reg_nbin <- function(data, outcome, exposures) {
-  # Validate inputs
-  if (!outcome %in% names(data)) stop("Outcome variable not found.")
-  if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
 
-  # Outcome validation
-  outcome_vec <- data[[outcome]]
-  is_count <- function(x) is.numeric(x) && all(!is.na(x)) && all(x >= 0 & x == floor(x))
-
-  if (!is_count(outcome_vec)) {
-    stop("Negative binomial regression requires a non-negative count outcome (e.g., number of events).")
-  }
-
-  # Clean data
-  data_clean <- data |>
-    dplyr::filter(!is.na(.data[[outcome]])) |>
-    tidyr::drop_na(dplyr::any_of(exposures))
-
-  if (nrow(data_clean) == 0) stop("No valid observations after removing missing values.")
-
-  # Check variation in exposures
-  insufficient_vars <- exposures[sapply(data_clean[exposures], function(x) length(unique(x)) < 2)]
-  if (length(insufficient_vars) > 0) {
-    stop("Exposure(s) with insufficient variation: ", paste(insufficient_vars, collapse = ", "))
-  }
+  data_clean <- .validate_nb_multi_inputs(data, outcome, exposures)
 
   # Build and fit model
   model_formula <- stats::as.formula(paste(outcome, "~", paste(exposures, collapse = " + ")))
@@ -79,10 +57,10 @@ multi_reg_nbin <- function(data, outcome, exposures) {
     gtsummary::tbl_regression(exponentiate = TRUE) |>
     gtsummary::modify_header(estimate = "**Adjusted IRR**") |>
     gtsummary::modify_abbreviation("IRR = Incidence Rate Ratio") |>
-    gtsummary::modify_table_body(~ dplyr::mutate(., label = as.character(label)))
+    gtsummary::modify_table_body(~ { .x$label <- as.character(.x$label); .x })
 
-  # Extract N_obs from the fitted model
-  result <- result |>
+    # Extract N_obs from the fitted model
+    result <- result |>
     gtsummary::modify_source_note(
       paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model")
     )

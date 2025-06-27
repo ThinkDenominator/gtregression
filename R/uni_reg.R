@@ -30,11 +30,8 @@
 #' @seealso \code{\link{multi_reg}}, \code{\link{plot_reg}}
 #' @family regression functions
 #' @export
-uni_reg <- function(data,
-                    outcome,
-                    exposures,
-                    approach = "logit") {
-  pkgs <- c("gtsummary", "purrr", "dplyr", "stats", "rlang")
+uni_reg <- function(data, outcome, exposures, approach = "logit") {
+  pkgs <- c("gtsummary", "risks", "lmtest")
   for (pkg in pkgs) {
     if (!requireNamespace(pkg, quietly = TRUE)) stop("Package '", pkg, "' is required.")
   }
@@ -42,149 +39,38 @@ uni_reg <- function(data,
     stop("Package 'risks' is required for robust Poisson regression.")
   }
   if (approach == "linear") {
-    if (!requireNamespace("car", quietly = TRUE) ||
-      !requireNamespace("lmtest", quietly = TRUE)) {
+    if (!requireNamespace("lmtest", quietly = TRUE)) {
       stop("Packages 'car' and 'lmtest' are required for linear regression diagnostics.")
     }
   }
+  .validate_uni_inputs(data, outcome, exposures, approach)
 
-  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
-  if (!approach %in% valid_approaches) {
-    stop("Invalid approach. Choose one of: ", paste(valid_approaches, collapse = ", "))
-  }
+  label_est <- .get_effect_label(approach)
+  abbreviation <- .get_abbreviation(approach)
+  remove_abbrev <- .get_remove_abbreviation(approach)
 
-  if (!outcome %in% names(data)) stop("Outcome variable not found in dataset.")
-  if (!all(exposures %in% names(data))) stop("One or more exposure variables not found in dataset.")
-
-  # outcome validation
-
-  outcome_vec <- data[[outcome]]
-
-  is_binary <- function(x) {
-    is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
-      (is.factor(x) && length(levels(x)) == 2)
-  }
-
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
-
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
-
-  if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
-    stop("Binary outcome required for the selected approach: ", approach)
-  }
-
-  if (approach == "poisson" && !is_count(outcome_vec)) {
-    stop("Count outcome required for Poisson regression.")
-  }
-
-  if (approach == "linear" && !is_continuous(outcome_vec)) {
-    stop("Continuous numeric outcome required for linear regression.")
-  }
-
-  label_est <- dplyr::case_when(
-    approach == "logit" ~ "**OR**",
-    approach == "poisson" ~ "**IRR**",
-    approach == "linear" ~ "**Beta**",
-    TRUE ~ "**RR**"
-  )
-
-  abbreviation <- dplyr::case_when(
-    approach == "logit" ~ "OR = Odds Ratio",
-    approach %in% c("log-binomial", "robpoisson") ~ "RR = Relative Risk",
-    approach == "poisson" ~ "IRR = Incidence Rate Ratio",
-    approach == "linear" ~ "Beta = Linear Regression Coefficient, CI = Confidence Interval"
-  )
-
-
-  remove_abbrev <- dplyr::case_when(
-    approach == "log-binomial" ~ "RR = Relative Risk",
-    approach == "logit" ~ "OR = Odds Ratio",
-    approach %in% c("poisson", "robpoisson") ~ "IRR = Incidence Rate Ratio",
-    approach == "linear" ~ "CI = Confidence Interval"
-  )
-
-  fit_model <- function(exposure) {
-    fmla <- stats::as.formula(paste(outcome, "~", exposure))
-    if (approach == "logit") {
-      stats::glm(fmla, data = data, family = binomial("logit"))
-    } else if (approach == "log-binomial") {
-      stats::glm(fmla, data = data, family = binomial("log"))
-    } else if (approach == "poisson") {
-      stats::glm(fmla, data = data, family = poisson("log"))
-    } else if (approach == "linear") {
-      stats::lm(fmla, data = data)
-    } else {
-      risks::riskratio(formula = fmla, data = data, approach = "robpoisson")
-    }
-  }
-
-  # Reg check function for linear regression just like in STATA
-
-  reg_check_linear <- function(model, exposure) {
-    lmtest <- getNamespace("lmtest")
-
-    # Tests
-    bp <- lmtest::bptest(model)
-    sw <- shapiro.test(residuals(model))
-    reset <- lmtest::resettest(model, power = 2:3, type = "fitted")
-    cooks <- cooks.distance(model)
-    n <- nobs(model)
-    high_infl <- sum(cooks > (4 / n), na.rm = TRUE)
-
-    tibble::tibble(
-      Exposure = exposure,
-      Test = c("Breusch-Pagan", "Shapiro-Wilk", "RESET", "Cook's Distance"),
-      Statistic = c(
-        paste0("p = ", signif(bp$p.value, 4)),
-        paste0("p = ", signif(sw$p.value, 4)),
-        paste0("p = ", signif(reset$p.value, 4)),
-        paste0(high_infl, " obs > 4/n (", round(4 / n, 4), ")")
-      ),
-      Interpretation = c(
-        if (bp$p.value < 0.05) "Heteroskedasticity detected: residual variance may not be constant." else "No evidence of heteroskedasticity.",
-        if (sw$p.value < 0.05) "Residuals may not be normally distributed. Use caution with small samples." else "Residuals appear normally distributed.",
-        if (reset$p.value < 0.05) "Model may be mis-specified. Consider adding non-linear terms or interactions." else "Functional form appears adequate.",
-        if (high_infl > 0) "Influential points detected. Review for outliers or high-leverage observations." else "No strong influential observations detected."
-      )
-    )
-  }
-
-
-  model_list <- purrr::map(exposures, function(x) {
-    tryCatch(fit_model(x), error = function(e) {
-      warning("Model failed for '", x, "' using approach '", approach, "': ", e$message)
-      NULL
-    })
-  })
-
-  model_list <- model_list[!sapply(model_list, is.null)]
+  model_list <- lapply(exposures, function(x) .fit_uni_model(data, outcome, x, approach))
   names(model_list) <- exposures
+  model_list <- Filter(Negate(is.null), model_list)
 
   if (length(model_list) == 0) stop("All models failed. Please check your data or exposures.")
 
-  tbl_list <- purrr::imap(model_list, function(fit, var) {
-    n_model <- nobs(fit)
-    gtsummary::tbl_regression(fit,
-      exponentiate = approach != "linear",
-      conf.method = "wald",
-      tidy_fun = broom::tidy
-    ) |>
+  tbl_list <- Map(function(fit, var) {
+    gtsummary::tbl_regression(fit, exponentiate = approach != "linear") |>
       gtsummary::modify_header(estimate = label_est) |>
       gtsummary::add_n(location = "label")
-  })
+  }, model_list, names(model_list))
 
-  stacked <- gtsummary::tbl_stack(tbl_list)
-  result <- stacked |>
+  result <- gtsummary::tbl_stack(tbl_list) |>
     gtsummary::remove_abbreviation(remove_abbrev) |>
     gtsummary::modify_abbreviation(abbreviation)
 
-  model_summaries <- purrr::map(model_list, summary)
-  names(model_summaries) <- exposures
+  model_summaries <- lapply(model_list, summary)
 
-  if (approach != "linear") {
-    reg_diagnostics <- "Regression diagnostics only available for 'linear' models."
+  reg_diagnostics <- if (approach == "linear") {
+    Map(.reg_check_linear, model_list, names(model_list))
   } else {
-    reg_diagnostics <- purrr::imap(model_list, function(m, x) reg_check_linear(m, x))
+    "Regression diagnostics only available for 'linear' models."
   }
 
   attr(result, "approach") <- approach

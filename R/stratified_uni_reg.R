@@ -54,38 +54,12 @@
 #' @importFrom broom tidy
 #' @importFrom gtsummary tbl_stack
 #' @export
-
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit") {
-  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
-  if (!approach %in% valid_approaches) {
-    stop(
-      "Invalid approach: ", approach,
-      "\nValid options: ", paste(valid_approaches, collapse = ", ")
-    )
-  }
+
+  .validate_uni_inputs(data, outcome, exposures, approach)
 
   if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.")
-  if (!outcome %in% names(data)) stop("Outcome variable not found in dataset.")
-  if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
-
-  outcome_vec <- data[[outcome]]
-  is_binary <- function(x) {
-    is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
-      (is.factor(x) && length(levels(x)) == 2)
-  }
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
-
-  if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
-    stop("Binary outcome required for approach: ", approach)
-  }
-  if (approach == "poisson" && !is_count(outcome_vec)) {
-    stop("Count outcome required for Poisson regression.")
-  }
-  if (approach == "linear" && !is_continuous(outcome_vec)) {
-    stop("Continuous numeric outcome required for linear regression.")
-  }
 
   message("Running stratified univariate regression by: ", stratifier)
 
@@ -100,7 +74,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
 
   for (lev in strata_levels) {
     message("  > Stratum: ", stratifier, " = ", lev)
-    data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
+    data_stratum <- data[data[[stratifier]] == lev, , drop = FALSE]
 
     result <- tryCatch(
       {
@@ -118,14 +92,18 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     )
 
     if (!is.null(result)) {
-      tbls <- purrr::imap(attr(result, "models"), function(fit, var) {
-        gtsummary::tbl_regression(fit,
-          exponentiate = approach != "linear",
-          conf.method = "wald",
-          tidy_fun = broom::tidy
-        ) |>
-          gtsummary::add_n(location = "label")
-      })
+      tbls <- mapply(
+        function(fit, var) {
+          gtsummary::tbl_regression(fit,
+                                    exponentiate = approach != "linear",
+                                    conf.method = "wald",
+                                    tidy_fun = broom::tidy
+          ) |>
+            gtsummary::add_n(location = "label")
+        },
+        attr(result, "models"),
+
+        SIMPLIFY= FALSE)
 
       stacked <- gtsummary::tbl_stack(tbls)
 

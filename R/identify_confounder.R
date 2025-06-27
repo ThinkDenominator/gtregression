@@ -45,32 +45,8 @@
 
 identify_confounder <- function(data, outcome, exposure, potential_confounder,
                                 approach = "logit", threshold = 10) {
-  outcome_vec <- data[[outcome]]
 
-  is_binary <- function(x) {
-    is.factor(x) && length(levels(x)) == 2 ||
-      is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)
-  }
-  is_count <- function(x) {
-    is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) && length(unique(x[!is.na(x)])) > 2
-  }
-  is_continuous <- function(x) {
-    is.numeric(x) && length(unique(x)) > 10
-  }
-
-  # Validate outcome
-  if (approach %in% c("logit", "log-binomial", "robpoisson")) {
-    if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
-  }
-  if (approach == "poisson" && !is_count(outcome_vec)) {
-    stop("Count outcome required for Poisson regression.")
-  }
-  if (approach == "negbin" && !is_count(outcome_vec)) {
-    stop("Negative binomial requires a count outcome.")
-  }
-  if (approach == "linear" && !is_continuous(outcome_vec)) {
-    stop("Linear regression requires a continuous outcome.")
-  }
+  .validate_outcome_by_approach(data[[outcome]], approach)
 
   get_model <- function(data, formula, approach) {
     switch(approach,

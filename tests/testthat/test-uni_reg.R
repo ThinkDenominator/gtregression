@@ -83,11 +83,11 @@ test_that("uni_reg computes estimates correctly across approaches", {
   # Expected errors
   expect_error(
     uni_reg(data = pima_data, outcome = "mass", exposures = c("bmi"), approach = "logit"),
-    "Binary outcome required"
+    "This approach requires a binary outcome."
   )
 
   expect_error(
     uni_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "linear"),
-    "Continuous numeric outcome required"
+    "Linear regression requires a continuous outcome."
   )
 })

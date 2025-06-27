@@ -22,6 +22,10 @@ reference:
       - multi_reg
       - uni_reg_nbin
       - multi_reg_nbin
+
+  - title: "Regression Functions by stratifier"
+    desc: "Fit univariate and multivariable models by stratifier"
+    contents:
       - stratified_uni_reg
       - stratified_multi_reg
       - stratified_uni_nbin

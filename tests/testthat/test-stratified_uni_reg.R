@@ -78,7 +78,7 @@ test_that("stratified_uni_reg errors for invalid inputs", {
       stratifier = "glucose_cat",
       approach = "logit"
     ),
-    "One or more exposures not found in dataset."
+    "One or more exposure variables not found in dataset."
   )
 
   expect_error(

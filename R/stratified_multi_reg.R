@@ -54,37 +54,8 @@
 #' @export
 stratified_multi_reg <- function(data, outcome, exposures, stratifier,
                                  approach = "logit") {
-  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
-  if (!(approach %in% valid_approaches)) {
-    stop(
-      "Invalid approach: ", approach,
-      "\nValid options: ", paste(valid_approaches, collapse = ", ")
-    )
-  }
 
-  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.")
-  if (!outcome %in% names(data)) stop("Outcome variable not found in dataset.")
-  if (!all(exposures %in% names(data))) stop("One or more exposures not found in dataset.")
-
-  outcome_vec <- data[[outcome]]
-  is_binary <- function(x) {
-    is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)) ||
-      (is.factor(x) && length(levels(x)) == 2)
-  }
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & floor(x) == x, na.rm = TRUE)
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
-
-  if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
-    stop("Binary outcome required for the selected approach: ", approach)
-  }
-
-  if (approach == "poisson" && !is_count(outcome_vec)) {
-    stop("Count outcome required for Poisson regression.")
-  }
-
-  if (approach == "linear" && !is_continuous(outcome_vec)) {
-    stop("Continuous numeric outcome required for linear regression.")
-  }
+  .validate_multi_inputs(data, outcome, exposures, approach)
 
   message("Running stratified multivariable regression by: ", stratifier)
 
@@ -128,7 +99,7 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
 
   if (length(tbl_list) == 0) stop("No valid models across strata.")
   # Remove existing source notes
-  tbl_list <- purrr::map(tbl_list, ~ gtsummary::remove_source_note(.x))
+  tbl_list <- lapply(tbl_list, function(tbl) gtsummary::remove_source_note(tbl))
 
   # Merge the cleaned tables
   merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
@@ -136,10 +107,10 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   # Extract and clean N values from N_obs_* columns
   n_obs_cols <- grep("^N_obs_", names(merged_tbl$table_body), value = TRUE)
 
-  n_values <- purrr::map_chr(n_obs_cols, function(col) {
+  n_values <- sapply(n_obs_cols, function(col) {
     n <- unique(na.omit(merged_tbl$table_body[[col]]))
     as.character(round(n))
-  })
+  }, USE.NAMES = FALSE)
 
 
   #

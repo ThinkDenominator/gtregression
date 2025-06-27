@@ -56,7 +56,7 @@ test_that("multi_reg_nbin computes adjusted IRRs using negative binomial regress
 
   expect_error(
     multi_reg_nbin(data = quine_data, outcome = "not_count", exposures = exposures),
-    regexp = "Negative binomial regression requires a non-negative count outcome",
+    regexp = "Negative binomial requires a count outcome",
     info = "Expected error when outcome is not count"
   )
 })
