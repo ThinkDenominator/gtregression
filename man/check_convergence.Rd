@@ -15,29 +15,36 @@ check_convergence(
 \arguments{
 \item{data}{A data frame containing the dataset.}
 
-\item{exposures}{A character vector of predictor variable names. If \code{multivariate = FALSE},
-each exposure is assessed separately; otherwise, a combined model is evaluated.}
+\item{exposures}{A character vector of predictor variable names.
+If \code{multivariate = FALSE},
+each exposure is assessed separately; otherwise, combined model is evaluated.}
 
 \item{outcome}{A character string specifying the outcome variable.}
 
-\item{approach}{A character string specifying the regression approach. One of:
-\code{"logit"}, \code{"log-binomial"}, \code{"poisson"}, \code{"robpoisson"}, or \code{"negbin"}.}
+\item{approach}{A character string specifying the regression approach.
+One of:
+  \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+  \code{"robpoisson"}, or \code{"negbin"}.}
 
-\item{multivariate}{Logical. If \code{TRUE}, checks convergence for a multivariable model;
-otherwise, performs checks for each univariate model.}
+\item{multivariate}{Logical. If \code{TRUE},
+checks convergence for a multivariable model;
+  otherwise, performs checks for each univariate model.}
 }
 \value{
 A data frame summarizing convergence diagnostics, including:
 \describe{
-  \item{\code{Exposure}}{Name of the exposure variable (or "Combined" for multivariate models).}
+  \item{\code{Exposure}}{Name of the exposure variable.}
   \item{\code{Model}}{The regression approach used.}
-  \item{\code{Converged}}{\code{TRUE} if the model converged successfully; \code{FALSE} otherwise.}
-  \item{\code{Max.prob}}{Maximum predicted probability or fitted value in the dataset.}
+  \item{\code{Converged}}{\code{TRUE} if the model converged successfully;
+   \code{FALSE} otherwise.}
+  \item{\code{Max.prob}}{Maximum predicted probability or
+  fitted value in the dataset.}
 }
 }
 \description{
-Assesses model convergence and provides diagnostics (such as maximum predicted probability)
-for each exposure (in univariate mode) or for the full model (in multivariable mode),
+Assesses model convergence and provides diagnostics
+for each exposure (in univariate mode) or
+for the full model (in multivariable mode),
 depending on the regression approach used.
 }
 \details{
@@ -46,24 +53,28 @@ which is acceptable when estimating risk ratios but should not be interpreted
 as actual probabilities.
 
 This function is useful for identifying convergence issues, especially for
-\code{"log-binomial"} models, which often fail to converge with certain data structures.
+\code{"log-binomial"} models, which often fail to converge .
 }
 \examples{
 if (requireNamespace("gtregression", quietly = TRUE)) {
-data(data_PimaIndiansDiabetes, package = "gtregression")
+  data(data_PimaIndiansDiabetes, package = "gtregression")
 
-check_convergence(data = data_PimaIndiansDiabetes,
-  exposures= c("age", "bmi"),
-  outcome= "diabetes",
-  approach= "logit")
+  check_convergence(
+    data = data_PimaIndiansDiabetes,
+    exposures = c("age", "bmi"),
+    outcome = "diabetes",
+    approach = "logit"
+  )
 
-check_convergence(data = data_PimaIndiansDiabetes,
-  exposures= c("age", "bmi"),
-  outcome= "diabetes",
-  approach= "logit",
-  multivariate= TRUE)
+  check_convergence(
+    data = data_PimaIndiansDiabetes,
+    exposures = c("age", "bmi"),
+    outcome = "diabetes",
+    approach = "logit",
+    multivariate = TRUE
+  )
 }
 }
 \seealso{
-[uni_reg()], [multi_reg()], [identify_confounder()],  [interaction_models()]
+[identify_confounder()],  [interaction_models()]
 }

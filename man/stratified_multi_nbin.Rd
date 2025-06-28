@@ -9,30 +9,31 @@ stratified_multi_nbin(data, outcome, exposures, stratifier)
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{A character string specifying the name of the count outcome variable.}
+\item{outcome}{A character string specifying the count outcome variable.}
 
 \item{exposures}{A character vector of predictor (exposure) variables.}
 
-\item{stratifier}{A character string specifying the variable used for stratification (must be categorical).}
+\item{stratifier}{A character string specifying the stratifier}
 }
 \value{
-An object of class `stratified_multi_reg_nbin` with the following components:
+An object of class `stratified_multi_reg_nbin` with the following:
 \describe{
-  \item{\code{$table}}{A `gtsummary::tbl_merge` object combining stratified model tables.}
+  \item{\code{$table}}{A `gtsummary::tbl_merge` stratified model tables.}
   \item{\code{$models}}{A named list of `glm.nb` model objects per stratum.}
-  \item{\code{$model_summaries}}{A list of tidy model summaries using `broom::tidy()`.}
-  \item{\code{$reg_check}}{Optional regression diagnostics per stratum (e.g., overdispersion).}
+  \item{\code{$model_summaries}}{A list of tidy model summaries.}
 }
 }
 \description{
-Performs multivariable negative binomial regression with multiple exposures on a count outcome,
-stratified by a specified variable. Observations with missing values in the stratifier are excluded.
+Performs multivariable negative binomial regression
+stratified by a specified variable.
+Observations with missing values in the stratifier are excluded.
 }
 \section{Accessors}{
 
-Use `object$table`, `object$models`, `object$model_summaries`, or `object$reg_check` to extract components.
+Use `object$table`, `object$models`, `object$model_summaries`,
+or `object$reg_check` to extract components.
 }
 
 \seealso{
-[multi_reg_nbin()], [stratified_uni_reg_nbin()], [check_dispersion()]
+[multi_reg_nbin()], [stratified_uni_reg_nbin()]
 }

@@ -18,22 +18,24 @@ interaction_models(
 \arguments{
 \item{data}{A data frame containing all required variables.}
 
-\item{outcome}{The name of the outcome variable (binary, count, or continuous depending on the approach).}
+\item{outcome}{The name of the outcome variable}
 
-\item{exposure}{The name of the main exposure variable. Must be a single variable.}
+\item{exposure}{The name of the main exposure variable.}
 
-\item{covariates}{Optional character vector of additional covariates to adjust for (default = \code{NULL}).}
+\item{covariates}{character vector of additional covariates to adjust for}
 
-\item{effect_modifier}{The name of the variable to test for interaction with the exposure.}
+\item{effect_modifier}{The name of the variable to test for interaction}
 
 \item{approach}{The regression modeling approach to use. One of:
 \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
 \code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.}
 
 \item{test}{Type of statistical test for model comparison. Either:
-\code{"LRT"} (likelihood ratio test, default) or \code{"Wald"} (test for interaction term coefficient).}
+\code{"LRT"} (likelihood ratio test, default) or \code{"Wald"}.}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a basic interpretation of whether interaction is likely present (default = \code{FALSE}).}
+\item{verbose}{Logical; if \code{TRUE},
+prints a basic interpretation of whether interaction is
+likely present (default = \code{FALSE}).}
 }
 \value{
 A list with the following elements:
@@ -41,13 +43,16 @@ A list with the following elements:
   \item \code{model_no_interaction}: The model without the interaction term.
   \item \code{model_with_interaction}: The model with the interaction term.
   \item \code{p_value}: The p-value for interaction (based on selected test).
-  \item \code{interpretation}: A brief text interpretation if \code{verbose = TRUE}.
+  \item \code{interpretation}: A brief text interpretation if
+  \code{verbose = TRUE}.
 }
 }
 \description{
-This function fits two models—one with and one without an interaction term between an exposure and a potential effect modifier—
+This function fits two models—one with and one without an interaction term
+between an exposure and a potential effect modifier—
 and compares them using either a likelihood ratio test (LRT) or Wald test.
-It is useful for assessing whether there is statistical evidence of interaction (effect modification).
+It is useful for assessing whether there is statistical evidence of
+interaction (effect modification).
 }
 \examples{
 data <- data_PimaIndiansDiabetes

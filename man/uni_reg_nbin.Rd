@@ -21,8 +21,10 @@ An object of class `uni_reg_nbin`, which includes:
 - The stacked table via `$table`.
 }
 \description{
-Performs univariate negative binomial regression for each specified exposure on a count outcome.
-Returns a publication-ready stacked regression table using `gtsummary`, with incidence rate ratios (IRRs) and confidence intervals.
+Performs univariate negative binomial regression for each
+specified exposure on a count outcome.
+Returns a publication-ready stacked regression table using `gtsummary`,
+with incidence rate ratios (IRRs) and confidence intervals.
 }
 \section{Accessors}{
 

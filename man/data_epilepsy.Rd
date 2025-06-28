@@ -19,13 +19,14 @@ A data frame with 236 observations and 9 variables:
 }
 }
 \source{
-\pkg{MASS} package. Original data from Thall and Vail (1990), *Biometrics*.
+\pkg{MASS} package. Original data from Thall and Vail (1990)
 }
 \usage{
 data_epilepsy
 }
 \description{
-A clinical dataset from a randomized trial investigating the effect of a drug on the number of seizures in patients with epilepsy.
-Contains repeated measures data with treatment groups, baseline seizure counts, and follow-up counts.
+RCT on the effect of a drug on the seizures in patients with epilepsy.
+Contains repeated measures data with treatment groups,
+baseline seizure counts, and follow-up counts.
 }
 \keyword{datasets}

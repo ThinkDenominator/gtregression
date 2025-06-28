@@ -17,7 +17,7 @@ select_models(
 
 \item{outcome}{A character string indicating the outcome variable.}
 
-\item{exposures}{A character vector of predictor variables to consider in the model.}
+\item{exposures}{vector of predictor variables to consider in the model.}
 
 \item{approach}{Regression method. One of:
 \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
@@ -29,23 +29,26 @@ select_models(
 \value{
 A list with the following components:
 \itemize{
-  \item \code{results_table}: A tibble summarizing each tested model's metrics (AIC, BIC, deviance, log-likelihood, adjusted R² if applicable).
-  \item \code{best_model}: The best-fitting model object based on selection criteria.
+  \item \code{results_table}: A tibble summarising each tested model's metric
+  (AIC, BIC, deviance, log-likelihood, adjusted R² if applicable).
+  \item \code{best_model}: The best-fitting model object based on low AIC.
   \item \code{all_models}: A named list of all fitted models.
 }
 }
 \description{
-Performs stepwise model selection using forward, backward, or both directions across different regression approaches.
-Returns a summary table with evaluation metrics (AIC, BIC, log-likelihood, deviance) and the best model.
+Performs stepwise model selection using forward, backward, or both directions
+ across different regression approaches.
+Returns a summary table with evaluation
+metrics (AIC, BIC, log-likelihood, deviance) and the best model.
 }
 \examples{
 data <- data_PimaIndiansDiabetes
 stepwise <- select_models(
-data = data,
-outcome = "glucose",
-exposures = c("age", "pregnant", "mass"),
-approach = "linear",
-direction = "forward"
+  data = data,
+  outcome = "glucose",
+  exposures = c("age", "pregnant", "mass"),
+  approach = "linear",
+  direction = "forward"
 )
 summary(stepwise)
 stepwise$results_table

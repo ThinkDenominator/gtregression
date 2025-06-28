@@ -50,10 +50,13 @@ test_that("plot_reg_combine works with various options", {
         pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
         pedigree > 0.5 ~ "High Genetic Risk"
       ),
-      dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))
+      dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk",
+                                           "Moderate Genetic Risk",
+                                           "High Genetic Risk"))
     )
 
-  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
+  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat",
+                 "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
 
   tbl_uni <- gtregression::uni_reg(
     pima_data,
@@ -73,6 +76,7 @@ test_that("plot_reg_combine works with various options", {
   p3 <- gtregression::plot_reg_combine(tbl_uni, tbl_multi, log_x = TRUE)
   expect_s3_class(p3, "patchwork")
 
-  p4 <- gtregression::plot_reg_combine(tbl_uni, tbl_multi, order_y = exposures, log_x = TRUE)
+  p4 <- gtregression::plot_reg_combine(tbl_uni, tbl_multi,
+                                       order_y = exposures, log_x = TRUE)
   expect_s3_class(p4, "patchwork")
 })

@@ -40,7 +40,8 @@ test_that("interaction_models returns a list with expected names", {
   )
 
   expect_type(result, "list")
-  expect_named(result, c("model_no_interaction", "model_with_interaction", "p_value", "test"))
+  expect_named(result, c("model_no_interaction",
+                         "model_with_interaction", "p_value", "test"))
 })
 
 test_that("interaction_models handles robpoisson approach", {
@@ -71,7 +72,8 @@ test_that("interaction_models handles robpoisson approach", {
   )
 
   expect_type(result, "list")
-  expect_named(result, c("model_no_interaction", "model_with_interaction", "p_value", "test"))
+  expect_named(result, c("model_no_interaction",
+                         "model_with_interaction", "p_value", "test"))
 })
 
 test_that("interaction_models errors with invalid approach", {

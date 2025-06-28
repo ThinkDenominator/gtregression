@@ -19,17 +19,17 @@ plot_reg(
 )
 }
 \arguments{
-\item{tbl}{A `gtsummary` object from regression functions (e.g., `uni_reg`, `multi_reg`).}
+\item{tbl}{A `gtsummary` object from regression functions}
 
 \item{title}{Optional plot title (character).}
 
 \item{ref_line}{Numeric value for the reference line (default = 1).}
 
-\item{order_y}{Optional character vector specifying the custom order of the y-axis labels.}
+\item{order_y}{Optional character vector to the customise y-axis order}
 
 \item{log_x}{Logical. If `TRUE`, uses a logarithmic x-axis (default = FALSE).}
 
-\item{xlim}{Optional numeric vector specifying x-axis limits (e.g., `c(0.1, 10)`).}
+\item{xlim}{Optional numeric vector specifying x-axis limits}
 
 \item{breaks}{Optional numeric vector for x-axis tick breaks.}
 
@@ -39,14 +39,16 @@ plot_reg(
 
 \item{base_size}{Base font size for text elements.}
 
-\item{show_ref}{Logical. If `TRUE`, includes reference categories in the plot (default = TRUE).}
+\item{show_ref}{Logical. If `TRUE`, includes reference in the plot.}
 }
 \value{
 A `ggplot2` object representing the forest plot.
 }
 \description{
-Creates a forest plot from a `gtsummary` object. Supports both univariate and multivariable models
-with hierarchical labels for categorical variables. Designed to work seamlessly with outputs from
+Creates a forest plot from a `gtsummary` object.
+Supports both univariate and multivariable models
+with hierarchical labels for categorical variables.
+Designed to work seamlessly with outputs from
 functions like `uni_reg()` and `multi_reg()`.
 }
 \examples{

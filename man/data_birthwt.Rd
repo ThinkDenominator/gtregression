@@ -7,30 +7,38 @@
 \format{
 A data frame with 189 observations and 10 variables:
 \describe{
-  \item{low}{Indicator for birth weight < 2500g (binary): \code{0 = normal}, \code{1 = low birth weight}}
+  \item{low}{Indicator for birth weight < 2500g (binary):
+  \code{0 = normal}, \code{1 = low birth weight}}
   \item{age}{Mother's age in years (numeric)}
   \item{lwt}{Mother's weight in pounds at last menstrual period (numeric)}
-  \item{race}{Mother's race (factor): \code{1 = White}, \code{2 = Black}, \code{3 = Other}}
-  \item{smoke}{Smoking status during pregnancy (binary): \code{0 = No}, \code{1 = Yes}}
+  \item{race}{Mother's race (factor): \code{1 = White}, \code{2 = Black},
+  \code{3 = Other}}
+  \item{smoke}{Smoking status during pregnancy (binary): \code{0 = No},
+   \code{1 = Yes}}
   \item{ptl}{Number of previous premature labors (integer)}
   \item{ht}{History of hypertension (binary): \code{0 = No}, \code{1 = Yes}}
-  \item{ui}{Presence of uterine irritability (binary): \code{0 = No}, \code{1 = Yes}}
-  \item{ftv}{Number of physician visits during the first trimester (integer, 0–6)}
+  \item{ui}{Presence of uterine irritability (binary): \code{0 = No},
+  \code{1 = Yes}}
+  \item{ftv}{no of physician visits during the 1st trimester (integer, 0–6)}
   \item{bwt}{Birth weight in grams (numeric)}
 }
 }
 \source{
-Hosmer, D.W., Lemeshow, S. (1989). *Applied Logistic Regression.* New York: Wiley.
+Hosmer, D.W., Lemeshow, S. (1989). *Applied Logistic Regression.*
+New York: Wiley.
 Also available in \pkg{MASS} and described in detail in its documentation.
 }
 \usage{
 data_birthwt
 }
 \description{
-A dataset from the \pkg{MASS} package containing risk factors associated with low birth weight (LBW) in newborns.
-Originally collected at Baystate Medical Center, Springfield, Massachusetts, USA.
+A dataset from the \pkg{MASS} package containing risk factors
+associated with low birth weight (LBW) in newborns.
+Originally collected at Baystate Medical Center,
+Springfield, Massachusetts, USA.
 }
 \details{
-The outcome variable is binary (`low`): birth weight < 2500g (yes = 1) or not (no = 0).
+The outcome variable is binary (`low`): birth weight < 2500g (yes = 1)
+or not (no = 0).
 }
 \keyword{datasets}

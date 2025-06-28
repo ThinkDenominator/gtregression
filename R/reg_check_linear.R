@@ -15,17 +15,20 @@
         "No evidence of heteroskedasticity."
       },
       if (sw$p.value < 0.05) {
-        "Residuals may not be normally distributed. Use caution with small samples."
+        "Residuals may not be normally distributed.
+        Use caution with small samples."
       } else {
         "Residuals appear normally distributed."
       },
       if (reset$p.value < 0.05) {
-        "Model may be mis-specified. Consider adding non-linear terms or interactions."
+        "Model may be mis-specified.
+        Consider adding non-linear terms or interactions."
       } else {
         "Functional form appears adequate."
       },
       if (high_infl > 0) {
-        "Influential points detected. Review for outliers or high-leverage observations."
+        "Influential points detected.
+        Review for outliers or high-leverage observations."
       } else {
         "No strong influential observations detected."
       }

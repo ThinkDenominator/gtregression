@@ -23,13 +23,13 @@ plot_reg_combine(
 )
 }
 \arguments{
-\item{tbl_uni}{A `gtsummary` object from `uni_reg()` or similar univariate model function.}
+\item{tbl_uni}{A `gtsummary` object from `uni_reg()` etc.,}
 
-\item{tbl_multi}{A `gtsummary` object from `multi_reg()` or similar multivariable model function.}
+\item{tbl_multi}{A `gtsummary` object from `multi_reg()`.}
 
-\item{title_uni}{Optional plot title for the univariate model (character).}
+\item{title_uni}{Optional plot title for the univariate model}
 
-\item{title_multi}{Optional plot title for the multivariable model (character).}
+\item{title_multi}{Optional plot title for the multivariable mode}
 
 \item{ref_line}{Numeric value for the reference line (default = 1).}
 
@@ -43,28 +43,28 @@ plot_reg_combine(
 
 \item{base_size}{Numeric. Base font size for plot text elements.}
 
-\item{show_ref}{Logical. If `TRUE`, includes reference categories in the plots (default = TRUE).}
+\item{show_ref}{Logical. If `TRUE`, includes reference categories}
 
-\item{xlim_uni}{Optional numeric vector to set x-axis limits for univariate plot.}
+\item{xlim_uni}{Optional numeric vector to set x-axis limits for uni plot.}
 
-\item{breaks_uni}{Optional numeric vector to set x-axis breaks for univariate plot.}
+\item{breaks_uni}{Optional numeric vector to set x-axis breaks for uni plot.}
 
-\item{xlim_multi}{Optional numeric vector to set x-axis limits for multivariable plot.}
+\item{xlim_multi}{Optional numeric vector to set x-axis limits for multi plot}
 
-\item{breaks_multi}{Optional numeric vector to set x-axis breaks for multivariable plot.}
+\item{breaks_multi}{Optional numeric vector to set x-axis breaks- multi plot.}
 }
 \value{
-A combined `ggplot2` object with two forest plots displayed side-by-side.
+A `ggplot2` object with two forest plots displayed side-by-side.
 }
 \description{
-Generates side-by-side forest plots to compare univariate and multivariable regression results.
-Accepts `gtsummary` objects as input and returns a combined `ggplot2` object using the `patchwork` package.
+Generates side-by-side plots to compare univariate & multivariable results
 }
 \examples{
 \dontrun{
 data <- data_PimaIndiansDiabetes
 uni_model <- uni_reg(data, "glucose", "bmi", approach = "linear")
-multi_model <- multi_reg(data, "glucose", c("bmi", "age"), approach = "linear")
+multi_model <- multi_reg(data, "glucose",
+c("bmi", "age"), approach = "linear")
 plot_reg_combine(tbl_uni = uni_model, tbl_multi = multi_model)
 }
 }

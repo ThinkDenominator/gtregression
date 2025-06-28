@@ -27,7 +27,7 @@ save_plot(
 \item{dpi}{Resolution of the plot in dots per inch (default is 300).}
 }
 \value{
-Saves the file to the current working directory. No object is returned.
+Saves the file to the current working directory.
 }
 \description{
 Saves a `ggplot2` plot to a file in PNG, PDF, or JPG format.

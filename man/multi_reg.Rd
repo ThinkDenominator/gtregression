@@ -9,9 +9,9 @@ multi_reg(data, outcome, exposures, approach = "logit")
 \arguments{
 \item{data}{A data frame containing the analysis variables.}
 
-\item{outcome}{The name of the outcome variable (binary, count, or continuous). Must be a character string.}
+\item{outcome}{The name of the outcome variable. Must be a character string.}
 
-\item{exposures}{A character vector of predictor variables to be included in the model.}
+\item{exposures}{predictor variables to be included in the model.}
 
 \item{approach}{Modeling approach to use. One of:
 - `"logit"` for logistic regression (OR),
@@ -27,14 +27,18 @@ An object of class `multi_reg`, which includes:
 - Tidy model summaries accessible via `$model_summaries`.
 }
 \description{
-Fits multivariable regression models for binary, count, or continuous outcomes and returns a publication-ready summary table using `gtsummary`.
-Depending on the specified `approach`, the function estimates adjusted Odds Ratios (OR), Risk Ratios (RR), Incidence Rate Ratios (IRR), or Beta coefficients.
+Fits multivariable regression models for binary, count, or continuous
+outcomes and returns a publication-ready summary table using `gtsummary`.
+Depending on the specified `approach`, the function estimates
+adjusted Odds Ratios (OR), Risk Ratios (RR), Incidence Rate Ratios (IRR),
+or Beta coefficients.
 }
 \section{Accessors}{
 
 \describe{
   \item{\code{$models}}{List of fitted model objects.}
-  \item{\code{$model_summaries}}{A tibble of tidy regression summaries for each model.}
+  \item{\code{$model_summaries}}
+  {A tibble of tidy regression summaries for each model.}
 }
 }
 

@@ -16,19 +16,20 @@ identify_confounder(
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The name of the outcome variable (binary, count, or continuous, depending on approach).}
+\item{outcome}{The name of the outcome variable}
 
 \item{exposure}{The name of the main exposure variable to test.}
 
-\item{potential_confounder}{A character vector of one or more variables to test as potential confounders.}
+\item{potential_confounder}{variable to test as potential confounder}
 
 \item{approach}{The regression modeling approach. One of:
 \code{"logit"} (logistic), \code{"log-binomial"}, \code{"poisson"},
-\code{"negbin"} (negative binomial), \code{"robpoisson"}, or \code{"linear"}.}
+\code{"negbin"} (negative binomial),
+\code{"robpoisson"}, or \code{"linear"}.}
 
-\item{threshold}{A numeric value specifying the percent change in the estimate (default is 10).
-If the absolute percent change from the crude to adjusted estimate exceeds this threshold,
-the variable is flagged as a confounder.}
+\item{threshold}{A value specifying the percent change in the estimate
+If the absolute percent change from the crude to adjusted estimate
+exceeds this threshold, the variable is flagged as a confounder.}
 }
 \value{
 A `tibble` summarizing:
@@ -40,10 +41,10 @@ A `tibble` summarizing:
 }
 }
 \description{
-This function evaluates whether one or more variables are confounders of the relationship between
+This function evaluates whether one or more variables are confounders of
 an exposure and outcome by comparing crude and adjusted effect estimates.
-A variable is considered a confounder if inclusion in the model changes the effect size
-by more than a specified threshold (default: 10%).
+A variable is considered a confounder if inclusion in the model changes
+the effect size by more than a specified threshold (default: 10%).
 }
 \details{
 Supports multiple regression approaches including logistic, log-binomial,
@@ -52,11 +53,11 @@ Poisson, negative binomial, robust Poisson, and linear regression.
 \examples{
 data <- data_PimaIndiansDiabetes
 identify_confounder(
- data = data,
- outcome = "glucose",
- exposure = "insulin",
- potential_confounder = "age_cat",
- approach = "linear"
+  data = data,
+  outcome = "glucose",
+  exposure = "insulin",
+  potential_confounder = "age_cat",
+  approach = "linear"
 )
 
 }

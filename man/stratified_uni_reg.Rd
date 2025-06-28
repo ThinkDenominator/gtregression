@@ -2,8 +2,10 @@
 % Please edit documentation in R/stratified_uni_reg.R
 \name{stratified_uni_reg}
 \alias{stratified_uni_reg}
-\title{Performs univariate regression for each exposure on a binary, count, or continuous outcome,
-stratified by a specified variable. Produces a stacked `gtsummary` table with one column per stratum,
+\title{Performs univariate regression for each exposure on a
+binary, count, or continuous outcome,
+stratified by a specified variable. Produces a stacked `gtsummary`
+table with one column per stratum,
 along with underlying models and diagnostics.}
 \usage{
 stratified_uni_reg(data, outcome, exposures, stratifier, approach = "logit")
@@ -11,15 +13,16 @@ stratified_uni_reg(data, outcome, exposures, stratifier, approach = "logit")
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{A character string specifying the name of the outcome variable.}
+\item{outcome}{name of the outcome variable.}
 
-\item{exposures}{A character vector specifying the predictor (exposure) variables.}
+\item{exposures}{A vector specifying the predictor (exposure) variables.}
 
-\item{stratifier}{A character string specifying the variable by which to stratify the data.}
+\item{stratifier}{A character string specifying the stratifier}
 
 \item{approach}{Modeling approach to use. One of:
 `"logit"` (Odds Ratios), `"log-binomial"` (Risk Ratios),
-`"poisson"` (Incidence Rate Ratios), `"robpoisson"` (Robust RR), `"linear"` (Beta coefficients).}
+`"poisson"` (Incidence Rate Ratios), `"robpoisson"` (Robust RR),
+ `"linear"` (Beta coefficients).}
 }
 \value{
 An object of class `stratified_uni_reg`, which includes:
@@ -29,8 +32,10 @@ An object of class `stratified_uni_reg`, which includes:
 - `reg_check`: A tibble of regression diagnostics (when available).
 }
 \description{
-Performs univariate regression for each exposure on a binary, count, or continuous outcome,
-stratified by a specified variable. Produces a stacked `gtsummary` table with one column per stratum,
+Performs univariate regression for each exposure on a
+binary, count, or continuous outcome,
+stratified by a specified variable. Produces a stacked `gtsummary`
+table with one column per stratum,
 along with underlying models and diagnostics.
 }
 \section{Accessors}{

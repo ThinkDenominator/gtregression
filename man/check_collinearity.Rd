@@ -18,7 +18,7 @@ For univariate models, an error is raised indicating VIF is not applicable.
 \description{
 Computes Variance Inflation Factors (VIF) for fitted models returned by
 uni_reg(), multi_reg(), uni_reg_nbin(), or multi_reg_nbin().
-Returns one VIF table per model. For univariate models, VIF is not applicable.
+Returns one VIF table per model. For multivariate models only
 }
 \examples{
 if (requireNamespace("gtregression", quietly = TRUE) &&

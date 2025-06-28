@@ -2,7 +2,7 @@
 
 #' Validate regression approach by context
 #'
-#' Ensures that only valid modeling approaches are used in each function context.
+#' Ensures that only valid modeling approaches are used in each function context
 #'
 #' @param approach A character string specifying the regression method.
 #' @param context The name of the function using the approach (e.g., "uni_reg").
@@ -72,7 +72,7 @@
 # validate inputs
 .validate_uni_inputs <- function(data, outcome, exposures, approach) {
   # validate approach in the func
-  .validate_approach(approach)
+  .validate_approach(approach, context = "uni_reg")
 
   # variable existence
   if (!outcome %in% names(data))
@@ -88,7 +88,7 @@
 # Multivariate models
 
 .validate_multi_inputs <- function(data, outcome, exposures, approach) {
-  .validate_approach(approach)
+  .validate_approach(approach, context = "multi_reg")
 
   if (!outcome %in% names(data))
     stop("Outcome variable not found in the dataset.")

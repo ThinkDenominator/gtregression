@@ -9,28 +9,29 @@ stratified_uni_nbin(data, outcome, exposures, stratifier)
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{A character string specifying the name of the count outcome variable.}
+\item{outcome}{A character string specifying the count outcome variable.}
 
 \item{exposures}{A character vector specifying the exposure variables.}
 
 \item{stratifier}{A character string specifying the stratifying variable.}
 }
 \value{
-An object of class `stratified_uni_reg_nbin` with the following components:
+An object of class `stratified_uni_reg_nbin` with the following:
 \describe{
-  \item{\code{$table}}{A `gtsummary::tbl_merge` object combining tables by stratum.}
-  \item{\code{$models}}{A named list of fitted negative binomial models per stratum.}
+  \item{\code{$table}}{A `gtsummary::tbl_merge` tables by stratum.}
+  \item{\code{$models}}{A named list of fitted negbin models per stratum.}
   \item{\code{$model_summaries}}{A list of tidy summaries for each model.}
-  \item{\code{$reg_check}}{(Optional) Diagnostics including dispersion checks.}
 }
 }
 \description{
-Performs univariate negative binomial regression for each exposure on a count outcome,
-stratified by a specified variable. Missing values in the stratifier are excluded.
+Performs univariate negative binomial regression
+stratified by a specified variable.
+Missing values in the stratifier are excluded.
 }
 \section{Accessors}{
 
-Use `object$table`, `object$models`, or `object$model_summaries` to extract components.
+Use `object$table`, `object$models`, or
+`object$model_summaries` to extract components.
 }
 
 \examples{

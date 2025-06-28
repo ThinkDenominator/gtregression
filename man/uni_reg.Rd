@@ -9,7 +9,7 @@ uni_reg(data, outcome, exposures, approach = "logit")
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The name of the outcome variable (binary, continuous, or count).}
+\item{outcome}{outcome variable (binary, continuous, or count).}
 
 \item{exposures}{A vector of predictor variables.}
 
@@ -18,11 +18,14 @@ uni_reg(data, outcome, exposures, approach = "logit")
 `"robpoisson"` (RR), `"linear"` (Beta coefficients)}
 }
 \description{
-Performs univariate regression for each exposure on a binary, continuous, or count outcome.
-Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR), or Incidence Rate Ratios (IRR).
+Performs univariate regression for each exposure on a binary,
+continuous, or count outcome.
+Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR),
+or Incidence Rate Ratios (IRR).
 }
 \details{
-This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `risks`.
+This function requires the following packages:
+`dplyr`, `purrr`, `gtsummary`, `risks`.
 #' @return A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
 \itemize{
   \item A publication-ready regression table (`tbl_stack`)

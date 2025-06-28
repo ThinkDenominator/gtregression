@@ -13,13 +13,13 @@ save_docx(tables = NULL, plots = NULL, filename = "report.docx", titles = NULL)
 
 \item{filename}{File name for the output (with or without `.docx` extension).}
 
-\item{titles}{Optional. A character vector of titles inserted before each table or plot.}
+\item{titles}{Optional. A character vector of titles}
 }
 \value{
-A Word document saved to the working directory. No object is returned.
+A Word document saved to the wd. No object is returned
 }
 \description{
-Saves a collection of `gtsummary` tables and `ggplot2` plots into a single Word (`.docx`) file.
+Saves a collection of `gtsummary` tables and `ggplot2` plots into (`.docx`)
 }
 \examples{
 \dontrun{

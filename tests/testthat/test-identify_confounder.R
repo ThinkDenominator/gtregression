@@ -1,4 +1,5 @@
-test_that("identify_confounder works across approaches using change-in-estimate method", {
+test_that("identify_confounder works across approaches using
+          change-in-estimate method", {
   # Load and prepare data
   data("PimaIndiansDiabetes2", package = "mlbench")
 
@@ -41,7 +42,9 @@ test_that("identify_confounder works across approaches using change-in-estimate 
     )
 
     expect_type(conf_list, "list")
-    expect_named(conf_list, c("crude", "adjusted", "percent_change", "is_confounder"), ignore.order = TRUE)
+    expect_named(conf_list, c("crude", "adjusted",
+                              "percent_change", "is_confounder"),
+                 ignore.order = TRUE)
     expect_true(is.numeric(conf_list$crude))
 
     # Multiple confounders - return tibble
@@ -54,7 +57,8 @@ test_that("identify_confounder works across approaches using change-in-estimate 
     )
 
     expect_s3_class(conf_tbl, "tbl_df")
-    expect_true(all(c("covariate", "crude_est", "adjusted_est", "pct_change", "is_confounder") %in% names(conf_tbl)))
+    expect_true(all(c("covariate", "crude_est", "adjusted_est",
+                      "pct_change", "is_confounder") %in% names(conf_tbl)))
     expect_true(nrow(conf_tbl) >= 1)
   }
 
@@ -72,5 +76,6 @@ test_that("identify_confounder works across approaches using change-in-estimate 
   )
 
   expect_s3_class(conf_tbl_nb, "tbl_df")
-  expect_true(all(c("covariate", "crude_est", "adjusted_est", "pct_change", "is_confounder") %in% names(conf_tbl_nb)))
+  expect_true(all(c("covariate", "crude_est", "adjusted_est", "pct_change",
+                    "is_confounder") %in% names(conf_tbl_nb)))
 })

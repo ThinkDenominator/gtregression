@@ -36,12 +36,14 @@ test_that("plot_reg works with default settings and correct X-axis labels", {
     ) |>
     dplyr::mutate(
       dplyr::across(
-        c(bmi, age_cat, npreg_cat, glucose_cat, bp_cat, triceps_cat, insulin_cat, dpf_cat),
+        c(bmi, age_cat, npreg_cat, glucose_cat, bp_cat, triceps_cat,
+          insulin_cat, dpf_cat),
         ~ factor(.x)
       )
     )
 
-  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
+  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat",
+                 "triceps_cat", "insulin_cat", "dpf_cat")
 
   approaches_labels <- list(
     "logit" = "Odds Ratio",
@@ -53,7 +55,10 @@ test_that("plot_reg works with default settings and correct X-axis labels", {
   for (approach in names(approaches_labels)) {
     outcome_var <- if (approach == "linear") "mass" else "diabetes"
 
-    tbl_uni <- gtregression::uni_reg(pima_data, outcome = outcome_var, exposures = exposures, approach = approach)
+    tbl_uni <- gtregression::uni_reg(pima_data,
+                                     outcome = outcome_var,
+                                     exposures = exposures,
+                                     approach = approach)
     p <- gtregression::plot_reg(tbl_uni)
 
     expect_s3_class(p, "ggplot")
@@ -66,13 +71,22 @@ test_that("plot_reg works with default settings and correct X-axis labels", {
   }
 
   # Also test plot_reg_combine()
-  tbl_uni <- gtregression::uni_reg(pima_data, outcome = "diabetes", exposures = exposures, approach = "robpoisson")
-  tbl_multi <- gtregression::multi_reg(pima_data, outcome = "diabetes", exposures = exposures, approach = "robpoisson")
+  tbl_uni <- gtregression::uni_reg(pima_data,
+                                   outcome = "diabetes",
+                                   exposures = exposures,
+                                   approach = "robpoisson")
+  tbl_multi <- gtregression::multi_reg(pima_data,
+                                       outcome = "diabetes",
+                                       exposures = exposures,
+                                       approach = "robpoisson")
 
   p1 <- gtregression::plot_reg(tbl_uni)
   expect_s3_class(p1, "ggplot")
 
-  p2 <- gtregression::plot_reg(tbl_uni, order_y = exposures, log_x = TRUE, show_ref = TRUE)
+  p2 <- gtregression::plot_reg(tbl_uni,
+                               order_y = exposures,
+                               log_x = TRUE, s\
+                               how_ref = TRUE)
   expect_s3_class(p2, "ggplot")
 
   p3 <- gtregression::plot_reg_combine(tbl_uni = tbl_uni, tbl_multi = tbl_multi)

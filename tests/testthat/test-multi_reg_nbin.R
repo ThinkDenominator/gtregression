@@ -1,4 +1,5 @@
-test_that("multi_reg_nbin computes adjusted IRRs using negative binomial regression", {
+test_that("multi_reg_nbin computes adjusted IRRs
+          using negative binomial regression", {
   skip_if_not_installed("gtregression")
   skip_if_not_installed("MASS")
   skip_if_not_installed("gtsummary")
@@ -18,12 +19,16 @@ test_that("multi_reg_nbin computes adjusted IRRs using negative binomial regress
   exposures <- c("Eth", "Sex", "Age", "Lrn")
 
   # Count check
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE)
-  if (!is_count(quine_data[[outcome]])) skip("Outcome is not a non-negative count variable.")
+  is_count <- function(x) is.numeric(x) && all(x >= 0 &
+                                                 x == floor(x), na.rm = TRUE)
+  if (!is_count(quine_data[[outcome]]))
+    skip("Outcome is not a non-negative count variable.")
 
   result <- tryCatch(
     {
-      suppressWarnings(multi_reg_nbin(data = quine_data, outcome = outcome, exposures = exposures))
+      suppressWarnings(multi_reg_nbin(data = quine_data,
+                                      outcome = outcome,
+                                      exposures = exposures))
     },
     error = function(e) {
       message("multi_reg_nbin() failed:\n", e$message)
@@ -35,8 +40,10 @@ test_that("multi_reg_nbin computes adjusted IRRs using negative binomial regress
     skip("Skipping test: multi_reg_nbin() returned NULL unexpectedly.")
   } else {
     expect_s3_class(result, "tbl_regression")
-    expect_true(nrow(result$table_body) > 0, info = "No rows in regression output.")
-    expect_true("estimate" %in% names(result$table_body), info = "Missing 'estimate' column.")
+    expect_true(nrow(result$table_body) > 0,
+                info = "No rows in regression output.")
+    expect_true("estimate" %in% names(result$table_body),
+                info = "Missing 'estimate' column.")
     expect_true(!is.null(attr(result, "approach")))
     expect_true(!is.null(attr(result, "source")))
 
@@ -55,7 +62,8 @@ test_that("multi_reg_nbin computes adjusted IRRs using negative binomial regress
   quine_data$not_count <- rnorm(nrow(quine_data)) # Continuous
 
   expect_error(
-    multi_reg_nbin(data = quine_data, outcome = "not_count", exposures = exposures),
+    multi_reg_nbin(data = quine_data, outcome = "not_count",
+                   exposures = exposures),
     regexp = "Negative binomial requires a count outcome",
     info = "Expected error when outcome is not count"
   )

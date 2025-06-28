@@ -7,7 +7,8 @@
 \format{
 A data frame with 248 observations and 8 variables:
 \describe{
-  \item{education}{Education level (0 = 0–5 years, 1 = 6–11 years, 2 = 12+ years)}
+  \item{education}{Education level (0 = 0–5 years, 1 = 6–11 years,
+  2 = 12+ years)}
   \item{age}{Age in years}
   \item{parity}{Number of prior pregnancies}
   \item{induced}{Number of induced abortions}
@@ -24,6 +25,6 @@ A data frame with 248 observations and 8 variables:
 data_infertility
 }
 \description{
-Infertility study with matched case-control design investigating the relationship between infertility and spontaneous/induced abortions.
+investigating the relationship between infertility and abortions.
 }
 \keyword{datasets}

@@ -63,32 +63,10 @@ check_convergence <- function(data,
                               outcome,
                               approach = "logit",
                               multivariate = FALSE) {
-  valid_approaches <- c("logit", "log-binomial", "poisson",
-                        "robpoisson", "negbin")
-  if (!approach %in% valid_approaches) {
-    stop("Invalid approach. Choose from: ",
-         paste(valid_approaches, collapse = ", "))
-  }
 
-  outcome_vec <- data[[outcome]]
-  is_binary <- function(x) {
-    is.factor(x) && length(levels(x)) == 2 ||
-      is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE) ||
-      is.logical(x)
-  }
-  is_count <- function(x) {
-    is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) &&
-      length(unique(x[!is.na(x)])) > 2
-  }
+  .validate_approach(approach, context = "uni_reg")
 
-  if (approach %in% c("logit", "log-binomial", "robpoisson") &&
-      !is_binary(outcome_vec)) {
-    stop("The outcome must be binary for the selected approach: ", approach)
-  }
-  if (approach %in% c("poisson", "negbin") && !is_count(outcome_vec)) {
-    stop("The outcome must be a count
-         (non-negative integers) for the selected approach: ", approach)
-  }
+  .validate_outcome_by_approach(data[[outcome]], approach)
 
   if (nrow(data) == 0) {
     return(data.frame(
@@ -119,7 +97,7 @@ check_convergence <- function(data,
           else max(predict(fit, type = "response"), na.rm = TRUE)
           if (approach == "robpoisson" && max_prob > 1) {
             warning("robpoisson: Predicted probability exceeds 1.
-                    Interpret RR estimates with caution.")
+              Interpret estimates with caution.", call. = FALSE)
           }
           data.frame(Exposure = exposure, Model = approach,
                      Converged = converged, Max.prob. = max_prob)
@@ -134,8 +112,7 @@ check_convergence <- function(data,
   } else {
     fmla <- stats::as.formula(paste(outcome, "~",
                                     paste(exposures, collapse = " + ")))
-    result <- suppressWarnings(
-      tryCatch({
+    result <- tryCatch({
         fit <- switch(approach,
           "logit" = glm(fmla, data = data, family = binomial("logit")),
           "log-binomial" = glm(fmla, data = data, family = binomial("log")),
@@ -149,9 +126,9 @@ check_convergence <- function(data,
         else max(predict(fit, type = "response"), na.rm = TRUE)
 
         # Custom warning if predicted prob > 1
-        if (!is.na(max_prob) && max_prob > 1) {
-          warning(glue::glue("{approach}: Predicted probability exceeds 1.
-                             \nInterpret RR estimates with caution."))
+        if (approach == "robpoisson" && max_prob > 1) {
+          warning("robpoisson: Predicted probability exceeds 1.
+              Interpret estimates with caution.", call. = FALSE)
         }
         data.frame(Exposure = paste(exposures, collapse = " + "),
                    Model = approach, Converged = converged,
@@ -165,7 +142,7 @@ check_convergence <- function(data,
                    Max.prob. = NA)
       }
     )
-    )
+
 
     results_list[["multivariable"]] <- result
   }

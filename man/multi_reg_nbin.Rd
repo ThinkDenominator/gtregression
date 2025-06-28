@@ -9,9 +9,9 @@ multi_reg_nbin(data, outcome, exposures)
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{A character string specifying the name of the count outcome variable.}
+\item{outcome}{name of the count outcome variable.}
 
-\item{exposures}{A character vector specifying the predictor (exposure) variables.}
+\item{exposures}{A character vector specifying the predictor (exposure)}
 }
 \value{
 An object of class `multi_reg_nbin`, which includes:
@@ -21,15 +21,19 @@ An object of class `multi_reg_nbin`, which includes:
 - The regression table via `$table`.
 }
 \description{
-Performs multivariable negative binomial regression using all specified exposures on a count outcome.
-Returns a publication-ready regression table with adjusted incidence rate ratios (IRRs) using `gtsummary`.
+Performs multivariable negative binomial regression
+using all specified exposures on a count outcome.
+Returns a publication-ready regression table with
+adjusted incidence rate ratios (IRRs) using `gtsummary`.
 }
 \section{Accessors}{
 
 \describe{
-  \item{\code{$models}}{Fitted negative binomial model object (class `negbin`).}
+  \item{\code{$models}}{Fitted negative binomial model object
+  (class `negbin`).}
   \item{\code{$model_summaries}}{Tidy summary table of model estimates.}
-  \item{\code{$table}}{Formatted `gtsummary` regression table with adjusted IRRs.}
+  \item{\code{$table}}
+  {Formatted `gtsummary` regression table with adjusted IRRs.}
 }
 }
 
@@ -43,7 +47,6 @@ if (requireNamespace("MASS", quietly = TRUE)) {
   )
   multi_nb$table
 }
-
 
 }
 \seealso{

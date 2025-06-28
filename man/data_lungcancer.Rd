@@ -24,9 +24,11 @@ A data frame with 137 observations and 8 variables:
 data_lungcancer
 }
 \description{
-Survival data from a clinical trial of lung cancer patients conducted by the Veteran's Administration.
+Survival data from a clinical trial of lung cancer patients conducted
+ by the Veteran's Administration.
 }
 \references{
-Kalbfleisch JD and Prentice RL (1980). The Statistical Analysis of Failure Time Data.
+Kalbfleisch JD and Prentice RL (1980).
+ The Statistical Analysis of Failure Time Data.
 }
 \keyword{datasets}

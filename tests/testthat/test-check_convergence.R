@@ -23,13 +23,21 @@ test_that("check_convergence runs correctly for valid approaches", {
   valid_approaches <- c("logit", "log-binomial", "robpoisson")
 
   for (approach in valid_approaches) {
-    result_uni <- gtregression::check_convergence(pima_data, exposures, outcome, approach = approach)
+    result_uni <- gtregression::check_convergence(pima_data,
+                                                  exposures,
+                                                  outcome,
+                                                  approach = approach)
     expect_s3_class(result_uni, "data.frame")
-    expect_true(all(c("Exposure", "Model", "Converged", "Max.prob.") %in% names(result_uni)))
+    expect_true(all(c("Exposure", "Model", "Converged", "Max.prob.")
+                    %in% names(result_uni)))
     expect_gt(nrow(result_uni), 0)
     expect_true(any(result_uni$Converged))
 
-    result_multi <- gtregression::check_convergence(pima_data, exposures, outcome, approach = approach, multivariate = TRUE)
+    result_multi <- gtregression::check_convergence(pima_data,
+                                                    exposures,
+                                                    outcome,
+                                                    approach = approach,
+                                                    multivariate = TRUE)
     expect_s3_class(result_multi, "data.frame")
     expect_equal(nrow(result_multi), 1)
     expect_true(result_multi$Converged)
@@ -44,12 +52,19 @@ test_that("check_convergence runs correctly for valid approaches", {
   count_outcome <- "Days"
 
   for (approach in c("poisson", "negbin")) {
-    result_uni <- gtregression::check_convergence(quine_data, count_exposures, count_outcome, approach = approach)
+    result_uni <- gtregression::check_convergence(quine_data,
+                                                  count_exposures,
+                                                  count_outcome,
+                                                  approach = approach)
     expect_s3_class(result_uni, "data.frame")
     expect_gt(nrow(result_uni), 0)
     expect_true(any(result_uni$Converged))
 
-    result_multi <- gtregression::check_convergence(quine_data, count_exposures, count_outcome, approach = approach, multivariate = TRUE)
+    result_multi <- gtregression::check_convergence(quine_data,
+                                                    count_exposures,
+                                                    count_outcome,
+                                                    approach = approach,
+                                                    multivariate = TRUE)
     expect_s3_class(result_multi, "data.frame")
     expect_equal(nrow(result_multi), 1)
     expect_true(result_multi$Converged)
@@ -57,17 +72,33 @@ test_that("check_convergence runs correctly for valid approaches", {
 
   # Expect errors for wrong outcome types
   expect_error(
-    gtregression::check_convergence(pima_data, exposures, outcome = "diabetes", approach = "poisson"),
+    gtregression::check_convergence(pima_data, exposures,
+                                    outcome = "diabetes",
+                                    approach = "poisson"),
     regexp = "must be a count"
   )
 
   expect_error(
-    gtregression::check_convergence(quine_data, count_exposures, count_outcome, approach = "logit"),
+    gtregression::check_convergence(quine_data, count_exposures,
+                                    count_outcome,
+                                    approach = "logit"),
     regexp = "must be binary"
   )
 
   # Empty data
   empty_data <- pima_data[0, ]
-  result_empty <- gtregression::check_convergence(empty_data, exposures, outcome)
+  result_empty <- gtregression::check_convergence(empty_data,
+                                                  exposures,
+                                                  outcome)
   expect_equal(nrow(result_empty), 0)
+})
+
+test_that("check_convergence handles model fitting failure", {
+  broken_data <- pima_data |>
+    dplyr::mutate(all_one = factor("yes", levels = "yes"))  # constant predictor
+
+  result <- check_convergence(broken_data, exposures = "all_one",
+                              outcome = "diabetes", approach = "logit")
+  expect_false(result$Converged)
+  expect_true(is.na(result$Max.prob.))
 })

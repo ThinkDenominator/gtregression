@@ -25,7 +25,8 @@ A data frame with 768 observations and 9 variables:
 data_PimaIndiansDiabetes
 }
 \description{
-A cleaned version of the original Pima Indians Diabetes dataset from the `mlbench` package.
+A cleaned version of the original Pima Indians Diabetes dataset from
+the `mlbench` package.
 Useful for demonstrating regression approaches for binary outcomes.
 }
 \keyword{datasets}

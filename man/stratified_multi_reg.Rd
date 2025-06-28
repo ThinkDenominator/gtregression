@@ -9,15 +9,16 @@ stratified_multi_reg(data, outcome, exposures, stratifier, approach = "logit")
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{A character string specifying the name of the outcome variable.}
+\item{outcome}{name of the outcome variable.}
 
-\item{exposures}{A character vector specifying the predictor (exposure) variables.}
+\item{exposures}{vector specifying the predictor (exposure) variables.}
 
 \item{stratifier}{A character string specifying the stratifying variable.}
 
 \item{approach}{Modeling approach to use. One of:
 `"logit"` (Adjusted Odds Ratios), `"log-binomial"` (Adjusted Risk Ratios),
-`"poisson"` (Adjusted IRRs), `"robpoisson"` (Robust RRs), or `"linear"` (Beta coefficients).}
+`"poisson"` (Adjusted IRRs), `"robpoisson"` (Robust RRs),
+or `"linear"` (Beta coefficients).}
 }
 \value{
 An object of class `stratified_multi_reg`, which includes:
@@ -27,8 +28,10 @@ An object of class `stratified_multi_reg`, which includes:
 - `reg_check`: Diagnostics results (if available for the model type).
 }
 \description{
-Performs multivariable regression with multiple exposures on a binary, count, or continuous outcome,
-stratified by a specified variable. NA values in the stratifier are excluded from analysis.
+Performs multivariable regression with multiple exposures on
+a binary, count, or continuous outcome,
+stratified by a specified variable.
+NA values in the stratifier are excluded from analysis.
 }
 \section{Accessors}{
 

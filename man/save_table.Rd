@@ -7,17 +7,17 @@
 save_table(tbl, filename = "table", format = c("docx", "pdf", "html"))
 }
 \arguments{
-\item{tbl}{A `gtsummary` table object (e.g., output from `tbl_regression()`, `tbl_summary()`, etc.).}
+\item{tbl}{A `gtsummary` object (e.g.,`tbl_regression()`, `tbl_summary()`).}
 
-\item{filename}{File name to save the output. Can be provided with or without file extension.}
+\item{filename}{File name to save the output. Extension is optional}
 
 \item{format}{Output format. One of `"docx"`, `"pdf"`, or `"html"`.}
 }
 \value{
-Saves the file to the current working directory. Does not return an object.
+Saves the file to the wd. Does not return an object.
 }
 \description{
-Saves a `gtsummary` table as a Word, PDF, or HTML file using the `gt` and `gtsummary` packages.
+Saves a `gtsummary` table as a Word, PDF, or HTML file
 }
 \examples{
 \dontrun{

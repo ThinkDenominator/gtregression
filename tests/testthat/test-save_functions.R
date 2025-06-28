@@ -57,15 +57,23 @@ test_that("save_table(), save_plot(), and save_docx() work correctly", {
         pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
         pedigree > 0.5 ~ "High Genetic Risk"
       ),
-      dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))
+      dpf_cat = factor(dpf_cat,
+                       levels = c("Low Genetic Risk",
+                                  "Moderate Genetic Risk",
+                                  "High Genetic Risk"))
     ) |>
-    mutate(diabetes_cat = case_when(diabetes == 1 ~ "Diabetes positive", TRUE ~ "Diabetes negative")) |>
-    mutate(diabetes_cat = factor(diabetes_cat, levels = c("Diabetes negative", "Diabetes positive")))
+    mutate(diabetes_cat = case_when(diabetes == 1 ~ "Diabetes positive",
+                                    TRUE ~ "Diabetes negative")) |>
+    mutate(diabetes_cat = factor(diabetes_cat,
+                                 levels = c("Diabetes negative",
+                                            "Diabetes positive")))
 
-  exposures <- c("bmi", "age_cat", "npreg_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
+  exposures <- c("bmi", "age_cat", "npreg_cat", "bp_cat",
+                 "triceps_cat", "insulin_cat", "dpf_cat")
 
   # Univariate regression
-  uni_rr <- uni_reg(pima_data, outcome = "diabetes", exposures = exposures, approach = "log-binomial")
+  uni_rr <- uni_reg(pima_data, outcome = "diabetes",
+                    exposures = exposures, approach = "log-binomial")
   # Modify table
   tbl_custom <- modify_table(
     uni_rr,
