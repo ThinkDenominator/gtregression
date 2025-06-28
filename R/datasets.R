@@ -1,6 +1,7 @@
 #' Lung Cancer Trial Data
 #'
-#' Survival data from a clinical trial of lung cancer patients conducted by the Veteran's Administration.
+#' Survival data from a clinical trial of lung cancer patients conducted
+#'  by the Veteran's Administration.
 #'
 #' @format A data frame with 137 observations and 8 variables:
 #' \describe{
@@ -14,16 +15,18 @@
 #'   \item{prior}{Prior therapy (0 = no, 10 = yes)}
 #' }
 #' @source \url{https://cran.r-project.org/web/packages/survival/}
-#' @references Kalbfleisch JD and Prentice RL (1980). The Statistical Analysis of Failure Time Data.
+#' @references Kalbfleisch JD and Prentice RL (1980).
+#'  The Statistical Analysis of Failure Time Data.
 "data_lungcancer"
 
 #' Infertility Matched Case-Control Study
 #'
-#' Infertility study with matched case-control design investigating the relationship between infertility and spontaneous/induced abortions.
+#' investigating the relationship between infertility and abortions.
 #'
 #' @format A data frame with 248 observations and 8 variables:
 #' \describe{
-#'   \item{education}{Education level (0 = 0–5 years, 1 = 6–11 years, 2 = 12+ years)}
+#'   \item{education}{Education level (0 = 0–5 years, 1 = 6–11 years,
+#'   2 = 12+ years)}
 #'   \item{age}{Age in years}
 #'   \item{parity}{Number of prior pregnancies}
 #'   \item{induced}{Number of induced abortions}
@@ -32,14 +35,16 @@
 #'   \item{stratum}{Matched set ID}
 #'   \item{pooled.stratum}{Pooled stratum ID used for conditional regression}
 #' }
-#' @source \url{https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/infert.html}
+#' @source
+#' \url{https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/infert.html}
 "data_infertility"
 
 
 #' Epilepsy Treatment and Seizure Counts
 #'
-#' A clinical dataset from a randomized trial investigating the effect of a drug on the number of seizures in patients with epilepsy.
-#' Contains repeated measures data with treatment groups, baseline seizure counts, and follow-up counts.
+#' RCT on the effect of a drug on the seizures in patients with epilepsy.
+#' Contains repeated measures data with treatment groups,
+#' baseline seizure counts, and follow-up counts.
 #'
 #' @format A data frame with 236 observations and 9 variables:
 #' \describe{
@@ -54,57 +59,71 @@
 #'   \item{lage}{Log of age (numeric)}
 #' }
 #'
-#' @source \pkg{MASS} package. Original data from Thall and Vail (1990), *Biometrics*.
+#' @source \pkg{MASS} package. Original data from Thall and Vail (1990)
 "data_epilepsy"
 
 
 #' Birth Weight Data
 #'
-#' A dataset from the \pkg{MASS} package containing risk factors associated with low birth weight (LBW) in newborns.
-#' Originally collected at Baystate Medical Center, Springfield, Massachusetts, USA.
+#' A dataset from the \pkg{MASS} package containing risk factors
+#' associated with low birth weight (LBW) in newborns.
+#' Originally collected at Baystate Medical Center,
+#' Springfield, Massachusetts, USA.
 #'
-#' The outcome variable is binary (`low`): birth weight < 2500g (yes = 1) or not (no = 0).
+#' The outcome variable is binary (`low`): birth weight < 2500g (yes = 1)
+#' or not (no = 0).
 #'
 #' @format A data frame with 189 observations and 10 variables:
 #' \describe{
-#'   \item{low}{Indicator for birth weight < 2500g (binary): \code{0 = normal}, \code{1 = low birth weight}}
+#'   \item{low}{Indicator for birth weight < 2500g (binary):
+#'   \code{0 = normal}, \code{1 = low birth weight}}
 #'   \item{age}{Mother's age in years (numeric)}
 #'   \item{lwt}{Mother's weight in pounds at last menstrual period (numeric)}
-#'   \item{race}{Mother's race (factor): \code{1 = White}, \code{2 = Black}, \code{3 = Other}}
-#'   \item{smoke}{Smoking status during pregnancy (binary): \code{0 = No}, \code{1 = Yes}}
+#'   \item{race}{Mother's race (factor): \code{1 = White}, \code{2 = Black},
+#'   \code{3 = Other}}
+#'   \item{smoke}{Smoking status during pregnancy (binary): \code{0 = No},
+#'    \code{1 = Yes}}
 #'   \item{ptl}{Number of previous premature labors (integer)}
 #'   \item{ht}{History of hypertension (binary): \code{0 = No}, \code{1 = Yes}}
-#'   \item{ui}{Presence of uterine irritability (binary): \code{0 = No}, \code{1 = Yes}}
-#'   \item{ftv}{Number of physician visits during the first trimester (integer, 0–6)}
+#'   \item{ui}{Presence of uterine irritability (binary): \code{0 = No},
+#'   \code{1 = Yes}}
+#'   \item{ftv}{no of physician visits during the 1st trimester (integer, 0–6)}
 #'   \item{bwt}{Birth weight in grams (numeric)}
 #' }
 #'
-#' @source Hosmer, D.W., Lemeshow, S. (1989). *Applied Logistic Regression.* New York: Wiley.
+#' @source Hosmer, D.W., Lemeshow, S. (1989). *Applied Logistic Regression.*
+#' New York: Wiley.
 #' Also available in \pkg{MASS} and described in detail in its documentation.
 "data_birthwt"
 
 
 #' Student Absenteeism in Rural Schools
 #'
-#' This dataset contains observations on the number of days absent from school for children in rural Australia,
-#' along with student characteristics. It's commonly used to demonstrate count models such as Poisson and Negative Binomial regression.
+#' This dataset contains observations on the number of days absent from school
+#' for children in rural Australia,
+#' along with student characteristics. It's commonly used to demonstrate count
+#' models such as Poisson and Negative Binomial regression.
 #'
 #' @format A data frame with 146 observations and 5 variables:
 #' \describe{
-#'   \item{Eth}{Ethnicity (\code{"A"} = Aboriginal, \code{"N"} = Non-Aboriginal)}
+#'   \item{Eth}{Ethnicity (\code{"A"} = Aboriginal,
+#'   \code{"N"} = Non-Aboriginal)}
 #'   \item{Sex}{Sex (\code{"F"} or \code{"M"})}
 #'   \item{Age}{Age group (\code{"F0", "F1", "F2", "F3"})}
-#'   \item{Lrn}{Learner status (\code{"AL"} = average learner, \code{"SL"} = slow learner)}
+#'   \item{Lrn}{Learner status (\code{"AL"} = average learner,
+#'    \code{"SL"} = slow learner)}
 #'   \item{Days}{Number of days absent from school (count outcome)}
 #' }
 #'
-#' @source \pkg{MASS} package. See also Venables and Ripley (2002), *Modern Applied Statistics with S*.
+#' @source \pkg{MASS} package. See also Venables and Ripley (2002),
+#'  *Modern Applied Statistics with S*.
 #'
 "data_gt_quin"
 
 #' PimaIndians2 Diabetes Dataset
 #'
-#' A cleaned version of the original Pima Indians Diabetes dataset from the `mlbench` package.
+#' A cleaned version of the original Pima Indians Diabetes dataset from
+#' the `mlbench` package.
 #' Useful for demonstrating regression approaches for binary outcomes.
 #'
 #' @format A data frame with 768 observations and 9 variables:

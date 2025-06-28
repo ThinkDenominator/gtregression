@@ -1,11 +1,13 @@
 #' Stepwise Model Selection with Evaluation Metrics
 #'
-#' Performs stepwise model selection using forward, backward, or both directions across different regression approaches.
-#' Returns a summary table with evaluation metrics (AIC, BIC, log-likelihood, deviance) and the best model.
+#' Performs stepwise model selection using forward, backward, or both directions
+#'  across different regression approaches.
+#' Returns a summary table with evaluation
+#' metrics (AIC, BIC, log-likelihood, deviance) and the best model.
 #'
 #' @param data A data frame containing the outcome and predictor variables.
 #' @param outcome A character string indicating the outcome variable.
-#' @param exposures A character vector of predictor variables to consider in the model.
+#' @param exposures vector of predictor variables to consider in the model.
 #' @param approach Regression method. One of:
 #'   \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
 #'   \code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.
@@ -14,13 +16,15 @@
 #'
 #' @return A list with the following components:
 #' \itemize{
-#'   \item \code{results_table}: A tibble summarizing each tested model's metrics (AIC, BIC, deviance, log-likelihood, adjusted R² if applicable).
-#'   \item \code{best_model}: The best-fitting model object based on selection criteria.
+#'   \item \code{results_table}: A tibble summarising each tested model's metric
+#'   (AIC, BIC, deviance, log-likelihood, adjusted R² if applicable).
+#'   \item \code{best_model}: The best-fitting model object based on low AIC.
 #'   \item \code{all_models}: A named list of all fitted models.
 #' }
 #'
 #' @importFrom stats AIC BIC anova as.formula binomial coef cooks.distance
-#'   deviance glm glm.control lm logLik na.omit nobs poisson predict residuals shapiro.test
+#' @importFrom stats deviance glm glm.control lm logLik na.omit nobs poisson
+#' @importFrom stats predict residuals shapiro.test
 #' @importFrom MASS glm.nb
 #' @importFrom utils data
 #' @importFrom tibble tibble
@@ -29,31 +33,21 @@
 #' @examples
 #' data <- data_PimaIndiansDiabetes
 #' stepwise <- select_models(
-#' data = data,
-#' outcome = "glucose",
-#' exposures = c("age", "pregnant", "mass"),
-#' approach = "linear",
-#' direction = "forward"
+#'   data = data,
+#'   outcome = "glucose",
+#'   exposures = c("age", "pregnant", "mass"),
+#'   approach = "linear",
+#'   direction = "forward"
 #' )
 #' summary(stepwise)
 #' stepwise$results_table
 #' stepwise$best_model
 #'
 #' @export
-select_models <- function(data, outcome, exposures, approach = "logit", direction = "forward") {
+select_models <- function(data, outcome, exposures, approach = "logit",
+                          direction = "forward") {
   # Validate outcome type
-  outcome_vec <- data[[outcome]]
-  is_binary <- function(x) is.factor(x) && length(levels(x)) == 2 || is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE)
-  is_count <- function(x) is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) && length(unique(x[!is.na(x)])) > 2
-  is_continuous <- function(x) is.numeric(x) && length(unique(x)) > 10
-
-  if (approach %in% c("logit", "log-binomial", "robpoisson")) {
-    if (!is_binary(outcome_vec)) stop("This approach requires a binary outcome.")
-  } else if (approach %in% c("poisson", "negbin")) {
-    if (!is_count(outcome_vec)) stop("Count outcome required for Poisson or negbin.")
-  } else if (approach == "linear") {
-    if (!is_continuous(outcome_vec)) stop("Continuous numeric outcome required for linear regression.")
-  }
+  .validate_outcome_by_approach(data[[outcome]], approach)
 
   # Model fitting wrapper
   fit_model <- function(vars) {
@@ -74,14 +68,13 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
       lm(eval(parse(text = fmla_str)), data = data)
     } else {
       family <- switch(approach,
-                       "logit" = binomial(link = "logit"),
-                       "log-binomial" = binomial(link = "log"),
-                       "poisson" = poisson(link = "log"),
-                       "robpoisson" = poisson(link = "log"),
-                       stop("Unsupported approach")
+        "logit" = binomial(link = "logit"),
+        "log-binomial" = binomial(link = "log"),
+        "poisson" = poisson(link = "log"),
+        "robpoisson" = poisson(link = "log"),
+        stop("Unsupported approach")
       )
       glm(as.formula(fmla_str), family = family, data = data)
-
     }
 
 
@@ -110,17 +103,23 @@ select_models <- function(data, outcome, exposures, approach = "logit", directio
 
     # Forward candidates
     add_candidates <- setdiff(exposures, selected_vars)
-    forward_models <- lapply(add_candidates, function(var) fit_model(c(selected_vars, var)))
-    forward_aics <- sapply(forward_models, AIC)
+    forward_models <- lapply(add_candidates, function(var)
+      fit_model(c(selected_vars, var)))
+    forward_aics <- vapply(forward_models, AIC, FUN.VALUE = numeric(1))
     best_forward <- if (length(forward_aics)) min(forward_aics) else Inf
-    best_forward_idx <- if (length(forward_aics)) which.min(forward_aics) else NA
+    best_forward_idx <- if (length(forward_aics)) which.min(forward_aics)
+    else NA
 
     # Backward candidates
-    drop_candidates <- if (length(selected_vars) > 1) lapply(selected_vars, function(var) setdiff(selected_vars, var)) else list()
+    drop_candidates <- if (length(selected_vars) > 1)
+      lapply(selected_vars, function(var) setdiff(selected_vars, var))
+    else list()
     backward_models <- lapply(drop_candidates, fit_model)
-    backward_aics <- sapply(backward_models, AIC)
-    best_backward <- if (length(backward_aics)) min(backward_aics) else Inf
-    best_backward_idx <- if (length(backward_aics)) which.min(backward_aics) else NA
+    backward_aics <- vapply(backward_models, AIC, FUN.VALUE = numeric(1))
+    best_backward <- if (length(backward_aics)) min(backward_aics)
+    else Inf
+    best_backward_idx <- if (length(backward_aics)) which.min(backward_aics)
+    else NA
 
     improved <- FALSE
 

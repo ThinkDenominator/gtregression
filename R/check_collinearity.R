@@ -2,7 +2,7 @@
 #'
 #' Computes Variance Inflation Factors (VIF) for fitted models returned by
 #' uni_reg(), multi_reg(), uni_reg_nbin(), or multi_reg_nbin().
-#' Returns one VIF table per model. For univariate models, VIF is not applicable.
+#' Returns one VIF table per model. For multivariate models only
 #'
 #' @param model A fitted model object with class "uni_reg", "multi_reg",
 #'   "uni_reg_nbin", or "multi_reg_nbin".
@@ -26,16 +26,20 @@
 #' }
 #' @export
 check_collinearity <- function(model) {
-  if (!requireNamespace("car", quietly = TRUE)) stop("Package 'car' is required.")
-  if (!requireNamespace("tibble", quietly = TRUE)) stop("Package 'tibble' is required.")
-  if (!requireNamespace("dplyr", quietly = TRUE)) stop("Package 'dplyr' is required.")
+  if (!requireNamespace("car", quietly = TRUE))
+    stop("Package 'car' is required.")
+  if (!requireNamespace("tibble", quietly = TRUE))
+    stop("Package 'tibble' is required.")
+  if (!requireNamespace("dplyr", quietly = TRUE))
+    stop("Package 'dplyr' is required.")
 
   valid_sources <- c("uni_reg", "multi_reg", "uni_reg_nbin", "multi_reg_nbin")
   model_source <- attr(model, "source")
   model_list <- attr(model, "models")
 
   if (is.null(model_source) || !(model_source %in% valid_sources)) {
-    stop("Input must be a fitted model from uni_reg, multi_reg, uni_reg_nbin, or multi_reg_nbin.")
+    stop("Input must be a fitted model from uni_reg, multi_reg, uni_reg_nbin,
+         or multi_reg_nbin.")
   }
   if (is.null(model_list)) {
     stop("Model list not found in object. Cannot compute VIF.")
@@ -43,7 +47,8 @@ check_collinearity <- function(model) {
 
   # Throw informative error for uni_reg (univariate)
   if (model_source %in% c("uni_reg", "uni_reg_nbin")) {
-    stop("VIF is not applicable for univariate models. Use multi_reg() to check collinearity among predictors.")
+    stop("VIF is not applicable for univariate models.
+         Use multi_reg() to check collinearity among predictors.")
   }
 
   # For multi_reg and multi_reg_nbin

@@ -1,16 +1,19 @@
 " Stratified Univariate Regression (Odds, Risk, or Rate Ratios)
 #"
-#' Performs univariate regression for each exposure on a binary, count, or continuous outcome,
-#' stratified by a specified variable. Produces a stacked `gtsummary` table with one column per stratum,
+#' Performs univariate regression for each exposure on a
+#' binary, count, or continuous outcome,
+#' stratified by a specified variable. Produces a stacked `gtsummary`
+#' table with one column per stratum,
 #' along with underlying models and diagnostics.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome A character string specifying the name of the outcome variable.
-#' @param exposures A character vector specifying the predictor (exposure) variables.
-#' @param stratifier A character string specifying the variable by which to stratify the data.
+#' @param outcome name of the outcome variable.
+#' @param exposures A vector specifying the predictor (exposure) variables.
+#' @param stratifier A character string specifying the stratifier
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (Odds Ratios), `"log-binomial"` (Risk Ratios),
-#'   `"poisson"` (Incidence Rate Ratios), `"robpoisson"` (Robust RR), `"linear"` (Beta coefficients).
+#'   `"poisson"` (Incidence Rate Ratios), `"robpoisson"` (Robust RR),
+#'    `"linear"` (Beta coefficients).
 #'
 #' @return An object of class `stratified_uni_reg`, which includes:
 #' - `table`: A `gtsummary::tbl_stack` object with stratified results,
@@ -56,7 +59,6 @@
 #' @export
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit") {
-
   .validate_uni_inputs(data, outcome, exposures, approach)
 
   if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.")
@@ -92,22 +94,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     )
 
     if (!is.null(result)) {
-      tbls <- mapply(
-        function(fit, var) {
-          gtsummary::tbl_regression(fit,
-                                    exponentiate = approach != "linear",
-                                    conf.method = "wald",
-                                    tidy_fun = broom::tidy
-          ) |>
-            gtsummary::add_n(location = "label")
-        },
-        attr(result, "models"),
-
-        SIMPLIFY= FALSE)
-
-      stacked <- gtsummary::tbl_stack(tbls)
-
-      tbl_list[[length(tbl_list) + 1]] <- stacked
+      tbl_list[[length(tbl_list) + 1]] <- result
       models_list[[lev]] <- attr(result, "models")
       summaries_list[[lev]] <- attr(result, "model_summaries")
       diagnostics_list[[lev]] <- attr(result, "reg_check")

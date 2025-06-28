@@ -1,23 +1,24 @@
 #' Stratified Univariate Negative Binomial Regression
 #'
-#' Performs univariate negative binomial regression for each exposure on a count outcome,
-#' stratified by a specified variable. Missing values in the stratifier are excluded.
+#' Performs univariate negative binomial regression
+#' stratified by a specified variable.
+#' Missing values in the stratifier are excluded.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome A character string specifying the name of the count outcome variable.
+#' @param outcome A character string specifying the count outcome variable.
 #' @param exposures A character vector specifying the exposure variables.
 #' @param stratifier A character string specifying the stratifying variable.
 #'
-#' @return An object of class `stratified_uni_reg_nbin` with the following components:
+#' @return An object of class `stratified_uni_reg_nbin` with the following:
 #' \describe{
-#'   \item{\code{$table}}{A `gtsummary::tbl_merge` object combining tables by stratum.}
-#'   \item{\code{$models}}{A named list of fitted negative binomial models per stratum.}
+#'   \item{\code{$table}}{A `gtsummary::tbl_merge` tables by stratum.}
+#'   \item{\code{$models}}{A named list of fitted negbin models per stratum.}
 #'   \item{\code{$model_summaries}}{A list of tidy summaries for each model.}
-#'   \item{\code{$reg_check}}{(Optional) Diagnostics including dispersion checks.}
 #' }
 #'
 #' @section Accessors:
-#' Use `object$table`, `object$models`, or `object$model_summaries` to extract components.
+#' Use `object$table`, `object$models`, or
+#' `object$model_summaries` to extract components.
 #'
 #' @seealso [uni_reg_nbin()], [stratified_multi_reg()], [check_dispersion()]
 #'
@@ -39,14 +40,20 @@
 #' @export
 
 stratified_uni_nbin <- function(data, outcome, exposures, stratifier) {
-  if (!stratifier %in% names(data)) stop("Stratifier not found in the dataset.")
-  if (!outcome %in% names(data)) stop("Outcome variable not found in the dataset.")
-  if (!all(exposures %in% names(data))) stop("One or more exposures not found in the dataset.")
+  if (!stratifier %in% names(data))
+    stop("Stratifier not found in the dataset.")
+  if (!outcome %in% names(data))
+    stop("Outcome variable not found in the dataset.")
+  if (!all(exposures %in% names(data)))
+    stop("One or more exposures not found in the dataset.")
 
-  is_count <- function(x) is.numeric(x) && all(!is.na(x)) && all(x >= 0 & x == floor(x))
-  if (!is_count(data[[outcome]])) stop("Negative binomial regression requires a non-negative count outcome.")
+  is_count <- function(x) is.numeric(x) && all(!is.na(x)) &&
+    all(x >= 0 & x == floor(x))
+  if (!is_count(data[[outcome]]))
+    stop("Negative binomial regression requires a non-negative count outcome.")
 
-  message("Running stratified univariate negative binomial regression by: ", stratifier)
+  message("Running stratified univariate negative binomial regression by: ",
+          stratifier)
 
   data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
   strata_levels <- unique(data[[stratifier]])

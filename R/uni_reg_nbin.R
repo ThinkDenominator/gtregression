@@ -1,7 +1,9 @@
 #' Univariate Negative Binomial Regression
 #'
-#' Performs univariate negative binomial regression for each specified exposure on a count outcome.
-#' Returns a publication-ready stacked regression table using `gtsummary`, with incidence rate ratios (IRRs) and confidence intervals.
+#' Performs univariate negative binomial regression for each
+#' specified exposure on a count outcome.
+#' Returns a publication-ready stacked regression table using `gtsummary`,
+#' with incidence rate ratios (IRRs) and confidence intervals.
 #'
 #' @param data A data frame containing the variables.
 #' @param outcome The name of the count outcome variable (character).
@@ -40,7 +42,6 @@
 #' @importFrom MASS glm.nb
 #' @export
 uni_reg_nbin <- function(data, outcome, exposures) {
-
   # Validate outcome and exposures
   .validate_nb_inputs(data, outcome, exposures)
 
@@ -50,7 +51,8 @@ uni_reg_nbin <- function(data, outcome, exposures) {
   names(model_list) <- exposures
   model_list <- Filter(Negate(is.null), model_list)
 
-  if (length(model_list) == 0) stop("All models failed. Please check your data or exposures.")
+  if (length(model_list) == 0)
+    stop("All models failed. Please check your data or exposures.")
 
   tbl_list <- mapply(function(fit, var) {
     gtsummary::tbl_regression(fit, exponentiate = TRUE) |>

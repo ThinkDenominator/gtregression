@@ -1,20 +1,22 @@
 #' Visualize a Regression Model as a Forest Plot
 #'
-#' Creates a forest plot from a `gtsummary` object. Supports both univariate and multivariable models
-#' with hierarchical labels for categorical variables. Designed to work seamlessly with outputs from
+#' Creates a forest plot from a `gtsummary` object.
+#' Supports both univariate and multivariable models
+#' with hierarchical labels for categorical variables.
+#' Designed to work seamlessly with outputs from
 #' functions like `uni_reg()` and `multi_reg()`.
 #'
-#' @param tbl A `gtsummary` object from regression functions (e.g., `uni_reg`, `multi_reg`).
+#' @param tbl A `gtsummary` object from regression functions
 #' @param title Optional plot title (character).
 #' @param ref_line Numeric value for the reference line (default = 1).
-#' @param order_y Optional character vector specifying the custom order of the y-axis labels.
+#' @param order_y Optional character vector to the customise y-axis order
 #' @param log_x Logical. If `TRUE`, uses a logarithmic x-axis (default = FALSE).
-#' @param xlim Optional numeric vector specifying x-axis limits (e.g., `c(0.1, 10)`).
+#' @param xlim Optional numeric vector specifying x-axis limits
 #' @param breaks Optional numeric vector for x-axis tick breaks.
 #' @param point_color Color of the points (default is automatic).
 #' @param errorbar_color Color of the error bars (default is automatic).
 #' @param base_size Base font size for text elements.
-#' @param show_ref Logical. If `TRUE`, includes reference categories in the plot (default = TRUE).
+#' @param show_ref Logical. If `TRUE`, includes reference in the plot.
 #'
 #' @return A `ggplot2` object representing the forest plot.
 #' @importFrom dplyr mutate case_when filter row_number arrange if_else
@@ -73,13 +75,16 @@ plot_reg <- function(tbl,
     is_header = is.na(.data$reference_row),
     label_clean = dplyr::case_when(
       is_header ~ paste0("**", .data$label, "**"),
-      .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
+      .data$reference_row &
+        show_ref ~ paste0("&nbsp;&nbsp;&nbsp;",
+            .data$label, " <span style='color:gray'>(ref)</span>"),
       !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
       TRUE ~ NA_character_
     )
   )
 
-  df <- dplyr::filter(df, .data$is_header | !is.na(.data$estimate) | (.data$reference_row & show_ref))
+  df <- dplyr::filter(df, .data$is_header | !is.na(.data$estimate) |
+                        (.data$reference_row & show_ref))
 
   if (!is.null(order_y)) {
     df <- dplyr::mutate(df,
@@ -92,7 +97,8 @@ plot_reg <- function(tbl,
     df <- dplyr::arrange(df, header_order, dplyr::row_number())
   }
 
-  df <- dplyr::mutate(df, row_id = factor(dplyr::row_number(), levels = rev(dplyr::row_number())))
+  df <- dplyr::mutate(df, row_id = factor(dplyr::row_number(),
+                                          levels = rev(dplyr::row_number())))
   label_map <- df$label_clean
   names(label_map) <- df$row_id
 
@@ -109,7 +115,8 @@ plot_reg <- function(tbl,
       size = 3,
       stroke = 0.6
     ) +
-    ggplot2::geom_vline(xintercept = ref_line, linetype = "dashed", color = "gray60") +
+    ggplot2::geom_vline(xintercept = ref_line, linetype = "dashed",
+                        color = "gray60") +
     ggplot2::scale_y_discrete(labels = label_map) +
     ggplot2::labs(
       title = title,

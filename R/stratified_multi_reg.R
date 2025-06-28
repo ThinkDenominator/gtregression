@@ -1,15 +1,18 @@
 #' Stratified Multivariable Regression (Adjusted OR, RR, IRR, or Beta)
 #'
-#' Performs multivariable regression with multiple exposures on a binary, count, or continuous outcome,
-#' stratified by a specified variable. NA values in the stratifier are excluded from analysis.
+#' Performs multivariable regression with multiple exposures on
+#' a binary, count, or continuous outcome,
+#' stratified by a specified variable.
+#' NA values in the stratifier are excluded from analysis.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome A character string specifying the name of the outcome variable.
-#' @param exposures A character vector specifying the predictor (exposure) variables.
+#' @param outcome name of the outcome variable.
+#' @param exposures vector specifying the predictor (exposure) variables.
 #' @param stratifier A character string specifying the stratifying variable.
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (Adjusted Odds Ratios), `"log-binomial"` (Adjusted Risk Ratios),
-#'   `"poisson"` (Adjusted IRRs), `"robpoisson"` (Robust RRs), or `"linear"` (Beta coefficients).
+#'   `"poisson"` (Adjusted IRRs), `"robpoisson"` (Robust RRs),
+#'   or `"linear"` (Beta coefficients).
 #'
 #' @return An object of class `stratified_multi_reg`, which includes:
 #' - `table`: A `gtsummary::tbl_stack` object of regression tables by stratum,
@@ -54,7 +57,6 @@
 #' @export
 stratified_multi_reg <- function(data, outcome, exposures, stratifier,
                                  approach = "logit") {
-
   .validate_multi_inputs(data, outcome, exposures, approach)
 
   message("Running stratified multivariable regression by: ", stratifier)
@@ -107,7 +109,7 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   # Extract and clean N values from N_obs_* columns
   n_obs_cols <- grep("^N_obs_", names(merged_tbl$table_body), value = TRUE)
 
-  n_values <- sapply(n_obs_cols, function(col) {
+  n_values <- vapply(n_obs_cols, function(col) {
     n <- unique(na.omit(merged_tbl$table_body[[col]]))
     as.character(round(n))
   }, USE.NAMES = FALSE)

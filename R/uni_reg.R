@@ -1,16 +1,19 @@
 #' Univariate regression (Odds, Risk, or Rate Ratios)
 #'
-#' Performs univariate regression for each exposure on a binary, continuous, or count outcome.
-#' Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR), or Incidence Rate Ratios (IRR).
+#' Performs univariate regression for each exposure on a binary,
+#' continuous, or count outcome.
+#' Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR),
+#' or Incidence Rate Ratios (IRR).
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome The name of the outcome variable (binary, continuous, or count).
+#' @param outcome outcome variable (binary, continuous, or count).
 #' @param exposures A vector of predictor variables.
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
 #'   `"robpoisson"` (RR), `"linear"` (Beta coefficients)
 #' @importFrom broom tidy
-#' @details This function requires the following packages: `dplyr`, `purrr`, `gtsummary`, `risks`.
+#' @details This function requires the following packages:
+#' `dplyr`, `purrr`, `gtsummary`, `risks`.
 #' #' @return A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
 #' \itemize{
 #'   \item A publication-ready regression table (`tbl_stack`)
@@ -33,14 +36,16 @@
 uni_reg <- function(data, outcome, exposures, approach = "logit") {
   pkgs <- c("gtsummary", "risks", "lmtest")
   for (pkg in pkgs) {
-    if (!requireNamespace(pkg, quietly = TRUE)) stop("Package '", pkg, "' is required.")
+    if (!requireNamespace(pkg, quietly = TRUE))
+      stop("Package '", pkg, "' is required.")
   }
   if (approach == "robpoisson" && !requireNamespace("risks", quietly = TRUE)) {
     stop("Package 'risks' is required for robust Poisson regression.")
   }
   if (approach == "linear") {
     if (!requireNamespace("lmtest", quietly = TRUE)) {
-      stop("Packages 'car' and 'lmtest' are required for linear regression diagnostics.")
+      stop("Packages 'car' and 'lmtest' are required for
+           linear regression diagnostics.")
     }
   }
   .validate_uni_inputs(data, outcome, exposures, approach)
@@ -49,11 +54,13 @@ uni_reg <- function(data, outcome, exposures, approach = "logit") {
   abbreviation <- .get_abbreviation(approach)
   remove_abbrev <- .get_remove_abbreviation(approach)
 
-  model_list <- lapply(exposures, function(x) .fit_uni_model(data, outcome, x, approach))
+  model_list <- lapply(exposures, function(x)
+    .fit_uni_model(data, outcome, x, approach))
   names(model_list) <- exposures
   model_list <- Filter(Negate(is.null), model_list)
 
-  if (length(model_list) == 0) stop("All models failed. Please check your data or exposures.")
+  if (length(model_list) == 0)
+    stop("All models failed. Please check your data or exposures.")
 
   tbl_list <- Map(function(fit, var) {
     gtsummary::tbl_regression(fit, exponentiate = approach != "linear") |>

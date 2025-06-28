@@ -1,24 +1,31 @@
 #' Check Convergence for a Regression Model
 #'
-#' Assesses model convergence and provides diagnostics (such as maximum predicted probability)
-#' for each exposure (in univariate mode) or for the full model (in multivariable mode),
+#' Assesses model convergence and provides diagnostics
+#' for each exposure (in univariate mode) or
+#' for the full model (in multivariable mode),
 #' depending on the regression approach used.
 #'
 #' @param data A data frame containing the dataset.
-#' @param exposures A character vector of predictor variable names. If \code{multivariate = FALSE},
-#'   each exposure is assessed separately; otherwise, a combined model is evaluated.
+#' @param exposures A character vector of predictor variable names.
+#' If \code{multivariate = FALSE},
+#' each exposure is assessed separately; otherwise, combined model is evaluated.
 #' @param outcome A character string specifying the outcome variable.
-#' @param approach A character string specifying the regression approach. One of:
-#'   \code{"logit"}, \code{"log-binomial"}, \code{"poisson"}, \code{"robpoisson"}, or \code{"negbin"}.
-#' @param multivariate Logical. If \code{TRUE}, checks convergence for a multivariable model;
+#' @param approach A character string specifying the regression approach.
+#' One of:
+#'   \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+#'   \code{"robpoisson"}, or \code{"negbin"}.
+#' @param multivariate Logical. If \code{TRUE},
+#' checks convergence for a multivariable model;
 #'   otherwise, performs checks for each univariate model.
 #'
 #' @return A data frame summarizing convergence diagnostics, including:
 #' \describe{
-#'   \item{\code{Exposure}}{Name of the exposure variable (or "Combined" for multivariate models).}
+#'   \item{\code{Exposure}}{Name of the exposure variable.}
 #'   \item{\code{Model}}{The regression approach used.}
-#'   \item{\code{Converged}}{\code{TRUE} if the model converged successfully; \code{FALSE} otherwise.}
-#'   \item{\code{Max.prob}}{Maximum predicted probability or fitted value in the dataset.}
+#'   \item{\code{Converged}}{\code{TRUE} if the model converged successfully;
+#'    \code{FALSE} otherwise.}
+#'   \item{\code{Max.prob}}{Maximum predicted probability or
+#'   fitted value in the dataset.}
 #' }
 #'
 #' @details
@@ -27,24 +34,28 @@
 #' as actual probabilities.
 #'
 #' This function is useful for identifying convergence issues, especially for
-#' \code{"log-binomial"} models, which often fail to converge with certain data structures.
+#' \code{"log-binomial"} models, which often fail to converge .
 #'
-#' @seealso [uni_reg()], [multi_reg()], [identify_confounder()],  [interaction_models()]
+#' @seealso [identify_confounder()],  [interaction_models()]
 #'
 #' @examples
 #' if (requireNamespace("gtregression", quietly = TRUE)) {
-#' data(data_PimaIndiansDiabetes, package = "gtregression")
+#'   data(data_PimaIndiansDiabetes, package = "gtregression")
 #'
-#' check_convergence(data = data_PimaIndiansDiabetes,
-#'   exposures= c("age", "bmi"),
-#'   outcome= "diabetes",
-#'   approach= "logit")
+#'   check_convergence(
+#'     data = data_PimaIndiansDiabetes,
+#'     exposures = c("age", "bmi"),
+#'     outcome = "diabetes",
+#'     approach = "logit"
+#'   )
 #'
-#' check_convergence(data = data_PimaIndiansDiabetes,
-#'   exposures= c("age", "bmi"),
-#'   outcome= "diabetes",
-#'   approach= "logit",
-#'   multivariate= TRUE)
+#'   check_convergence(
+#'     data = data_PimaIndiansDiabetes,
+#'     exposures = c("age", "bmi"),
+#'     outcome = "diabetes",
+#'     approach = "logit",
+#'     multivariate = TRUE
+#'   )
 #' }
 #' @export
 check_convergence <- function(data,
@@ -52,9 +63,11 @@ check_convergence <- function(data,
                               outcome,
                               approach = "logit",
                               multivariate = FALSE) {
-  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "negbin")
+  valid_approaches <- c("logit", "log-binomial", "poisson",
+                        "robpoisson", "negbin")
   if (!approach %in% valid_approaches) {
-    stop("Invalid approach. Choose from: ", paste(valid_approaches, collapse = ", "))
+    stop("Invalid approach. Choose from: ",
+         paste(valid_approaches, collapse = ", "))
   }
 
   outcome_vec <- data[[outcome]]
@@ -64,14 +77,17 @@ check_convergence <- function(data,
       is.logical(x)
   }
   is_count <- function(x) {
-    is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) && length(unique(x[!is.na(x)])) > 2
+    is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) &&
+      length(unique(x[!is.na(x)])) > 2
   }
 
-  if (approach %in% c("logit", "log-binomial", "robpoisson") && !is_binary(outcome_vec)) {
+  if (approach %in% c("logit", "log-binomial", "robpoisson") &&
+      !is_binary(outcome_vec)) {
     stop("The outcome must be binary for the selected approach: ", approach)
   }
   if (approach %in% c("poisson", "negbin") && !is_count(outcome_vec)) {
-    stop("The outcome must be a count (non-negative integers) for the selected approach: ", approach)
+    stop("The outcome must be a count
+         (non-negative integers) for the selected approach: ", approach)
   }
 
   if (nrow(data) == 0) {
@@ -88,8 +104,7 @@ check_convergence <- function(data,
   if (!multivariate) {
     for (exposure in exposures) {
       fmla <- stats::as.formula(paste(outcome, "~", exposure))
-      result <- tryCatch(
-        {
+      result <- tryCatch({
           fit <- switch(approach,
             "logit" = glm(fmla, data = data, family = binomial("logit")),
             "log-binomial" = glm(fmla, data = data, family = binomial("log")),
@@ -97,23 +112,30 @@ check_convergence <- function(data,
             "negbin" = MASS::glm.nb(fmla, data = data),
             risks::riskratio(formula = fmla, data = data, approach = approach)
           )
-          converged <- if ("converged" %in% names(fit)) fit$converged else if (!is.null(fit$conv)) fit$conv == 0 else NA
-          max_prob <- if ("maxprob" %in% names(fit)) fit$maxprob else max(predict(fit, type = "response"), na.rm = TRUE)
+          converged <- if ("converged" %in% names(fit)) fit$converged
+          else if (!is.null(fit$conv)) fit$conv == 0
+          else NA
+          max_prob <- if ("maxprob" %in% names(fit)) fit$maxprob
+          else max(predict(fit, type = "response"), na.rm = TRUE)
           if (approach == "robpoisson" && max_prob > 1) {
-            warning("robpoisson: Predicted probability exceeds 1. Interpret RR estimates with caution.")
+            warning("robpoisson: Predicted probability exceeds 1.
+                    Interpret RR estimates with caution.")
           }
-          data.frame(Exposure = exposure, Model = approach, Converged = converged, Max.prob. = max_prob)
+          data.frame(Exposure = exposure, Model = approach,
+                     Converged = converged, Max.prob. = max_prob)
         },
         error = function(e) {
-          data.frame(Exposure = exposure, Model = approach, Converged = FALSE, Max.prob. = NA)
+          data.frame(Exposure = exposure, Model = approach,
+                     Converged = FALSE, Max.prob. = NA)
         }
       )
       results_list[[exposure]] <- result
     }
   } else {
-    fmla <- stats::as.formula(paste(outcome, "~", paste(exposures, collapse = " + ")))
-    result <- tryCatch(
-      {
+    fmla <- stats::as.formula(paste(outcome, "~",
+                                    paste(exposures, collapse = " + ")))
+    result <- suppressWarnings(
+      tryCatch({
         fit <- switch(approach,
           "logit" = glm(fmla, data = data, family = binomial("logit")),
           "log-binomial" = glm(fmla, data = data, family = binomial("log")),
@@ -121,17 +143,30 @@ check_convergence <- function(data,
           "negbin" = MASS::glm.nb(fmla, data = data),
           risks::riskratio(formula = fmla, data = data, approach = approach)
         )
-        converged <- if ("converged" %in% names(fit)) fit$converged else if (!is.null(fit$conv)) fit$conv == 0 else NA
-        max_prob <- if ("maxprob" %in% names(fit)) fit$maxprob else max(predict(fit, type = "response"), na.rm = TRUE)
-        if (approach == "robpoisson" && max_prob > 1) {
-          warning("robpoisson: Predicted probability exceeds 1. Interpret RR estimates with caution.")
+        converged <- if ("converged" %in% names(fit)) fit$converged
+        else if (!is.null(fit$conv)) fit$conv == 0 else NA
+        max_prob <- if ("maxprob" %in% names(fit)) fit$maxprob
+        else max(predict(fit, type = "response"), na.rm = TRUE)
+
+        # Custom warning if predicted prob > 1
+        if (!is.na(max_prob) && max_prob > 1) {
+          warning(glue::glue("{approach}: Predicted probability exceeds 1.
+                             \nInterpret RR estimates with caution."))
         }
-        data.frame(Exposure = paste(exposures, collapse = " + "), Model = approach, Converged = converged, Max.prob. = max_prob)
+        data.frame(Exposure = paste(exposures, collapse = " + "),
+                   Model = approach, Converged = converged,
+                   Max.prob. = max_prob)
       },
       error = function(e) {
-        data.frame(Exposure = NA, Model = approach, Converged = FALSE, Max.prob. = NA)
+        warning(glue::glue("{approach}: Model fitting failed — {e$message}"))
+        data.frame(Exposure = NA,
+                   Model = approach,
+                   Converged = FALSE,
+                   Max.prob. = NA)
       }
     )
+    )
+
     results_list[["multivariable"]] <- result
   }
 

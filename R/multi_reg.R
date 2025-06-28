@@ -1,11 +1,14 @@
 #' Multivariable Regression (Adjusted Odds, Risk, or Rate Ratios)
 #'
-#' Fits multivariable regression models for binary, count, or continuous outcomes and returns a publication-ready summary table using `gtsummary`.
-#' Depending on the specified `approach`, the function estimates adjusted Odds Ratios (OR), Risk Ratios (RR), Incidence Rate Ratios (IRR), or Beta coefficients.
+#' Fits multivariable regression models for binary, count, or continuous
+#' outcomes and returns a publication-ready summary table using `gtsummary`.
+#' Depending on the specified `approach`, the function estimates
+#' adjusted Odds Ratios (OR), Risk Ratios (RR), Incidence Rate Ratios (IRR),
+#' or Beta coefficients.
 #'
 #' @param data A data frame containing the analysis variables.
-#' @param outcome The name of the outcome variable (binary, count, or continuous). Must be a character string.
-#' @param exposures A character vector of predictor variables to be included in the model.
+#' @param outcome The name of the outcome variable. Must be a character string.
+#' @param exposures predictor variables to be included in the model.
 #' @param approach Modeling approach to use. One of:
 #'   - `"logit"` for logistic regression (OR),
 #'   - `"log-binomial"` for log-binomial regression (RR),
@@ -21,7 +24,8 @@
 #' @section Accessors:
 #' \describe{
 #'   \item{\code{$models}}{List of fitted model objects.}
-#'   \item{\code{$model_summaries}}{A tibble of tidy regression summaries for each model.}
+#'   \item{\code{$model_summaries}}
+#'   {A tibble of tidy regression summaries for each model.}
 #' }
 #'
 #' @seealso [uni_reg()], [plot_reg()], [plot_reg_combine()]
@@ -73,18 +77,23 @@ multi_reg <- function(data,
       tidy_fun = broom::tidy
     ) |>
     gtsummary::modify_header(estimate = effect_label) |>
-    gtsummary::modify_table_body(~ { .x$label <- as.character(.x$label); .x }) |>
+    gtsummary::modify_table_body(~ {
+      .x$label <- as.character(.x$label)
+      .x
+    }) |>
     gtsummary::remove_abbreviation(remove_abbreviation) |>
     gtsummary::modify_abbreviation(abbreviation)
 
   # Extract N_obs from the fitted model
   result <- result |>
     gtsummary::modify_source_note(
-      paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model")
+      paste("N =", unique(na.omit(result$table_body$N_obs))[1],
+            "complete observations included in the multivariate model")
     )
 
   reg_diagnostics <- if (approach == "linear") {
-    list(multivariable_model = .reg_check_linear(fit_model, "multivariable_model"))
+    list(multivariable_model = .reg_check_linear(fit_model,
+                                                 "multivariable_model"))
   } else {
     "Regression diagnostics only available for 'linear' models."
   }

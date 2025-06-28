@@ -1,12 +1,12 @@
 #' Save a Single Regression Table
 #'
-#' Saves a `gtsummary` table as a Word, PDF, or HTML file using the `gt` and `gtsummary` packages.
+#' Saves a `gtsummary` table as a Word, PDF, or HTML file
 #'
-#' @param tbl A `gtsummary` table object (e.g., output from `tbl_regression()`, `tbl_summary()`, etc.).
-#' @param filename File name to save the output. Can be provided with or without file extension.
+#' @param tbl A `gtsummary` object (e.g.,`tbl_regression()`, `tbl_summary()`).
+#' @param filename File name to save the output. Extension is optional
 #' @param format Output format. One of `"docx"`, `"pdf"`, or `"html"`.
 #'
-#' @return Saves the file to the current working directory. Does not return an object.
+#' @return Saves the file to the wd. Does not return an object.
 #'
 #' @importFrom gtsummary as_gt
 #' @importFrom gt gtsave
@@ -18,7 +18,8 @@
 #' tbl <- gtsummary::tbl_regression(model)
 #' save_table(tbl, filename = "regression_table", format = "docx")
 #' }
-save_table <- function(tbl, filename = "table", format = c("docx", "pdf", "html")) {
+save_table <- function(tbl, filename = "table",
+                       format = c("docx", "pdf", "html")) {
   format <- match.arg(format)
 
   # Add extension if missing
@@ -43,7 +44,7 @@ save_table <- function(tbl, filename = "table", format = c("docx", "pdf", "html"
 #' @param height Height of the saved plot in inches.
 #' @param dpi Resolution of the plot in dots per inch (default is 300).
 #'
-#' @return Saves the file to the current working directory. No object is returned.
+#' @return Saves the file to the current working directory.
 #'
 #' @importFrom ggplot2 ggsave
 #' @export
@@ -55,7 +56,8 @@ save_table <- function(tbl, filename = "table", format = c("docx", "pdf", "html"
 #'   geom_point()
 #' save_plot(p, filename = "scatterplot", format = "png", width = 6, height = 4)
 #' }
-save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"), width = 8, height = 6, dpi = 300) {
+save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"),
+                      width = 8, height = 6, dpi = 300) {
   format <- match.arg(format)
 
   # Add extension if missing
@@ -63,21 +65,22 @@ save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"), 
     filename <- paste0(filename, ".", format)
   }
 
-  ggplot2::ggsave(filename = filename, plot = plot, device = format, width = width, height = height, dpi = dpi)
+  ggplot2::ggsave(filename = filename, plot = plot, device = format,
+                  width = width, height = height, dpi = dpi)
 
   message("Plot saved as: '", filename, "' in the working directory.")
 }
 
 #' Save Multiple Tables and Plots to a Word Document
 #'
-#' Saves a collection of `gtsummary` tables and `ggplot2` plots into a single Word (`.docx`) file.
+#' Saves a collection of `gtsummary` tables and `ggplot2` plots into (`.docx`)
 #'
 #' @param tables A list of `gtsummary` tables.
 #' @param plots A list of `ggplot2` plot objects.
 #' @param filename File name for the output (with or without `.docx` extension).
-#' @param titles Optional. A character vector of titles inserted before each table or plot.
+#' @param titles Optional. A character vector of titles
 #'
-#' @return A Word document saved to the working directory. No object is returned.
+#' @return A Word document saved to the wd. No object is returned
 #'
 #' @export
 #' @importFrom officer read_docx body_add_par body_add_gg
@@ -103,7 +106,8 @@ save_plot <- function(plot, filename = "plot", format = c("png", "pdf", "jpg"), 
 #'   titles = c("Table 1: Regression", "Figure 1: Scatterplot")
 #' )
 #' }
-save_docx <- function(tables = NULL, plots = NULL, filename = "report.docx", titles = NULL) {
+save_docx <- function(tables = NULL, plots = NULL,
+                      filename = "report.docx", titles = NULL) {
   # Add .docx if missing
   if (!grepl("\\.docx$", filename, ignore.case = TRUE)) {
     filename <- paste0(filename, ".docx")
@@ -113,7 +117,8 @@ save_docx <- function(tables = NULL, plots = NULL, filename = "report.docx", tit
 
   n_items <- length(tables) + length(plots)
   if (!is.null(titles) && length(titles) != n_items) {
-    warning("Length of titles does not match number of tables + plots. Titles will be ignored.")
+    warning("Length of titles does not match number of tables +
+            plots. Titles will be ignored.")
     titles <- NULL
   }
 
@@ -122,7 +127,8 @@ save_docx <- function(tables = NULL, plots = NULL, filename = "report.docx", tit
   # Add tables
   if (!is.null(tables)) {
     for (tbl in tables) {
-      if (!inherits(tbl, "gtsummary")) stop("All elements in 'tables' must be gtsummary objects.")
+      if (!inherits(tbl, "gtsummary"))
+        stop("All elements in 'tables' must be gtsummary objects.")
       ft <- gtsummary::as_flex_table(tbl)
 
       if (!is.null(titles)) {
@@ -138,7 +144,8 @@ save_docx <- function(tables = NULL, plots = NULL, filename = "report.docx", tit
   # Add plots
   if (!is.null(plots)) {
     for (p in plots) {
-      if (!inherits(p, "ggplot")) stop("All elements in 'plots' must be ggplot2 objects.")
+      if (!inherits(p, "ggplot"))
+        stop("All elements in 'plots' must be ggplot2 objects.")
 
       if (!is.null(titles)) {
         doc <- officer::body_add_par(doc, titles[[idx]], style = "heading 1")
@@ -151,5 +158,8 @@ save_docx <- function(tables = NULL, plots = NULL, filename = "report.docx", tit
   }
 
   print(doc, target = filename)
-  message("Word document saved as: '", filename, "' in the working directory. \n If tables or plots extend beyond the page, consider switching to landscape layout in Word (Layout > Orientation > Landscape).")
+  message("Word document saved as: '", filename, "' in the working directory.
+          \n If tables or plots extend beyond the page,
+          consider switching to landscape layout in Word
+          (Layout > Orientation > Landscape).")
 }

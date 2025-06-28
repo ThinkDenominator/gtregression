@@ -1,4 +1,6 @@
-#' @importFrom stats AIC BIC anova as.formula binomial coef cooks.distance deviance glm glm.control lm logLik na.omit nobs poisson predict residuals shapiro.test
+#' @importFrom stats AIC BIC anova as.formula binomial coef cooks.distance
+#' @importFrom stats deviance glm glm.control lm logLik na.omit nobs poisson
+#' @importFrom stats predict residuals shapiro.test
 #' @importFrom utils globalVariables
 #' @importFrom dplyr bind_rows case_when filter mutate
 #' @importFrom tibble tibble

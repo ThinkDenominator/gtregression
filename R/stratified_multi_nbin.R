@@ -1,25 +1,26 @@
 #' Stratified Multivariable Negative Binomial Regression
 #'
-#' Performs multivariable negative binomial regression with multiple exposures on a count outcome,
-#' stratified by a specified variable. Observations with missing values in the stratifier are excluded.
+#' Performs multivariable negative binomial regression
+#' stratified by a specified variable.
+#' Observations with missing values in the stratifier are excluded.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome A character string specifying the name of the count outcome variable.
+#' @param outcome A character string specifying the count outcome variable.
 #' @param exposures A character vector of predictor (exposure) variables.
-#' @param stratifier A character string specifying the variable used for stratification (must be categorical).
+#' @param stratifier A character string specifying the stratifier
 #'
-#' @return An object of class `stratified_multi_reg_nbin` with the following components:
+#' @return An object of class `stratified_multi_reg_nbin` with the following:
 #' \describe{
-#'   \item{\code{$table}}{A `gtsummary::tbl_merge` object combining stratified model tables.}
+#'   \item{\code{$table}}{A `gtsummary::tbl_merge` stratified model tables.}
 #'   \item{\code{$models}}{A named list of `glm.nb` model objects per stratum.}
-#'   \item{\code{$model_summaries}}{A list of tidy model summaries using `broom::tidy()`.}
-#'   \item{\code{$reg_check}}{Optional regression diagnostics per stratum (e.g., overdispersion).}
+#'   \item{\code{$model_summaries}}{A list of tidy model summaries.}
 #' }
 #'
 #' @section Accessors:
-#' Use `object$table`, `object$models`, `object$model_summaries`, or `object$reg_check` to extract components.
+#' Use `object$table`, `object$models`, `object$model_summaries`,
+#' or `object$reg_check` to extract components.
 #'
-#' @seealso [multi_reg_nbin()], [stratified_uni_reg_nbin()], [check_dispersion()]
+#' @seealso [multi_reg_nbin()], [stratified_uni_reg_nbin()]
 #'
 #'
 #' @importFrom MASS glm.nb
@@ -28,15 +29,21 @@
 #' @export
 stratified_multi_nbin <- function(data, outcome, exposures, stratifier) {
   # Input checks
-  if (!stratifier %in% names(data)) stop("Stratifier not found in the dataset.")
-  if (!outcome %in% names(data)) stop("Outcome variable not found in the dataset.")
-  if (!all(exposures %in% names(data))) stop("One or more exposures not found in the dataset.")
+  if (!stratifier %in% names(data))
+    stop("Stratifier not found in the dataset.")
+  if (!outcome %in% names(data))
+    stop("Outcome variable not found in the dataset.")
+  if (!all(exposures %in% names(data)))
+    stop("One or more exposures not found in the dataset.")
 
   # Outcome validation
-  is_count <- function(x) is.numeric(x) && all(!is.na(x)) && all(x >= 0 & x == floor(x))
-  if (!is_count(data[[outcome]])) stop("Negative binomial regression requires a non-negative count outcome.")
+  is_count <- function(x) is.numeric(x) && all(!is.na(x)) &&
+    all(x >= 0 & x == floor(x))
+  if (!is_count(data[[outcome]]))
+    stop("Negative binomial regression requires a non-negative count outcome.")
 
-  message("Running stratified multivariable negative binomial regression by: ", stratifier)
+  message("Running stratified multivariable negative binomial regression by: ",
+          stratifier)
 
   data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
   strata_levels <- unique(data[[stratifier]])
@@ -68,7 +75,8 @@ stratified_multi_nbin <- function(data, outcome, exposures, stratifier) {
     if (!is.null(result)) {
       tbl_with_note <- result |>
         gtsummary::modify_source_note(
-          paste("N =", unique(na.omit(result$table_body$N_obs))[1], "complete observations included in the multivariate model.")
+          paste("N =", unique(na.omit(result$table_body$N_obs))[1],
+                "complete observations included in the multivariate model.")
         )
       model_list[[lev]] <- attr(result, "models")
       summary_list[[lev]] <- attr(result, "model_summaries")

@@ -1,25 +1,24 @@
 #' Visualize Univariate and Multivariate Regression Side-by-Side
 #'
-#' Generates side-by-side forest plots to compare univariate and multivariable regression results.
-#' Accepts `gtsummary` objects as input and returns a combined `ggplot2` object using the `patchwork` package.
+#' Generates side-by-side plots to compare univariate & multivariable results
 #'
-#' @param tbl_uni A `gtsummary` object from `uni_reg()` or similar univariate model function.
-#' @param tbl_multi A `gtsummary` object from `multi_reg()` or similar multivariable model function.
-#' @param title_uni Optional plot title for the univariate model (character).
-#' @param title_multi Optional plot title for the multivariable model (character).
+#' @param tbl_uni A `gtsummary` object from `uni_reg()` etc.,
+#' @param tbl_multi A `gtsummary` object from `multi_reg()`.
+#' @param title_uni Optional plot title for the univariate model
+#' @param title_multi Optional plot title for the multivariable mode
 #' @param ref_line Numeric value for the reference line (default = 1).
 #' @param order_y Optional character vector to manually order the y-axis labels.
 #' @param log_x Logical. If `TRUE`, x-axis is log-transformed (default = FALSE).
 #' @param point_color Optional color for plot points.
 #' @param errorbar_color Optional color for error bars.
 #' @param base_size Numeric. Base font size for plot text elements.
-#' @param show_ref Logical. If `TRUE`, includes reference categories in the plots (default = TRUE).
-#' @param xlim_uni Optional numeric vector to set x-axis limits for univariate plot.
-#' @param breaks_uni Optional numeric vector to set x-axis breaks for univariate plot.
-#' @param xlim_multi Optional numeric vector to set x-axis limits for multivariable plot.
-#' @param breaks_multi Optional numeric vector to set x-axis breaks for multivariable plot.
+#' @param show_ref Logical. If `TRUE`, includes reference categories
+#' @param xlim_uni Optional numeric vector to set x-axis limits for uni plot.
+#' @param breaks_uni Optional numeric vector to set x-axis breaks for uni plot.
+#' @param xlim_multi Optional numeric vector to set x-axis limits for multi plot
+#' @param breaks_multi Optional numeric vector to set x-axis breaks- multi plot.
 #'
-#' @return A combined `ggplot2` object with two forest plots displayed side-by-side.
+#' @return A `ggplot2` object with two forest plots displayed side-by-side.
 #'
 #' @export
 #' @importFrom patchwork wrap_plots plot_layout
@@ -34,7 +33,8 @@
 #' \dontrun{
 #' data <- data_PimaIndiansDiabetes
 #' uni_model <- uni_reg(data, "glucose", "bmi", approach = "linear")
-#' multi_model <- multi_reg(data, "glucose", c("bmi", "age"), approach = "linear")
+#' multi_model <- multi_reg(data, "glucose",
+#' c("bmi", "age"), approach = "linear")
 #' plot_reg_combine(tbl_uni = uni_model, tbl_multi = multi_model)
 #' }
 plot_reg_combine <- function(tbl_uni,
@@ -93,18 +93,22 @@ plot_reg_combine <- function(tbl_uni,
   }
 
   # Helper function to build a single plot
-  build_plot <- function(tbl, plot_title, xlim = NULL, breaks = NULL, x_label = "Effect Size") {
+  build_plot <- function(tbl, plot_title, xlim = NULL, breaks = NULL,
+                         x_label = "Effect Size") {
     df <- tbl$table_body
     df <- dplyr::mutate(df,
       is_header = is.na(.data$reference_row),
       label_clean = dplyr::case_when(
         is_header ~ paste0("**", .data$label, "**"),
-        .data$reference_row & show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label, " <span style='color:gray'>(ref)</span>"),
+        .data$reference_row &
+          show_ref ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label,
+                            " <span style='color:gray'>(ref)</span>"),
         !.data$reference_row ~ paste0("&nbsp;&nbsp;&nbsp;", .data$label),
         TRUE ~ NA_character_
       )
     )
-    df <- dplyr::filter(df, .data$is_header | !is.na(.data$estimate) | (.data$reference_row & show_ref))
+    df <- dplyr::filter(df, .data$is_header | !is.na(.data$estimate) |
+                          (.data$reference_row & show_ref))
 
     if (!is.null(order_y)) {
       df <- dplyr::mutate(df,
@@ -117,11 +121,13 @@ plot_reg_combine <- function(tbl_uni,
       df <- dplyr::arrange(df, header_order, dplyr::row_number())
     }
 
-    df <- dplyr::mutate(df, row_id = factor(dplyr::row_number(), levels = rev(dplyr::row_number())))
+    df <- dplyr::mutate(df, row_id = factor(dplyr::row_number(),
+                                            levels = rev(dplyr::row_number())))
     label_map <- df$label_clean
     names(label_map) <- df$row_id
 
-    p <- ggplot2::ggplot(df, ggplot2::aes(x = .data$estimate, y = .data$row_id)) +
+    p <- ggplot2::ggplot(df, ggplot2::aes(x = .data$estimate,
+                                          y = .data$row_id)) +
       ggplot2::geom_errorbarh(
         ggplot2::aes(xmin = .data$conf.low, xmax = .data$conf.high),
         height = 0.2,
@@ -134,7 +140,8 @@ plot_reg_combine <- function(tbl_uni,
         size = 3,
         stroke = 0.6
       ) +
-      ggplot2::geom_vline(xintercept = ref_line, linetype = "dashed", color = "gray60") +
+      ggplot2::geom_vline(xintercept = ref_line,
+                          linetype = "dashed", color = "gray60") +
       ggplot2::scale_y_discrete(labels = label_map) +
       ggplot2::labs(
         title = plot_title,
@@ -156,9 +163,12 @@ plot_reg_combine <- function(tbl_uni,
     return(p)
   }
 
-  p1 <- build_plot(tbl_uni, plot_title = title_uni, xlim = xlim_uni, breaks = breaks_uni, x_label = x_axis_label_uni)
-  p2 <- build_plot(tbl_multi, plot_title = title_multi, xlim = xlim_multi, breaks = breaks_multi, x_label = x_axis_label_multi) +
-    ggplot2::theme(axis.text.y = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank())
+  p1 <- build_plot(tbl_uni, plot_title = title_uni, xlim = xlim_uni,
+                   breaks = breaks_uni, x_label = x_axis_label_uni)
+  p2 <- build_plot(tbl_multi, plot_title = title_multi, xlim = xlim_multi,
+                   breaks = breaks_multi, x_label = x_axis_label_multi) +
+    ggplot2::theme(axis.text.y = ggplot2::element_blank(),
+                   axis.title.y = ggplot2::element_blank())
 
   patchwork::wrap_plots(p1, p2, ncol = 2, widths = c(1.2, 1))
 }
