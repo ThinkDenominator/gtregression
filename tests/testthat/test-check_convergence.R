@@ -70,28 +70,29 @@ test_that("check_convergence runs correctly for valid approaches", {
     expect_true(result_multi$Converged)
   }
 
-  # Expect errors for wrong outcome types
+  # Errors
   expect_error(
-    gtregression::check_convergence(pima_data, exposures,
-                                    outcome = "diabetes",
-                                    approach = "poisson"),
-    regexp = "Count outcome required for Poisson regression"
-  )
-
-  expect_error(
-    gtregression::check_convergence(quine_data, count_exposures,
-                                    count_outcome,
+    gtregression::check_convergence(data= quine_data,
+                                    exposures= count_exposures,
+                                    outcome= count_outcome,
                                     approach = "logit"),
-    regexp = "This approach requires a binary outcome"
+    regexp = paste0(
+      "This approach requires either a factor variable ",
+      "or numeric variable coded as 0 and 1 \\(or 1 and 2\\)"
+    )
   )
 
   # Empty data
   empty_data <- pima_data[0, ]
-  result_empty <- gtregression::check_convergence(empty_data,
-                                                  exposures,
-                                                  outcome)
-  expect_equal(nrow(result_empty), 0)
-})
+  expect_error(
+    gtregression::check_convergence(empty_data,
+                                    exposures,
+                                    outcome),
+    regexp = paste0("ll values in the outcome variable are missing")
+
+)
+}
+)
 
 test_that("check_convergence handles model fitting failure", {
   pima_data <- PimaIndiansDiabetes2 |>

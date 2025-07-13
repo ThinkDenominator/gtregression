@@ -7,8 +7,8 @@
 #'
 #' @param data A data frame containing the dataset.
 #' @param exposures A character vector of predictor variable names.
-#' If \code{multivariate = FALSE},
-#' each exposure is assessed separately; otherwise, combined model is evaluated.
+#'   If \code{multivariate = FALSE}, each exposure is assessed separately.
+#'   If \code{multivariate = TRUE}, exposures are included together.
 #' @param outcome A character string specifying the outcome variable.
 #' @param approach A character string specifying the regression approach.
 #' One of:
@@ -68,6 +68,8 @@ check_convergence <- function(data,
 
   .validate_outcome_by_approach(data[[outcome]], approach)
 
+  # Return early if dataset is empty
+
   if (nrow(data) == 0) {
     return(data.frame(
       Exposure = if (multivariate) NA else character(0),
@@ -80,6 +82,7 @@ check_convergence <- function(data,
   results_list <- list()
 
   if (!multivariate) {
+    # Loop through exposures and fit separate models
     for (exposure in exposures) {
       fmla <- stats::as.formula(paste(outcome, "~", exposure))
       result <- tryCatch({
@@ -90,11 +93,13 @@ check_convergence <- function(data,
             "negbin" = MASS::glm.nb(fmla, data = data),
             risks::riskratio(formula = fmla, data = data, approach = approach)
           )
+          # Extract convergence status and predicted max
           converged <- if ("converged" %in% names(fit)) fit$converged
           else if (!is.null(fit$conv)) fit$conv == 0
           else NA
           max_prob <- if ("maxprob" %in% names(fit)) fit$maxprob
           else max(predict(fit, type = "response"), na.rm = TRUE)
+          # Warning if robpoisson max_prob > 1
           if (approach == "robpoisson" && max_prob > 1) {
             warning("robpoisson: Predicted probability exceeds 1.
               Interpret estimates with caution.", call. = FALSE)
@@ -110,6 +115,7 @@ check_convergence <- function(data,
       results_list[[exposure]] <- result
     }
   } else {
+    # Build multivariable model
     fmla <- stats::as.formula(paste(outcome, "~",
                                     paste(exposures, collapse = " + ")))
     result <- tryCatch({

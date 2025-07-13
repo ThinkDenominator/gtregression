@@ -1,37 +1,40 @@
 #' Identify Confounders Using the Change-in-Estimate Method
 #'
-#' This function evaluates whether one or more variables are confounders of
-#' an exposure and outcome by comparing crude and adjusted effect estimates.
-#' A variable is considered a confounder if inclusion in the model changes
-#' the effect size by more than a specified threshold (default: 10%).
+#' Identifies whether one or more variables are confounders by comparing
+#' the crude and adjusted effect estimates of a primary exposure on an outcome.
+#' A variable is flagged as a confounder if its inclusion changes the estimate
+#' by more than a specified threshold (default = 10%).
 #'
-#' Supports multiple regression approaches including logistic, log-binomial,
-#' Poisson, negative binomial, robust Poisson, and linear regression.
+#' Supports logistic, log-binomial, Poisson, robust Poisson, negative binomial,
+#' and linear regression approaches.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome The name of the outcome variable
-#' @param exposure The name of the main exposure variable to test.
-#' @param potential_confounder variable to test as potential confounder
+#' @param outcome The name of the outcome variable (character string).
+#' @param exposure The primary exposure variable (character string).
+#' @param potential_confounder One or more variables to test as potential confounders.
 #' @param approach The regression modeling approach. One of:
-#'   \code{"logit"} (logistic), \code{"log-binomial"}, \code{"poisson"},
-#'   \code{"negbin"} (negative binomial),
-#'   \code{"robpoisson"}, or \code{"linear"}.
-#' @param threshold A value specifying the percent change in the estimate
-#' If the absolute percent change from the crude to adjusted estimate
-#' exceeds this threshold, the variable is flagged as a confounder.
+#'   \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+#'   \code{"negbin"}, \code{"robpoisson"}, or \code{"linear"}.
+#' @param threshold Numeric. Percent change threshold to define confounding
+#'   (default = 10). If the absolute percent change exceeds this, the variable
+#'   is flagged as a confounder.
 #'
-#' @return A `tibble` summarizing:
-#' \itemize{
-#'   \item Crude effect estimate (e.g., OR, RR, IRR, Beta)
-#'   \item Adjusted effect estimate (after including each potential confounder)
-#'   \item Percent change in estimate
-#'   \item Confounder flag (TRUE/FALSE)
+#' @return If one confounder is provided, prints crude and adjusted estimates
+#' with a confounding flag. If multiple are given, returns a tibble with:
+#' \describe{
+#'   \item{covariate}{Name of potential confounder.}
+#'   \item{crude_est}{Crude effect estimate.}
+#'   \item{adjusted_est}{Adjusted estimate including the confounder.}
+#'   \item{pct_change}{Percent change from crude to adjusted.}
+#'   \item{is_confounder}{Logical: whether confounding threshold is exceeded.}
 #' }
 #'
-#' @importFrom stats glm binomial poisson lm coef as.formula
-#' @importFrom MASS glm.nb
-#' @importFrom tibble tibble
-#' @importFrom dplyr bind_rows
+#' @details
+#' This method does not evaluate effect modification. Use causal diagrams
+#' (e.g., DAGs) and subject-matter knowledge to supplement decisions.
+#'
+#' @seealso [check_convergence()], [interaction_models()]
+#'
 #' @examples
 #' data <- data_PimaIndiansDiabetes
 #' identify_confounder(
@@ -46,8 +49,11 @@
 
 identify_confounder <- function(data, outcome, exposure, potential_confounder,
                                 approach = "logit", threshold = 10) {
+
+  # mandatory checks
   .validate_outcome_by_approach(data[[outcome]], approach)
 
+  # Generate models
   get_model <- function(data, formula, approach) {
     switch(approach,
       "logit" = glm(formula, data = data, family = binomial("logit")),
@@ -60,7 +66,7 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
       stop("Unsupported approach.")
     )
   }
-
+  # Extract point estimate for exposure
   extract_estimate <- function(model, exposure, approach) {
     if (inherits(model, "glm") || inherits(model, "lm")) {
       coefs <- coef(model)

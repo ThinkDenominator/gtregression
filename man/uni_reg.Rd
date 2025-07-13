@@ -17,16 +17,8 @@ uni_reg(data, outcome, exposures, approach = "logit")
 `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
 `"robpoisson"` (RR), `"linear"` (Beta coefficients)}
 }
-\description{
-Performs univariate regression for each exposure on a binary,
-continuous, or count outcome.
-Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR),
-or Incidence Rate Ratios (IRR).
-}
-\details{
-This function requires the following packages:
-`dplyr`, `purrr`, `gtsummary`, `risks`.
-#' @return A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
+\value{
+A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
 \itemize{
   \item A publication-ready regression table (`tbl_stack`)
   \item Accessor elements:
@@ -36,6 +28,16 @@ This function requires the following packages:
       \item `$reg_check`: Diagnostics (only for linear regression)
     }
 }
+}
+\description{
+Performs univariate regression for each exposure on a binary,
+continuous, or count outcome.
+Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR),
+or Incidence Rate Ratios (IRR).
+}
+\details{
+This function requires the following packages:
+`dplyr`, `purrr`, `gtsummary`, `risks`.
 }
 \examples{
 data(PimaIndiansDiabetes2, package = "mlbench")

@@ -46,11 +46,11 @@ plot_reg <- function(tbl,
                      show_ref = TRUE) {
   df <- tbl$table_body
 
-  # Extract the model source type and approach
+  # Extract the relevant meta data, source type and approach
   source_type <- attr(tbl, "source")
   approach <- attr(tbl, "approach")
 
-  # Auto-identify uni or multi regression
+  # Auto-identify uni or multi regression using metadata
   valid_uni_types <- c("uni_reg", "uni_reg_nbin")
   valid_multi_types <- c("multi_reg", "multi_reg_nbin")
 
@@ -64,7 +64,7 @@ plot_reg <- function(tbl,
     approach == "robpoisson" ~ "Risk Ratio",
     approach == "negbin" ~ "Incidence Rate Ratio",
     approach == "linear" ~ "Beta Coefficient",
-    TRUE ~ "Effect Size" # fallback
+    TRUE ~ "Effect Size" # rescue
   )
   # Adjusted label if multivariable
   x_axis_label <- if (is_multi) paste("Adjusted", base_label) else base_label
@@ -86,6 +86,7 @@ plot_reg <- function(tbl,
   df <- dplyr::filter(df, .data$is_header | !is.na(.data$estimate) |
                         (.data$reference_row & show_ref))
 
+  # order y axis
   if (!is.null(order_y)) {
     df <- dplyr::mutate(df,
       header_order = dplyr::case_when(
@@ -102,6 +103,7 @@ plot_reg <- function(tbl,
   label_map <- df$label_clean
   names(label_map) <- df$row_id
 
+  # plot
   p <- ggplot2::ggplot(df, ggplot2::aes(x = .data$estimate, y = .data$row_id)) +
     ggplot2::geom_errorbarh(
       ggplot2::aes(xmin = .data$conf.low, xmax = .data$conf.high),

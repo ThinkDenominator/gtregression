@@ -16,39 +16,44 @@ identify_confounder(
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{The name of the outcome variable}
+\item{outcome}{The name of the outcome variable (character string).}
 
-\item{exposure}{The name of the main exposure variable to test.}
+\item{exposure}{The primary exposure variable (character string).}
 
-\item{potential_confounder}{variable to test as potential confounder}
+\item{potential_confounder}{One or more variables to test as potential confounders.}
 
 \item{approach}{The regression modeling approach. One of:
-\code{"logit"} (logistic), \code{"log-binomial"}, \code{"poisson"},
-\code{"negbin"} (negative binomial),
-\code{"robpoisson"}, or \code{"linear"}.}
+\code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+\code{"negbin"}, \code{"robpoisson"}, or \code{"linear"}.}
 
-\item{threshold}{A value specifying the percent change in the estimate
-If the absolute percent change from the crude to adjusted estimate
-exceeds this threshold, the variable is flagged as a confounder.}
+\item{threshold}{Numeric. Percent change threshold to define confounding
+(default = 10). If the absolute percent change exceeds this, the variable
+is flagged as a confounder.}
 }
 \value{
-A `tibble` summarizing:
-\itemize{
-  \item Crude effect estimate (e.g., OR, RR, IRR, Beta)
-  \item Adjusted effect estimate (after including each potential confounder)
-  \item Percent change in estimate
-  \item Confounder flag (TRUE/FALSE)
+If one confounder is provided, prints crude and adjusted estimates
+with a confounding flag. If multiple are given, returns a tibble with:
+\describe{
+  \item{covariate}{Name of potential confounder.}
+  \item{crude_est}{Crude effect estimate.}
+  \item{adjusted_est}{Adjusted estimate including the confounder.}
+  \item{pct_change}{Percent change from crude to adjusted.}
+  \item{is_confounder}{Logical: whether confounding threshold is exceeded.}
 }
 }
 \description{
-This function evaluates whether one or more variables are confounders of
-an exposure and outcome by comparing crude and adjusted effect estimates.
-A variable is considered a confounder if inclusion in the model changes
-the effect size by more than a specified threshold (default: 10%).
+Identifies whether one or more variables are confounders by comparing
+the crude and adjusted effect estimates of a primary exposure on an outcome.
+A variable is flagged as a confounder if its inclusion changes the estimate
+by more than a specified threshold (default = 10%).
 }
 \details{
-Supports multiple regression approaches including logistic, log-binomial,
-Poisson, negative binomial, robust Poisson, and linear regression.
+Supports logistic, log-binomial, Poisson, robust Poisson, negative binomial,
+and linear regression approaches.
+
+
+This method does not evaluate effect modification. Use causal diagrams
+(e.g., DAGs) and subject-matter knowledge to supplement decisions.
 }
 \examples{
 data <- data_PimaIndiansDiabetes
@@ -60,4 +65,7 @@ identify_confounder(
   approach = "linear"
 )
 
+}
+\seealso{
+[check_convergence()], [interaction_models()]
 }

@@ -41,6 +41,8 @@
 #' @importFrom broom tidy
 #' @export
 multi_reg_nbin <- function(data, outcome, exposures) {
+
+  # get data for complete case analysis using internal helpers
   data_clean <- .validate_nb_multi_inputs(data, outcome, exposures)
 
   # Build and fit model
@@ -56,7 +58,7 @@ multi_reg_nbin <- function(data, outcome, exposures) {
     }
   )
 
-  # Format result
+  # Format results
   result <- fit_model |>
     gtsummary::tbl_regression(exponentiate = TRUE) |>
     gtsummary::modify_header(estimate = "**Adjusted IRR**") |>
@@ -66,14 +68,14 @@ multi_reg_nbin <- function(data, outcome, exposures) {
       .x
     })
 
-  # Extract N_obs from the fitted model
+  # Extract N_obs from the fitted model to add footnote
   result <- result |>
     gtsummary::modify_source_note(
       paste("N =", unique(na.omit(result$table_body$N_obs))[1],
             "complete observations included in the multivariate model")
     )
 
-  # Attach metadata and class
+  # Attach metadata and class to support other functions
   attr(result, "approach") <- "negbin"
   attr(result, "source") <- "multi_reg_nbin"
   attr(result, "models") <- list(fit_model)
@@ -83,6 +85,7 @@ multi_reg_nbin <- function(data, outcome, exposures) {
   return(result)
 }
 
+# s3 print
 #' @export
 `$.multi_reg_nbin` <- function(x, name) {
   if (name == "models") {

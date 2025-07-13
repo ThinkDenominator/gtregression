@@ -49,19 +49,14 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   # Validate outcome type
   .validate_outcome_by_approach(data[[outcome]], approach)
 
-  # Model fitting wrapper
+  # Internal function to fit a model with selected variables
+  # Returns a model object and stores the formula as an attribute
   fit_model <- function(vars) {
     fmla_str <- if (length(vars) > 0) {
       paste(outcome, "~", paste(vars, collapse = " + "))
     } else {
       paste(outcome, "~ 1")
     }
-    ffmla_str <- if (length(vars) > 0) {
-      paste(outcome, "~", paste(vars, collapse = " + "))
-    } else {
-      paste(outcome, "~ 1")
-    }
-
     model <- if (approach == "negbin") {
       MASS::glm.nb(eval(parse(text = fmla_str)), data = data)
     } else if (approach == "linear") {
@@ -72,7 +67,8 @@ select_models <- function(data, outcome, exposures, approach = "logit",
         "log-binomial" = binomial(link = "log"),
         "poisson" = poisson(link = "log"),
         "robpoisson" = poisson(link = "log"),
-        stop("Unsupported approach")
+        stop("Unsupported approach: must be one of 'logit', 'log-binomial',
+             'poisson', 'robpoisson', 'negbin', or 'linear'")
       )
       glm(as.formula(fmla_str), family = family, data = data)
     }
@@ -81,9 +77,10 @@ select_models <- function(data, outcome, exposures, approach = "logit",
     attr(model, "formula_str") <- fmla_str
     return(model)
   }
-
   all_models <- list()
   model_metrics <- list()
+
+  # Initialize stepwise search
   step <- 1
 
   if (direction == "forward") {
@@ -95,7 +92,8 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   } else {
     stop("Invalid direction: choose from 'forward', 'backward', or 'both'")
   }
-
+  # Stepwise logic: determine which predictors to add/drop
+  # based on the specified direction
   repeat {
     best_model <- fit_model(selected_vars)
     all_models[[step]] <- best_model
@@ -160,7 +158,8 @@ select_models <- function(data, outcome, exposures, approach = "logit",
         AIC = aic_best,
         BIC = BIC(best_model),
         logLik = as.numeric(logLik(best_model)),
-        deviance = deviance(best_model)
+        deviance = deviance(best_model),
+        selected_vars = paste(selected_vars, collapse = " + ")
       )
     }
 
@@ -168,17 +167,12 @@ select_models <- function(data, outcome, exposures, approach = "logit",
     if (!improved) break
   }
 
+  # Combine model metrics, identify best model, and return results
   metrics_tbl <- dplyr::bind_rows(model_metrics)
   best_row <- which.min(metrics_tbl$AIC)
   final_best_model <- all_models[[best_row]]
   final_best_model$call$formula <- as.formula(model_formula_str)
-
-  return(list(
-    results_table = metrics_tbl,
-    best_model = final_best_model,
-    all_models = all_models
-  ))
-
+  attr(final_best_model, "selected_vars") <- selected_vars
 
   return(list(
     results_table = metrics_tbl,

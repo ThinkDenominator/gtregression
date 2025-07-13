@@ -109,16 +109,18 @@ test_that("stratified_multi_nbin handles single stratum gracefully", {
 
   quine_m <- quine |> dplyr::filter(Sex == "M")
 
-  expect_error(
-    gtregression::stratified_multi_nbin(
-      data = quine_m,
-      outcome = "Days",
-      exposures = c("Eth", "Age", "Lrn"),
-      stratifier = "Sex"
-    ),
-    regexp = "No valid models across strata"
+  result <- gtregression::stratified_multi_nbin(
+    data = quine_m,
+    outcome = "Days",
+    exposures = c("Eth", "Age", "Lrn"),
+    stratifier = "Sex"
   )
+
+  expect_s3_class(result, "stratified_multi_nbin")
+  expect_s3_class(result, "tbl_regression")
+  expect_equal(length(attr(result, "models")), 1)
 })
+
 
 test_that("stratified_multi_nbin returns NULL when models cannot be fit", {
   skip_if_not_installed("MASS")

@@ -57,23 +57,34 @@
 #' @export
 stratified_multi_reg <- function(data, outcome, exposures, stratifier,
                                  approach = "logit") {
-  .validate_multi_inputs(data, outcome, exposures, approach)
 
+  # checks through internal helpers
+  .validate_multi_inputs(data, outcome, exposures, approach)
+  # check stratifier presence
+  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.")
+
+  # Inform user as it takes more time to complete
   message("Running stratified multivariable regression by: ", stratifier)
 
+  # Remove observations with missing values in the stratifier
   data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
   strata_levels <- unique(data[[stratifier]])
 
+  # Initialise result containers
   tbl_list <- list()
   spanners <- character()
   models_list <- list()
   summaries_list <- list()
   diagnostics_list <- list()
 
+  # loop through each stratum
   for (lev in strata_levels) {
     message("  > Stratum: ", stratifier, " = ", lev)
+
+    # Subset data for the current stratum
     data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
 
+    # multi model fit
     result <- tryCatch(
       {
         fit <- multi_reg(
@@ -89,6 +100,7 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
       }
     )
 
+    # If model was successfully fit, extract components
     if (!is.null(result)) {
       tbl_list[[length(tbl_list) + 1]] <- result$table
       models_list[[lev]] <- attr(result, "models")
@@ -97,16 +109,16 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
       spanners <- c(spanners, paste0("**", stratifier, " = ", lev, "**"))
     }
   }
-
-
+  # Stop if no valid models were fit
   if (length(tbl_list) == 0) stop("No valid models across strata.")
-  # Remove existing source notes
+
+  # Remove existing source notes otherwise cant edit them
   tbl_list <- lapply(tbl_list, function(tbl) gtsummary::remove_source_note(tbl))
 
-  # Merge the cleaned tables
+  # Merge the cleaned tables with header spanners
   merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
 
-  # Extract and clean N values from N_obs_* columns
+  # Extract and clean N values from N_obs_* columns to add a footnote
   n_obs_cols <- grep("^N_obs_", names(merged_tbl$table_body), value = TRUE)
 
   n_values <- vapply(n_obs_cols, function(col) {
@@ -117,28 +129,25 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   #
   stratum_labels <- strata_levels
 
-  # Compose final note cleanly
+  # Create per-stratum footnote text
   final_note <- paste0(
     stratifier, " = ", stratum_labels, ": N = ", n_values,
-    " complete observations included in the multivariate model"
+    " complete cases included per stratum"
   )
 
   final_note <- paste(final_note, collapse = "<br>")
 
-  # Add the note
+  # Add the note to the table
   merged_tbl <- gtsummary::modify_source_note(merged_tbl, final_note)
 
-
-
-
+  # Add metadata as attributes
   attr(merged_tbl, "models") <- models_list
   attr(merged_tbl, "model_summaries") <- summaries_list
   attr(merged_tbl, "reg_check") <- diagnostics_list
   attr(merged_tbl, "approach") <- approach
   attr(merged_tbl, "source") <- "stratified_multi_reg"
+  # Assign class for S3 accessors
   class(merged_tbl) <- c("stratified_multi_reg", class(merged_tbl))
-
-
 
   return(merged_tbl)
 }

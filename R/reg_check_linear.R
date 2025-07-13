@@ -18,8 +18,6 @@
 #' }
 #'
 #' @keywords internal
-
-
 .reg_check_linear <- function(model, exposure) {
   bp <- lmtest::bptest(model)
   sw <- shapiro.test(residuals(model))

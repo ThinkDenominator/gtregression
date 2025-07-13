@@ -59,21 +59,27 @@
 #' @export
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit") {
+  # input checks through internal helpers
   .validate_uni_inputs(data, outcome, exposures, approach)
 
+  # check stratifier presence
   if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.")
 
+  # Inform users as the process is time consuming
   message("Running stratified univariate regression by: ", stratifier)
 
+  # remove NAs
   data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
   strata_levels <- unique(data[[stratifier]])
 
+  # initialise results
   tbl_list <- list()
   spanners <- character()
   models_list <- list()
   summaries_list <- list()
   diagnostics_list <- list()
 
+  # Model fit
   for (lev in strata_levels) {
     message("  > Stratum: ", stratifier, " = ", lev)
     data_stratum <- data[data[[stratifier]] == lev, , drop = FALSE]
@@ -92,7 +98,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
         NULL
       }
     )
-
+    # if model fit is successful
     if (!is.null(result)) {
       tbl_list[[length(tbl_list) + 1]] <- result
       models_list[[lev]] <- attr(result, "models")
@@ -104,12 +110,16 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
 
   if (length(tbl_list) == 0) stop("No valid models across strata.")
 
+  # Put everything together
   merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
+
+  # Add metadata as attributes
   attr(merged_tbl, "models") <- models_list
   attr(merged_tbl, "model_summaries") <- summaries_list
   attr(merged_tbl, "reg_check") <- diagnostics_list
   attr(merged_tbl, "approach") <- approach
   attr(merged_tbl, "source") <- "stratified_uni_reg"
+  # add class
   class(merged_tbl) <- c("stratified_uni_reg", class(merged_tbl))
 
   return(merged_tbl)

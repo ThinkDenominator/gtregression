@@ -18,7 +18,7 @@ stratified_multi_nbin(data, outcome, exposures, stratifier)
 \value{
 An object of class `stratified_multi_reg_nbin` with the following:
 \describe{
-  \item{\code{$table}}{A `gtsummary::tbl_merge` stratified model tables.}
+  \item{\code{$table}}{A `gtsummary::tbl_merge` object of stratified tables.}
   \item{\code{$models}}{A named list of `glm.nb` model objects per stratum.}
   \item{\code{$model_summaries}}{A list of tidy model summaries.}
 }

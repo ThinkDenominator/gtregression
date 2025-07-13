@@ -26,17 +26,18 @@
 #' }
 #' @export
 check_collinearity <- function(model) {
+  # Ensure required package is available
   if (!requireNamespace("car", quietly = TRUE))
     stop("Package 'car' is required.")
-  if (!requireNamespace("tibble", quietly = TRUE))
-    stop("Package 'tibble' is required.")
-  if (!requireNamespace("dplyr", quietly = TRUE))
-    stop("Package 'dplyr' is required.")
 
+  # Define appropriate sources for VIF checking
   valid_sources <- c("uni_reg", "multi_reg", "uni_reg_nbin", "multi_reg_nbin")
+
+  # Extract model type and model list from object attributes
   model_source <- attr(model, "source")
   model_list <- attr(model, "models")
 
+  # Validate source and model content
   if (is.null(model_source) || !(model_source %in% valid_sources)) {
     stop("Input must be a fitted model from uni_reg, multi_reg, uni_reg_nbin,
          or multi_reg_nbin.")
@@ -45,13 +46,14 @@ check_collinearity <- function(model) {
     stop("Model list not found in object. Cannot compute VIF.")
   }
 
-  # Throw informative error for uni_reg (univariate)
+  # Throw error for uni_reg (univariate)
   if (model_source %in% c("uni_reg", "uni_reg_nbin")) {
     stop("VIF is not applicable for univariate models.
          Use multi_reg() to check collinearity among predictors.")
   }
 
   # For multi_reg and multi_reg_nbin
+  # Extract the fitted model from the model list
   fit_model <- model_list[[1]]
   if (!inherits(fit_model, c("glm", "lm"))) {
     stop("Unsupported model type for VIF calculation.")
@@ -62,12 +64,14 @@ check_collinearity <- function(model) {
     stop("Model must have at least two predictors to compute VIF.")
   }
 
+  # Compute VIF using the 'car' package
   vif_vals <- tryCatch(car::vif(fit_model), error = function(e) NULL)
+
   if (is.matrix(vif_vals)) {
-    vif_vals <- vif_vals[, 1] # extract GVIF column
+    vif_vals <- vif_vals[, 1] # extract GVIF column- first col
   }
 
-
+  # Return a tibble with interpretation
   tibble::tibble(
     Variable = names(vif_vals),
     VIF = round(as.numeric(vif_vals), 2),

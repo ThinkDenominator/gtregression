@@ -103,6 +103,6 @@ test_that("interaction_models errors with invalid approach", {
       effect_modifier = "glucose_cat",
       approach = "invalid"
     ),
-    "Invalid approach"
+    "invalid  is not a valid approach for interaction_models"
   )
 })

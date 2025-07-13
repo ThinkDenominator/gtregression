@@ -42,13 +42,20 @@
 stratified_uni_nbin <- function(data, outcome, exposures, stratifier) {
   if (!stratifier %in% names(data))
     stop("Stratifier not found in the dataset.")
+
+  # presence of outcome
   if (!outcome %in% names(data))
     stop("Outcome variable not found in the dataset.")
   if (!all(exposures %in% names(data)))
     stop("One or more exposures not found in the dataset.")
 
-  is_count <- function(x) is.numeric(x) && all(!is.na(x)) &&
-    all(x >= 0 & x == floor(x))
+  # Check for count outcome
+  # check for Non-negative integers
+  is_count <- function(x) {
+    is.numeric(x) &&
+      all(x >= 0 & x == floor(x), na.rm = TRUE) &&
+      length(unique(x[!is.na(x)])) >= 1
+  }
   if (!is_count(data[[outcome]]))
     stop("Negative binomial regression requires a non-negative count outcome.")
 
@@ -100,9 +107,10 @@ stratified_uni_nbin <- function(data, outcome, exposures, stratifier) {
   merged_tbl <- gtsummary::tbl_merge(results, tab_spanner = spanners)
 
   result <- merged_tbl
+
+  # add meta data
   attr(result, "models") <- model_list
   attr(result, "model_summaries") <- summary_list
-
   attr(result, "approach") <- "negbin"
   attr(result, "source") <- "stratified_uni_nbin"
   class(result) <- c("stratified_uni_nbin", class(result))

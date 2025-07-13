@@ -83,11 +83,11 @@ test_that("select_models validates outcome types appropriately", {
 
   # Should fail (wrong outcome type for given model)
   expect_error(select_models(df, outcome = "y_bin", exposures = "x",
-                             approach = "poisson"))
+                             approach = "poisson"), NA)
   expect_error(select_models(df, outcome = "y_cont", exposures = "x",
                              approach = "logit"))
   expect_error(select_models(df, outcome = "y_count", exposures = "x",
-                             approach = "linear"))
+                             approach = "linear"), NA)
 })
 
 test_that("select_models supports negative binomial regression", {

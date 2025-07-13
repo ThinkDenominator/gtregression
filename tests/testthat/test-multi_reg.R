@@ -26,9 +26,13 @@ test_that("multi_reg computes estimates correctly across approaches", {
       age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
       npreg_cat = ifelse(pregnant > 2, "High parity", "Low parity"),
       npreg_cat = factor(npreg_cat, levels = c("Low parity", "High parity")),
-      glucose_cat = factor(ifelse(glucose < 140, "Normal", "High"), levels = c("Normal", "High")),
-      bp_cat = factor(ifelse(pressure < 80, "Normal", "High"), levels = c("Normal", "High")),
-      triceps_cat = factor(ifelse(triceps < 23, "Normal", "High"), levels = c("Normal", "High")),
+      glucose_cat = factor(ifelse(glucose < 140,
+                                  "Normal", "High"),
+                           levels = c("Normal", "High")),
+      bp_cat = factor(ifelse(pressure < 80, "Normal", "High"),
+                      levels = c("Normal", "High")),
+      triceps_cat = factor(ifelse(triceps < 23, "Normal", "High"),
+                           levels = c("Normal", "High")),
       insulin_cat = case_when(
         insulin < 30 ~ "Low",
         insulin >= 30 & insulin < 150 ~ "Normal",
@@ -40,14 +44,19 @@ test_that("multi_reg computes estimates correctly across approaches", {
         pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
         pedigree > 0.5 ~ "High Genetic Risk"
       ),
-      dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))
+      dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk",
+                                           "Moderate Genetic Risk",
+                                           "High Genetic Risk"))
     )
 
-  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat", "triceps_cat", "insulin_cat", "dpf_cat")
-  valid_approaches <- c("logit", "log-binomial", "poisson", "robpoisson", "linear")
+  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat",
+                 "triceps_cat", "insulin_cat", "dpf_cat")
+  valid_approaches <- c("logit", "log-binomial", "poisson",
+                        "robpoisson", "linear")
 
   for (approach in valid_approaches) {
-    outcome_var <- if (approach == "linear") "mass" else if (approach == "poisson") "pregnant" else "diabetes"
+    outcome_var <- if (approach == "linear") "mass" else
+      if (approach == "poisson") "pregnant" else "diabetes"
 
     if (approach == "log-binomial") {
       skip_on_cran() # May fail due to convergence on CRAN
@@ -83,18 +92,24 @@ test_that("multi_reg computes estimates correctly across approaches", {
 
   # Validate known input errors
   expect_error(
-    multi_reg(data = pima_data, outcome = "mass", exposures = c("age_cat"), approach = "logit"),
-    "This approach requires a binary outcome."
+    multi_reg(data = pima_data, outcome = "mass",
+              exposures = c("age_cat"), approach = "logit"),
+    regexp = paste0(
+      "This approach requires either a factor variable or numeric ",
+      "variable coded as 0 and 1 \\(or 1 and 2\\)"
+    )
   )
 
   expect_error(
-    multi_reg(data = pima_data, outcome = "diabetes", exposures = c("bmi"), approach = "linear"),
+    multi_reg(data = pima_data, outcome = "diabetes",
+              exposures = c("bmi"), approach = "linear"),
     "Linear regression requires a continuous outcome."
   )
 
   # Valid Poisson test with count outcome
   expect_s3_class(
-    suppressWarnings(multi_reg(data = pima_data, outcome = "pregnant", exposures = c("bmi"), approach = "poisson")),
+    suppressWarnings(multi_reg(data = pima_data, outcome = "pregnant",
+                               exposures = c("bmi"), approach = "poisson")),
     "tbl_regression"
   )
 })

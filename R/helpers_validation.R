@@ -1,5 +1,4 @@
-# validate approach
-
+#' Internal validation helpers for model setup
 #' Validate regression approach by context
 #'
 #' Ensures that only valid modeling approaches are used in each function context
@@ -9,6 +8,7 @@
 #'
 #' @return Stops with an informative error if the approach is not allowed.
 #' @keywords internal
+#' @noRd
 .validate_approach <- function(approach, context = NULL) {
   # Define valid approaches per context
   valid <- switch(context,
@@ -26,116 +26,185 @@
                                             "robpoisson", "negbin", "linear"),
                   "select_models" = c("logit", "log-binomial", "poisson",
                                       "robpoisson", "negbin", "linear"),
-                  stop("Unknown context '",
-                       context, "' passed to .validate_approach().")
+                  stop("The function '", context, "' is not recognized.\n",
+                       "Please use a valid function")
   )
 
   # Validate the chosen approach
   if (!approach %in% valid) {
-    stop("Invalid approach '", approach, "' for context '", context, "'.\n",
+    stop(approach, "  is not a valid approach for ", context, ".\n",
          "Valid options: ", paste(valid, collapse = ", "), call. = FALSE)
   }
 
   invisible(TRUE)
 }
 
+# validate outcome against the approaches used
+#' @keywords internal
+#' @noRd
+.validate_outcome_by_approach <- function(outcome, approach) {
+  # Missing outcome values in cols
+  if (all(is.na(outcome))) {
+    stop("All values in the outcome variable are missing.")
+  }
+  # Conditional check binary outcomes
+  is_binary <- function(outcome) {
+    # Check for factor or character with exactly 2 levels
+    if (is.factor(outcome) || is.character(outcome)) {
+      return(length(unique(na.omit(outcome))) == 2)
+    }
 
-.validate_outcome_by_approach <- function(outcome_vec, approach) {
-  is_binary <- function(x) {
-    (is.factor(x) && length(levels(x)) == 2) ||
-      (is.numeric(x) && all(x %in% c(0, 1), na.rm = TRUE))
+    # Check for numeric with values in 0/1 or 1/2
+    if (is.numeric(outcome)) {
+      vals <- unique(na.omit(outcome))
+      return(all(vals %in% c(0, 1)) || all(vals %in% c(1, 2)))
+    }
+    return(FALSE)
   }
 
-  is_count <- function(x) {
-    is.numeric(x) && all(x >= 0 & x == floor(x), na.rm = TRUE) &&
-      length(unique(x[!is.na(x)])) > 2
+  # check for Non-negative integers
+  is_count <- function(outcome) {
+    is.numeric(outcome) &&
+      all(outcome >= 0 &
+            outcome == floor(outcome), na.rm = TRUE) &&
+      length(unique(outcome[!is.na(outcome)])) >= 1
   }
 
-  is_continuous <- function(x) {
-    is.numeric(x) && length(unique(x)) > 10
+  # check for numeric- includes whole numbers and decimals
+  is_continuous <- function(outcome) {
+    is.numeric(outcome) && length(unique(na.omit(outcome))) > 2
   }
 
+  # apply logic
   if (approach %in% c("logit", "log-binomial", "robpoisson") &&
-      !is_binary(outcome_vec)) {
-    stop("This approach requires a binary outcome.")
+      !is_binary(outcome)) {
+    stop("This approach requires either a factor variable ",
+         "or numeric variable coded as 0 and 1 (or 1 and 2).")
   }
-  if (approach == "poisson" && !is_count(outcome_vec)) {
-    stop("Count outcome required for Poisson regression.")
+  if (approach == "poisson" && !is_count(outcome)) {
+    stop("Poisson regression requires a count outcome.")
   }
-  if (approach == "negbin" && !is_count(outcome_vec)) {
+  if (approach == "negbin" && !is_count(outcome)) {
     stop("Negative binomial requires a count outcome.")
   }
-  if (approach == "linear" && !is_continuous(outcome_vec)) {
+  if (approach == "linear" && !is_continuous(outcome)) {
     stop("Linear regression requires a continuous outcome.")
   }
 }
-# validate inputs
-.validate_uni_inputs <- function(data, outcome, exposures, approach) {
-  # validate approach in the func
+
+# validate inputs for uni reg
+#' @keywords internal
+#' @noRd
+.validate_uni_inputs <- function(data,
+                                 outcome,
+                                 exposures,
+                                 approach) {
+  # validate approach in the function
   .validate_approach(approach, context = "uni_reg")
 
-  # variable existence
+  # check variable presence
   if (!outcome %in% names(data))
-    stop("Outcome variable not found in dataset.")
+    stop("Outcome variable not found in the dataset.")
 
+  # check variable presence >1
   if (!all(exposures %in% names(data)))
-    stop("One or more exposure variables not found in dataset.")
+    stop("One or more exposure variables were not found in the dataset.")
 
-  # outcome validation
+  # outcome variable validation
   .validate_outcome_by_approach(data[[outcome]], approach)
 }
 
-# Multivariate models
-
-.validate_multi_inputs <- function(data, outcome, exposures, approach) {
+# Validate Multivariate inputs for multi_reg
+#' @keywords internal
+#' @noRd
+.validate_multi_inputs <- function(data,
+                                   outcome,
+                                   exposures,
+                                   approach) {
+  # validate approach in the function
   .validate_approach(approach, context = "multi_reg")
 
+  # check variable presence
   if (!outcome %in% names(data))
     stop("Outcome variable not found in the dataset.")
-  if (!all(exposures %in% names(data)))
-    stop("One or more exposure variables not found in the dataset.")
 
+  # check variable presence >1
+  if (!all(exposures %in% names(data)))
+    stop("One or more exposure variables were not found in the dataset.")
+
+  # outcome variable validation
   .validate_outcome_by_approach(data[[outcome]], approach)
 
+  # clean the data for complete case analysis
+  # keep only rows where the outcome is not missing
   data_clean <- data[!is.na(data[[outcome]]), , drop = FALSE]
+
+  # select exposures and outcomes only and drop NAs in the selected cols
   data_clean <- stats::na.omit(data_clean[, c(outcome, exposures),
                                           drop = FALSE])
+  # Throw error for null data return
   if (nrow(data_clean) == 0)
-    stop("No complete cases remaining after removing missing values.")
+    stop("No complete cases available for analysis.")
+
+  # validate that each exposure has at least 2 unique values
+  insufficient_vars <- exposures[vapply(data_clean[exposures],
+                                        function(x)
+                                          length(unique(na.omit(x))) < 2,
+                                        logical(1))]
+  if (length(insufficient_vars) > 0) {
+    stop("Exposure(s) has less than 2 unique values: ",
+         paste(insufficient_vars, collapse = ", "))
+  }
+
   return(data_clean)
 }
 
 # For Negative binomial
+#' @keywords internal
+#' @noRd
 .validate_nb_inputs <- function(data, outcome, exposures) {
+  # check variable presence
   if (!outcome %in% names(data))
     stop("Outcome variable not found in the dataset.")
-
   if (!all(exposures %in% names(data)))
-    stop("One or more exposure variables not found in the dataset.")
+    stop("One or more exposure variables were not found in the dataset.")
 
+  # outcome variable validation
   .validate_outcome_by_approach(data[[outcome]], "negbin")
 }
-# Multivariate Negative binomial
-.validate_nb_multi_inputs <- function(data, outcome, exposures) {
-  if (!outcome %in% names(data))
-    stop("Outcome variable not found in dataset.")
-  if (!all(exposures %in% names(data)))
-    stop("One or more exposures not found in dataset.")
 
+# Multivariate Negative binomial
+#' @keywords internal
+#' @noRd
+.validate_nb_multi_inputs <- function(data, outcome, exposures) {
+  # check variable presence
+  if (!outcome %in% names(data))
+    stop("Outcome variable not found in the dataset.")
+  if (!all(exposures %in% names(data)))
+    stop("One or more exposures were not found in dataset.")
+
+  # outcome variable validation
   .validate_outcome_by_approach(data[[outcome]], "negbin")
 
+  # clean the data for complete case analysis
+  # keep only rows where the outcome is not missing
   data_clean <- data[!is.na(data[[outcome]]), , drop = FALSE]
+
+  # select exposures and outcomes only and drop NAs in the selected cols
   data_clean <- stats::na.omit(data_clean[, c(outcome, exposures),
                                           drop = FALSE])
 
+  # Throw error for null data return
   if (nrow(data_clean) == 0)
-    stop("No valid observations after removing missing values.")
+    stop("No complete cases available for analysis.")
 
+  # validate that each exposure has at least 2 unique values
   insufficient_vars <- exposures[vapply(data_clean[exposures],
-                                        function(x) length(unique(x)) < 2,
+                                        function(x)
+                                          length(unique(na.omit(x))) < 2,
                                         logical(1))]
   if (length(insufficient_vars) > 0) {
-    stop("Exposure(s) with insufficient variation: ",
+    stop("Exposure(s) has less than 2 unique values: ",
          paste(insufficient_vars, collapse = ", "))
   }
 

@@ -52,10 +52,11 @@ plot_reg_combine <- function(tbl_uni,
                              breaks_uni = NULL,
                              xlim_multi = NULL,
                              breaks_multi = NULL) {
-  # Extract attributes
+  # Extract relevant metadata
+  # uni
   approach_uni <- attr(tbl_uni, "approach")
   source_type_uni <- attr(tbl_uni, "source")
-
+  # multi
   approach_multi <- attr(tbl_multi, "approach")
   source_type_multi <- attr(tbl_multi, "source")
 
@@ -84,9 +85,11 @@ plot_reg_combine <- function(tbl_uni,
     }
   }
 
+  # x lab
   x_axis_label_uni <- get_label(approach_uni, source_type_uni)
   x_axis_label_multi <- get_label(approach_multi, source_type_multi)
 
+  # log x lab
   if (log_x) {
     x_axis_label_uni <- paste0(x_axis_label_uni, " (log scale)")
     x_axis_label_multi <- paste0(x_axis_label_multi, " (log scale)")
@@ -126,6 +129,7 @@ plot_reg_combine <- function(tbl_uni,
     label_map <- df$label_clean
     names(label_map) <- df$row_id
 
+    # plots
     p <- ggplot2::ggplot(df, ggplot2::aes(x = .data$estimate,
                                           y = .data$row_id)) +
       ggplot2::geom_errorbarh(
@@ -163,12 +167,14 @@ plot_reg_combine <- function(tbl_uni,
     return(p)
   }
 
+  # uni plot
   p1 <- build_plot(tbl_uni, plot_title = title_uni, xlim = xlim_uni,
                    breaks = breaks_uni, x_label = x_axis_label_uni)
+  # multi plot
   p2 <- build_plot(tbl_multi, plot_title = title_multi, xlim = xlim_multi,
                    breaks = breaks_multi, x_label = x_axis_label_multi) +
     ggplot2::theme(axis.text.y = ggplot2::element_blank(),
                    axis.title.y = ggplot2::element_blank())
-
+  # patch them
   patchwork::wrap_plots(p1, p2, ncol = 2, widths = c(1.2, 1))
 }

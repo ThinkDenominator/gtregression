@@ -16,8 +16,8 @@ check_convergence(
 \item{data}{A data frame containing the dataset.}
 
 \item{exposures}{A character vector of predictor variable names.
-If \code{multivariate = FALSE},
-each exposure is assessed separately; otherwise, combined model is evaluated.}
+If \code{multivariate = FALSE}, each exposure is assessed separately.
+If \code{multivariate = TRUE}, exposures are included together.}
 
 \item{outcome}{A character string specifying the outcome variable.}
 

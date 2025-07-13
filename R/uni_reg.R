@@ -14,7 +14,7 @@
 #' @importFrom broom tidy
 #' @details This function requires the following packages:
 #' `dplyr`, `purrr`, `gtsummary`, `risks`.
-#' #' @return A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
+#' @return A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
 #' \itemize{
 #'   \item A publication-ready regression table (`tbl_stack`)
 #'   \item Accessor elements:
@@ -33,53 +33,55 @@
 #' @seealso \code{\link{multi_reg}}, \code{\link{plot_reg}}
 #' @family regression functions
 #' @export
-uni_reg <- function(data, outcome, exposures, approach = "logit") {
-  pkgs <- c("gtsummary", "risks", "lmtest")
-  for (pkg in pkgs) {
-    if (!requireNamespace(pkg, quietly = TRUE))
-      stop("Package '", pkg, "' is required.")
-  }
-  if (approach == "robpoisson" && !requireNamespace("risks", quietly = TRUE)) {
-    stop("Package 'risks' is required for robust Poisson regression.")
-  }
-  if (approach == "linear") {
-    if (!requireNamespace("lmtest", quietly = TRUE)) {
-      stop("Packages 'car' and 'lmtest' are required for
-           linear regression diagnostics.")
-    }
-  }
+uni_reg <- function(data,
+                    outcome,
+                    exposures,
+                    approach = "logit") {
+
+  # Validate inputs through internal helpers
   .validate_uni_inputs(data, outcome, exposures, approach)
 
+  # Edit labels and abbreviation through internal helpers
   label_est <- .get_effect_label(approach)
   abbreviation <- .get_abbreviation(approach)
   remove_abbrev <- .get_remove_abbreviation(approach)
 
+  # Create a list of models, one for each exposure
   model_list <- lapply(exposures, function(x)
+  # fit model using internal helper function
     .fit_uni_model(data, outcome, x, approach))
+
+  # Assign names and remove failed models (NULLs)
   names(model_list) <- exposures
   model_list <- Filter(Negate(is.null), model_list)
 
+  # Stop if no models succeeded
   if (length(model_list) == 0)
     stop("All models failed. Please check your data or exposures.")
 
+  # Create a list of formatted gtsummary tables (one per exposure)
   tbl_list <- Map(function(fit, var) {
     gtsummary::tbl_regression(fit, exponentiate = approach != "linear") |>
       gtsummary::modify_header(estimate = label_est) |>
       gtsummary::add_n(location = "label")
   }, model_list, names(model_list))
 
+  # Stack the tables into one combined output
   result <- gtsummary::tbl_stack(tbl_list) |>
     gtsummary::remove_abbreviation(remove_abbrev) |>
     gtsummary::modify_abbreviation(abbreviation)
 
+  # get model summaries
   model_summaries <- lapply(model_list, summary)
 
+  # Reg check for linear approach only
   reg_diagnostics <- if (approach == "linear") {
     Map(.reg_check_linear, model_list, names(model_list))
   } else {
     "Regression diagnostics only available for 'linear' models."
   }
 
+  # Add metadata as attributes to support other functions of the package
   attr(result, "approach") <- approach
   attr(result, "source") <- "uni_reg"
   class(result) <- c("uni_reg", class(result))
@@ -87,9 +89,10 @@ uni_reg <- function(data, outcome, exposures, approach = "logit") {
   attr(result, "model_summaries") <- model_summaries
   attr(result, "reg_diagnostics") <- reg_diagnostics
 
-
+  # return result
   result
 }
+# S3 print
 #' @export
 `$.uni_reg` <- function(x, name) {
   if (name == "models") {
@@ -106,6 +109,6 @@ uni_reg <- function(data, outcome, exposures, approach = "logit") {
   if (name == "table") {
     return(x)
   }
-  # Fall back to default behavior for other gtsummary fields
+  # Fall back to default behaviour for other gtsummary fields
   NextMethod("$")
 }

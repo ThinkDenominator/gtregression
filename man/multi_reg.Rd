@@ -11,7 +11,7 @@ multi_reg(data, outcome, exposures, approach = "logit")
 
 \item{outcome}{The name of the outcome variable. Must be a character string.}
 
-\item{exposures}{predictor variables to be included in the model.}
+\item{exposures}{A character vector of predictor variables to include.}
 
 \item{approach}{Modeling approach to use. One of:
 - `"logit"` for logistic regression (OR),
@@ -21,10 +21,14 @@ multi_reg(data, outcome, exposures, approach = "logit")
 - `"linear"` for linear regression (Beta coefficients).}
 }
 \value{
-An object of class `multi_reg`, which includes:
-- A `gtsummary::tbl_regression` object with adjusted effect estimates,
-- A list of fitted model(s) accessible via `$models`,
-- Tidy model summaries accessible via `$model_summaries`.
+An object of class `multi_reg`, extending
+  `gtsummary::tbl_regression`. Additional components can be accessed using:
+  \itemize{
+    \item \code{x$models}: List of fitted model objects.
+    \item \code{x$model_summaries}: List of summary outputs.
+    \item \code{x$reg_check}: Regression diagnostics (only for linear models).
+    \item \code{x$table}: Returns the main regression table.
+  }
 }
 \description{
 Fits multivariable regression models for binary, count, or continuous
@@ -45,7 +49,8 @@ or Beta coefficients.
 \examples{
 if (requireNamespace("mlbench", quietly = TRUE)) {
   data(PimaIndiansDiabetes2, package = "mlbench")
-  pima <- dplyr::mutate(PimaIndiansDiabetes2, diabetes == "pos")
+  pima <- dplyr::mutate(PimaIndiansDiabetes2,
+  diabetes = ifelse(diabetes == "pos", 1, 0))
   model <- multi_reg(
     data = pima,
     outcome = "diabetes",
