@@ -15,6 +15,16 @@
 <url><loc>https://drrubesh.github.io/gtregression/reference/data_infertility.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/data_lungcancer.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/data_PimaIndiansDiabetes.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-fit_multi_model.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-fit_multi_model_nbin.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-fit_uni_model.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-fit_uni_model_nbin.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-get_abbreviation.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-get_effect_label.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-get_effect_label_adjusted.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-get_remove_abbreviation.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-reg_check_linear.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-validate_approach.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/identify_confounder.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/index.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/interaction_models.html</loc></url>

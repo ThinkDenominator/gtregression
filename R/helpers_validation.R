@@ -132,7 +132,8 @@
     stop("No valid observations after removing missing values.")
 
   insufficient_vars <- exposures[vapply(data_clean[exposures],
-                                        function(x) length(unique(x)) < 2)]
+                                        function(x) length(unique(x)) < 2,
+                                        logical(1))]
   if (length(insufficient_vars) > 0) {
     stop("Exposure(s) with insufficient variation: ",
          paste(insufficient_vars, collapse = ", "))

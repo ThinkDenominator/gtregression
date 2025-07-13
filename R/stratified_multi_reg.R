@@ -112,8 +112,7 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   n_values <- vapply(n_obs_cols, function(col) {
     n <- unique(na.omit(merged_tbl$table_body[[col]]))
     as.character(round(n))
-  }, USE.NAMES = FALSE)
-
+  }, FUN.VALUE = character(1), USE.NAMES = FALSE)
 
   #
   stratum_labels <- strata_levels

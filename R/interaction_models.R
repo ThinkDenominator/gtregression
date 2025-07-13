@@ -48,7 +48,7 @@ interaction_models <- function(data, outcome, exposure, covariates = NULL,
                                effect_modifier,
                                approach = "logit", test = c("LRT", "Wald"),
                                verbose = TRUE) {
-  .validate_approach(approach)
+  .validate_approach(approach, context= "interaction_models")
   .validate_outcome_by_approach(data[[outcome]], approach)
 
   test <- match.arg(test)

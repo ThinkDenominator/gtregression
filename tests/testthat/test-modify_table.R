@@ -34,7 +34,8 @@ test_that("modify_table() works correctly with pima_data", {
                     exposures = exposures,
                     approach = "log-binomial")
 
-  tbl_custom <- modify_table(
+  tbl_custom <- suppressWarnings(
+    modify_table(
     uni_rr,
     variable_labels = c(age_cat = "Age", bmi = "BMI"),
     level_labels = list(age_cat = c(
@@ -48,16 +49,17 @@ test_that("modify_table() works correctly with pima_data", {
     remove_abbreviations = TRUE,
     caveat = "Interpret results with caution due to missing data."
   )
+  )
 
   expect_s3_class(tbl_custom, "gtsummary")
 
-  labels <- tbl_custom$table_body$label
-  [tbl_custom$table_body$row_type == "label"]
+  labels <- tbl_custom$table_body$label[tbl_custom$table_body$row_type
+                                        == "label"]
   expect_true("Age" %in% labels)
   expect_true("BMI" %in% labels)
 
-  levels_updated <- tbl_custom$table_body$label
-  [tbl_custom$table_body$row_type == "level"]
+  levels_updated <- tbl_custom$table_body$label[tbl_custom$table_body$row_type
+                                                == "level"]
   expect_true("Young Adults" %in% levels_updated)
   expect_true("Older Adults" %in% levels_updated)
 

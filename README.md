@@ -1,46 +1,43 @@
-<p align="left">
-  <img src="man/figures/gtregression_hex.png" width="200"/>
-</p>
 
+<p align="left">
+
+<img src="man/figures/gtregression_hex.png" alt="gtregression logo" width="180"/>
+</p>
 
 # gtregression
 
-`gtregression` is an R package that simplifies regression modeling and generates publication-ready tables using the `gtsummary` ecosystem.     
-It supports a wide range of regression approaches—including logistic, linear, 
-log-binomial, Poisson, negative binomial, and poisson with robust standard error models—
-alongside tools for model diagnostics, variable selection, and confounder assessment.    
+`gtregression` is an R package that simplifies regression modeling and
+generates publication-ready tables using the `gtsummary` ecosystem. It
+supports a variety of regression approaches with built-in tools for
+model diagnostics, selection, and confounder identification—all designed
+to provide beginner and intermediate R users with clean, interpretable
+output.
 
-Designed for students, public health professionals, and researchers—especially in low- and middle-income countries (LMICs)—`gtregression` helps reduce the burden of writing complex code and juggling multiple packages.
-It integrates reliable tools like `gtsummary`, `risks`, `MASS`, `dplyr`, and `stats`, and wraps them into a cohesive, user-friendly interface.
+This package was created with the aim of empowering R users in low- and
+middle-income countries (LMICs) by offering a simpler and more
+accessible coding experience. We sincerely thank the authors and
+contributors of foundational R packages such as `gtsummary`, `MASS`,
+`RISKS`, `dplyr`, and others—without whom this project would not have
+been possible.
 
-## Why We Built It
+## Vision
 
-Many R users find regression workflows intimidating and fragmented. 
-Simple tasks like fitting a model and formatting output can require long scripts, multiple helper functions, and manual copying of results. 
-These inefficiencies are especially felt in LMIC settings, where users often face time constraints, limited training, and inconsistent software access.
+At its core, `gtregression` is more than just a statistical tool—it is a
+commitment to open access, simplicity, and inclusivity in health data
+science. Our team is driven by the vision of empowering researchers,
+students, and public health professionals in LMICs through
+user-friendly, well-documented tools that minimize coding burden and
+maximize interpretability.
 
-`gtregression` was created to streamline this process and improve the user experience without compromising rigor. It offers:
-
-- Clean, readable syntax with minimal setup
-- Publication-ready tables with built-in diagnostics
-- Unified functions across multiple regression types
-- Smart defaults that reduce the chance of error
-
-## Our Vision
-
-We believe in democratizing access to data science.  
-`gtregression` reflects our commitment to open, accessible, and evidence-based tools that empower researchers to work efficiently and communicate their findings clearly—regardless of technical background or location.
-
-We believe this package can help grow the R user base in low- and middle-income countries (LMICs) by lowering the barriers to performing high-quality statistical analysis.
-
-We sincerely thank the authors of foundational R packages whose work made this project possible.
+We believe in the democratization of data science and aim to promote
+open-source resources for impactful and equitable research globally.
 
 ## Features
 
 - Supports multiple regression approaches:
   - Logistic (logit)
   - Log-binomial
-  - Poisson / Robpoisson
+  - Poisson / Robust Poisson
   - Negative Binomial
   - Linear Regression
 - Univariable and multivariable regression
@@ -48,7 +45,7 @@ We sincerely thank the authors of foundational R packages whose work made this p
 - Stepwise model selection (AIC/BIC/adjusted R²)
 - Stratified regression support
 - Formatted outputs using `gtsummary`
-- Built-in example datasets
+- Built-in example datasets: `PimaIndiansDiabetes2`, `birthwt`, `epil`
 
 ## Installation
 
@@ -80,41 +77,50 @@ multi_reg_nbin(
 )
 ```
 
-## Function Overview
+## Key Functions
 
-### Regression Modeling
+### Regression Functions - Fit univariate and multivariable models
 
-| Function Name             | Purpose                                        |
-|---------------------------|------------------------------------------------|
-| `uni_reg()`               | Univariable regression (OR, RR, IRR, or β)     |
-| `multi_reg()`             | Multivariable regression                       |
-| `uni_reg_nbin()`          | Univariable negative binomial regression       |
-| `multi_reg_nbin()`        | Multivariable negative binomial regression     |
-| `stratified_uni_reg()`    | Stratified univariable regression              |
-| `stratified_multi_reg()`  | Stratified multivariable regression            |
-| `stratified_uni_nbin()`   | Stratified univariable NB regression           |
-| `stratified_multi_nbin()` | Stratified multivariable NB regression         |
+| Function Name      | Purpose                                    |
+|--------------------|--------------------------------------------|
+| `uni_reg()`        | Univariable regression (OR/RR/IRR/β)       |
+| `multi_reg()`      | Multivariable regression                   |
+| `uni_reg_nbin()`   | Univariable negative binomial regression   |
+| `multi_reg_nbin()` | Multivariable negative binomial regression |
 
-### Model Diagnostics and Variable Assessment
+### Regression Functions by stratifier - Fit univariate and multivariable models by stratifier
 
-| Function Name             | Purpose                                        |
-|---------------------------|------------------------------------------------|
-| `select_models()`         | Stepwise model selection (AIC/BIC/logLik)      |
-| `identify_confounder()`   | Confounding assessment via % change or MH      |
-| `check_convergence()`     | Evaluate model convergence and max probability |
-| `interaction_models()`    | Compare models with and without interactions   |
-| `check_collinearity()`    | Check multicollinearity via VIF and pairwise   |
+| Function Name | Purpose |
+|----|----|
+| `stratified_uni_reg()` | Stratified univariable regression |
+| `stratified_multi_reg()` | Stratified multivariable regression |
+| `stratified_uni_nbin()` | Stratified univariable negative binomial regression |
+| `stratified_multi_nbin()` | Stratified multivariable negative binomial regression |
 
-## Plots and Exports
+### Model Diagnostics & Selection
 
-| Function Name        | Purpose                                             |
-|----------------------|-----------------------------------------------------|
-| `modify_table()`     | Modify `gtsummary` tables (e.g., labels, p-values)  |
-| `plot_reg()`         | Forest plot of regression model estimates           |
-| `plot_reg_combine()` | Side-by-side plot of univariable and multivariable models |
-| `save_table()`       | Save regression tables to Word/HTML                  |
-| `save_plot()`        | Save regression plots to file                        |
-| `save_docx()`        | Save tables and plots in one report                  |
+| Function Name         | Purpose                                          |
+|-----------------------|--------------------------------------------------|
+| `check_convergence()` | Evaluate model convergence and max fitted values |
+| `select_models()`     | Stepwise model selection (AIC/BIC/adjusted R²)   |
+
+### Confounding & Interaction
+
+| Function Name           | Purpose                                           |
+|-------------------------|---------------------------------------------------|
+| `identify_confounder()` | Confounding assessment via % change or MH method  |
+| `interaction_models()`  | Compare models with and without interaction terms |
+
+### Plots & Exports
+
+| Function Name        | Purpose                                        |
+|----------------------|------------------------------------------------|
+| `plot_reg()`         | Forest plot for a single regression model      |
+| `plot_reg_combine()` | Side-by-side forest plots for uni/multi models |
+| `modify_table()`     | Customize column labels or output structure    |
+| `save_table()`       | Export table to `.html`, `.csv`, `.docx`       |
+| `save_docx()`        | Save table as Word document (`.docx`)          |
+| `save_plot()`        | Save plot as `.png`, `.pdf`, etc.              |
 
 ## Contributing
 
@@ -133,7 +139,7 @@ collaborative team committed to making regression modeling accessible,
 especially for public health professionals and researchers in LMICs.
 
 - **Rubeshkumar Polani Chandrasekar**  
-  <rubesh@thinkdenominator.com>  
+  <rubesh.pc@gmail.com>  
   ORCID: [0000-0002-0418-7592](https://orcid.org/0000-0002-0418-7592)  
   *Creator and Author*
 

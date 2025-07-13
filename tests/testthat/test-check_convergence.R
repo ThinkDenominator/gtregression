@@ -75,14 +75,14 @@ test_that("check_convergence runs correctly for valid approaches", {
     gtregression::check_convergence(pima_data, exposures,
                                     outcome = "diabetes",
                                     approach = "poisson"),
-    regexp = "must be a count"
+    regexp = "Count outcome required for Poisson regression"
   )
 
   expect_error(
     gtregression::check_convergence(quine_data, count_exposures,
                                     count_outcome,
                                     approach = "logit"),
-    regexp = "must be binary"
+    regexp = "This approach requires a binary outcome"
   )
 
   # Empty data
@@ -94,8 +94,24 @@ test_that("check_convergence runs correctly for valid approaches", {
 })
 
 test_that("check_convergence handles model fitting failure", {
+  pima_data <- PimaIndiansDiabetes2 |>
+    dplyr::mutate(
+      diabetes = ifelse(diabetes == "pos", 1, 0),
+      bmi = dplyr::case_when(
+        mass < 25 ~ "Normal",
+        mass >= 25 & mass < 30 ~ "Overweight",
+        mass >= 30 ~ "Obese"
+      ),
+      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
+      age_cat = dplyr::case_when(
+        age < 30 ~ "Young",
+        age >= 30 & age < 50 ~ "Middle-aged",
+        age >= 50 ~ "Older"
+      ),
+      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older"))
+    )
   broken_data <- pima_data |>
-    dplyr::mutate(all_one = factor("yes", levels = "yes"))  # constant predictor
+    dplyr::mutate(all_one = factor("yes", levels = "yes"))
 
   result <- check_convergence(broken_data, exposures = "all_one",
                               outcome = "diabetes", approach = "logit")

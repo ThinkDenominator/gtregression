@@ -4,6 +4,9 @@ editor_options:
   markdown: 
     wrap: 72
 ---
+<p align="left">
+  <img src="man/figures/gtregression_hex.png" alt="gtregression logo" width="180"/>
+</p>
 
 # gtregression
 
@@ -80,20 +83,49 @@ multi_reg_nbin(
 
 ## Key Functions
 
-| Function Name             | Purpose                                        |
-|---------------------------|------------------------------------------------|
-| `uni_reg()`               | Univariable regression (OR/RR/IRR/β)           |
-| `multi_reg()`             | Multivariable regression                       |
-| `select_models()`         | Stepwise model selection                       |
-| `identify_confounder()`   | Confounding assessment via % change            |
-| `check_convergence()`     | Evaluate model convergence and max probability |
-| `interaction_models()`    | Compare models with and without interactions   |
-| `stratified_uni_reg()`    | Stratified univariable regression              |
-| `stratified_multi_reg()`  | Stratified multivariable regression            |
-| `uni_reg_nbin()`          | Univariable negative binomial regression       |
-| `multi_reg_nbin()`        | Multivariable negative binomial regression     |
-| `stratified_uni_nbin()`   | Stratified univariable NB regression           |
-| `stratified_multi_nbin()` | Stratified multivariable NB regression         |
+### Regression Functions - Fit univariate and multivariable models
+
+| Function Name      | Purpose                                    |
+| ------------------ | ------------------------------------------ |
+| `uni_reg()`        | Univariable regression (OR/RR/IRR/β)       |
+| `multi_reg()`      | Multivariable regression                   |
+| `uni_reg_nbin()`   | Univariable negative binomial regression   |
+| `multi_reg_nbin()` | Multivariable negative binomial regression |
+
+### Regression Functions by stratifier - Fit univariate and multivariable models by stratifier
+
+| Function Name             | Purpose                                               |
+| ------------------------- | ----------------------------------------------------- |
+| `stratified_uni_reg()`    | Stratified univariable regression                     |
+| `stratified_multi_reg()`  | Stratified multivariable regression                   |
+| `stratified_uni_nbin()`   | Stratified univariable negative binomial regression   |
+| `stratified_multi_nbin()` | Stratified multivariable negative binomial regression |
+
+### Model Diagnostics & Selection
+
+| Function Name         | Purpose                                          |
+| --------------------- | ------------------------------------------------ |
+| `check_convergence()` | Evaluate model convergence and max fitted values |
+| `select_models()`     | Stepwise model selection (AIC/BIC/adjusted R²)   |
+
+### Confounding & Interaction
+
+| Function Name           | Purpose                                           |
+| ----------------------- | ------------------------------------------------- |
+| `identify_confounder()` | Confounding assessment via % change or MH method  |
+| `interaction_models()`  | Compare models with and without interaction terms |
+
+### Plots & Exports
+
+| Function Name        | Purpose                                        |
+| -------------------- | ---------------------------------------------- |
+| `plot_reg()`         | Forest plot for a single regression model      |
+| `plot_reg_combine()` | Side-by-side forest plots for uni/multi models |
+| `modify_table()`     | Customize column labels or output structure    |
+| `save_table()`       | Export table to `.html`, `.csv`, `.docx`       |
+| `save_docx()`        | Save table as Word document (`.docx`)          |
+| `save_plot()`        | Save plot as `.png`, `.pdf`, etc.              |
+
 
 ## Contributing 
 

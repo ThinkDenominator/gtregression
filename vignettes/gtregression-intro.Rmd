@@ -56,68 +56,115 @@ pima_data <- PimaIndiansDiabetes2 %>%
   )
 ```
 
-## Univariate Regression
-
-``` r
+## Univariate and Multivariable Regression
+```r
 uni_tbl <- uni_reg(
   data = pima_data,
   outcome = "diabetes",
   exposures = c("bmi", "age_cat"),
-  approach = "robpoisson"
+  approach = "logit"
 )
 
 uni_tbl
-```
 
-## Multivariable Regression
-
-``` r
 multi_tbl <- multi_reg(
   data = pima_data,
   outcome = "diabetes",
   exposures = c("bmi", "age_cat"),
-  approach = "robpoisson"
+  approach = "logit"
 )
 
 multi_tbl
 ```
-
-## Visualizing the Results
-
-``` r
-plot_reg_combine(
-  tbl_uni = uni_tbl,
-  tbl_multi = multi_tbl,
-  log_x = TRUE,
-  title_uni = "Unadjusted",
-  title_multi = "Adjusted"
+## Stratified Regression
+```r
+stratified_uni <- stratified_uni_reg(
+  data = pima_data,
+  outcome = "diabetes",
+  exposures = c("bmi"),
+  stratifier = "age_cat",
+  approach = "logit"
 )
+stratified_uni
+
+stratified_multi <- stratified_multi_reg(
+  data = pima_data,
+  outcome = "diabetes",
+  exposures = c("bmi"),
+  stratifier = "age_cat",
+  approach = "logit"
+)
+
+stratified_multi
 ```
 
 ## Identifying Confounders
-
-``` r
+```r
 identify_confounder(
   data = pima_data,
   outcome = "diabetes",
   exposure = "bmi",
-  potential_confounder = c("age_cat"),
-  approach = "robpoisson"
+  potential_confounder = "age_cat",
+  approach = "logit"
+)
+```
+## Model Diagnostics
+```r
+check_convergence(
+  data = pima_data,
+  outcome = "diabetes",
+  exposures = c("bmi", "age_cat"),
+  approach = "logit"
 )
 ```
 
 ## Stepwise Model Selection
-
-``` r
+```r
 model_selection <- select_models(
   data = pima_data,
   outcome = "diabetes",
   exposures = c("bmi", "age_cat"),
-  approach = "robpoisson",
+  approach = "logit",
   direction = "forward"
 )
 
 model_selection$results_table
+model_selection$best_model
+```
+
+## Interaction Assessment
+```r
+interaction_models(
+  data = pima_data,
+  outcome = "diabetes",
+  exposure = "bmi",
+  covariates = "age_cat",
+  effect_modifier = "glucose_cat",
+  approach = "logit",
+  test = "LRT"
+)
+```
+## Visualizing Results
+```r
+plot_reg(uni_tbl)
+
+plot_reg(multi_tbl)
+
+plot_reg_combine(
+  tbl_uni = uni_tbl,
+  tbl_multi = multi_tbl,
+  title_uni = "Unadjusted",
+  title_multi = "Adjusted"
+)
+```
+## Saving Outputs
+```r
+save_table(multi_tbl, file = "regression_table.html")   
+
+save_docx(multi_tbl, file = "regression_table.docx")   
+
+save_plot(plot_reg(multi_tbl), file = "regression_plot.png")    
+
 ```
 
 ## Conclusion

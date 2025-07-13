@@ -20,8 +20,8 @@
 #'   \item{\code{$models}}{Fitted negative binomial model object
 #'   (class `negbin`).}
 #'   \item{\code{$model_summaries}}{Tidy summary table of model estimates.}
-#'   \item{\code{$table}}
-#'   {Formatted `gtsummary` regression table with adjusted IRRs.}
+#'   \item{\code{$table}}{Formatted `gtsummary` regression table
+#'    with adjusted IRRs.}
 #' }
 #'
 #' @seealso [uni_reg_nbin()], [plot_reg()], [check_dispersion()]

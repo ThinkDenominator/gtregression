@@ -24,8 +24,8 @@
 #' @section Accessors:
 #' \describe{
 #'   \item{\code{$models}}{List of fitted model objects.}
-#'   \item{\code{$model_summaries}}
-#'   {A tibble of tidy regression summaries for each model.}
+#'   \item{\code{$model_summaries}}{A tibble of tidy regression
+#'   summaries for each model.}
 #' }
 #'
 #' @seealso [uni_reg()], [plot_reg()], [plot_reg_combine()]
@@ -40,7 +40,7 @@
 #'     exposures = c("age", "mass"),
 #'     approach = "logit"
 #'   )
-#'   print(model)
+#'  print(model)
 #' }
 #'
 #' @importFrom broom tidy

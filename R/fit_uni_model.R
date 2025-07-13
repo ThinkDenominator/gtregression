@@ -1,7 +1,14 @@
-#' @param data A `data.frame` with complete obs for outcome and exposures.
+#' Fit Univariate Model (Internal)
+#'
+#' Fits a univariate regression model based on the selected approach.
+#'
+#' @param data A `data.frame` with complete observations for outcome and exposures.
 #' @param outcome A string. Name of the outcome variable.
-#' @param exposures A character vector of predictor (exposure) variable names.
-#' @return A fitted model object (e.g., `glm`, `lm`, or `glm.nb`) or `NULL` .
+#' @param exposure A string. Name of a single predictor (exposure) variable.
+#' @param approach A string specifying the regression approach. One of `"logit"`, `"log-binomial"`, `"poisson"`, `"linear"`, or `"robpoisson"`.
+#'
+#' @return A fitted model object (`glm`, `lm`, or `riskratio`) or `NULL` if fitting fails.
+#' @keywords internal
 
 
 .fit_uni_model <- function(data, outcome, exposure, approach) {

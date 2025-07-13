@@ -64,7 +64,7 @@ check_convergence <- function(data,
                               approach = "logit",
                               multivariate = FALSE) {
 
-  .validate_approach(approach, context = "uni_reg")
+  .validate_approach(approach, context = "check_convergence")
 
   .validate_outcome_by_approach(data[[outcome]], approach)
 
@@ -135,7 +135,7 @@ check_convergence <- function(data,
                    Max.prob. = max_prob)
       },
       error = function(e) {
-        warning(glue::glue("{approach}: Model fitting failed — {e$message}"))
+        warning("Model fitting failed for the selected approach")
         data.frame(Exposure = NA,
                    Model = approach,
                    Converged = FALSE,

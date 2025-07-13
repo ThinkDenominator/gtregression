@@ -37,8 +37,8 @@ or Beta coefficients.
 
 \describe{
   \item{\code{$models}}{List of fitted model objects.}
-  \item{\code{$model_summaries}}
-  {A tibble of tidy regression summaries for each model.}
+  \item{\code{$model_summaries}}{A tibble of tidy regression
+  summaries for each model.}
 }
 }
 
@@ -52,7 +52,7 @@ if (requireNamespace("mlbench", quietly = TRUE)) {
     exposures = c("age", "mass"),
     approach = "logit"
   )
-  print(model)
+ print(model)
 }
 
 }

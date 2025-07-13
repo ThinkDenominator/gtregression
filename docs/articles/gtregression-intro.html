@@ -96,7 +96,7 @@ object</li>
 maintain transparency while staying focused on enhancing their
 experience.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gtregression/gtregression" class="external-link">gtregression</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://drrubesh.github.io/gtregression">gtregression</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -120,53 +120,71 @@ experience.</p>
 <span>  <span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="univariate-regression">Univariate Regression<a class="anchor" aria-label="anchor" href="#univariate-regression"></a>
+<h2 id="univariate-and-multivariable-regression">Univariate and Multivariable Regression<a class="anchor" aria-label="anchor" href="#univariate-and-multivariable-regression"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">uni_tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uni_reg.html">uni_reg</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">pima_data</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bmi"</span>, <span class="st">"age_cat"</span><span class="op">)</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"robpoisson"</span></span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">uni_tbl</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="multivariable-regression">Multivariable Regression<a class="anchor" aria-label="anchor" href="#multivariable-regression"></a>
-</h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">multi_tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_reg.html">multi_reg</a></span><span class="op">(</span></span>
+<span><span class="va">uni_tbl</span></span>
+<span></span>
+<span><span class="va">multi_tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_reg.html">multi_reg</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">pima_data</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bmi"</span>, <span class="st">"age_cat"</span><span class="op">)</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"robpoisson"</span></span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">multi_tbl</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="visualizing-the-results">Visualizing the Results<a class="anchor" aria-label="anchor" href="#visualizing-the-results"></a>
+<h2 id="stratified-regression">Stratified Regression<a class="anchor" aria-label="anchor" href="#stratified-regression"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_reg_combine.html">plot_reg_combine</a></span><span class="op">(</span></span>
-<span>  tbl_uni <span class="op">=</span> <span class="va">uni_tbl</span>,</span>
-<span>  tbl_multi <span class="op">=</span> <span class="va">multi_tbl</span>,</span>
-<span>  log_x <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  title_uni <span class="op">=</span> <span class="st">"Unadjusted"</span>,</span>
-<span>  title_multi <span class="op">=</span> <span class="st">"Adjusted"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">stratified_uni</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stratified_uni_reg.html">stratified_uni_reg</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">pima_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>,</span>
+<span>  stratifier <span class="op">=</span> <span class="st">"age_cat"</span>,</span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">stratified_uni</span></span>
+<span></span>
+<span><span class="va">stratified_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stratified_multi_reg.html">stratified_multi_reg</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">pima_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bmi"</span><span class="op">)</span>,</span>
+<span>  stratifier <span class="op">=</span> <span class="st">"age_cat"</span>,</span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">stratified_multi</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="identifying-confounders">Identifying Confounders<a class="anchor" aria-label="anchor" href="#identifying-confounders"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/identify_confounder.html">identify_confounder</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">pima_data</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
 <span>  exposure <span class="op">=</span> <span class="st">"bmi"</span>,</span>
-<span>  potential_confounder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age_cat"</span><span class="op">)</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"robpoisson"</span></span>
+<span>  potential_confounder <span class="op">=</span> <span class="st">"age_cat"</span>,</span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="model-diagnostics">Model Diagnostics<a class="anchor" aria-label="anchor" href="#model-diagnostics"></a>
+</h2>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">pima_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bmi"</span>, <span class="st">"age_cat"</span><span class="op">)</span>,</span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -177,11 +195,51 @@ experience.</p>
 <span>  data <span class="op">=</span> <span class="va">pima_data</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bmi"</span>, <span class="st">"age_cat"</span><span class="op">)</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"robpoisson"</span>,</span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
 <span>  direction <span class="op">=</span> <span class="st">"forward"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">model_selection</span><span class="op">$</span><span class="va">results_table</span></span></code></pre></div>
+<span><span class="va">model_selection</span><span class="op">$</span><span class="va">results_table</span></span>
+<span><span class="va">model_selection</span><span class="op">$</span><span class="va">best_model</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="interaction-assessment">Interaction Assessment<a class="anchor" aria-label="anchor" href="#interaction-assessment"></a>
+</h2>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/interaction_models.html">interaction_models</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">pima_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="st">"bmi"</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="st">"age_cat"</span>,</span>
+<span>  effect_modifier <span class="op">=</span> <span class="st">"glucose_cat"</span>,</span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
+<span>  test <span class="op">=</span> <span class="st">"LRT"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="visualizing-results">Visualizing Results<a class="anchor" aria-label="anchor" href="#visualizing-results"></a>
+</h2>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_reg.html">plot_reg</a></span><span class="op">(</span><span class="va">uni_tbl</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plot_reg.html">plot_reg</a></span><span class="op">(</span><span class="va">multi_tbl</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plot_reg_combine.html">plot_reg_combine</a></span><span class="op">(</span></span>
+<span>  tbl_uni <span class="op">=</span> <span class="va">uni_tbl</span>,</span>
+<span>  tbl_multi <span class="op">=</span> <span class="va">multi_tbl</span>,</span>
+<span>  title_uni <span class="op">=</span> <span class="st">"Unadjusted"</span>,</span>
+<span>  title_multi <span class="op">=</span> <span class="st">"Adjusted"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="saving-outputs">Saving Outputs<a class="anchor" aria-label="anchor" href="#saving-outputs"></a>
+</h2>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/save_table.html">save_table</a></span><span class="op">(</span><span class="va">multi_tbl</span>, file <span class="op">=</span> <span class="st">"regression_table.html"</span><span class="op">)</span>   </span>
+<span></span>
+<span><span class="fu"><a href="../reference/save_docx.html">save_docx</a></span><span class="op">(</span><span class="va">multi_tbl</span>, file <span class="op">=</span> <span class="st">"regression_table.docx"</span><span class="op">)</span>   </span>
+<span></span>
+<span><span class="fu"><a href="../reference/save_plot.html">save_plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/plot_reg.html">plot_reg</a></span><span class="op">(</span><span class="va">multi_tbl</span><span class="op">)</span>, file <span class="op">=</span> <span class="st">"regression_plot.png"</span><span class="op">)</span>    </span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>

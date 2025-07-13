@@ -1,7 +1,14 @@
-#' @param data A `data.frame` with complete obs for outcome and exposures.
+#' Fit Multivariable Regression Model (Internal)
+#'
+#' Fits a regression model based on the selected approach and multiple exposures.
+#'
+#' @param data A `data.frame` with complete observations for outcome and exposures.
 #' @param outcome A string. Name of the outcome variable.
 #' @param exposures A character vector of predictor (exposure) variable names.
-#' @return A fitted model object (e.g., `glm`, `lm`, or `glm.nb`) or `NULL`
+#' @param approach A string specifying the regression approach. One of `"logit"`, `"log-binomial"`, `"poisson"`, `"linear"`, or `"robpoisson"`.
+#'
+#' @return A fitted model object (`glm`, `lm`, or `riskratio`) or `NULL` if fitting fails.
+#' @keywords internal
 
 .fit_multi_model <- function(data, outcome, exposures, approach) {
   formula_str <- paste(outcome, "~", paste(exposures, collapse = " + "))

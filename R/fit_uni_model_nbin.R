@@ -1,7 +1,13 @@
-#' @param data A `data.frame` with complete obs for outcome and exposures.
-#' @param outcome A string. Name of the outcome variable.
-#' @param exposures A character vector of predictor (exposure) variable names.
-#' @return A fitted model object (e.g., `glm`, `lm`, or `glm.nb`) or `NULL`
+#' Fit Univariate Negative Binomial Regression Model (Internal)
+#'
+#' Fits a univariate negative binomial regression model using `glm.nb()` for a count outcome and single predictor.
+#'
+#' @param data A `data.frame` with complete observations for outcome and exposures.
+#' @param outcome A string. Name of the count outcome variable.
+#' @param exposure A single predictor variable name.
+#'
+#' @return A fitted model object (of class `negbin`) or `NULL` if model fitting fails or data is insufficient.
+#' @keywords internal
 
 .fit_uni_model_nbin <- function(data, outcome, exposure) {
   formula <- as.formula(paste(outcome, "~", exposure))

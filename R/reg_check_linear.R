@@ -1,5 +1,26 @@
+#' Linear Regression Diagnostic Checks (Internal)
+#' similar to reg check in stata
+#' Performs diagnostic tests for linear regression models:
+#' - Breusch-Pagan test for heteroskedasticity
+#' - Shapiro-Wilk test for normality of residuals
+#' - RESET test for model specification
+#' - Cook's Distance for influential points
+#'
+#' @param model A fitted linear model (`lm` object).
+#' @param exposure Character string giving the name of the exposure variable (for labeling).
+#'
+#' @return A data frame with one row per diagnostic test, including:
+#' \describe{
+#'   \item{Exposure}{Name of the exposure variable.}
+#'   \item{Test}{Diagnostic test name.}
+#'   \item{Statistic}{Test statistic or summary (e.g., p-values).}
+#'   \item{Interpretation}{Plain-language result interpretation.}
+#' }
+#'
+#' @keywords internal
+
+
 .reg_check_linear <- function(model, exposure) {
-  lmtest <- getNamespace("lmtest")
   bp <- lmtest::bptest(model)
   sw <- shapiro.test(residuals(model))
   reset <- lmtest::resettest(model, power = 2:3, type = "fitted")
