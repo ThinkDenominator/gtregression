@@ -18,7 +18,8 @@ multi_reg(data, outcome, exposures, approach = "logit")
 - `"log-binomial"` for log-binomial regression (RR),
 - `"poisson"` for Poisson regression (IRR),
 - `"robpoisson"` for robust Poisson regression (RR),
-- `"linear"` for linear regression (Beta coefficients).}
+- `"linear"` for linear regression (Beta coefficients),
+- `"negbin"` for negative binomial regression (IRR).}
 }
 \value{
 An object of class `multi_reg`, extending

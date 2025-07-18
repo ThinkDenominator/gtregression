@@ -10,6 +10,7 @@
   switch(approach,
     "logit" = "**OR**",
     "poisson" = "**IRR**",
+    "negbin" = "**IRR**",
     "linear" = "**Beta**",
     "**RR**"
   )
@@ -28,6 +29,7 @@
   switch(approach,
     "logit" = "**Adjusted OR**",
     "poisson" = "**Adjusted IRR**",
+    "negbin" = "**Adjusted IRR**",
     "linear" = "**Adjusted Beta**",
     "**Adjusted RR**"
   )
@@ -48,6 +50,7 @@
     "log-binomial" = "RR = Relative Risk",
     "robpoisson" = "RR = Relative Risk",
     "poisson" = "IRR = Incidence Rate Ratio",
+    "negbin" = "IRR = Incidence Rate Ratio",
     "linear" = "Beta = Linear Regression Coefficient, CI = Confidence Interval",
     "RR = Relative Risk"
   )
@@ -69,6 +72,7 @@
     "logit" = "OR = Odds Ratio",
     "robpoisson" = "IRR = Incidence Rate Ratio",
     "poisson" = "IRR = Incidence Rate Ratio",
+    "negbin" = "IRR = Incidence Rate Ratio",
     "linear" = "CI = Confidence Interval",
     ""
   )

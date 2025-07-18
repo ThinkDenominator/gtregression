@@ -2,23 +2,24 @@
 % Please edit documentation in R/fit_uni_model.R
 \name{.fit_uni_model}
 \alias{.fit_uni_model}
-\title{Fit Univariate Model (Internal)}
+\title{Fit Regression Model with One or More Predictors (Internal)}
 \usage{
-.fit_uni_model(data, outcome, exposure, approach)
+.fit_uni_model(data, outcome, exposures, approach)
 }
 \arguments{
 \item{data}{A `data.frame` with complete observations for outcome and exposures.}
 
 \item{outcome}{A string. Name of the outcome variable.}
 
-\item{exposure}{A string. Name of a single predictor (exposure) variable.}
+\item{exposures}{A string or character vector of predictor(s).}
 
-\item{approach}{A string specifying the regression approach. One of `"logit"`, `"log-binomial"`, `"poisson"`, `"linear"`, or `"robpoisson"`.}
+\item{approach}{A string specifying the regression approach. One of
+`"logit"`, `"log-binomial"`, `"poisson"`, `"linear"`, `"robpoisson"`, or `"negbin"`.}
 }
 \value{
-A fitted model object (`glm`, `lm`, or `riskratio`) or `NULL` if fitting fails.
+A fitted model object (`glm`, `lm`, `riskratio`, or `negbin`) or `NULL` if fitting fails.
 }
 \description{
-Fits a univariate regression model based on the selected approach.
+Fits a regression model based on the selected approach. Can handle a single exposure or a vector of exposures.
 }
 \keyword{internal}

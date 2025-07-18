@@ -10,7 +10,7 @@
 #' @param exposures A vector of predictor variables.
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
-#'   `"robpoisson"` (RR), `"linear"` (Beta coefficients)
+#'   `"robpoisson"` (RR), `"linear"` (Beta coefficients), `"negbin"` (IRR)
 #' @importFrom broom tidy
 #' @details This function requires the following packages:
 #' `dplyr`, `purrr`, `gtsummary`, `risks`.
