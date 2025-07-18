@@ -11,8 +11,8 @@
 #' @param stratifier A character string specifying the stratifying variable.
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (Adjusted Odds Ratios), `"log-binomial"` (Adjusted Risk Ratios),
-#'   `"poisson"` (Adjusted IRRs), `"robpoisson"` (Robust RRs),
-#'   or `"linear"` (Beta coefficients).
+#'   `"poisson"` (Adjusted IRRs), `"robpoisson"` (Adjusted RRs),
+#'   or `"linear"` (Beta coefficients), `"negbin"` (Adjusted IRRs).
 #'
 #' @return An object of class `stratified_multi_reg`, which includes:
 #' - `table`: A `gtsummary::tbl_stack` object of regression tables by stratum,

@@ -22,7 +22,7 @@ stratified_uni_reg(data, outcome, exposures, stratifier, approach = "logit")
 \item{approach}{Modeling approach to use. One of:
 `"logit"` (Odds Ratios), `"log-binomial"` (Risk Ratios),
 `"poisson"` (Incidence Rate Ratios), `"robpoisson"` (Robust RR),
- `"linear"` (Beta coefficients).}
+ `"linear"` (Beta coefficients), `"negbin"` (Incidence Rate Ratios),.}
 }
 \value{
 An object of class `stratified_uni_reg`, which includes:

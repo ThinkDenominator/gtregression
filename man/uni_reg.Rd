@@ -15,7 +15,7 @@ uni_reg(data, outcome, exposures, approach = "logit")
 
 \item{approach}{Modeling approach to use. One of:
 `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
-`"robpoisson"` (RR), `"linear"` (Beta coefficients)}
+`"robpoisson"` (RR), `"linear"` (Beta coefficients), `"negbin"` (IRR)}
 }
 \value{
 A list of class `uni_reg` and `gtsummary::tbl_stack`, including:

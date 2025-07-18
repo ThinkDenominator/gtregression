@@ -2,23 +2,25 @@
 % Please edit documentation in R/fit_multi_model.R
 \name{.fit_multi_model}
 \alias{.fit_multi_model}
-\title{Fit Multivariable Regression Model (Internal)}
+\title{Fit multivariate Regression Model (Internal)}
 \usage{
 .fit_multi_model(data, outcome, exposures, approach)
 }
 \arguments{
-\item{data}{A `data.frame` with complete observations for outcome and exposures.}
+\item{data}{A `data.frame` with outcome and exposures.}
 
 \item{outcome}{A string. Name of the outcome variable.}
 
-\item{exposures}{A character vector of predictor (exposure) variable names.}
+\item{exposures}{A string or character vector of predictor(s).}
 
-\item{approach}{A string specifying the regression approach. One of `"logit"`, `"log-binomial"`, `"poisson"`, `"linear"`, or `"robpoisson"`.}
+\item{approach}{A string specifying the regression approach. One of
+`"logit"`, `"log-binomial"`, `"poisson"`, `"linear"`, `"robpoisson"`,
+or `"negbin"`.}
 }
 \value{
-A fitted model object (`glm`, `lm`, or `riskratio`) or `NULL` if fitting fails.
+A fitted model object (`glm`, `lm`, `riskratio`, or `negbin`) or `NULL` if fitting fails.
 }
 \description{
-Fits a regression model based on the selected approach and multiple exposures.
+Fits a regression model based on the selected approach.
 }
 \keyword{internal}

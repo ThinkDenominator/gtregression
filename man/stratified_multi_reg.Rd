@@ -17,8 +17,8 @@ stratified_multi_reg(data, outcome, exposures, stratifier, approach = "logit")
 
 \item{approach}{Modeling approach to use. One of:
 `"logit"` (Adjusted Odds Ratios), `"log-binomial"` (Adjusted Risk Ratios),
-`"poisson"` (Adjusted IRRs), `"robpoisson"` (Robust RRs),
-or `"linear"` (Beta coefficients).}
+`"poisson"` (Adjusted IRRs), `"robpoisson"` (Adjusted RRs),
+or `"linear"` (Beta coefficients), `"negbin"` (Adjusted IRRs).}
 }
 \value{
 An object of class `stratified_multi_reg`, which includes:

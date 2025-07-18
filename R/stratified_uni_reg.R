@@ -13,7 +13,7 @@
 #' @param approach Modeling approach to use. One of:
 #'   `"logit"` (Odds Ratios), `"log-binomial"` (Risk Ratios),
 #'   `"poisson"` (Incidence Rate Ratios), `"robpoisson"` (Robust RR),
-#'    `"linear"` (Beta coefficients).
+#'    `"linear"` (Beta coefficients), `"negbin"` (Incidence Rate Ratios),.
 #'
 #' @return An object of class `stratified_uni_reg`, which includes:
 #' - `table`: A `gtsummary::tbl_stack` object with stratified results,
@@ -94,7 +94,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
         )
       },
       error = function(e) {
-        warning("Skipping stratum ", lev, ": ", e$message)
+        warning("Skipping stratum ", lev, ": ", e$message, call. = FALSE)
         NULL
       }
     )
