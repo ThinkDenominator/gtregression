@@ -57,7 +57,8 @@ uni_reg <- function(data,
 
   # Stop if no models succeeded
   if (length(model_list) == 0)
-    stop("All models failed. Please check your data or exposures.")
+    stop("All models failed. Please check your data or exposures.",
+         call. = FALSE)
 
   # Create a list of formatted gtsummary tables (one per exposure)
   tbl_list <- Map(function(fit, var) {

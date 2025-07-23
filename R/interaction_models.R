@@ -66,7 +66,7 @@ interaction_models <- function(data, outcome, exposure, covariates = NULL,
       "robpoisson" = glm(formula, data = data, family = poisson(link = "log")),
       "negbin" = MASS::glm.nb(formula, data = data),
       "linear" = lm(formula, data = data),
-      stop("Unsupported regression approach.")
+      stop("Unsupported regression approach.", call. = FALSE)
     )
   }
 
@@ -74,7 +74,7 @@ interaction_models <- function(data, outcome, exposure, covariates = NULL,
   model2 <- tryCatch(fit_model(int_formula), error = function(e) NULL)
 
   if (is.null(model1) || is.null(model2))
-    stop("Model fitting failed for one or both models.")
+    stop("Model fitting failed for one or both models.", call. = FALSE)
 
   if (test == "LRT") {
     if (approach == "negbin") {

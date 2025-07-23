@@ -66,7 +66,7 @@ multi_reg <- function(data,
   fit_model <- .fit_multi_model(data, outcome, exposures, approach)
 
   # Stop if no models succeeded
-  if (is.null(fit_model)) stop("Model fitting failed.")
+  if (is.null(fit_model)) stop("Model fitting failed.", call. = FALSE)
 
   # Create a list of models
   model_list <- list(fit_model)

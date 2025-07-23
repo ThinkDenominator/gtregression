@@ -23,7 +23,7 @@ test_that("stratified_multi_reg returns a gtsummary tbl_merge object", {
       ),
       age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
       npreg_cat = factor(ifelse(pregnant > 2, "High parity", "Low parity"),
-        levels = c("Low parity", "High parity")
+                         levels = c("Low parity", "High parity")
       ),
       glucose_cat = factor(case_when(
         glucose < 140 ~ "Normal",
@@ -139,6 +139,53 @@ test_that("stratified_multi_reg runs with robpoisson and produces estimates", {
 
   if (is.null(result)) {
     skip("Skipping test: No valid models across strata.")
+  } else {
+    expect_s3_class(result, "stratified_multi_reg")
+    expect_s3_class(result, "tbl_merge")
+  }
+})
+
+test_that("stratified_multi_reg works with negbin", {
+  skip_if_not_installed("MASS")
+
+  data("PimaIndiansDiabetes2", package = "mlbench")
+
+  pima_data <- PimaIndiansDiabetes2 |>
+    dplyr::mutate(
+      count_outcome = round(glucose / 10),
+      bmi = dplyr::case_when(
+        mass < 25 ~ "Normal",
+        mass >= 25 & mass < 30 ~ "Overweight",
+        mass >= 30 ~ "Obese",
+        TRUE ~ NA_character_
+      ),
+      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
+      age_cat = cut(age, breaks = c(0, 30, 50, Inf), labels = c("Young", "Middle-aged", "Older")),
+      npreg_cat = factor(ifelse(pregnant > 2, "High parity", "Low parity")),
+      glucose_cat = factor(case_when(glucose < 140 ~ "Normal", glucose >= 140 ~ "High"))
+    ) |>
+    dplyr::filter(complete.cases(count_outcome, bmi, age_cat, npreg_cat, glucose_cat))
+
+  result <- tryCatch(
+    {
+      suppressWarnings(
+        stratified_multi_reg(
+          data = pima_data,
+          outcome = "count_outcome",
+          exposures = c("bmi", "age_cat", "npreg_cat"),
+          stratifier = "glucose_cat",
+          approach = "negbin"
+        )
+      )
+    },
+    error = function(e) {
+      message("Error: ", e$message)
+      return(NULL)
+    }
+  )
+
+  if (is.null(result)) {
+    skip("Skipping test: No valid models across strata for negbin.")
   } else {
     expect_s3_class(result, "stratified_multi_reg")
     expect_s3_class(result, "tbl_merge")

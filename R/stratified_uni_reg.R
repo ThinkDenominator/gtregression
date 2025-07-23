@@ -63,7 +63,8 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   .validate_uni_inputs(data, outcome, exposures, approach)
 
   # check stratifier presence
-  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.")
+  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.",
+                                         call. = FALSE)
 
   # Inform users as the process is time consuming
   message("Running stratified univariate regression by: ", stratifier)

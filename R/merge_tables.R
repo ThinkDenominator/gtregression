@@ -24,7 +24,7 @@ merge_tables <- function(..., spanners = NULL) {
   tbls <- list(...)
 
   if (length(tbls) < 2) {
-    stop("At least two gtsummary tables are required to merge.")
+    stop("At least two gtsummary tables are required to merge.", call. = FALSE)
   }
 
   # Auto-generate spanners if not provided
@@ -34,13 +34,15 @@ merge_tables <- function(..., spanners = NULL) {
   }
 
   if (length(spanners) != length(tbls)) {
-    stop("The number of `spanners` must match the number of tables provided.")
+    stop("The number of `spanners` must match the number of tables provided.",
+         call. = FALSE)
   }
 
   # Validate all are gtsummary-compatible
   are_valid <- vapply(tbls, inherits, logical(1), what = "gtsummary")
   if (!all(are_valid)) {
-    stop("All inputs must be gtsummary table objects (e.g., tbl_summary, tbl_stack, tbl_regression).")
+    stop("All inputs must be gtsummary table objects.",
+         "(e.g., tbl_summary, tbl_stack, tbl_regression).", call. = FALSE)
   }
 
   # Merge with spanners

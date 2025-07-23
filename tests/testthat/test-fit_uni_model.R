@@ -40,6 +40,13 @@ test_that(".fit_uni_model returns correct model class (PimaIndiansDiabetes2)", {
   m5 <- .fit_uni_model(df, outcome = "diabetes", exposure = "age_cat", approach = "robpoisson")
   expect_true(any(class(m5) %in% c("riskratio", "risks")))
 
+  # negbin
+
+  m6 <- .fit_uni_model(df, outcome = "glucose", exposures = "age_cat", approach = "negbin")
+  expect_s3_class(m6, "negbin")
+  expect_s3_class(m6, "glm")
+
+
 })
 
 test_that(".fit_uni_model handles model fitting failure gracefully", {

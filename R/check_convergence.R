@@ -141,7 +141,7 @@ check_convergence <- function(data,
                    Max.prob. = max_prob)
       },
       error = function(e) {
-        warning("Model fitting failed for the selected approach")
+        warning("Model fitting failed for the selected approach", call. = FALSE)
         data.frame(Exposure = NA,
                    Model = approach,
                    Converged = FALSE,

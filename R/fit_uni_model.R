@@ -36,7 +36,8 @@
                   stop(
                     paste0("Invalid approach: '", approach,
                            "'. Choose from: logit, log-binomial, poisson, ",
-                           "robpoisson, linear, negbin.")
+                           "robpoisson, linear, negbin."),
+                    call. = FALSE
                   )
     )
     return(fit)

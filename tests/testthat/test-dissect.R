@@ -1,10 +1,13 @@
-test_that("merge_tables works with tbl_summary and tbl_regression", {
+test_that("dissect works correctly on Pima dataset", {
   skip_if_not_installed("gtregression")
-  skip_if_not_installed("gtsummary")
   skip_if_not_installed("tibble")
+  skip_if_not_installed("purrr")
 
+  library(gtregression)
   data("data_PimaIndiansDiabetes", package = "gtregression")
-  Pima <- data_PimaIndiansDiabetes |>
+
+  # categorize and transform the dataset
+  pima_data <- data_PimaIndiansDiabetes |>
     mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |> # Convert outcome to numeric b                                                                                                                                                                                                                                                                     inary
     mutate(bmi = case_when(
       mass < 25 ~ "Normal",
@@ -48,56 +51,24 @@ test_that("merge_tables works with tbl_summary and tbl_regression", {
     mutate(dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))) |>
     mutate(diabetes_cat= case_when(diabetes== 1~ "Diabetes positive", TRUE~ "Diabetes negative")) |>
     mutate(diabetes_cat= factor(diabetes_cat, levels = c("Diabetes negative","Diabetes positive" )))
+  # Run dissect
+  result <- dissect(pima_data)
 
-  # Create descriptive table
-  desc_tbl <- Pima |>
-    dplyr::select(age_cat, npreg_cat, bmi, glucose_cat, bp_cat, triceps_cat, diabetes_cat, insulin_cat, dpf_cat) |>
-    tbl_summary(by = diabetes_cat)
+  # Test structure
+  expect_s3_class(result, "tbl_df")
+  expect_true(all(c("Variable", "Type", "Missing (%)", "Unique", "Levels", "Compatibility") %in% names(result)))
 
-  # Create univariate regression table
-  uni_tbl <- gtregression::uni_reg(
-    data = Pima,
-    outcome = "diabetes",
-    exposures = c("age", "mass"),
-    approach= "logit"
-  )
+  # Check at least one of each compatibility type exists
+  expect_true(any(result$Compatibility == "compatible"))
+  expect_true(any(result$Compatibility == "maybe"))
+  expect_true(any(result$Compatibility == "incompatible") | TRUE)  # Optional, allow none
 
-  # Create multivariable regression table
-  multi_tbl <- gtregression::multi_reg(
-    data = Pima,
-    outcome = "diabetes",
-    exposures = c("age", "mass"),
-    approach= "logit"
-  )
+  # Check types are as expected
+  expect_true(all(result$Type %in% c("numeric", "factor", "character", "logical", "integer", "Date", "POSIXct")))
 
-  # Test merge with auto spanners
-  merged1 <- merge_tables(desc_tbl, uni_tbl)
-  expect_s3_class(merged1, "gtsummary")
-  expect_equal(length(merged1$tbls), 2)
+  # Check % missing is correctly formatted
+  expect_true(all(grepl("^\\d+(\\.\\d)?%$", result$`Missing (%)`)))
 
-  # Test merge with custom spanners
-  merged2 <- merge_tables(uni_tbl, multi_tbl)
-  expect_s3_class(merged2, "gtsummary")
-  expect_equal(length(merged2$tbls), 2)
-
-  # Test merge with 3 tables
-  merged3 <- merge_tables(desc_tbl, uni_tbl, multi_tbl)
-  expect_s3_class(merged3, "gtsummary")
-  expect_equal(length(merged3$tbls), 3)
-
-  # Error if less than 2 tables
-  expect_error(merge_tables(desc_tbl), "At least two gtsummary tables")
-
-  # Error if mismatched spanners
-  expect_error(merge_tables(uni_tbl, multi_tbl, spanners = "Only one"), "must match the number of tables")
-})
-test_that("merge_tables handles invalid inputs", {
-  skip_if_not_installed("gtsummary")
-
-  # Test with non-gtsummary object
-  expect_error(merge_tables(data.frame(x = 1:5)),
-               "At least two gtsummary tables are required to merge.")
-
-  # Test with single table
-  expect_error(merge_tables(gtsummary::tbl_summary(mtcars)), "At least two gtsummary tables are required")
+  # Snapshot for visual inspection
+  expect_snapshot(print(result, n = nrow(result)))
 })

@@ -118,6 +118,44 @@ test_that("stratified_uni_reg works with robpoisson", {
   expect_s3_class(result, "tbl_merge")
 })
 
+test_that("stratified_uni_reg works with negbin", {
+  skip_if_not_installed("MASS")
+
+  data("PimaIndiansDiabetes2", package = "mlbench")
+
+  pima_data <- PimaIndiansDiabetes2 |>
+    dplyr::mutate(
+      age_cat = dplyr::case_when(
+        age < 30 ~ "Young",
+        age >= 30 & age < 50 ~ "Middle-aged",
+        age >= 50 ~ "Older"
+      ),
+      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
+      bmi_cat = dplyr::case_when(
+        mass < 25 ~ "Normal",
+        mass >= 25 & mass < 30 ~ "Overweight",
+        mass >= 30 ~ "Obese"
+      ),
+      bmi_cat = factor(bmi_cat, levels = c("Normal", "Overweight", "Obese")),
+      glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal"))
+    ) |>
+    dplyr::filter(complete.cases(age_cat, bmi_cat, glucose_cat))
+
+  result <- suppressWarnings(
+    stratified_uni_reg(
+      data = pima_data,
+      outcome = "glucose",
+      exposures = c("bmi_cat"),
+      stratifier = "age_cat",
+      approach = "negbin"
+    )
+  )
+
+  expect_s3_class(result, "tbl_merge")
+  expect_true("stratified_uni_reg" %in% class(result))
+})
+
+
 
 test_that("stratified_uni_reg errors when no valid strata exist", {
   data("PimaIndiansDiabetes2", package = "mlbench")

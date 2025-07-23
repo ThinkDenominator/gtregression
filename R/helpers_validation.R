@@ -90,7 +90,8 @@
       error_msgs,
       paste0("Exposure with all missing values: ",
              paste(vars_all_na, collapse = ", "),
-             "Please fix them to proceed." )
+             "Please fix them to proceed." ),
+      call. = FALSE
     )
   }
 
@@ -99,7 +100,8 @@
       error_msgs,
       paste0("Exposure with <2 levels: ",
              paste(vars_invalid_cat, collapse = ", "),
-             "Please fix them to proceed.")
+             "Please fix them to proceed."),
+      call. = FALSE
     )
   }
 
@@ -108,7 +110,8 @@
       error_msgs,
       paste0("Exposure with no variation: ",
              paste(vars_invalid_num, collapse = ", "),
-             "Please fix them to proceed.")
+             "Please fix them to proceed."),
+      call. = FALSE
     )
   }
 
@@ -117,7 +120,8 @@
       error_msgs,
       paste0("Exposure with unsupported types: ",
              paste(vars_invalid_type, collapse = ", "),
-             "Please fix them to proceed.")
+             "Please fix them to proceed."),
+      call. = FALSE
     )
   }
 
@@ -134,7 +138,8 @@
 .validate_outcome_by_approach <- function(outcome, approach) {
   # Missing outcome values in cols
   if (all(is.na(outcome))) {
-    stop("All values in the outcome variable are missing.")
+    stop("All values in the outcome variable are missing.",
+         call. = FALSE)
   }
   # Conditional check binary outcomes
   is_binary <- function(outcome) {
@@ -168,16 +173,16 @@
   if (approach %in% c("logit", "log-binomial", "robpoisson") &&
       !is_binary(outcome)) {
     stop("This approach requires either a factor variable ",
-         "or numeric variable coded as 0 and 1 (or 1 and 2).")
+         "or numeric variable coded as 0 and 1 (or 1 and 2).", call. = FALSE)
   }
   if (approach == "poisson" && !is_count(outcome)) {
-    stop("Poisson regression requires a count outcome.")
+    stop("Poisson regression requires a count outcome.", call. = FALSE)
   }
   if (approach == "negbin" && !is_count(outcome)) {
-    stop("Negative binomial requires a count outcome.")
+    stop("Negative binomial requires a count outcome.", call. = FALSE)
   }
   if (approach == "linear" && !is_continuous(outcome)) {
-    stop("Linear regression requires a continuous outcome.")
+    stop("Linear regression requires a continuous outcome.", call. = FALSE)
   }
 }
 
@@ -193,11 +198,12 @@
 
   # check variable presence
   if (!outcome %in% names(data))
-    stop("Outcome variable not found in the dataset.")
+    stop("Outcome variable not found in the dataset.", call. = FALSE)
 
   # check variable presence >1
   if (!all(exposures %in% names(data)))
-    stop("One or more exposure variables were not found in the dataset.")
+    stop("One or more exposure variables were not found in the dataset.",
+         call. = FALSE)
 
   # outcome variable validation
   .validate_outcome_by_approach(data[[outcome]], approach)
@@ -218,11 +224,12 @@
 
   # check variable presence
   if (!outcome %in% names(data))
-    stop("Outcome variable not found in the dataset.")
+    stop("Outcome variable not found in the dataset.", call. = FALSE)
 
   # check variable presence >1
   if (!all(exposures %in% names(data)))
-    stop("One or more exposure variables were not found in the dataset.")
+    stop("One or more exposure variables were not found in the dataset.",
+         call. = FALSE)
 
   # outcome variable validation
   .validate_outcome_by_approach(data[[outcome]], approach)
@@ -236,7 +243,7 @@
                                           drop = FALSE])
   # Throw error for null data return
   if (nrow(data_clean) == 0)
-    stop("No complete cases available for analysis.")
+    stop("No complete cases available for analysis.", call. = FALSE)
 
   # validate that each exposure has at least 2 unique values
   insufficient_vars <- exposures[vapply(data_clean[exposures],
@@ -245,7 +252,7 @@
                                         logical(1))]
   if (length(insufficient_vars) > 0) {
     stop("Exposure(s) has less than 2 unique values: ",
-         paste(insufficient_vars, collapse = ", "))
+         paste(insufficient_vars, collapse = ", "), call. = FALSE)
   }
 
   return(data_clean)

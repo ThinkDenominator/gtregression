@@ -1,6 +1,6 @@
 test_that(".validate_approach accepts valid inputs", {
   expect_invisible(.validate_approach("logit", context = "uni_reg"))
-  expect_invisible(.validate_approach("negbin", context = "multi_reg_nbin"))
+  expect_invisible(.validate_approach("negbin", context = "multi_reg"))
 })
 
 test_that(".validate_approach throws error for invalid input", {
@@ -49,11 +49,16 @@ test_that(".validate_uni_inputs checks all validation layers", {
   )
 })
 
-test_that(".validate_nb_multi_inputs rejects insufficient data", {
-  df <- data.frame(y = c(2, 3), x1 = c(1, 1), x2 = c(2, 3))  # x1 has <2 unique values
+test_that(".validate_multi_inputs checks all validation layers", {
+  df <- data.frame(x = c(1, 2), y = c(0, 1), z = c(3, 4))
+  expect_silent(.validate_multi_inputs(df, outcome = "y", exposures = c("x", "z"), approach = "logit"))
 
   expect_error(
-    .validate_nb_multi_inputs(df, outcome = "y", exposures = c("x1", "x2")),
-    regexp = "Exposure(s) has less than 2 unique values: x1", fixed= TRUE
+    .validate_multi_inputs(df, outcome = "missing", exposures = c("x", "z"), approach = "logit"),
+    regexp = "Outcome variable not found in the dataset."
+  )
+  expect_error(
+    .validate_multi_inputs(df, outcome = "y", exposures = c("badvar", "z"), approach = "logit"),
+    regexp = "One or more exposure variables were not found in the dataset"
   )
 })

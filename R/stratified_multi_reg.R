@@ -61,7 +61,8 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   # checks through internal helpers
   .validate_multi_inputs(data, outcome, exposures, approach)
   # check stratifier presence
-  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.")
+  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.",
+                                         call. = FALSE)
 
   # Inform user as it takes more time to complete
   message("Running stratified multivariable regression by: ", stratifier)
@@ -95,7 +96,7 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
         )
       },
       error = function(e) {
-        warning("Skipping stratum ", lev, ": ", e$message)
+        warning("Skipping stratum ", lev, ": ", e$message, call. = FALSE)
         NULL
       }
     )

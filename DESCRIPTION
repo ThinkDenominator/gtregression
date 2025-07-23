@@ -3,11 +3,21 @@ Type: Package
 Title: Tools for Creating Publication-Ready Regression Tables
 Version: 1.0.0
 Authors@R: c(
-    person(given = "Rubeshkumar", family = "Polani", email = "rubesh@thinkdenominator.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-0418-7592")),
-    person(given = "Salin K", family = "Eliyas", email = "salins13@gmail.com", role = "aut", comment = c(ORCID = "0000-0002-8020-5860")),
-    person(given = "Manikandanesan", family = "Sakthivel", email = "nesanmbbs@gmail.com", role = "aut", comment = c(ORCID = "0000-0002-5438-3970")),
-    person(given = "Yuvaraj", family = "Krishnamoorthy", email = "yuvaraj@propulevidence.org", role = "aut", comment = c(ORCID = "0000-0003-4688-510X")),
-    person(given = "Marie Gilbert", family = "Majella", email = "gilbert2691@gmail.com", role = "aut", comment = c(ORCID = "0000-0003-4036-5162"))
+    person(given = "Rubeshkumar", family = "Polani",
+    email = "rubesh@thinkdenominator.com", 
+    role = c("aut", "cre"), comment = c(ORCID = "0000-0002-0418-7592")),
+    person(given = "Salin K", family = "Eliyas", 
+    email = "salins13@gmail.com", role = "aut", 
+    comment = c(ORCID = "0000-0002-8020-5860")),
+    person(given = "Manikandanesan", family = "Sakthivel", 
+    email = "nesanmbbs@gmail.com", role = "aut", 
+    comment = c(ORCID = "0000-0002-5438-3970")),
+    person(given = "Yuvaraj", family = "Krishnamoorthy",
+    email = "yuvaraj@propulevidence.org", role = "aut",
+    comment = c(ORCID = "0000-0003-4688-510X")),
+    person(given = "Marie Gilbert", family = "Majella", 
+    email = "gilbert2691@gmail.com", role = "aut", 
+    comment = c(ORCID = "0000-0003-4036-5162"))
   )
 Description: 
   gtregression enhances the user experience by simplifying complex steps to do regression in R. 

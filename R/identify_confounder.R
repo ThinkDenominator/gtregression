@@ -63,7 +63,7 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
       "linear" = lm(formula, data = data),
       "robpoisson" = risks::riskratio(formula = formula, data = data,
                                       approach = "robpoisson"),
-      stop("Unsupported approach.")
+      stop("Unsupported approach.", call. = FALSE)
     )
   }
   # Extract point estimate for exposure

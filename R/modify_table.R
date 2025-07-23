@@ -57,10 +57,6 @@ modify_table <- function(gt_table,
                          remove_N_obs = FALSE,
                          remove_abbreviations = FALSE,
                          caveat = NULL) {
-  if (!requireNamespace("gtsummary", quietly = TRUE))
-    stop("Package 'gtsummary' is required.")
-  if (!requireNamespace("dplyr", quietly = TRUE))
-    stop("Package 'dplyr' is required.")
 
   tbl <- gt_table
 
@@ -136,11 +132,11 @@ modify_table <- function(gt_table,
       if (length(n_cols) > 0) {
         tbl <- gtsummary::modify_column_hide(tbl, all_of(n_cols))
       } else {
-        warning("No stat_n columns found in tbl_merge object.")
+        warning("No stat_n columns found in tbl_merge object.", call. = FALSE)
       }
     } else {
       warning("`remove_N` is ignored because the table is not a univariate or
-              merged regression table.")
+              merged regression table.", call. = FALSE)
     }
   }
 
@@ -153,7 +149,7 @@ modify_table <- function(gt_table,
       tbl <- gtsummary::remove_source_note(tbl)
     } else {
       warning("`remove_N_obs` is ignored because the table is not multivariable
-              or merged.")
+              or merged.", call. = FALSE)
     }
   }
 

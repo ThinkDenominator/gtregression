@@ -2,50 +2,95 @@
 % Please edit documentation in R/descriptive_table.R
 \name{descriptive_table}
 \alias{descriptive_table}
-\title{Descriptive Summary Table for Study Characteristics (No p-values)}
+\title{Descriptive Summary Table for Study Characteristics (User-Friendly)}
 \usage{
 descriptive_table(
   data,
   exposures,
   by = NULL,
-  statistic = NULL,
-  percent = "column",
+  percent = c("column", "row"),
   digits = 1,
   show_missing = c("ifany", "no"),
-  show_overall = c("no", "last", "first"),
   show_dichotomous = c("all_levels", "single_row"),
+  show_overall = c("no", "first", "last"),
+  statistic = NULL,
   value = NULL
 )
 }
 \arguments{
-\item{data}{A data.frame containing the dataset.}
+\item{data}{A data frame containing your study dataset.}
 
-\item{exposures}{Character vector of variables to summarize.}
+\item{exposures}{A character vector specifying the variable names (columns)
+in `data` that should be included in the summary table. These can be
+categorical or continuous.}
 
-\item{by}{Optional. Character string of grouping variable (like outcome).}
+\item{by}{Optional. A single character string giving the name of a grouping
+variable (e.g., outcome). If supplied, the table will show stratified
+summaries by this variable.}
 
-\item{statistic}{Optional named vector specifying summary type for each variable.
-Acceptable values: "mean", "median", "mode", "count".}
+\item{percent}{Character. Either `"column"` (default) or `"row"`.
+- `"column"` calculates percentages within each group defined by `by`
+  (i.e., denominator = column total).
+- `"row"` calculates percentages across `by` groups (i.e., denominator =
+  row total).
+If `by` is not specified, `"column"` is used and `"row"` is ignored.}
 
-\item{percent}{Character. One of "column" or "row". Default is "column".}
+\item{digits}{Integer. Controls how many decimal places are shown for
+percentages and means. Defaults to 1.}
 
-\item{digits}{Integer. Number of decimal places to use. Default is 1.}
+\item{show_missing}{Character. One of `"ifany"` (default) or `"no"`.
+- `"ifany"` shows missing value counts only when missing values exist.
+- `"no"` hides missing counts entirely.}
 
-\item{show_missing}{Character or logical. Either "ifany" or FALSE.}
+\item{show_dichotomous}{Character. One of `"all_levels"` (default) or
+`"single_row"`.
+- `"all_levels"` displays all levels of binary (dichotomous) variables.
+- `"single_row"` shows only one row (typically "Yes", "Present", or a
+  user-defined level), making the table more compact.}
 
-\item{show_dichotomous}{Character. One of "all_levels" (default) or "single_row".
-Controls whether to display both levels or just one row for dichotomous variables.}
+\item{show_overall}{Character. One of `"no"` (default), `"first"`, or
+`"last"`.
+If `by` is supplied:
+- `"first"` includes a column for overall summaries before the stratified
+  columns.
+- `"last"` includes the overall column at the end.
+- `"no"` disables the overall column.}
 
-\item{value}{Optional. A list of formulas specifying which level to display
-for dichotomous variables when `show_dichotomous = "single_row"`.}
+\item{statistic}{Optional named vector of summary types for specific
+variables.
+For example, use `statistic = c(age = "mean", bmi = "median")` to override
+default summaries. Accepted values: `"mean"`, `"median"`, `"mode"`,
+`"count"`.}
 
-\item{overall}{Character. One of "no", "first", or "last". Default is "no".}
+\item{value}{Optional. A list of formulas specifying which level of a binary
+variable to show when `show_dichotomous = "single_row"`.
+For example, `value = list(sex ~ "Female")` will report only the "Female"
+row.}
 }
 \value{
-A gtsummary object with class 'tbl_summary' and 'descriptive_table'.
+A `gtsummary::tbl_summary` object with additional class
+  `"descriptive_table"`. Can be printed, customized, merged, or exported.
 }
 \description{
-Generates a tidy, publication-ready summary table of study characteristics.
-Supports stratification via `by`, auto-detects summary types, and formats output
-with optional overall column and dichotomous display mode.
+Creates a clean, publication-ready summary table using
+`gtsummary::tbl_summary()`. Designed for beginner analysts, this function
+applies sensible defaults and flexible options to display categorical and
+continuous variables with or without stratification. It supports one-line
+summaries of dichotomous variables, handles missing data gracefully, and
+includes an optional "Overall" column for comparison.
+}
+\examples{
+\dontrun{
+# Basic summary by outcome
+descriptive_table(Pima, exposures = c("age", "mass", "bmi"),
+                  by = "diabetes_cat")
+
+# Compact one-row output for binary vars
+descriptive_table(Pima, exposures = c("smoke", "alcohol"),
+                  show_dichotomous = "single_row")
+
+# Summary without stratification
+descriptive_table(Pima, exposures = c("age", "bmi"))
+}
+
 }

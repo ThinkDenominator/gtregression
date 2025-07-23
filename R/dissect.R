@@ -10,11 +10,11 @@
 #' @export
 #'
 #' @examples
-#' dissect(birthwt)
+#' dissect(data_birthwt)
 dissect <- function(data) {
   if (!is.data.frame(data)) {
     stop("The input to `dissect()` must be a data frame. ",
-         "You provided an object of class: ", class(data)[1])
+         "You provided an object of class: ", class(data)[1], call. = FALSE)
   }
 
 
@@ -45,9 +45,9 @@ dissect <- function(data) {
     } else if (is.numeric(x)) {
       comp <- if (unique_vals > 2) "compatible" else "maybe"
     } else if (is.factor(x)) {
-      comp <- if (unique_vals < 2) "incompatible" else "compatible"
+      comp <- if (unique_vals > 5) "maybe" else "compatible"
     } else if (is.character(x)) {
-      comp <- if (unique_vals <= 10) "maybe" else "incompatible"
+      comp <- if (unique_vals >5) "maybe" else "compatible"
     } else if (inherits(x, "Date")) {
       comp <- "maybe"
     } else if (is.logical(x)) {
@@ -72,8 +72,8 @@ dissect <- function(data) {
 
   cat("\nInterpretation notes:\n",
       "- compatible: ready to use in regression\n",
-      "- maybe: require transformation (e.g., character or numeric → factor)\n",
-      "- incompatible: not usable as-is (e.g., all NA, constant, free text)\n")
+      "- maybe: require transformation to factor or check no of levels\n",
+      "- incompatible: not usable as-is (e.g., all NA, <2 levels)\n")
 
   invisible(result)
 }

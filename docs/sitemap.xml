@@ -15,6 +15,8 @@
 <url><loc>https://drrubesh.github.io/gtregression/reference/data_infertility.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/data_lungcancer.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/data_PimaIndiansDiabetes.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/descriptive_table.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dissect.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/dot-fit_multi_model.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/dot-fit_multi_model_nbin.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/dot-fit_uni_model.html</loc></url>
@@ -25,9 +27,11 @@
 <url><loc>https://drrubesh.github.io/gtregression/reference/dot-get_remove_abbreviation.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/dot-reg_check_linear.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/dot-validate_approach.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/dot-validate_exposures.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/identify_confounder.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/index.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/interaction_models.html</loc></url>
+<url><loc>https://drrubesh.github.io/gtregression/reference/merge_tables.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/modify_table.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/multi_reg.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/multi_reg_nbin.html</loc></url>
@@ -37,11 +41,8 @@
 <url><loc>https://drrubesh.github.io/gtregression/reference/save_plot.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/save_table.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/select_models.html</loc></url>
-<url><loc>https://drrubesh.github.io/gtregression/reference/stratified_multi_nbin.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/stratified_multi_reg.html</loc></url>
-<url><loc>https://drrubesh.github.io/gtregression/reference/stratified_uni_nbin.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/stratified_uni_reg.html</loc></url>
 <url><loc>https://drrubesh.github.io/gtregression/reference/uni_reg.html</loc></url>
-<url><loc>https://drrubesh.github.io/gtregression/reference/uni_reg_nbin.html</loc></url>
 </urlset>
 

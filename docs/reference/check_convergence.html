@@ -68,8 +68,8 @@ depending on the regression approach used.</p>
 
 <dt id="arg-exposures">exposures<a class="anchor" aria-label="anchor" href="#arg-exposures"></a></dt>
 <dd><p>A character vector of predictor variable names.
-If <code>multivariate = FALSE</code>,
-each exposure is assessed separately; otherwise, combined model is evaluated.</p></dd>
+If <code>multivariate = FALSE</code>, each exposure is assessed separately.
+If <code>multivariate = TRUE</code>, exposures are included together.</p></dd>
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
@@ -140,6 +140,7 @@ as actual probabilities.</p>
 <span class="r-in"><span>    multivariate <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Model fitting failed for the selected approach</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               Exposure Model Converged Max.prob.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> multivariable       NA logit     FALSE        NA</span>
 </code></pre></div>

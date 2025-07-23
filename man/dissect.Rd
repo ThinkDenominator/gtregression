@@ -18,5 +18,5 @@ Returns a tidy summary of each variable's structure, missingness, uniqueness,
 and suitability for use in regression models.
 }
 \examples{
-dissect(birthwt)
+dissect(data_birthwt)
 }

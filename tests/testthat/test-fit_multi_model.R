@@ -48,18 +48,25 @@ test_that(".fit_multi_model returns correct model class for each approach", {
   m_rob <- .fit_multi_model(df, outcome = "diabetes", exposures = exposures, approach = "robpoisson")
   expect_s3_class(m_rob, "risks")
   expect_true("robpoisson" %in% class(m_rob))
+
+  # negbin
+  df <- df[complete.cases(df[, c("glucose", exposures)]), ]
+
+  m_negbin <- .fit_multi_model(df, outcome = "glucose",
+                               exposures = exposures, approach = "negbin")
+  expect_s3_class(m_negbin, "glm")
 })
 
 test_that(".fit_multi_model returns NULL and warns on failure", {
-  df <- data.frame(
-    y = c(1, 1, 1),
-    x1 = factor(c("A", "A", "A")),
-    x2 = c(1, 2, 3)
+  df_fail <- data.frame(
+    outcome = c(1, 0, 1, 0),
+    x1 = factor("only", levels = "only"),  # one-level factor
+    x2 = factor("only", levels = "only")
   )
 
-  expect_warning(
-    m_fail <- .fit_multi_model(df, outcome = "y", exposures = c("x1", "x2"), approach = "logit"),
-    regexp = "Model fitting failed"
-  )
-  expect_null(m_fail)
+  expect_warning({
+    model <- .fit_multi_model(df_fail, outcome = "outcome", exposures = c("x1", "x2"), approach = "logit")
+    expect_null(model)
+  }, regexp = "Model failed for")
 })
+

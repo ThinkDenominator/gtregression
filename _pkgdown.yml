@@ -19,21 +19,23 @@ navbar:
     right: [github]
 
 reference:
+  - title: "Descriptive & Compatibility Tools"
+    desc: "Summarise and check data compatibility"
+    contents:
+      - descriptive_table
+      - dissect
+
   - title: "Regression Functions"
     desc: "Fit univariate and multivariable models"
     contents:
       - uni_reg
       - multi_reg
-      - uni_reg_nbin
-      - multi_reg_nbin
 
   - title: "Regression Functions by stratifier"
     desc: "Fit univariate and multivariable models by stratifier"
     contents:
       - stratified_uni_reg
       - stratified_multi_reg
-      - stratified_uni_nbin
-      - stratified_multi_nbin
 
   - title: "Model Selection & Diagnostics"
     desc: "Model selection, collinearity, and convergence tools"
@@ -54,6 +56,7 @@ reference:
       - modify_table
       - save_table
       - save_docx
+      - merge_tables
 
   - title: "Plotting"
     desc: "Forest plots of regression models"

@@ -28,7 +28,7 @@
 check_collinearity <- function(model) {
   # Ensure required package is available
   if (!requireNamespace("car", quietly = TRUE))
-    stop("Package 'car' is required.")
+    stop("Package 'car' is required.", call. = FALSE)
 
   # Define appropriate sources for VIF checking
   valid_sources <- c("uni_reg", "multi_reg", "uni_reg_nbin", "multi_reg_nbin")
@@ -40,16 +40,17 @@ check_collinearity <- function(model) {
   # Validate source and model content
   if (is.null(model_source) || !(model_source %in% valid_sources)) {
     stop("Input must be a fitted model from uni_reg, multi_reg, uni_reg_nbin,
-         or multi_reg_nbin.")
+         or multi_reg_nbin.", call. = FALSE)
   }
   if (is.null(model_list)) {
-    stop("Model list not found in object. Cannot compute VIF.")
+    stop("Model list not found in object. Cannot compute VIF.", call. = FALSE)
   }
 
   # Throw error for uni_reg (univariate)
   if (model_source %in% c("uni_reg", "uni_reg_nbin")) {
     stop("VIF is not applicable for univariate models.
-         Use multi_reg() to check collinearity among predictors.")
+         Use multi_reg() to check collinearity among predictors.",
+         call. = FALSE)
   }
 
   # For multi_reg and multi_reg_nbin
@@ -61,7 +62,8 @@ check_collinearity <- function(model) {
 
   # Ensure at least two predictors
   if (length(attr(terms(fit_model), "term.labels")) < 2) {
-    stop("Model must have at least two predictors to compute VIF.")
+    stop("Model must have at least two predictors to compute VIF.",
+         call. = FALSE)
   }
 
   # Compute VIF using the 'car' package

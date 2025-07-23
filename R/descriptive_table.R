@@ -1,77 +1,138 @@
-#' Descriptive Summary Table for Study Characteristics (No p-values)
+#' Descriptive Summary Table for Study Characteristics (User-Friendly)
 #'
-#' Generates a tidy, publication-ready summary table of study characteristics.
-#' Supports stratification via `by`, auto-detects summary types, and formats output
-#' with optional overall column and dichotomous display mode.
+#' Creates a clean, publication-ready summary table using
+#' `gtsummary::tbl_summary()`. Designed for beginner analysts, this function
+#' applies sensible defaults and flexible options to display categorical and
+#' continuous variables with or without stratification. It supports one-line
+#' summaries of dichotomous variables, handles missing data gracefully, and
+#' includes an optional "Overall" column for comparison.
 #'
-#' @param data A data.frame containing the dataset.
-#' @param exposures Character vector of variables to summarize.
-#' @param by Optional. Character string of grouping variable (like outcome).
-#' @param statistic Optional named vector specifying summary type for each variable.
-#'        Acceptable values: "mean", "median", "mode", "count".
-#' @param percent Character. One of "column" or "row". Default is "column".
-#' @param digits Integer. Number of decimal places to use. Default is 1.
-#' @param show_missing Character or logical. Either "ifany" or FALSE.
-#' @param overall Character. One of "no", "first", or "last". Default is "no".
-#' @param show_dichotomous Character. One of "all_levels" (default) or "single_row".
-#'   Controls whether to display both levels or just one row for dichotomous variables.
-#' @param value Optional. A list of formulas specifying which level to display
-#'   for dichotomous variables when `show_dichotomous = "single_row"`.
+#' @param data A data frame containing your study dataset.
 #'
-#' @return A gtsummary object with class 'tbl_summary' and 'descriptive_table'.
+#' @param exposures A character vector specifying the variable names (columns)
+#'   in `data` that should be included in the summary table. These can be
+#'   categorical or continuous.
+#'
+#' @param by Optional. A single character string giving the name of a grouping
+#'   variable (e.g., outcome). If supplied, the table will show stratified
+#'   summaries by this variable.
+#'
+#' @param percent Character. Either `"column"` (default) or `"row"`.
+#'   - `"column"` calculates percentages within each group defined by `by`
+#'     (i.e., denominator = column total).
+#'   - `"row"` calculates percentages across `by` groups (i.e., denominator =
+#'     row total).
+#'   If `by` is not specified, `"column"` is used and `"row"` is ignored.
+#'
+#' @param digits Integer. Controls how many decimal places are shown for
+#'   percentages and means. Defaults to 1.
+#'
+#' @param show_missing Character. One of `"ifany"` (default) or `"no"`.
+#'   - `"ifany"` shows missing value counts only when missing values exist.
+#'   - `"no"` hides missing counts entirely.
+#'
+#' @param show_dichotomous Character. One of `"all_levels"` (default) or
+#'   `"single_row"`.
+#'   - `"all_levels"` displays all levels of binary (dichotomous) variables.
+#'   - `"single_row"` shows only one row (typically "Yes", "Present", or a
+#'     user-defined level), making the table more compact.
+#'
+#' @param show_overall Character. One of `"no"` (default), `"first"`, or
+#'   `"last"`.
+#'   If `by` is supplied:
+#'   - `"first"` includes a column for overall summaries before the stratified
+#'     columns.
+#'   - `"last"` includes the overall column at the end.
+#'   - `"no"` disables the overall column.
+#'
+#' @param statistic Optional named vector of summary types for specific
+#'   variables.
+#'   For example, use `statistic = c(age = "mean", bmi = "median")` to override
+#'   default summaries. Accepted values: `"mean"`, `"median"`, `"mode"`,
+#'   `"count"`.
+#'
+#' @param value Optional. A list of formulas specifying which level of a binary
+#'   variable to show when `show_dichotomous = "single_row"`.
+#'   For example, `value = list(sex ~ "Female")` will report only the "Female"
+#'   row.
+#'
+#' @return A `gtsummary::tbl_summary` object with additional class
+#'   `"descriptive_table"`. Can be printed, customized, merged, or exported.
+#' @importFrom gtsummary tbl_summary all_continuous all_categorical
+
+#' @examples
+#' \dontrun{
+#' # Basic summary by outcome
+#' descriptive_table(Pima, exposures = c("age", "mass", "bmi"),
+#'                   by = "diabetes_cat")
+#'
+#' # Compact one-row output for binary vars
+#' descriptive_table(Pima, exposures = c("smoke", "alcohol"),
+#'                   show_dichotomous = "single_row")
+#'
+#' # Summary without stratification
+#' descriptive_table(Pima, exposures = c("age", "bmi"))
+#' }
+#'
 #' @export
 
 descriptive_table <- function(data,
                               exposures,
                               by = NULL,
-                              statistic = NULL,
-                              percent = "column",
+                              percent = c("column", "row"),
                               digits = 1,
                               show_missing = c("ifany", "no"),
-                              show_overall = c("no", "last", "first"),
                               show_dichotomous = c("all_levels", "single_row"),
+                              show_overall = c("no", "first", "last"),
+                              statistic = NULL,
                               value = NULL) {
-  # Argument matching
+  # Match arguments
   percent <- match.arg(percent)
-
-  # warning for row percent
-  if (percent == "row" && is.null(by)) {
-    warning(
-      "You are using `percent = 'row'` without specifying a `by` variable.\n",
-      "Row percentages are meaningless in this context — did you mean 'column'?"
-    )
-  }
-  show_overall <- match.arg(show_overall)
-  show_missing <- match.arg(as.character(show_missing), choices = c("ifany", "no"))
+  show_missing <- match.arg(show_missing)
   show_dichotomous <- match.arg(show_dichotomous)
+  show_overall <- match.arg(show_overall)
 
-
+  # Validate inputs
+  stopifnot("exposures must be a character vector" = is.character(exposures))
   data <- as.data.frame(data)
-  stopifnot("exposures must be character vector" = is.character(exposures))
 
-  # Check that all variables are in the dataset
+  # Validate variable presence
   missing_vars <- setdiff(c(exposures, by), names(data))
   if (length(missing_vars) > 0) {
     stop("The following variables are not found in the data: ",
          paste(missing_vars, collapse = ", "), call. = FALSE)
   }
 
+  # Use internal helper to validate exposures
+  .validate_exposures(data, exposures)
+
+  # Warn if using row percentages without grouping
+  if (percent == "row" && is.null(by)) {
+    warning("Row percent are only meaningful when a `by` variable is provided.",
+            "Defaulting to column-wise %.")
+  }
+
   # Auto-detect dichotomous exposures
   binary_exposures <- exposures[
-    purrr::map_lgl(data[exposures], ~ {
-      x <- .x[!is.na(.x)]
-      length(unique(x)) == 2 && (is.factor(x) || is.character(x) || is.numeric(x))
+    purrr::map_lgl(data[exposures], function(x) {
+      x <- x[!is.na(x)]
+      length(unique(x)) == 2 &&
+        (is.factor(x) ||
+         is.character(x) ||
+         is.numeric(x))
     })
   ]
 
-  # Build default type argument
+  # Set display types
   type_arg <- NULL
   if (length(binary_exposures) > 0) {
-    type_val <- if (show_dichotomous == "all_levels") "categorical" else "dichotomous"
-    type_arg <- purrr::map(binary_exposures, ~ rlang::new_formula(as.name(.x), type_val))
+    type_val <- if (show_dichotomous == "all_levels") "categorical"
+    else "dichotomous"
+    type_arg <- purrr::map(binary_exposures,
+                           ~ rlang::new_formula(as.name(.x), type_val))
   }
 
-  # Merge with user-defined statistic overrides
+  # Merge user-defined summary types (e.g., mean vs median)
   if (!is.null(statistic)) {
     user_defined <- purrr::map(names(statistic), ~ {
       rlang::new_formula(
@@ -82,15 +143,16 @@ descriptive_table <- function(data,
     type_arg <- c(type_arg, user_defined)
   }
 
-  # Define statistics
+  # Default statistic display
   statistic_arg <- list(
     all_continuous() ~ "{mean} ({sd})",
     all_categorical() ~ "{n} ({p}%)"
   )
 
-  # Build the summary table
+  # Build base table
   tbl <- gtsummary::tbl_summary(
-    data = data[, c(exposures, by), drop = FALSE],
+    data = data,
+    include = unique(c(exposures, by)),
     by = by,
     type = type_arg,
     value = value,
@@ -103,19 +165,21 @@ descriptive_table <- function(data,
     percent = percent
   )
 
-  # Add overall column if requested
+  # Add overall column if applicable
   if (show_overall != "no" && !is.null(by)) {
     if (percent == "row") {
       tbl <- gtsummary::add_overall(
         tbl,
         last = (show_overall == "last"),
-        statistic = ~ "{n}"
+        statistic = list(all_categorical() ~ "{n}"),
+        digits = ~ 0
       )
     } else {
       tbl <- gtsummary::add_overall(tbl, last = (show_overall == "last"))
     }
   }
 
+  # Tag output
   class(tbl) <- c("descriptive_table", class(tbl))
   attr(tbl, "source") <- "descriptive_table"
   return(tbl)

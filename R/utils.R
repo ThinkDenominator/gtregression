@@ -5,6 +5,8 @@
 #' @importFrom dplyr bind_rows case_when filter mutate
 #' @importFrom tibble tibble
 #' @importFrom broom.helpers tidy_plus_plus tidy_add_reference_rows
+#' @importFrom utils head
+
 # Prevent global variable warnings
 utils::globalVariables(c(
   ".data",

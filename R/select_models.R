@@ -90,7 +90,8 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   } else if (direction == "both") {
     selected_vars <- c()
   } else {
-    stop("Invalid direction: choose from 'forward', 'backward', or 'both'")
+    stop("Invalid direction: choose from 'forward', 'backward', or 'both'",
+         call. = FALSE)
   }
   # Stepwise logic: determine which predictors to add/drop
   # based on the specified direction
