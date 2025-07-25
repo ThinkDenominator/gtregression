@@ -48,38 +48,18 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="gtregression">gtregression<a class="anchor" aria-label="anchor" href="#gtregression"></a>
-</h1></div>
-<p><code>gtregression</code> is an R package that simplifies regression modeling and generates publication-ready tables using the <code>gtsummary</code> ecosystem. It supports a variety of regression approaches with built-in tools for model diagnostics, selection, and confounder identification—all designed to provide beginner and intermediate R users with clean, interpretable output.</p>
-<p>This package was created with the aim of empowering R users in low- and middle-income countries (LMICs) by offering a simpler and more accessible coding experience. We sincerely thank the authors and contributors of foundational R packages such as <code>gtsummary</code>, <code>MASS</code>, <code>RISKS</code>, <code>dplyr</code>, and others—without whom this project would not have been possible.</p>
-<div class="section level2">
-<h2 id="key-functions">Key Functions<a class="anchor" aria-label="anchor" href="#key-functions"></a>
+  <main id="main" class="col-md-9"><div class="section level2">
+<h2 id="function-overview">Function Overview<a class="anchor" aria-label="anchor" href="#function-overview"></a>
 </h2>
+<p>The <code>gtregression</code> package provides regression modeling, diagnostics, plots, and reporting tools designed for usability and accessibility. Here’s a summary of its core functions:</p>
 <div class="section level3">
-<h3 id="descriptive--compatibility-tools">Descriptive &amp; Compatibility Tools<a class="anchor" aria-label="anchor" href="#descriptive--compatibility-tools"></a>
+<h3 id="regression-modeling">Regression Modeling<a class="anchor" aria-label="anchor" href="#regression-modeling"></a>
 </h3>
 <table class="table">
-<thead><tr>
-<th>Function Name</th>
-<th>Purpose</th>
-</tr></thead>
-<tbody>
-<tr>
-<td><code><a href="reference/descriptive_table.html">descriptive_table()</a></code></td>
-<td>Summarise exposures by outcome groups</td>
-</tr>
-<tr>
-<td><code><a href="reference/dissect.html">dissect()</a></code></td>
-<td>Check outcome-exposure compatibility</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="regression-functions---fit-univariate-and-multivariable-models">Regression Functions - Fit univariate and multivariable models<a class="anchor" aria-label="anchor" href="#regression-functions---fit-univariate-and-multivariable-models"></a>
-</h3>
-<table class="table">
+<colgroup>
+<col width="36%">
+<col width="64%">
+</colgroup>
 <thead><tr>
 <th>Function Name</th>
 <th>Purpose</th>
@@ -87,24 +67,20 @@
 <tbody>
 <tr>
 <td><code><a href="reference/uni_reg.html">uni_reg()</a></code></td>
-<td>Univariable regression (OR/RR/IRR/β)</td>
+<td>Univariable regression (OR, RR, IRR, or β)</td>
 </tr>
 <tr>
 <td><code><a href="reference/multi_reg.html">multi_reg()</a></code></td>
 <td>Multivariable regression</td>
 </tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="regression-functions-by-stratifier">Regression Functions by stratifier<a class="anchor" aria-label="anchor" href="#regression-functions-by-stratifier"></a>
-</h3>
-<table class="table">
-<thead><tr>
-<th>Function Name</th>
-<th>Purpose</th>
-</tr></thead>
-<tbody>
+<tr>
+<td><code>uni_reg_nbin()</code></td>
+<td>Univariable negative binomial regression</td>
+</tr>
+<tr>
+<td><code>multi_reg_nbin()</code></td>
+<td>Multivariable negative binomial regression</td>
+</tr>
 <tr>
 <td><code><a href="reference/stratified_uni_reg.html">stratified_uni_reg()</a></code></td>
 <td>Stratified univariable regression</td>
@@ -113,64 +89,61 @@
 <td><code><a href="reference/stratified_multi_reg.html">stratified_multi_reg()</a></code></td>
 <td>Stratified multivariable regression</td>
 </tr>
+<tr>
+<td><code>stratified_uni_nbin()</code></td>
+<td>Stratified univariable NB regression</td>
+</tr>
+<tr>
+<td><code>stratified_multi_nbin()</code></td>
+<td>Stratified multivariable NB regression</td>
+</tr>
 </tbody>
 </table>
 </div>
 <div class="section level3">
-<h3 id="model-diagnostics--selection">Model Diagnostics &amp; Selection<a class="anchor" aria-label="anchor" href="#model-diagnostics--selection"></a>
+<h3 id="model-diagnostics-and-variable-assessment">Model Diagnostics and Variable Assessment<a class="anchor" aria-label="anchor" href="#model-diagnostics-and-variable-assessment"></a>
 </h3>
 <table class="table">
 <colgroup>
-<col width="31%">
-<col width="68%">
+<col width="36%">
+<col width="64%">
 </colgroup>
 <thead><tr>
 <th>Function Name</th>
 <th>Purpose</th>
 </tr></thead>
 <tbody>
-<tr>
-<td><code><a href="reference/check_convergence.html">check_convergence()</a></code></td>
-<td>Evaluate model convergence and max fitted values</td>
-</tr>
 <tr>
 <td><code><a href="reference/select_models.html">select_models()</a></code></td>
-<td>Stepwise model selection (AIC/BIC/adjusted R²)</td>
+<td>Stepwise model selection (AIC/BIC/logLik)</td>
 </tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="confounding--interaction">Confounding &amp; Interaction<a class="anchor" aria-label="anchor" href="#confounding--interaction"></a>
-</h3>
-<table class="table">
-<colgroup>
-<col width="33%">
-<col width="66%">
-</colgroup>
-<thead><tr>
-<th>Function Name</th>
-<th>Purpose</th>
-</tr></thead>
-<tbody>
 <tr>
 <td><code><a href="reference/identify_confounder.html">identify_confounder()</a></code></td>
-<td>Confounding assessment via % change or MH method</td>
+<td>Confounding assessment via % change or MH</td>
+</tr>
+<tr>
+<td><code><a href="reference/check_convergence.html">check_convergence()</a></code></td>
+<td>Evaluate model convergence and max probability</td>
 </tr>
 <tr>
 <td><code><a href="reference/interaction_models.html">interaction_models()</a></code></td>
-<td>Compare models with and without interaction terms</td>
+<td>Compare models with and without interactions</td>
+</tr>
+<tr>
+<td><code><a href="reference/check_collinearity.html">check_collinearity()</a></code></td>
+<td>Check multicollinearity via VIF and pairwise</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section level3">
-<h3 id="plots--exports">Plots &amp; Exports<a class="anchor" aria-label="anchor" href="#plots--exports"></a>
-</h3>
+</div>
+<div class="section level2">
+<h2 id="plots-and-exports">Plots and Exports<a class="anchor" aria-label="anchor" href="#plots-and-exports"></a>
+</h2>
 <table class="table">
 <colgroup>
-<col width="31%">
-<col width="68%">
+<col width="29%">
+<col width="70%">
 </colgroup>
 <thead><tr>
 <th>Function Name</th>
@@ -178,39 +151,33 @@
 </tr></thead>
 <tbody>
 <tr>
+<td><code><a href="reference/modify_table.html">modify_table()</a></code></td>
+<td>Modify <code>gtsummary</code> tables (e.g., labels, p-values)</td>
+</tr>
+<tr>
 <td><code><a href="reference/plot_reg.html">plot_reg()</a></code></td>
-<td>Forest plot for a single regression model</td>
+<td>Forest plot of regression model estimates</td>
 </tr>
 <tr>
 <td><code><a href="reference/plot_reg_combine.html">plot_reg_combine()</a></code></td>
-<td>Side-by-side forest plots for uni/multi models</td>
-</tr>
-<tr>
-<td><code><a href="reference/modify_table.html">modify_table()</a></code></td>
-<td>Customize column labels or output structure</td>
+<td>Side-by-side plot of univariable and multivariable models</td>
 </tr>
 <tr>
 <td><code><a href="reference/save_table.html">save_table()</a></code></td>
-<td>Export table to <code>.html</code>, <code>.csv</code>, <code>.docx</code>
-</td>
-</tr>
-<tr>
-<td><code><a href="reference/save_docx.html">save_docx()</a></code></td>
-<td>Save table as Word document (<code>.docx</code>)</td>
+<td>Save regression tables to Word/HTML</td>
 </tr>
 <tr>
 <td><code><a href="reference/save_plot.html">save_plot()</a></code></td>
-<td>Save plot as <code>.png</code>, <code>.pdf</code>, etc.</td>
+<td>Save regression plots to file</td>
 </tr>
 <tr>
-<td><code><a href="reference/merge_tables.html">merge_tables()</a></code></td>
-<td>Combine descriptive and regression tables</td>
+<td><code><a href="reference/save_docx.html">save_docx()</a></code></td>
+<td>Save tables and plots in one report</td>
 </tr>
 </tbody>
 </table>
 </div>
-</div>
-</div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
