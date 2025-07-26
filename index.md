@@ -4,39 +4,54 @@ title: Welcome to gtregression
 
 ## Function Overview
 
-The `gtregression` package provides regression modeling, diagnostics, plots, and reporting tools designed for usability and accessibility. Here's a summary of its core functions:
+The `gtregression` package provides regression modeling, diagnostics, plots, and
+reporting tools designed for usability and accessibility. 
+Here's a summary of its core functions:
+### Descriptive & Compatibility Tools
 
-### Regression Modeling
+| Function Name        | Purpose                               |
+|----------------------|---------------------------------------|
+| `descriptive_table()`| Summarise exposures by outcome groups |
+| `dissect()`          | Check outcome-exposure compatibility  |
 
-| Function Name             | Purpose                                        |
-|---------------------------|------------------------------------------------|
-| `uni_reg()`               | Univariable regression (OR, RR, IRR, or β)     |
-| `multi_reg()`             | Multivariable regression                       |
-| `uni_reg_nbin()`          | Univariable negative binomial regression       |
-| `multi_reg_nbin()`        | Multivariable negative binomial regression     |
-| `stratified_uni_reg()`    | Stratified univariable regression              |
-| `stratified_multi_reg()`  | Stratified multivariable regression            |
-| `stratified_uni_nbin()`   | Stratified univariable NB regression           |
-| `stratified_multi_nbin()` | Stratified multivariable NB regression         |
+### Regression Functions - Fit univariate and multivariable models
 
-### Model Diagnostics and Variable Assessment
+| Function Name | Purpose                              |
+|---------------|--------------------------------------|
+| `uni_reg()`   | Univariable regression (OR/RR/IRR/β) |
+| `multi_reg()` | Multivariable regression             |
 
-| Function Name             | Purpose                                        |
-|---------------------------|------------------------------------------------|
-| `select_models()`         | Stepwise model selection (AIC/BIC/logLik)      |
-| `identify_confounder()`   | Confounding assessment via % change or MH      |
-| `check_convergence()`     | Evaluate model convergence and max probability |
-| `interaction_models()`    | Compare models with and without interactions   |
-| `check_collinearity()`    | Check multicollinearity via VIF and pairwise   |
+### Regression Functions by stratifier
 
-## Plots and Exports
+| Function Name            | Purpose                             |
+|--------------------------|-------------------------------------|
+| `stratified_uni_reg()`   | Stratified univariable regression   |
+| `stratified_multi_reg()` | Stratified multivariable regression |
 
-| Function Name        | Purpose                                             |
-|----------------------|-----------------------------------------------------|
-| `modify_table()`     | Modify `gtsummary` tables (e.g., labels, p-values)  |
-| `plot_reg()`         | Forest plot of regression model estimates           |
-| `plot_reg_combine()` | Side-by-side plot of univariable and multivariable models |
-| `save_table()`       | Save regression tables to Word/HTML                  |
-| `save_plot()`        | Save regression plots to file                        |
-| `save_docx()`        | Save tables and plots in one report                  |
+### Model Diagnostics & Selection
+
+| Function Name         | Purpose                                          |
+|-----------------------|--------------------------------------------------|
+| `check_convergence()` | Evaluate model convergence and max fitted values |
+| `select_models()`     | Stepwise model selection (AIC/BIC/adjusted R²)   |
+
+### Confounding & Interaction
+
+| Function Name           | Purpose                                           |
+|------------------------|------------------------------------------------|
+| `identify_confounder()` | Confounding assessment via % change or MH method  |
+| `interaction_models()`  | Compare models with and without interaction terms |
+
+### Plots & Exports
+
+| Function Name        | Purpose                                        |
+|----------------------|------------------------------------------------|
+| `plot_reg()`         | Forest plot for a single regression model      |
+| `plot_reg_combine()` | Side-by-side forest plots for uni/multi models |
+| `modify_table()`     | Customize column labels or output structure    |
+| `save_table()`       | Export table to `.html`, `.csv`, `.docx`       |
+| `save_docx()`        | Save table as Word document (`.docx`)          |
+| `save_plot()`        | Save plot as `.png`, `.pdf`, etc.              |
+| `merge_tables()`     | Combine descriptive and regression tables      |
+
 

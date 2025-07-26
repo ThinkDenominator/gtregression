@@ -8,6 +8,19 @@ alt="gtregression logo" width="180"/>
 
 # gtregression
 
+## Motivation
+
+Many academics and public health professionals in low- and middle-income
+countries (LMICs) hesitate to use R due to its steep learning curve.
+Instead, they often rely on menu-driven software like SPSS or Epi Info,
+which limits their ability to perform reproducible and advanced
+analyses. As a step towards addressing this gap, we created the
+gtregression package to simplify regression modelling in R. The package
+offers user-friendly syntax, intuitive functions, and publication-ready
+outputs—empowering analysts to adopt open-source tools with confidence.
+
+## About the Package
+
 `gtregression` is an R package that simplifies regression modeling and
 generates publication-ready tables using the `gtsummary` ecosystem. It
 supports a variety of regression approaches with built-in tools for
@@ -240,10 +253,10 @@ interaction_models(pima_data,
 
 ### Descriptive & Compatibility Tools
 
-| Function Name | Purpose |
-|----|----|
-| `descriptive_table()` | Summarise exposures by outcome groups using gtsummary |
-| `dissect()` | Check outcome-exposure compatibility |
+| Function Name         | Purpose                               |
+|-----------------------|---------------------------------------|
+| `descriptive_table()` | Summarise exposures by outcome groups |
+| `dissect()`           | Check outcome-exposure compatibility  |
 
 ### Regression Functions - Fit univariate and multivariable models
 
@@ -283,7 +296,7 @@ interaction_models(pima_data,
 | `save_table()`       | Export table to `.html`, `.csv`, `.docx`       |
 | `save_docx()`        | Save table as Word document (`.docx`)          |
 | `save_plot()`        | Save plot as `.png`, `.pdf`, etc.              |
-| `merge_table()`      | Combine descriptive and regression tables      |
+| `merge_tables()`     | Combine descriptive and regression tables      |
 
 ## Contributing
 
@@ -330,3 +343,10 @@ especially for public health professionals and researchers in LMICs.
 ## License
 
 MIT License. See LICENSE for details.
+
+## Acknowledgements
+
+The gtregression package icon uses the **“Hearts”** symbol created by
+[Kim Sun Young](https://thenounproject.com/creator/hookeeak/) from [The
+Noun Project](https://thenounproject.com), used under the Creative
+Commons Attribution (CC BY 3.0) license.

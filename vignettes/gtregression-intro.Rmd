@@ -285,7 +285,7 @@ interaction_models(pima_data,
 | `save_table()`       | Export table to `.html`, `.csv`, `.docx`       |
 | `save_docx()`        | Save table as Word document (`.docx`)          |
 | `save_plot()`        | Save plot as `.png`, `.pdf`, etc.              |
-| `merge_table()`      | Combine descriptive and regression tables      |
+| `merge_tables()`      | Combine descriptive and regression tables      |
 
 ## Conclusion 
 
