@@ -13,6 +13,7 @@
 ^renv\\.lock$              # renv lock file
 
 ^doc$                      # auto-generated docs
+^docs$                      # auto-generated docs
 ^Meta$                     # leftover meta info from builds
 
 ^tests/testthat\\.Rout\\.fail$  # failed test outputs
@@ -23,3 +24,13 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^doc$
+^Meta$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^LICENSE\.md$
+^README\.Rmd$
+^gtregression\.Rproj$
+^index\.md$
+^renv$
+^renv\.lock$
