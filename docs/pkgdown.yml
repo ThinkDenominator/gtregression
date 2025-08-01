@@ -1,9 +1,0 @@
-pandoc: '3.4'
-pkgdown: 2.1.3
-pkgdown_sha: ~
-articles:
-  gtregression-intro: gtregression-intro.html
-last_built: 2025-07-23T18:54Z
-urls:
-  reference: https://drrubesh.github.io/gtregression/reference
-  article: https://drrubesh.github.io/gtregression/articles
