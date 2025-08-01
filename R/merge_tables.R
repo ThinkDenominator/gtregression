@@ -12,13 +12,55 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' merge_tables(desc_tbl, uni_tbl)
-#' merge_tables(desc_tbl, multi_tbl)
-#' merge_tables(uni_tbl, multi_tbl)
-#' merge_tables(desc_tbl, uni_tbl, multi_tbl)
-#' merge_tables(desc_tbl, uni_tbl, spanners = c("T1", "Crude"))
+#' \donttest{
+#' if (requireNamespace("mlbench", quietly = TRUE)) {
+#'   data("PimaIndiansDiabetes2", package = "mlbench")
+#'   library(dplyr)
+#'   library(gtregression)
+#'
+#'   # Prepare data
+#'   pima <- PimaIndiansDiabetes2 |>
+#'     mutate(
+#'       diabetes = ifelse(diabetes == "pos", 1, 0),
+#'       bmi_cat = cut(
+#'         mass,
+#'         breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
+#'         labels = c("Underweight", "Normal", "Overweight", "Obese")
+#'       )
+#'     )
+#'
+#'   # Descriptive table
+#'   desc_tbl <- descriptive_table(pima,
+#'                                 exposures = c("age", "bmi_cat"),
+#'                                 by = "diabetes")
+#'
+#'   # Univariate logistic regression
+#'   uni_tbl <- uni_reg(
+#'     data = pima,
+#'     outcome = "diabetes",
+#'     exposures = c("age", "bmi_cat"),
+#'     approach = "logit"
+#'   )
+#'
+#'   # Multivariable logistic regression
+#'   multi_tbl <- multi_reg(
+#'     data = pima,
+#'     outcome = "diabetes",
+#'     exposures = c("age", "bmi_cat"),
+#'     approach = "logit"
+#'   )
+#'
+#'   # Merge descriptive + univariate + multivariate
+#'   merge_tables(desc_tbl, uni_tbl, multi_tbl)
+#'
+#'   # Merge with custom spanners
+#'   merge_tables(desc_tbl, uni_tbl, spanners = c("Summary", "Crude"))
+#'
+#'   # Merge just uni and multi
+#'   merge_tables(uni_tbl, multi_tbl)
 #' }
+#' }
+
 
 merge_tables <- function(..., spanners = NULL) {
   tbls <- list(...)

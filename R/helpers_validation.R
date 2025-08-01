@@ -43,7 +43,6 @@
 #' sufficient numeric variation to support regression modelling.
 #' @param exposures Character vector of column names to validate.
 #' @param data A data frame containing the exposure variables.
-#' @param name Optional string for the exposure name
 #' @return Returns TRUE if valid; otherwise throws an error.
 #' @keywords internal
 .validate_exposures <- function(data, exposures) {

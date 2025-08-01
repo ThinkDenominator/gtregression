@@ -99,18 +99,18 @@ interaction_models <- function(data, outcome, exposure, covariates = NULL,
   }
 
   if (verbose) {
-    cat("---------------------------------------------------\n")
-    cat("Interaction Term Assessment using", test_label, "\n")
-    cat("Model without interaction:\n   ", format(base_formula), "\n")
-    cat("Model with interaction:\n   ", format(int_formula), "\n")
-    cat("-----------------------------------------------------\n")
-    cat("P-value:", format(round(p_value, 4), nsmall = 4), "\n")
-    cat(ifelse(p_value < 0.05,
+    message("---------------------------------------------------\n")
+    message("Interaction Term Assessment using", test_label, "\n")
+    message("Model without interaction:\n   ", format(base_formula), "\n")
+    message("Model with interaction:\n   ", format(int_formula), "\n")
+    message("-----------------------------------------------------\n")
+    message("P-value:", format(round(p_value, 4), nsmall = 4), "\n")
+    message(ifelse(p_value < 0.05,
       "Interaction is statistically significant. Consider including it.\n",
       "Interaction is not statistically significant.
       Simpler model may be preferred.\n"
     ))
-    cat("----------------------------------------------------\n")
+    message("----------------------------------------------------\n")
   }
 
   invisible(list(

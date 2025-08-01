@@ -10,8 +10,6 @@
 \item{data}{A data frame containing the exposure variables.}
 
 \item{exposures}{Character vector of column names to validate.}
-
-\item{name}{Optional string for the exposure name}
 }
 \value{
 Returns TRUE if valid; otherwise throws an error.

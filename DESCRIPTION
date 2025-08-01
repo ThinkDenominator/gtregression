@@ -20,11 +20,16 @@ Authors@R: c(
     comment = c(ORCID = "0000-0003-4036-5162"))
   )
 Description: 
-  gtregression enhances the user experience by simplifying complex steps to do regression in R. 
-  It wraps widely used modeling and summarization packages (such as gtsummary, risks, MASS, 
-  and stats) into a cohesive and user-friendly interface. Designed with LMIC users in mind, 
-  it reduces the need for verbose or multi-package code, offering publication-ready tables, 
-  automated diagnostics with interpretation, and sensible defaults — all aligned with reproducible and evidence-based practices.
+  Simplifies regression modeling in R by integrating multiple modeling and summarization
+  tools into a cohesive, user-friendly interface. Designed to be accessible for researchers,
+  particularly those in Low- and Middle-Income Countries (LMIC). Built upon widely accepted 
+  statistical methods, including logistic regression (Hosmer et al. 2013, ISBN:9781118548429), 
+  log-binomial regression (Spiegelman and Hertzmark 2005 <doi:10.1093/aje/kwi188>), 
+  Poisson and robust Poisson regression (Zou 2004 <doi:10.1093/aje/kwh090>), 
+  negative binomial regression (Hilbe 2011, ISBN:9780521179515), and linear regression 
+  (Kutner et al. 2005, ISBN:9780071122214). Leverages multiple dependencies to ensure 
+  high-quality output and generate reproducible, publication-ready tables in alignment with
+  best practices in epidemiology and applied statistics.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -62,6 +67,5 @@ Suggests:
     pkgdown
 RoxygenNote: 7.3.2
 Config/testthat/edition: 3
-URL: https://ThinkDenominator.github.io/gtregression,
-  https://gtregression.thinkdenominator.com
+URL: https://thinkdenominator.github.io/gtregression/
 BugReports: https://github.com/ThinkDenominator/gtregression/issues

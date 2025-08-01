@@ -70,7 +70,7 @@ dissect <- function(data) {
 
   print(result)
 
-  cat("\nInterpretation notes:\n",
+  message("\nInterpretation notes:\n",
       "- compatible: ready to use in regression\n",
       "- maybe: require transformation to factor or check no of levels\n",
       "- incompatible: not usable as-is (e.g., all NA, <2 levels)\n")

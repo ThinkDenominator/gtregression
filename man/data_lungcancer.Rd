@@ -18,7 +18,7 @@ A data frame with 137 observations and 8 variables:
 }
 }
 \source{
-\url{https://cran.r-project.org/web/packages/survival/}
+\url{https://CRAN.R-project.org/package=survival}
 }
 \usage{
 data_lungcancer

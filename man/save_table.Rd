@@ -7,22 +7,22 @@
 save_table(tbl, filename = "table", format = c("docx", "pdf", "html"))
 }
 \arguments{
-\item{tbl}{A `gtsummary` object (e.g.,`tbl_regression()`, `tbl_summary()`).}
+\item{tbl}{A gtsummary object (e.g., tbl_regression(), tbl_summary()).}
 
-\item{filename}{File name to save the output. Extension is optional}
+\item{filename}{File name to save the output. Extension is optional.}
 
-\item{format}{Output format. One of `"docx"`, `"pdf"`, or `"html"`.}
+\item{format}{Output format. One of "docx", "pdf", or "html".}
 }
 \value{
-Saves the file to the wd. Does not return an object.
+Saves the file to a temporary directory (if no path is given). Does not return an object.
 }
 \description{
-Saves a `gtsummary` table as a Word, PDF, or HTML file
+Saves a gtsummary table as a Word, PDF, or HTML file
 }
 \examples{
-\dontrun{
+\donttest{
 model <- glm(mpg ~ hp + wt, data = mtcars)
 tbl <- gtsummary::tbl_regression(model)
-save_table(tbl, filename = "regression_table", format = "docx")
+save_table(tbl, filename = file.path(tempdir(), "regression_table"), format = "docx")
 }
 }

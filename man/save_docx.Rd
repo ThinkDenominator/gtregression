@@ -7,35 +7,31 @@
 save_docx(tables = NULL, plots = NULL, filename = "report.docx", titles = NULL)
 }
 \arguments{
-\item{tables}{A list of `gtsummary` tables.}
+\item{tables}{A list of gtsummary tables.}
 
-\item{plots}{A list of `ggplot2` plot objects.}
+\item{plots}{A list of ggplot2 plot objects.}
 
-\item{filename}{File name for the output (with or without `.docx` extension).}
+\item{filename}{File name for the output (with or without .docx extension).}
 
-\item{titles}{Optional. A character vector of titles}
+\item{titles}{Optional. A character vector of titles.}
 }
 \value{
-A Word document saved to the wd. No object is returned
+A Word document saved to a temporary directory (if no path is given). No object is returned.
 }
 \description{
-Saves a collection of `gtsummary` tables and `ggplot2` plots into (`.docx`)
+Saves a collection of gtsummary tables and ggplot2 plots into a .docx file.
 }
 \examples{
-\dontrun{
+\donttest{
 library(gtsummary)
 library(ggplot2)
-
-# Create table and plot
 tbl <- tbl_regression(glm(mpg ~ hp + wt, data = mtcars))
 p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
   geom_point()
-
-# Save both into a single Word document
 save_docx(
   tables = list(tbl),
   plots = list(p),
-  filename = "report.docx",
+  filename = file.path(tempdir(), "report.docx"),
   titles = c("Table 1: Regression", "Figure 1: Scatterplot")
 )
 }

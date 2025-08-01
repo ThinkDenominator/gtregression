@@ -30,12 +30,47 @@
 #' @importFrom ggtext element_markdown
 #'
 #' @examples
-#' \dontrun{
-#' data <- data_PimaIndiansDiabetes
-#' uni_model <- uni_reg(data, "glucose", "bmi", approach = "linear")
-#' multi_model <- multi_reg(data, "glucose",
-#' c("bmi", "age"), approach = "linear")
-#' plot_reg_combine(tbl_uni = uni_model, tbl_multi = multi_model)
+#' \donttest{
+#' if (requireNamespace("mlbench", quietly = TRUE)) {
+#'   data("PimaIndiansDiabetes2", package = "mlbench")
+#'   library(dplyr)
+#'   library(gtregression)
+#'
+#'   # Prepare data
+#'   pima <- PimaIndiansDiabetes2 |>
+#'     mutate(
+#'       diabetes = ifelse(diabetes == "pos", 1, 0),
+#'       bmi_cat = cut(
+#'         mass,
+#'         breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
+#'         labels = c("Underweight", "Normal", "Overweight", "Obese")
+#'       ),
+#'       age_cat = cut(
+#'         age,
+#'         breaks = c(-Inf, 29, 49, Inf),
+#'         labels = c("Young", "Middle-aged", "Older")
+#'       )
+#'     )
+#'
+#'   # Univariate logistic regression
+#'   uni_rr <- uni_reg(
+#'     data = pima,
+#'     outcome = "diabetes",
+#'     exposures = c("age_cat", "bmi_cat"),
+#'     approach = "logit"
+#'   )
+#'
+#'   # Multivariable logistic regression
+#'   multi_rr <- multi_reg(
+#'     data = pima,
+#'     outcome = "diabetes",
+#'     exposures = c("age_cat", "bmi_cat"),
+#'     approach = "logit"
+#'   )
+#'
+#'   # Combined plot
+#'   plot_reg_combine(uni_rr, multi_rr)
+#' }
 #' }
 plot_reg_combine <- function(tbl_uni,
                              tbl_multi,

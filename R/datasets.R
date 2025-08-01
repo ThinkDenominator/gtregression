@@ -14,7 +14,7 @@
 #'   \item{age}{Age in years}
 #'   \item{prior}{Prior therapy (0 = no, 10 = yes)}
 #' }
-#' @source \url{https://cran.r-project.org/web/packages/survival/}
+#' @source \url{https://CRAN.R-project.org/package=survival}
 #' @references Kalbfleisch JD and Prentice RL (1980).
 #'  The Statistical Analysis of Failure Time Data.
 "data_lungcancer"

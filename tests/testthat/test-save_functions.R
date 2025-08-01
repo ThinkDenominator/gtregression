@@ -11,7 +11,7 @@ test_that("save_table(), save_plot(), and save_docx() work correctly", {
   library(ggplot2)
   library(dplyr)
 
-  # Prepare Data
+  # Prepare data
   data("data_PimaIndiansDiabetes", package = "gtregression")
   pima_data <- data_PimaIndiansDiabetes |>
     mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
@@ -58,15 +58,11 @@ test_that("save_table(), save_plot(), and save_docx() work correctly", {
         pedigree > 0.5 ~ "High Genetic Risk"
       ),
       dpf_cat = factor(dpf_cat,
-                       levels = c("Low Genetic Risk",
-                                  "Moderate Genetic Risk",
-                                  "High Genetic Risk"))
-    ) |>
-    mutate(diabetes_cat = case_when(diabetes == 1 ~ "Diabetes positive",
-                                    TRUE ~ "Diabetes negative")) |>
-    mutate(diabetes_cat = factor(diabetes_cat,
-                                 levels = c("Diabetes negative",
-                                            "Diabetes positive")))
+                       levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk")
+      ),
+      diabetes_cat = factor(ifelse(diabetes == 1, "Diabetes positive", "Diabetes negative"),
+                            levels = c("Diabetes negative", "Diabetes positive"))
+    )
 
   exposures <- c("bmi", "age_cat", "npreg_cat", "bp_cat",
                  "triceps_cat", "insulin_cat", "dpf_cat")
@@ -74,12 +70,13 @@ test_that("save_table(), save_plot(), and save_docx() work correctly", {
   # Univariate regression
   uni_rr <- uni_reg(pima_data, outcome = "diabetes",
                     exposures = exposures, approach = "log-binomial")
+
   # Modify table
   tbl_custom <- modify_table(
     uni_rr,
     variable_labels = c(age_cat = "Age", bmi = "BMI"),
-    level_labels = c(`Young` = "Young Adults", `Older` = "Older Adults"),
-    header_labels = c(estimate = "Risk Ratio", `p.value` = "P-value"),
+    level_labels = c(Young = "Young Adults", Older = "Older Adults"),
+    header_labels = c(estimate = "Risk Ratio", p.value = "P-value"),
     caption = "Table 1: Univariate Regression",
     bold_labels = TRUE
   )
@@ -87,38 +84,39 @@ test_that("save_table(), save_plot(), and save_docx() work correctly", {
   # Plot
   p <- plot_reg(tbl_custom)
 
-  # Save Table
-  save_table(tbl_custom, filename = "regression_results", format = "docx")
-  expect_true(file.exists("regression_results.docx"))
+  # File paths (all in tempdir)
+  file_tbl <- file.path(tempdir(), "regression_results.docx")
+  file_png <- file.path(tempdir(), "plot_png.png")
+  file_pdf <- file.path(tempdir(), "plot_pdf.pdf")
+  file_jpg <- file.path(tempdir(), "plot_jpg.jpg")
+  file_docx <- file.path(tempdir(), "final_report.docx")
 
-  # Save Plots with suppressed warnings
-  suppressWarnings(save_plot(p, filename = "plot_png", format = "png"))
-  suppressWarnings(save_plot(p, filename = "plot_pdf", format = "pdf"))
-  suppressWarnings(save_plot(p, filename = "plot_jpg", format = "jpg"))
+  # Save table
+  save_table(tbl_custom, filename = file_tbl, format = "docx")
+  expect_true(file.exists(file_tbl))
 
-  expect_true(file.exists("plot_png.png"))
-  expect_true(file.exists("plot_pdf.pdf"))
-  expect_true(file.exists("plot_jpg.jpg"))
+  # Save plots
+  suppressWarnings(save_plot(p, filename = file_png, format = "png"))
+  suppressWarnings(save_plot(p, filename = file_pdf, format = "pdf"))
+  suppressWarnings(save_plot(p, filename = file_jpg, format = "jpg"))
 
-  # Save DOCX report with suppressed warnings
+  expect_true(file.exists(file_png))
+  expect_true(file.exists(file_pdf))
+  expect_true(file.exists(file_jpg))
+
+  # Save DOCX report
   suppressWarnings(save_docx(
     tables = list(uni_rr, uni_rr),
     plots = list(p),
-    filename = "final_report.docx",
+    filename = file_docx,
     titles = c(
       "Table 1: Univariate Regression",
       "Table 2: Univariate Regression (Duplicate)",
       "Figure 1: Plot"
     )
   ))
-  expect_true(file.exists("final_report.docx"))
+  expect_true(file.exists(file_docx))
 
   # Clean up
-  file.remove(
-    "regression_results.docx",
-    "plot_png.png",
-    "plot_pdf.pdf",
-    "plot_jpg.jpg",
-    "final_report.docx"
-  )
+  file.remove(file_tbl, file_png, file_pdf, file_jpg, file_docx)
 })

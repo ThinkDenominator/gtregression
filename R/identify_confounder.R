@@ -123,10 +123,10 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
     result_tbl <- dplyr::bind_rows(results)
 
     print(result_tbl)
-    cat("\nNotes:\n")
-    cat("* Confounding is suggested if percent change >=", threshold, "%.\n")
-    cat("* This method does not assess effect modification.\n")
-    cat("* Use DAGs or domain knowledge to support confounder
+    message("\nNotes:\n")
+    message("* Confounding is suggested if percent change >=", threshold, "%.\n")
+    message("* This method does not assess effect modification.\n")
+    message("* Use DAGs or domain knowledge to support confounder
         identification.\n")
 
     return(invisible(result_tbl))
@@ -147,17 +147,17 @@ identify_confounder <- function(data, outcome, exposure, potential_confounder,
   is_conf <- if (!is.na(pct_change)) pct_change >= threshold
   else NA
 
-  cat("\n------------------------------------------------------------\n")
-  cat("Crude Estimate:      ", format(round(crude_est, 3), nsmall = 3), "\n")
-  cat("Adjusted Estimate:   ", format(round(adj_est, 3), nsmall = 3), "\n")
-  cat("% Change from Crude: ", format(round(pct_change, 2), nsmall = 2), "%\n")
-  cat("------------------------------------------------------------\n")
-  cat("Confounding:         ", ifelse(is_conf, "Yes", "No"), "\n")
-  cat("------------------------------------------------------------\n")
-  cat("Notes:\n")
-  cat("* Confounding is suggested if percent change >=", threshold, "%.\n")
-  cat("* This method does not assess effect modification.\n")
-  cat("* Use DAGs or domain knowledge to support confounder identification.\n")
+  message("\n------------------------------------------------------------\n")
+  message("Crude Estimate:      ", format(round(crude_est, 3), nsmall = 3), "\n")
+  message("Adjusted Estimate:   ", format(round(adj_est, 3), nsmall = 3), "\n")
+  message("% Change from Crude: ", format(round(pct_change, 2), nsmall = 2), "%\n")
+  message("------------------------------------------------------------\n")
+  message("Confounding:         ", ifelse(is_conf, "Yes", "No"), "\n")
+  message("------------------------------------------------------------\n")
+  message("Notes:\n")
+  message("* Confounding is suggested if percent change >=", threshold, "%.\n")
+  message("* This method does not assess effect modification.\n")
+  message("* Use DAGs or domain knowledge to support confounder identification.\n")
 
   return(invisible(list(
     crude = crude_est,

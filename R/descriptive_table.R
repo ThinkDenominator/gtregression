@@ -61,17 +61,23 @@
 #' @importFrom gtsummary tbl_summary all_continuous all_categorical
 
 #' @examples
-#' \dontrun{
-#' # Basic summary by outcome
-#' descriptive_table(Pima, exposures = c("age", "mass", "bmi"),
-#'                   by = "diabetes_cat")
+#' \donttest{
+#' if (requireNamespace("mlbench", quietly = TRUE)) {
+#'   data("PimaIndiansDiabetes2", package = "mlbench")
+#'   library(dplyr)
+#' pima <- PimaIndiansDiabetes2 |>
+#'   mutate(
+#'     diabetes = ifelse(diabetes == "pos", 1, 0),
 #'
-#' # Compact one-row output for binary vars
-#' descriptive_table(Pima, exposures = c("smoke", "alcohol"),
-#'                   show_dichotomous = "single_row")
-#'
-#' # Summary without stratification
-#' descriptive_table(Pima, exposures = c("age", "bmi"))
+#'     bmi = cut(
+#'       mass,
+#'       breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
+#'       labels = c("Underweight", "Normal", "Overweight", "Obese")
+#'     )
+#'   )
+#'   descriptive_table(pima, exposures = c("age", "bmi"),
+#'                     by = "diabetes")
+#' }
 #' }
 #'
 #' @export

@@ -285,7 +285,7 @@ interaction_models(pima_data,
 | `save_table()`       | Export table to `.html`, `.csv`, `.docx`       |
 | `save_docx()`        | Save table as Word document (`.docx`)          |
 | `save_plot()`        | Save plot as `.png`, `.pdf`, etc.              |
-| `merge_tables()`      | Combine descriptive and regression tables      |
+| `merge_tables()`     | Combine descriptive and regression tables      |
 
 ## Conclusion 
 
@@ -294,3 +294,10 @@ publication-ready tables with interpretation notes. It enables beginners to
 explore a variety of regression models with ease, transparency, and 
 reproducibility. Explore the documentation for each function to discover 
 additional options and customization features.
+
+## Acknowledgements
+
+The gtregression package icon uses the **“Hearts”** symbol created by 
+[Kim Sun Young](https://thenounproject.com/creator/hookeeak/) from 
+[The Noun Project](https://thenounproject.com), used under the Creative Commons 
+Attribution (CC BY 3.0) license.

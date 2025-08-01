@@ -57,20 +57,36 @@ created using `gtsummary`. Designed for tables from functions like
 `uni_reg()`, `multi_reg()`, etc.
 }
 \examples{
-\dontrun{
-library(gtregression)
-tbl_custom <- modify_table(
-  uni_rr,
-  variable_labels = c(age_cat = "Age", bmi = "BMI"),
-  level_labels = list(age_cat = c(`Young` = "Young Adults",
-  `Old` = "Older Adults")),
-  header_labels = c(estimate = "**Risk Ratio**",
-  `p.value` = "***P*-value**"),
-  caption = "Table 1: Univariate Regression",
-  bold_labels = TRUE,
-  remove_N = TRUE,
-  caveat = "N may vary due to missing data."
-)
+\donttest{
+if (requireNamespace("mlbench", quietly = TRUE)) {
+  data("PimaIndiansDiabetes2", package = "mlbench")
+  library(dplyr)
+  library(gtregression)
+
+  # Prepare data
+  pima <- PimaIndiansDiabetes2 |>
+    mutate(
+      diabetes = ifelse(diabetes == "pos", 1, 0),
+      bmi_cat = cut(
+        mass,
+        breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
+        labels = c("Underweight", "Normal", "Overweight", "Obese")
+      )
+    )
+
+  # Descriptive table
+  desc_tbl <- descriptive_table(pima,
+                                exposures = c("age", "bmi_cat"),
+                                by = "diabetes")
+
+  # Univariate logistic regression
+  uni_rr <- uni_reg(
+    data = pima,
+    outcome = "diabetes",
+    exposures = c("age", "bmi_cat"),
+    approach = "logit"
+  )
+}
 }
 
 }
