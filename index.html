@@ -51,15 +51,27 @@
   <main id="main" class="col-md-9"><div class="section level2">
 <h2 id="function-overview">Function Overview<a class="anchor" aria-label="anchor" href="#function-overview"></a>
 </h2>
-<p>The <code>gtregression</code> package provides regression modeling, diagnostics, plots, and reporting tools designed for usability and accessibility. Here’s a summary of its core functions:</p>
+<p>The <code>gtregression</code> package provides regression modeling, diagnostics, plots, and reporting tools designed for usability and accessibility. Here’s a summary of its core functions: ### Descriptive &amp; Compatibility Tools</p>
+<table class="table">
+<thead><tr>
+<th>Function Name</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/descriptive_table.html">descriptive_table()</a></code></td>
+<td>Summarise exposures by outcome groups</td>
+</tr>
+<tr>
+<td><code><a href="reference/dissect.html">dissect()</a></code></td>
+<td>Check outcome-exposure compatibility</td>
+</tr>
+</tbody>
+</table>
 <div class="section level3">
-<h3 id="regression-modeling">Regression Modeling<a class="anchor" aria-label="anchor" href="#regression-modeling"></a>
+<h3 id="regression-functions---fit-univariate-and-multivariable-models">Regression Functions - Fit univariate and multivariable models<a class="anchor" aria-label="anchor" href="#regression-functions---fit-univariate-and-multivariable-models"></a>
 </h3>
 <table class="table">
-<colgroup>
-<col width="36%">
-<col width="64%">
-</colgroup>
 <thead><tr>
 <th>Function Name</th>
 <th>Purpose</th>
@@ -67,20 +79,24 @@
 <tbody>
 <tr>
 <td><code><a href="reference/uni_reg.html">uni_reg()</a></code></td>
-<td>Univariable regression (OR, RR, IRR, or β)</td>
+<td>Univariable regression (OR/RR/IRR/β)</td>
 </tr>
 <tr>
 <td><code><a href="reference/multi_reg.html">multi_reg()</a></code></td>
 <td>Multivariable regression</td>
 </tr>
-<tr>
-<td><code>uni_reg_nbin()</code></td>
-<td>Univariable negative binomial regression</td>
-</tr>
-<tr>
-<td><code>multi_reg_nbin()</code></td>
-<td>Multivariable negative binomial regression</td>
-</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="regression-functions-by-stratifier">Regression Functions by stratifier<a class="anchor" aria-label="anchor" href="#regression-functions-by-stratifier"></a>
+</h3>
+<table class="table">
+<thead><tr>
+<th>Function Name</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
 <tr>
 <td><code><a href="reference/stratified_uni_reg.html">stratified_uni_reg()</a></code></td>
 <td>Stratified univariable regression</td>
@@ -89,24 +105,40 @@
 <td><code><a href="reference/stratified_multi_reg.html">stratified_multi_reg()</a></code></td>
 <td>Stratified multivariable regression</td>
 </tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="model-diagnostics--selection">Model Diagnostics &amp; Selection<a class="anchor" aria-label="anchor" href="#model-diagnostics--selection"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="31%">
+<col width="68%">
+</colgroup>
+<thead><tr>
+<th>Function Name</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
 <tr>
-<td><code>stratified_uni_nbin()</code></td>
-<td>Stratified univariable NB regression</td>
+<td><code><a href="reference/check_convergence.html">check_convergence()</a></code></td>
+<td>Evaluate model convergence and max fitted values</td>
 </tr>
 <tr>
-<td><code>stratified_multi_nbin()</code></td>
-<td>Stratified multivariable NB regression</td>
+<td><code><a href="reference/select_models.html">select_models()</a></code></td>
+<td>Stepwise model selection (AIC/BIC/adjusted R²)</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="section level3">
-<h3 id="model-diagnostics-and-variable-assessment">Model Diagnostics and Variable Assessment<a class="anchor" aria-label="anchor" href="#model-diagnostics-and-variable-assessment"></a>
+<h3 id="confounding--interaction">Confounding &amp; Interaction<a class="anchor" aria-label="anchor" href="#confounding--interaction"></a>
 </h3>
 <table class="table">
 <colgroup>
-<col width="36%">
-<col width="64%">
+<col width="33%">
+<col width="66%">
 </colgroup>
 <thead><tr>
 <th>Function Name</th>
@@ -114,36 +146,23 @@
 </tr></thead>
 <tbody>
 <tr>
-<td><code><a href="reference/select_models.html">select_models()</a></code></td>
-<td>Stepwise model selection (AIC/BIC/logLik)</td>
-</tr>
-<tr>
 <td><code><a href="reference/identify_confounder.html">identify_confounder()</a></code></td>
-<td>Confounding assessment via % change or MH</td>
-</tr>
-<tr>
-<td><code><a href="reference/check_convergence.html">check_convergence()</a></code></td>
-<td>Evaluate model convergence and max probability</td>
+<td>Confounding assessment via % change or MH method</td>
 </tr>
 <tr>
 <td><code><a href="reference/interaction_models.html">interaction_models()</a></code></td>
-<td>Compare models with and without interactions</td>
-</tr>
-<tr>
-<td><code><a href="reference/check_collinearity.html">check_collinearity()</a></code></td>
-<td>Check multicollinearity via VIF and pairwise</td>
+<td>Compare models with and without interaction terms</td>
 </tr>
 </tbody>
 </table>
 </div>
-</div>
-<div class="section level2">
-<h2 id="plots-and-exports">Plots and Exports<a class="anchor" aria-label="anchor" href="#plots-and-exports"></a>
-</h2>
+<div class="section level3">
+<h3 id="plots--exports">Plots &amp; Exports<a class="anchor" aria-label="anchor" href="#plots--exports"></a>
+</h3>
 <table class="table">
 <colgroup>
-<col width="29%">
-<col width="70%">
+<col width="31%">
+<col width="68%">
 </colgroup>
 <thead><tr>
 <th>Function Name</th>
@@ -151,33 +170,38 @@
 </tr></thead>
 <tbody>
 <tr>
-<td><code><a href="reference/modify_table.html">modify_table()</a></code></td>
-<td>Modify <code>gtsummary</code> tables (e.g., labels, p-values)</td>
-</tr>
-<tr>
 <td><code><a href="reference/plot_reg.html">plot_reg()</a></code></td>
-<td>Forest plot of regression model estimates</td>
+<td>Forest plot for a single regression model</td>
 </tr>
 <tr>
 <td><code><a href="reference/plot_reg_combine.html">plot_reg_combine()</a></code></td>
-<td>Side-by-side plot of univariable and multivariable models</td>
+<td>Side-by-side forest plots for uni/multi models</td>
+</tr>
+<tr>
+<td><code><a href="reference/modify_table.html">modify_table()</a></code></td>
+<td>Customize column labels or output structure</td>
 </tr>
 <tr>
 <td><code><a href="reference/save_table.html">save_table()</a></code></td>
-<td>Save regression tables to Word/HTML</td>
-</tr>
-<tr>
-<td><code><a href="reference/save_plot.html">save_plot()</a></code></td>
-<td>Save regression plots to file</td>
+<td>Export table to <code>.html</code>, <code>.csv</code>, <code>.docx</code>
+</td>
 </tr>
 <tr>
 <td><code><a href="reference/save_docx.html">save_docx()</a></code></td>
-<td>Save tables and plots in one report</td>
+<td>Save table as Word document (<code>.docx</code>)</td>
+</tr>
+<tr>
+<td><code><a href="reference/save_plot.html">save_plot()</a></code></td>
+<td>Save plot as <code>.png</code>, <code>.pdf</code>, etc.</td>
+</tr>
+<tr>
+<td><code><a href="reference/merge_tables.html">merge_tables()</a></code></td>
+<td>Combine descriptive and regression tables</td>
 </tr>
 </tbody>
 </table>
 </div>
-
+</div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
