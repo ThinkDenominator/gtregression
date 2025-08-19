@@ -20,6 +20,6 @@ jobs:
           extra-packages: any::covr
 
       - name: Run coverage
-        run: Rscript -e 'covr::codecov(token = Sys.getenv("CODECOV_TOKEN"))'
+        run: Rscript -e 'covr::codecov(token = Sys.getenv("CODECOV_TOKEN")', slug= "ThinkDenominator/gtregression")'
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
