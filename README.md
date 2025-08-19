@@ -8,6 +8,27 @@ alt="gtregression logo" width="180"/>
 
 # gtregression
 
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/ThinkDenominator/gtregression/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ThinkDenominator/gtregression/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/ThinkDenominator/gtregression/actions/workflows/pkgdown.yaml/badge.svg)](https://ThinkDenominator.github.io/gtregression/)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/gtregression)](https://CRAN.R-project.org/package=gtregression)
+[![CRAN
+checks](https://badges.cranchecks.info/worst/gtregression.svg)](https://cran.r-project.org/web/checks/check_results_gtregression.html)
+
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+[![License:
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![Downloads -
+month](https://cranlogs.r-pkg.org/badges/last-month/gtregression)](https://cran.r-project.org/package=gtregression)
+[![Downloads -
+total](https://cranlogs.r-pkg.org/badges/grand-total/gtregression)](https://cran.r-project.org/package=gtregression)
+[![Codecov](https://codecov.io/gh/ThinkDenominator/gtregression/branch/main/graph/badge.svg)](https://app.codecov.io/gh/ThinkDenominator/gtregression)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16905350.svg)](https://doi.org/10.5281/zenodo.16905350)
+<!-- badges: end -->
+
 ## Motivation
 
 Many academics and public health professionals in low- and middle-income
@@ -343,6 +364,14 @@ especially for public health professionals and researchers in LMICs.
 ## License
 
 MIT License. See LICENSE for details.
+
+## Citation
+
+If you use `gtregression` in your work, please cite it as:
+
+> Rubeshkumar, P., Eliyas, S. K., Sakthivel, M., Krishnamoorthy, Y., &
+> Majella, M. G. (2025). *ThinkDenominator/gtregression: CRAN v1.0.0
+> (CRAN)*. Zenodo. <https://doi.org/10.5281/zenodo.16905350>
 
 ## Acknowledgements
 
