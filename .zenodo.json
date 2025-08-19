@@ -1,0 +1,33 @@
+{
+  "title": "gtregression: Simplifying regression modeling and reporting in R",
+  "version": "1.0.0",
+  "description": "CRAN release of the gtregression R package. This package simplifies regression modeling in R with a focus on publication-ready outputs, diagnostic checks, and accessible design for researchers and public health professionals, especially in LMIC settings.",
+  "creators": [
+    {
+      "name": "Polani, Rubeshkumar",
+      "affiliation": "Think Denominator",
+      "orcid": "0000-0002-0418-7592"
+    },
+    {
+      "name": "Eliyas, Salin K",
+      "affiliation": "PROPUL Evidence",
+      "orcid": "0000-0002-8020-5860"
+    },
+    {
+      "name": "Sakthivel, Manikandanesan",
+      "affiliation": "SAFETYNET ASIA INC",
+      "orcid": "0000-0002-5438-3970"
+    },
+    {
+      "name": "Krishnamoorthy, Yuvaraj",
+      "affiliation": "Propul Evidence",
+      "orcid": "0000-0003-4688-510X"
+    },
+    {
+      "name": "Majella, Marie Gilbert",
+      "affiliation": "PROPUL Evidence",
+      "orcid": "0000-0003-4036-5162"
+    }
+  ],
+  "license": "MIT"
+}
