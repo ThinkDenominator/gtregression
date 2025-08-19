@@ -1,10 +1,14 @@
-name: Run tests and upload coverage
+name: test-coverage
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
+
+permissions:
+  contents: read
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
@@ -19,7 +23,13 @@ jobs:
         with:
           extra-packages: any::covr
 
-      - name: Run coverage
-        run: Rscript -e 'covr::codecov(token = Sys.getenv("CODECOV_TOKEN")', slug= "ThinkDenominator/gtregression")'
+      - name: Run coverage and upload to Codecov
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        shell: Rscript {0}
+        run: |
+          covr::codecov(
+            token = Sys.getenv("CODECOV_TOKEN"),
+            slug  = "ThinkDenominator/gtregression",
+            quiet = FALSE
+          )
