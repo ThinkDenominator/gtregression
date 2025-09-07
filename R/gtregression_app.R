@@ -37,7 +37,7 @@ gtregression_app <- function() {
     )
   }
 
-  # sanity check: must have app.R or ui.R + server.R
+  # Check: must have app.R or ui.R + server.R
   has_app <- file.exists(file.path(app_dir, "app.R")) ||
     (file.exists(file.path(app_dir, "ui.R")) &&
        file.exists(file.path(app_dir, "server.R")))
