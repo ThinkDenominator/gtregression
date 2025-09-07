@@ -7,6 +7,7 @@ title: Welcome to gtregression
 The `gtregression` package provides regression modeling, diagnostics, plots, and
 reporting tools designed for usability and accessibility. 
 Here's a summary of its core functions:
+
 ### Descriptive & Compatibility Tools
 
 | Function Name        | Purpose                               |

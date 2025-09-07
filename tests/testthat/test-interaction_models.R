@@ -1,108 +1,180 @@
-test_that("interaction_models returns a list with expected names", {
-  library(gtregression)
+# Interaction models: branch & error coverage
+
+test_that("interaction_models (logit, LRT) returns expected structure and messages", {
+  skip_if_not_installed("mlbench")
+  skip_if_not_installed("dplyr")
+
   library(dplyr)
   data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
+  pima <- PimaIndiansDiabetes2 |>
     mutate(
-      bmi = factor(
-        case_when(
-          mass < 25 ~ "Normal",
-          mass >= 25 & mass < 30 ~ "Overweight",
-          mass >= 30 ~ "Obese"
-        ),
-        levels = c("Normal", "Overweight", "Obese")
-      ),
-      age_cat = factor(
-        case_when(
-          age < 30 ~ "Young",
-          age >= 30 & age < 50 ~ "Middle-aged",
-          age >= 50 ~ "Older"
-        ),
-        levels = c("Young", "Middle-aged", "Older")
-      ),
-      glucose_cat = factor(
-        case_when(
-          glucose < 140 ~ "Normal",
-          glucose >= 140 ~ "High"
-        ),
-        levels = c("Normal", "High")
-      )
+      diabetes = ifelse(diabetes == "pos", 1, 0),
+      age_cat = factor(ifelse(age < 30, "Young",
+                              ifelse(age < 50, "Middle-aged", "Older")),
+                       levels = c("Young", "Middle-aged", "Older")),
+      glucose_cat = factor(ifelse(glucose < 140, "Normal", "High"),
+                           levels = c("Normal", "High"))
     )
 
-  result <- interaction_models(
-    data = pima_data,
-    outcome = "diabetes",
-    exposure = "age_cat",
-    effect_modifier = "glucose_cat",
-    approach = "logit"
-  )
-
-  expect_type(result, "list")
-  expect_named(result, c("model_no_interaction",
-                         "model_with_interaction", "p_value", "test"))
-})
-
-test_that("interaction_models handles robpoisson approach", {
-  library(gtregression)
-  library(dplyr)
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
-    mutate(
-      age_cat = factor(case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"
-      )),
-      glucose_cat = factor(case_when(
-        glucose < 140 ~ "Normal",
-        glucose >= 140 ~ "High"
-      ))
-    )
-
-  result <- interaction_models(
-    data = pima_data,
-    outcome = "diabetes",
-    exposure = "age_cat",
-    effect_modifier = "glucose_cat",
-    approach = "robpoisson"
-  )
-
-  expect_type(result, "list")
-  expect_named(result, c("model_no_interaction",
-                         "model_with_interaction", "p_value", "test"))
-})
-
-test_that("interaction_models errors with invalid approach", {
-  library(gtregression)
-  library(dplyr)
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
-    mutate(
-      age_cat = factor(case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"
-      )),
-      glucose_cat = factor(case_when(
-        glucose < 140 ~ "Normal",
-        glucose >= 140 ~ "High"
-      ))
-    )
-
-  expect_error(
-    interaction_models(
-      data = pima_data,
+  expect_message(
+    res <- interaction_models(
+      data = pima,
       outcome = "diabetes",
       exposure = "age_cat",
       effect_modifier = "glucose_cat",
-      approach = "invalid"
+      approach = "logit",
+      test = "LRT",
+      verbose = TRUE
     ),
-    "invalid  is not a valid approach for interaction_models"
+    "Interaction Term Assessment", fixed = TRUE
+  )
+
+  expect_named(res, c("model_no_interaction","model_with_interaction","p_value","test"))
+  expect_equal(res$test, "Likelihood Ratio Test")
+  expect_true(is.numeric(res$p_value) || is.na(res$p_value))
+})
+
+test_that("interaction_models (logit, Wald) hits Wald branch", {
+  skip_if_not_installed("mlbench")
+  skip_if_not_installed("dplyr")
+
+  library(dplyr); data("PimaIndiansDiabetes2", package = "mlbench")
+  pima <- PimaIndiansDiabetes2 |>
+    mutate(
+      diabetes = ifelse(diabetes == "pos", 1, 0),
+      age_cat = factor(ifelse(age < 30, "Young",
+                              ifelse(age < 50, "Middle-aged", "Older")),
+                       levels = c("Young", "Middle-aged", "Older")),
+      glucose_cat = factor(ifelse(glucose < 140, "Normal", "High"),
+                           levels = c("Normal", "High"))
+    )
+
+  res <- interaction_models(
+    data = pima,
+    outcome = "diabetes",
+    exposure = "age_cat",
+    effect_modifier = "glucose_cat",
+    approach = "logit",
+    test = "Wald",
+    verbose = FALSE
+  )
+  expect_equal(res$test, "Wald Test")
+})
+
+test_that("interaction_models (robpoisson) uses robust variance path", {
+  skip_if_not_installed("mlbench")
+  skip_if_not_installed("dplyr")
+  skip_if_not_installed("lmtest")
+  skip_if_not_installed("sandwich")
+
+  library(dplyr); data("PimaIndiansDiabetes2", package = "mlbench")
+  pima <- PimaIndiansDiabetes2 |>
+    mutate(
+      diabetes = ifelse(diabetes == "pos", 1, 0),
+      age_cat = factor(ifelse(age < 30, "Young",
+                              ifelse(age < 50, "Middle-aged", "Older")),
+                       levels = c("Young", "Middle-aged", "Older")),
+      glucose_cat = factor(ifelse(glucose < 140, "Normal", "High"),
+                           levels = c("Normal", "High"))
+    )
+
+  res <- interaction_models(
+    data = pima,
+    outcome = "diabetes",
+    exposure = "age_cat",
+    effect_modifier = "glucose_cat",
+    approach = "robpoisson",
+    test = "LRT",
+    verbose = FALSE
+  )
+  expect_named(res, c("model_no_interaction","model_with_interaction","p_value","test"))
+  expect_equal(res$test, "Likelihood Ratio Test")
+})
+
+test_that("interaction_models (negbin, default LRT) covers negbin anova branch", {
+  skip_if_not_installed("MASS")
+
+  set.seed(1)
+  n <- 250
+  f1 <- factor(sample(c("A","B","C"), n, TRUE))
+  f2 <- factor(sample(c("X","Y"),     n, TRUE))
+  mu <- exp(0.2 + 0.3*(f1=="B") + 0.6*(f1=="C") + 0.4*(f2=="Y") + 0.5*(f1=="B" & f2=="Y"))
+  y  <- rpois(n, mu)
+  df <- data.frame(y = y, f1 = f1, f2 = f2)
+
+  suppressWarnings({
+    res <- interaction_models(
+      data = df,
+      outcome = "y",
+      exposure = "f1",
+      effect_modifier = "f2",
+      approach = "negbin",
+      verbose = FALSE
+    )
+  })
+
+  expect_named(res, c("model_no_interaction","model_with_interaction","p_value","test"))
+  expect_equal(res$test, "Likelihood Ratio Test")
+  expect_true(is.numeric(res$p_value) || is.na(res$p_value))
+})
+
+test_that("interaction_models (linear) covers lm branch with covariates", {
+  set.seed(2)
+  n <- 150
+  f1 <- factor(sample(c("A","B"), n, TRUE))
+  f2 <- factor(sample(c("X","Y"), n, TRUE))
+  z  <- rnorm(n)
+  y  <- 1 + 0.5*(f1=="B") + 0.2*(f2=="Y") + 0.7*(f1=="B" & f2=="Y") + 0.3*z + rnorm(n, sd=0.5)
+  df <- data.frame(y=y, f1=f1, f2=f2, z=z)
+
+  res <- interaction_models(
+    data = df,
+    outcome = "y",
+    exposure = "f1",
+    effect_modifier = "f2",
+    covariates = "z",
+    approach = "linear",
+    test = "LRT",
+    verbose = FALSE
+  )
+  expect_named(res, c("model_no_interaction","model_with_interaction","p_value","test"))
+  expect_equal(res$test, "Likelihood Ratio Test")
+})
+
+test_that("interaction_models errors when model fitting fails (missing predictor)", {
+  set.seed(3)
+  df <- data.frame(y = rbinom(20, 1, 0.5), a = factor(sample(c("A","B"), 20, TRUE)))
+  expect_error(
+    interaction_models(
+      data = df,
+      outcome = "y",
+      exposure = "NON_EXISTENT",
+      effect_modifier = "a",
+      approach = "logit",
+      verbose = FALSE
+    ),
+    "Model fitting failed for one or both models",
+    fixed = TRUE
+  )
+})
+
+test_that("interaction_models errors on invalid approach", {
+  set.seed(4)
+  df <- data.frame(
+    y  = rbinom(50, 1, 0.5),
+    e  = factor(sample(c("A","B"), 50, TRUE)),
+    m  = factor(sample(c("X","Y"), 50, TRUE))
+  )
+  expect_error(
+    interaction_models(
+      data = df,
+      outcome = "y",
+      exposure = "e",
+      effect_modifier = "m",
+      approach = "invalid",
+      verbose = FALSE
+    ),
+    "invalid  is not a valid approach for interaction_models",
+    fixed = TRUE
   )
 })

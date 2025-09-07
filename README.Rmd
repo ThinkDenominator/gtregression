@@ -372,7 +372,7 @@ MIT License. See LICENSE for details.
 
 If you use `gtregression` in your work, please cite it as:
 
-> Rubeshkumar, P., Eliyas, S. K., Sakthivel, M., Krishnamoorthy, Y., & Majella, M. G. (2025). *ThinkDenominator/gtregression: CRAN v1.0.0 (CRAN)*. Zenodo. https://doi.org/10.5281/zenodo.16905350
+> Rubeshkumar, P., Eliyas, S. K., Sakthivel, M., Krishnamoorthy, Y., & Majella, M. G. (2025). *ThinkDenominator/gtregression: CRAN v1.1.0 (CRAN)*. Zenodo. https://doi.org/10.5281/zenodo.16905350
 
 ## Acknowledgements
 
