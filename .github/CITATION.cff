@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this package, please cite it using the metadata below."
-title: "gtregression: CRAN v1.0.0"
+title: "gtregression: CRAN v1.1.0"
 version: "1.0.0"
 date-released: 2025-08-19
 doi: 10.5281/zenodo.16905350
