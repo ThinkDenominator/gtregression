@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write   # required by codecov-action v4 for tokenless uploads
 
 jobs:
   coverage:
@@ -21,8 +22,19 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::covr
+          # ensure your package + deps + covr are installed
+          extra-packages: |
+            any::covr
+            local::.
 
-      - name: Run coverage and upload to Codecov
+      - name: Run tests & create coverage.xml
         run: |
-          Rscript -e 'covr::codecov(quiet = FALSE)'
+          Rscript -e 'cov <- covr::package_coverage(); covr::to_cobertura(cov, file = "coverage.xml"); cat("Wrote coverage.xml\n")'
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          flags: unittests
+          name: github-actions
+          fail_ci_if_error: true
