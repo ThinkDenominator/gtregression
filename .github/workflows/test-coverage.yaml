@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   coverage:
@@ -22,29 +21,8 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: |
-            any::covr
-            local::.
+          extra-packages: any::covr
 
-      - name: Run tests & create coverage.xml
+      - name: Run coverage and upload to Codecov
         run: |
-          Rscript -e 'cov <- covr::package_coverage(); covr::to_cobertura(cov, file = "coverage.xml")'
-
-      - name: Check token presence (no print)
-        run: |
-          if [ -z "${{ secrets.CODECOV_TOKEN }}" ]; then
-            echo "CODECOV_TOKEN is empty/unavailable to this workflow."
-            exit 1
-          else
-            echo "CODECOV_TOKEN is present."
-          fi
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.xml
-          slug: ThinkDenominator/gtregression
-          flags: unittests
-          name: github-actions
-          fail_ci_if_error: true
+          Rscript -e 'covr::codecov(quiet = FALSE)'
