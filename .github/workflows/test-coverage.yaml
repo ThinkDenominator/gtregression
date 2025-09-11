@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write   # required by codecov-action v4 for tokenless uploads
+  id-token: write   # fine to keep
 
 jobs:
   coverage:
@@ -22,7 +22,6 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          # ensure your package + deps + covr are installed
           extra-packages: |
             any::covr
             local::.
@@ -34,6 +33,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}   # <-- required for protected branch
           files: coverage.xml
           flags: unittests
           name: github-actions
