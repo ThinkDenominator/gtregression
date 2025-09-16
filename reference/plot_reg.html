@@ -27,7 +27,6 @@ functions like `uni_reg()` and `multi_reg()`."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Getting Started with gtregression</a></li>
-    <li><a class="dropdown-item" href="../articles/gui.html">Using the gtregression GUI</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
@@ -56,7 +55,7 @@ functions like `uni_reg()` and `multi_reg()`.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_reg</span><span class="op">(</span></span>
 <span>  <span class="va">tbl</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ref_line <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  ref_line <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  order_y <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  log_x <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -64,7 +63,9 @@ functions like `uni_reg()` and `multi_reg()`.</p>
 <span>  point_color <span class="op">=</span> <span class="st">"#1F77B4"</span>,</span>
 <span>  errorbar_color <span class="op">=</span> <span class="st">"#4C4C4C"</span>,</span>
 <span>  base_size <span class="op">=</span> <span class="fl">14</span>,</span>
-<span>  show_ref <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  show_ref <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  sig_color <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  sig_errorbar_color <span class="op">=</span> <span class="st">""</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -73,47 +74,57 @@ functions like `uni_reg()` and `multi_reg()`.</p>
 
 
 <dl><dt id="arg-tbl">tbl<a class="anchor" aria-label="anchor" href="#arg-tbl"></a></dt>
-<dd><p>A `gtsummary` object from regression functions</p></dd>
+<dd><p>A gtsummary object from regression functions</p></dd>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
-<dd><p>Optional plot title (character).</p></dd>
+<dd><p>Optional plot title</p></dd>
 
 
 <dt id="arg-ref-line">ref_line<a class="anchor" aria-label="anchor" href="#arg-ref-line"></a></dt>
-<dd><p>Numeric value for the reference line (default = 1).</p></dd>
+<dd><p>Reference line; if NULL, uses 0 for linear and 1 otherwise</p></dd>
 
 
 <dt id="arg-order-y">order_y<a class="anchor" aria-label="anchor" href="#arg-order-y"></a></dt>
-<dd><p>Optional character vector to the customise y-axis order</p></dd>
+<dd><p>Optional character vector to customise y-axis order</p></dd>
 
 
 <dt id="arg-log-x">log_x<a class="anchor" aria-label="anchor" href="#arg-log-x"></a></dt>
-<dd><p>Logical. If `TRUE`, uses a logarithmic x-axis (default = FALSE).</p></dd>
+<dd><p>Logical. If TRUE, log x-axis (ignored for linear)</p></dd>
 
 
 <dt id="arg-xlim">xlim<a class="anchor" aria-label="anchor" href="#arg-xlim"></a></dt>
-<dd><p>Optional numeric vector specifying x-axis limits</p></dd>
+<dd><p>Optional numeric vector for x-axis limits</p></dd>
 
 
 <dt id="arg-breaks">breaks<a class="anchor" aria-label="anchor" href="#arg-breaks"></a></dt>
-<dd><p>Optional numeric vector for x-axis tick breaks.</p></dd>
+<dd><p>Optional numeric vector for x-axis tick breaks</p></dd>
 
 
 <dt id="arg-point-color">point_color<a class="anchor" aria-label="anchor" href="#arg-point-color"></a></dt>
-<dd><p>Color of the points (default is automatic).</p></dd>
+<dd><p>Fill color for points (default "#1F77B4")</p></dd>
 
 
 <dt id="arg-errorbar-color">errorbar_color<a class="anchor" aria-label="anchor" href="#arg-errorbar-color"></a></dt>
-<dd><p>Color of the error bars (default is automatic).</p></dd>
+<dd><p>Color for all error bars (default "#4C4C4C")</p></dd>
 
 
 <dt id="arg-base-size">base_size<a class="anchor" aria-label="anchor" href="#arg-base-size"></a></dt>
-<dd><p>Base font size for text elements.</p></dd>
+<dd><p>Base font size</p></dd>
 
 
 <dt id="arg-show-ref">show_ref<a class="anchor" aria-label="anchor" href="#arg-show-ref"></a></dt>
-<dd><p>Logical. If `TRUE`, includes reference in the plot.</p></dd>
+<dd><p>Logical. If TRUE, includes reference in the plot</p></dd>
+
+
+<dt id="arg-sig-color">sig_color<a class="anchor" aria-label="anchor" href="#arg-sig-color"></a></dt>
+<dd><p>Optional fill color for significant points; if "" (default),
+significance highlighting is disabled</p></dd>
+
+
+<dt id="arg-sig-errorbar-color">sig_errorbar_color<a class="anchor" aria-label="anchor" href="#arg-sig-errorbar-color"></a></dt>
+<dd><p>Optional color for significant error bars; if "" (default),
+bars stay `errorbar_color`</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -136,8 +147,9 @@ functions like `uni_reg()` and `multi_reg()`.</p>
 <span class="r-in"><span>      bmi_cat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>        <span class="va">mass</span>,</span></span>
 <span class="r-in"><span>        breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>, <span class="fl">18.5</span>, <span class="fl">24.9</span>, <span class="fl">29.9</span>, <span class="cn">Inf</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>        labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Underweight"</span>, <span class="st">"Normal"</span>, <span class="st">"Overweight"</span>, <span class="st">"Obese"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>        labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Underweight"</span>, <span class="st">"Normal"</span>, <span class="st">"Overweight"</span>, <span class="st">"Obese"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>      <span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># Univariate logistic regression</span></span></span>
 <span class="r-in"><span>  <span class="va">uni_rr</span> <span class="op">&lt;-</span> <span class="fu"><a href="uni_reg.html">uni_reg</a></span><span class="op">(</span></span></span>
@@ -146,7 +158,7 @@ functions like `uni_reg()` and `multi_reg()`.</p>
 <span class="r-in"><span>    exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"bmi_cat"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    approach <span class="op">=</span> <span class="st">"logit"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">plot_reg</span><span class="op">(</span><span class="va">uni_rr</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">plot_reg</span><span class="op">(</span><span class="va">uni_rr</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>glm.fit: fitted probabilities numerically 0 or 1 occurred</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>glm.fit: fitted probabilities numerically 0 or 1 occurred</span>
@@ -189,8 +201,7 @@ functions like `uni_reg()` and `multi_reg()`.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>glm.fit: fitted probabilities numerically 0 or 1 occurred</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>glm.fit: fitted probabilities numerically 0 or 1 occurred</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>collapsing to unique 'x' values</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Removed 5 rows containing missing values or values outside the scale range</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> (`geom_errorbarh()`).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `height` was translated to `width`.</span>
 <span class="r-plt img"><img src="plot_reg-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
