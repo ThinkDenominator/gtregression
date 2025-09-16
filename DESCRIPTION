@@ -64,17 +64,10 @@ Suggests:
     mlbench,
     car,
     forcats,
-    pkgdown, 
-    shiny,
-    DT,
-    shinythemes,
-    shinyjs,
-    rio,
-    readxl
+    pkgdown
 RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 Config/Needs/website: 
-    pkgdown,
-    sessioninfo
+    pkgdown
 URL: https://thinkdenominator.github.io/gtregression/
 BugReports: https://github.com/ThinkDenominator/gtregression/issues

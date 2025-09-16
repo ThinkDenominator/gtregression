@@ -7,7 +7,7 @@
 plot_reg(
   tbl,
   title = NULL,
-  ref_line = 1,
+  ref_line = NULL,
   order_y = NULL,
   log_x = FALSE,
   xlim = NULL,
@@ -15,31 +15,39 @@ plot_reg(
   point_color = "#1F77B4",
   errorbar_color = "#4C4C4C",
   base_size = 14,
-  show_ref = TRUE
+  show_ref = TRUE,
+  sig_color = "",
+  sig_errorbar_color = ""
 )
 }
 \arguments{
-\item{tbl}{A `gtsummary` object from regression functions}
+\item{tbl}{A gtsummary object from regression functions}
 
-\item{title}{Optional plot title (character).}
+\item{title}{Optional plot title}
 
-\item{ref_line}{Numeric value for the reference line (default = 1).}
+\item{ref_line}{Reference line; if NULL, uses 0 for linear and 1 otherwise}
 
-\item{order_y}{Optional character vector to the customise y-axis order}
+\item{order_y}{Optional character vector to customise y-axis order}
 
-\item{log_x}{Logical. If `TRUE`, uses a logarithmic x-axis (default = FALSE).}
+\item{log_x}{Logical. If TRUE, log x-axis (ignored for linear)}
 
-\item{xlim}{Optional numeric vector specifying x-axis limits}
+\item{xlim}{Optional numeric vector for x-axis limits}
 
-\item{breaks}{Optional numeric vector for x-axis tick breaks.}
+\item{breaks}{Optional numeric vector for x-axis tick breaks}
 
-\item{point_color}{Color of the points (default is automatic).}
+\item{point_color}{Fill color for points (default "#1F77B4")}
 
-\item{errorbar_color}{Color of the error bars (default is automatic).}
+\item{errorbar_color}{Color for all error bars (default "#4C4C4C")}
 
-\item{base_size}{Base font size for text elements.}
+\item{base_size}{Base font size}
 
-\item{show_ref}{Logical. If `TRUE`, includes reference in the plot.}
+\item{show_ref}{Logical. If TRUE, includes reference in the plot}
+
+\item{sig_color}{Optional fill color for significant points; if "" (default),
+significance highlighting is disabled}
+
+\item{sig_errorbar_color}{Optional color for significant error bars; if "" (default),
+bars stay `errorbar_color`}
 }
 \value{
 A `ggplot2` object representing the forest plot.
@@ -65,8 +73,9 @@ if (requireNamespace("mlbench", quietly = TRUE)) {
       bmi_cat = cut(
         mass,
         breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
-        labels = c("Underweight", "Normal", "Overweight", "Obese"))
-  )
+        labels = c("Underweight", "Normal", "Overweight", "Obese")
+      )
+    )
 
   # Univariate logistic regression
   uni_rr <- uni_reg(
@@ -75,7 +84,7 @@ if (requireNamespace("mlbench", quietly = TRUE)) {
     exposures = c("age", "bmi_cat"),
     approach = "logit"
   )
-plot_reg(uni_rr)
+  plot_reg(uni_rr)
 }
 }
 }

@@ -74,7 +74,4 @@ reference:
       - data_epilepsy
       - data_infertility
       - data_lungcancer
-  - title: "Graphical User Interface"
-    desc: "Launch and use the Shiny GUI."
-    contents:
-      - gtregression_app
+

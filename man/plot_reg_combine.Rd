@@ -2,20 +2,22 @@
 % Please edit documentation in R/plot_reg_combine.R
 \name{plot_reg_combine}
 \alias{plot_reg_combine}
-\title{Visualize Univariate and Multivariate Regression Side-by-Side}
+\title{Visualize Univariate and Multivariable Regression Side-by-Side}
 \usage{
 plot_reg_combine(
   tbl_uni,
   tbl_multi,
   title_uni = NULL,
   title_multi = NULL,
-  ref_line = 1,
+  ref_line = NULL,
   order_y = NULL,
   log_x = FALSE,
   point_color = "#1F77B4",
   errorbar_color = "#4C4C4C",
   base_size = 14,
   show_ref = TRUE,
+  sig_color = "",
+  sig_errorbar_color = "",
   xlim_uni = NULL,
   breaks_uni = NULL,
   xlim_multi = NULL,
@@ -23,41 +25,45 @@ plot_reg_combine(
 )
 }
 \arguments{
-\item{tbl_uni}{A `gtsummary` object from `uni_reg()` etc.,}
+\item{tbl_uni}{A `gtsummary` object from `uni_reg()`, etc.}
 
-\item{tbl_multi}{A `gtsummary` object from `multi_reg()`.}
+\item{tbl_multi}{A `gtsummary` object from `multi_reg()`, etc.}
 
-\item{title_uni}{Optional plot title for the univariate model}
+\item{title_uni}{Optional plot title for the univariate panel.}
 
-\item{title_multi}{Optional plot title for the multivariable mode}
+\item{title_multi}{Optional plot title for the multivariable panel.}
 
-\item{ref_line}{Numeric value for the reference line (default = 1).}
+\item{ref_line}{Reference line for both panels; if NULL, uses 0 for linear and 1 otherwise.}
 
-\item{order_y}{Optional character vector to manually order the y-axis labels.}
+\item{order_y}{Optional character vector to customize y-axis group order.}
 
-\item{log_x}{Logical. If `TRUE`, x-axis is log-transformed (default = FALSE).}
+\item{log_x}{Logical. If TRUE, x-axes are log-transformed (ignored for linear).}
 
-\item{point_color}{Optional color for plot points.}
+\item{point_color}{Fill color for non-significant points (default "#1F77B4").}
 
-\item{errorbar_color}{Optional color for error bars.}
+\item{errorbar_color}{Color for non-significant error bars (default "#4C4C4C").}
 
-\item{base_size}{Numeric. Base font size for plot text elements.}
+\item{base_size}{Base font size (default 14).}
 
-\item{show_ref}{Logical. If `TRUE`, includes reference categories}
+\item{show_ref}{Logical. If TRUE, includes reference rows in both panels.}
 
-\item{xlim_uni}{Optional numeric vector to set x-axis limits for uni plot.}
+\item{sig_color}{Optional fill color for significant points; if "" (default), disable highlighting.}
 
-\item{breaks_uni}{Optional numeric vector to set x-axis breaks for uni plot.}
+\item{sig_errorbar_color}{Optional color for significant error bars; if "" (default), disable highlighting.}
 
-\item{xlim_multi}{Optional numeric vector to set x-axis limits for multi plot}
+\item{xlim_uni}{Optional c(min, max) for univariate x-axis.}
 
-\item{breaks_multi}{Optional numeric vector to set x-axis breaks- multi plot.}
+\item{breaks_uni}{Optional numeric vector of breaks for univariate x-axis.}
+
+\item{xlim_multi}{Optional c(min, max) for multivariable x-axis.}
+
+\item{breaks_multi}{Optional numeric vector of breaks for multivariable x-axis.}
 }
 \value{
-A `ggplot2` object with two forest plots displayed side-by-side.
+A `patchwork` object with two `ggplot2` forest plots side-by-side.
 }
 \description{
-Generates side-by-side plots to compare univariate & multivariable results
+Generates side-by-side forest plots to compare univariate & multivariable results.
 }
 \examples{
 \donttest{
