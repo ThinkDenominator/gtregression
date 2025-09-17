@@ -64,7 +64,8 @@ Suggests:
     mlbench,
     car,
     forcats,
-    pkgdown
+    pkgdown,
+    scales (>= 1.3.0)
 RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 Config/Needs/website: 
