@@ -73,26 +73,7 @@ continuous predictors appear as `row_type == "label"` **with** CIs and are treat
 - For `approach == "linear"` with available `p.value`, rows are significant when `p.value < alpha`.
 - Otherwise, rows are significant when the CI does not cross the reference (`0` or `1` as above).
   Use `sig_color` / `sig_errorbar_color` to customize the appearance.
-
-**Styling of y-axis labels**:
-This function generates plain-text labels by default (CRAN-safe). If you want **bold variable
-headers** and **grey reference levels** in vignettes or user code, pair this plot with
-`{ggtext}` manually:
-\preformatted{
-if (requireNamespace("ggtext", quietly = TRUE)) {
-  p + ggplot2::theme(axis.text.y = ggtext::element_markdown(hjust = 0))
 }
-}
-(We do not hard-require `{ggtext}` so CRAN checks pass even when Suggests are not installed.)
-}
-\section{CRAN & Vignette Notes}{
-
-- On CRAN, checks may run without Suggests installed. This function does **not** require `{ggtext}`.
-  If you add styled labels in a vignette, wrap them in a `requireNamespace("ggtext")` guard.
-- For high-quality exports in vignettes: `ggsave(..., device = ragg::agg_png, dpi = 300)` or
-  `ggsave(..., device = cairo_pdf)`.
-}
-
 \examples{
 \donttest{
 if (requireNamespace("mlbench", quietly = TRUE) &&

@@ -37,28 +37,13 @@
 #' - Otherwise, rows are significant when the CI does not cross the reference (`0` or `1` as above).
 #'   Use `sig_color` / `sig_errorbar_color` to customize the appearance.
 #'
-#' **Styling of y-axis labels**:
-#' This function generates plain-text labels by default (CRAN-safe). If you want **bold variable
-#' headers** and **grey reference levels** in vignettes or user code, pair this plot with
-#' `{ggtext}` manually:
-#' \preformatted{
-#' if (requireNamespace("ggtext", quietly = TRUE)) {
-#'   p + ggplot2::theme(axis.text.y = ggtext::element_markdown(hjust = 0))
-#' }
-#' }
-#' (We do not hard-require `{ggtext}` so CRAN checks pass even when Suggests are not installed.)
-#'
 #' @return A `ggplot2` object representing the forest plot.
 #'
-#' @section CRAN & Vignette Notes:
-#' - On CRAN, checks may run without Suggests installed. This function does **not** require `{ggtext}`.
-#'   If you add styled labels in a vignette, wrap them in a `requireNamespace("ggtext")` guard.
-#' - For high-quality exports in vignettes: `ggsave(..., device = ragg::agg_png, dpi = 300)` or
-#'   `ggsave(..., device = cairo_pdf)`.
 #'
 #' @seealso \code{\link{uni_reg}}, \code{\link{multi_reg}}, \code{\link{plot_reg_combine}}
 #'
 #' @importFrom rlang .data
+#' @importFrom stats setNames
 #' @examples
 #' \donttest{
 #' if (requireNamespace("mlbench", quietly = TRUE) &&
@@ -132,7 +117,7 @@ plot_reg <- function(tbl,
       is_header = (.data$row_type == "label") &
         ( (.data$header_row %in% TRUE) |
             (is.na(.data$conf.low) & is.na(.data$conf.high)))|
-        (var_type == "continuous"),
+        (.data$var_type == "continuous"),
 
       # data rows: all level rows + label rows that are NOT headers (e.g., continuous vars)
       is_data = (.data$row_type == "level") | ((.data$row_type == "label") & !.data$is_header),
@@ -154,7 +139,7 @@ plot_reg <- function(tbl,
 
   # --- y factor + stable label mapping ------------------------------------------
   df$row_id <- factor(seq_len(nrow(df)), levels = rev(seq_len(nrow(df))))
-  label_map <- setNames(df$label_clean, as.character(df$row_id))
+  label_map <- stats::setNames(df$label_clean, as.character(df$row_id))
   label_fun <- function(x) unname(label_map[as.character(x)])
 
   # --- SIGNIFICANCE --------------------------------------------------------------

@@ -66,7 +66,6 @@ Creates two aligned forest plots (univariate and multivariable) from
 The y-axis rows are aligned by a unique `(variable, level)` key so each
 estimate appears exactly once per panel. Label styling is plain text by
 default (CRAN-safe). To render bold headers / grey refs in vignettes, pair
-with `{ggtext}` manually (see `plot_reg()` docs).
 }
 \examples{
 \donttest{

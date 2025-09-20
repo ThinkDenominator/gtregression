@@ -7,7 +7,6 @@
 #' The y-axis rows are aligned by a unique `(variable, level)` key so each
 #' estimate appears exactly once per panel. Label styling is plain text by
 #' default (CRAN-safe). To render bold headers / grey refs in vignettes, pair
-#' with `{ggtext}` manually (see `plot_reg()` docs).
 #'
 #' @param tbl_uni Univariate `gtsummary`-like table.
 #' @param tbl_multi Multivariable `gtsummary`-like table.
@@ -96,7 +95,7 @@ plot_reg_combine <- function(tbl_uni,
         is_header = (.data$row_type == "label") &
           ( (.data$header_row %in% TRUE) |
               (is.na(.data$conf.low) & is.na(.data$conf.high))) |
-          (var_type == "continuous"),
+          (.data$var_type == "continuous"),
         is_data   = (.data$row_type == "level") | ((.data$row_type == "label") & !.data$is_header),
         label_clean = dplyr::case_when(
           is_header ~ .data$label,                                   # header (no indent)

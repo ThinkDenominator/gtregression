@@ -34,3 +34,8 @@
 ^index\.md$
 ^renv$
 ^renv\.lock$
+^\.github$
+^\.zenodo\.json$
+^codecov\.yml$
+^.*\.Rhistory$
+^.*\.RData$
