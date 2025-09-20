@@ -7,7 +7,6 @@
 plot_reg(
   tbl,
   title = NULL,
-  ref_line = NULL,
   order_y = NULL,
   log_x = FALSE,
   xlim = NULL,
@@ -16,75 +15,110 @@ plot_reg(
   errorbar_color = "#4C4C4C",
   base_size = 14,
   show_ref = TRUE,
-  sig_color = "",
-  sig_errorbar_color = ""
+  sig_color = NULL,
+  sig_errorbar_color = NULL,
+  alpha = 0.05
 )
 }
 \arguments{
-\item{tbl}{A gtsummary object from regression functions}
+\item{tbl}{A `gtsummary`-like object returned by `gtregression`
+(must contain `table_body` and attributes `source` and `approach`).}
 
-\item{title}{Optional plot title}
+\item{title}{Optional plot title (character).}
 
-\item{ref_line}{Reference line; if NULL, uses 0 for linear and 1 otherwise}
+\item{order_y}{Optional character vector to customize the y-axis header ordering.}
 
-\item{order_y}{Optional character vector to customise y-axis order}
+\item{log_x}{Logical. If `TRUE`, log x-axis (ignored for linear models).}
 
-\item{log_x}{Logical. If TRUE, log x-axis (ignored for linear)}
+\item{xlim}{Optional numeric vector of length 2 for x-axis limits.}
 
-\item{xlim}{Optional numeric vector for x-axis limits}
+\item{breaks}{Optional numeric vector for x-axis tick breaks (ignored if `log_x = TRUE`).}
 
-\item{breaks}{Optional numeric vector for x-axis tick breaks}
+\item{point_color}{Fill color for points (default `"#1F77B4"`).}
 
-\item{point_color}{Fill color for points (default "#1F77B4")}
+\item{errorbar_color}{Color for all error bars (default `"#4C4C4C"`).}
 
-\item{errorbar_color}{Color for all error bars (default "#4C4C4C")}
+\item{base_size}{Base font size for `theme_minimal()` (default `14`).}
 
-\item{base_size}{Base font size}
+\item{show_ref}{Logical. If `TRUE`, includes the reference level on the plot and labels it `(Ref.)`.}
 
-\item{show_ref}{Logical. If TRUE, includes reference in the plot}
+\item{sig_color}{Optional fill color for **significant** points; if `NULL`,
+significant points reuse `point_color`.}
 
-\item{sig_color}{Optional fill color for significant points; if "" (default),
-significance highlighting is disabled}
+\item{sig_errorbar_color}{Optional color for **significant** error bars; if `NULL`,
+significant bars reuse `errorbar_color`.}
 
-\item{sig_errorbar_color}{Optional color for significant error bars; if "" (default),
-bars stay `errorbar_color`}
+\item{alpha}{Significance level for linear models when `p.value` is available (default `0.05`).}
 }
 \value{
 A `ggplot2` object representing the forest plot.
 }
 \description{
-Creates a forest plot from a `gtsummary` object.
-Supports both univariate and multivariable models
-with hierarchical labels for categorical variables.
-Designed to work seamlessly with outputs from
-functions like `uni_reg()` and `multi_reg()`.
+Creates a forest plot from a `gtsummary`-style object produced by
+`gtregression` functions (e.g., `uni_reg()`, `multi_reg()`).
+The function supports both univariate and multivariable models,
+renders hierarchical labels (variable headers vs. levels), and
+computes significance highlighting using either *p*-values (linear models)
+or CI-vs-reference rules (non-linear models).
 }
+\details{
+**Reference line**: The vertical reference is fixed at `0` for linear models and `1` for all
+other approaches, inferred from `attr(tbl, "approach")`.
+
+**Header / data detection**: Variable headers are recognized via `row_type == "label"`
+together with `header_row` or missing CI; categorical levels use `row_type == "level"`;
+continuous predictors appear as `row_type == "label"` **with** CIs and are treated as data rows.
+
+**Significance highlighting**:
+- For `approach == "linear"` with available `p.value`, rows are significant when `p.value < alpha`.
+- Otherwise, rows are significant when the CI does not cross the reference (`0` or `1` as above).
+  Use `sig_color` / `sig_errorbar_color` to customize the appearance.
+
+**Styling of y-axis labels**:
+This function generates plain-text labels by default (CRAN-safe). If you want **bold variable
+headers** and **grey reference levels** in vignettes or user code, pair this plot with
+`{ggtext}` manually:
+\preformatted{
+if (requireNamespace("ggtext", quietly = TRUE)) {
+  p + ggplot2::theme(axis.text.y = ggtext::element_markdown(hjust = 0))
+}
+}
+(We do not hard-require `{ggtext}` so CRAN checks pass even when Suggests are not installed.)
+}
+\section{CRAN & Vignette Notes}{
+
+- On CRAN, checks may run without Suggests installed. This function does **not** require `{ggtext}`.
+  If you add styled labels in a vignette, wrap them in a `requireNamespace("ggtext")` guard.
+- For high-quality exports in vignettes: `ggsave(..., device = ragg::agg_png, dpi = 300)` or
+  `ggsave(..., device = cairo_pdf)`.
+}
+
 \examples{
 \donttest{
-if (requireNamespace("mlbench", quietly = TRUE)) {
+if (requireNamespace("mlbench", quietly = TRUE) &&
+    requireNamespace("gtregression", quietly = TRUE)) {
   data("PimaIndiansDiabetes2", package = "mlbench")
-  library(dplyr)
-  library(gtregression)
+  pima <- PimaIndiansDiabetes2
+  pima$diabetes <- ifelse(pima$diabetes == "pos", 1, 0)
+  pima$bmi_cat <- cut(
+    pima$mass,
+    breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
+    labels = c("Underweight", "Normal", "Overweight", "Obese")
+  )
 
-  # Prepare data
-  pima <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi_cat = cut(
-        mass,
-        breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
-        labels = c("Underweight", "Normal", "Overweight", "Obese")
-      )
-    )
-
-  # Univariate logistic regression
-  uni_rr <- uni_reg(
+  # Univariate logistic regression table via gtregression
+  tbl_uni <- gtregression::uni_reg(
     data = pima,
     outcome = "diabetes",
     exposures = c("age", "bmi_cat"),
     approach = "logit"
   )
-  plot_reg(uni_rr)
+
+  p <- plot_reg(tbl_uni, title = "Univariate (logit)", sig_color = "#D55E00")
+  print(p)
 }
 }
+}
+\seealso{
+\code{\link{uni_reg}}, \code{\link{multi_reg}}, \code{\link{plot_reg_combine}}
 }

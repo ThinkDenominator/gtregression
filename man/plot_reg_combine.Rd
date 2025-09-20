@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_reg_combine.R
 \name{plot_reg_combine}
 \alias{plot_reg_combine}
-\title{Visualize Univariate and Multivariable Regression Side-by-Side}
+\title{Side-by-Side Forest Plots: Univariate vs Multivariable}
 \usage{
 plot_reg_combine(
   tbl_uni,
@@ -16,96 +16,72 @@ plot_reg_combine(
   errorbar_color = "#4C4C4C",
   base_size = 14,
   show_ref = TRUE,
-  sig_color = "",
-  sig_errorbar_color = "",
+  sig_color = NULL,
+  sig_errorbar_color = NULL,
   xlim_uni = NULL,
   breaks_uni = NULL,
   xlim_multi = NULL,
-  breaks_multi = NULL
+  breaks_multi = NULL,
+  alpha = 0.05
 )
 }
 \arguments{
-\item{tbl_uni}{A `gtsummary` object from `uni_reg()`, etc.}
+\item{tbl_uni}{Univariate `gtsummary`-like table.}
 
-\item{tbl_multi}{A `gtsummary` object from `multi_reg()`, etc.}
+\item{tbl_multi}{Multivariable `gtsummary`-like table.}
 
-\item{title_uni}{Optional plot title for the univariate panel.}
+\item{title_uni, title_multi}{Optional panel titles.}
 
-\item{title_multi}{Optional plot title for the multivariable panel.}
+\item{ref_line}{Optional numeric reference line (defaults to 0 for linear,
+1 otherwise, inferred per panel).}
 
-\item{ref_line}{Reference line for both panels; if NULL, uses 0 for linear and 1 otherwise.}
+\item{order_y}{Optional character vector to customize header ordering.}
 
-\item{order_y}{Optional character vector to customize y-axis group order.}
+\item{log_x}{Logical. If `TRUE`, use log x-axis (ignored for linear models).}
 
-\item{log_x}{Logical. If TRUE, x-axes are log-transformed (ignored for linear).}
+\item{point_color, errorbar_color}{Base colors for non-significant rows.}
 
-\item{point_color}{Fill color for non-significant points (default "#1F77B4").}
+\item{base_size}{Base font size for `theme_minimal()`.}
 
-\item{errorbar_color}{Color for non-significant error bars (default "#4C4C4C").}
+\item{show_ref}{Logical; if `TRUE`, include and tag reference levels `(Ref.)`.}
 
-\item{base_size}{Base font size (default 14).}
+\item{sig_color, sig_errorbar_color}{Optional colors for significant rows; if
+`NULL`, they reuse the base colors.}
 
-\item{show_ref}{Logical. If TRUE, includes reference rows in both panels.}
+\item{xlim_uni, breaks_uni}{Optional x-limits and breaks for the univariate panel.}
 
-\item{sig_color}{Optional fill color for significant points; if "" (default), disable highlighting.}
+\item{xlim_multi, breaks_multi}{Optional x-limits and breaks for the multivariable panel.}
 
-\item{sig_errorbar_color}{Optional color for significant error bars; if "" (default), disable highlighting.}
-
-\item{xlim_uni}{Optional c(min, max) for univariate x-axis.}
-
-\item{breaks_uni}{Optional numeric vector of breaks for univariate x-axis.}
-
-\item{xlim_multi}{Optional c(min, max) for multivariable x-axis.}
-
-\item{breaks_multi}{Optional numeric vector of breaks for multivariable x-axis.}
+\item{alpha}{Significance level for linear models when `p.value` is available.}
 }
 \value{
-A `patchwork` object with two `ggplot2` forest plots side-by-side.
+A `patchwork` object with two `ggplot2` panels.
 }
 \description{
-Generates side-by-side forest plots to compare univariate & multivariable results.
+Creates two aligned forest plots (univariate and multivariable) from
+`gtsummary`-style objects returned by `gtregression` functions
+(e.g., `uni_reg()`, `multi_reg()`).
+}
+\details{
+The y-axis rows are aligned by a unique `(variable, level)` key so each
+estimate appears exactly once per panel. Label styling is plain text by
+default (CRAN-safe). To render bold headers / grey refs in vignettes, pair
+with `{ggtext}` manually (see `plot_reg()` docs).
 }
 \examples{
 \donttest{
-if (requireNamespace("mlbench", quietly = TRUE)) {
+if (requireNamespace("mlbench", quietly = TRUE) &&
+    requireNamespace("gtregression", quietly = TRUE)) {
   data("PimaIndiansDiabetes2", package = "mlbench")
-  library(dplyr)
-  library(gtregression)
+  d <- PimaIndiansDiabetes2
+  d$diabetes <- ifelse(d$diabetes == "pos", 1, 0)
 
-  # Prepare data
-  pima <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi_cat = cut(
-        mass,
-        breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
-        labels = c("Underweight", "Normal", "Overweight", "Obese")
-      ),
-      age_cat = cut(
-        age,
-        breaks = c(-Inf, 29, 49, Inf),
-        labels = c("Young", "Middle-aged", "Older")
-      )
-    )
-
-  # Univariate logistic regression
-  uni_rr <- uni_reg(
-    data = pima,
-    outcome = "diabetes",
-    exposures = c("age_cat", "bmi_cat"),
-    approach = "logit"
-  )
-
-  # Multivariable logistic regression
-  multi_rr <- multi_reg(
-    data = pima,
-    outcome = "diabetes",
-    exposures = c("age_cat", "bmi_cat"),
-    approach = "logit"
-  )
-
-  # Combined plot
-  plot_reg_combine(uni_rr, multi_rr)
+  tbl_u <- gtregression::uni_reg(d, outcome = "diabetes",
+                                 exposures = c("age","glucose"), approach = "logit")
+  tbl_m <- gtregression::multi_reg(d, outcome = "diabetes",
+                                   exposures = c("age","glucose"), approach = "logit")
+  plot_reg_combine(tbl_u, tbl_m,
+                   title_uni = "Univariate", title_multi = "Adjusted")
 }
 }
 }
