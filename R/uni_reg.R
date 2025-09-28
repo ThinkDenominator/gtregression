@@ -1,115 +1,109 @@
-#' Univariate regression (Odds, Risk, or Rate Ratios)
+#' Univariate regression
 #'
-#' Performs univariate regression for each exposure on a binary,
-#' continuous, or count outcome.
-#' Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR),
-#' or Incidence Rate Ratios (IRR).
+#' Create a publication-ready univariate regression table using either
+#' \pkg{gt} or \pkg{flextable}
 #'
-#' @param data A data frame containing the variables.
-#' @param outcome outcome variable (binary, continuous, or count).
-#' @param exposures A vector of predictor variables.
-#' @param approach Modeling approach to use. One of:
-#'   `"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
-#'   `"robpoisson"` (RR), `"linear"` (Beta coefficients), `"negbin"` (IRR)
-#' @importFrom broom tidy
-#' @details This function requires the following packages:
-#' `dplyr`, `purrr`, `gtsummary`, `risks`.
-#' @return A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
-#' \itemize{
-#'   \item A publication-ready regression table (`tbl_stack`)
-#'   \item Accessor elements:
-#'     \itemize{
-#'       \item `$models`: Fitted regression models for each exposure
-#'       \item `$model_summaries`: Tidy model summaries
-#'       \item `$reg_check`: Diagnostics (only for linear regression)
-#'     }
+#' @param data data.frame
+#' @param outcome character scalar; outcome column name
+#' @param exposures character vector; exposure column names
+#' @param approach one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"}, \code{"linear"}
+#' @param format one of \code{"gt"} (default) or \code{"flextable"}
+#' @param theme preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
+#'   \code{"shaded"}, \code{"jama"}) or primitives
+#'   \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}
+#'
+#' @return A list of class \code{c("gtregression","uni_reg", ...)} with elements:
+#' \describe{
+#'   \item{table}{A \code{gt_tbl} (when \code{format="gt"}) or \code{flextable} (when \code{format="flextable"}).}
+#'   \item{table_body}{Data frame of numeric estimates and CIs.}
+#'   \item{table_display}{Data frame for display (headers + levels).}
+#'   \item{models}{List of fitted univariate models.}
+#'   \item{model_summaries}{Per-model \code{summary()} results.}
+#'   \item{reg_check}{Diagnostics for linear models; message otherwise.}
+#'   \item{approach, format, source}{Metadata fields.}
 #' }
+#'
 #' @examples
-#' data(PimaIndiansDiabetes2, package = "mlbench")
-#' library(dplyr)
-#' pima <- PimaIndiansDiabetes2 |>
-#'   dplyr::mutate(diabetes = ifelse(diabetes == "pos", 1, 0))
-#' uni_reg(pima, outcome = "diabetes", exposures = "age", approach = "logit")
-#' @seealso \code{\link{multi_reg}}, \code{\link{plot_reg}}
-#' @family regression functions
+#' d <- mtcars
+#' if (requireNamespace("gt", quietly = TRUE)) {
+#'   uni_reg(d, "am", c("mpg","cyl"), approach = "logit", format = "gt")$table
+#' }
+#' if (requireNamespace("flextable", quietly = TRUE)) {
+#'   uni_reg(d, "am", c("mpg","cyl"), approach = "logit", format = "flextable")$table
+#' }
+#'
+#' @importFrom stats qnorm residuals
 #' @export
 uni_reg <- function(data,
                     outcome,
                     exposures,
-                    approach = "logit") {
+                    approach = "logit",
+                    format = c("gt","flextable"),
+                    theme = c("minimal")) {
 
-  # Validate inputs through internal helpers
+  format <- match.arg(format)
+  theme  <- .resolve_theme(theme)
+
+  # ---- validate inputs (package helper) -------------------------------------
   .validate_uni_inputs(data, outcome, exposures, approach)
 
-  # Edit labels and abbreviation through internal helpers
-  label_est <- .get_effect_label(approach)
-  abbreviation <- .get_abbreviation(approach)
-  remove_abbrev <- .get_remove_abbreviation(approach)
+  # engine tag for S3 class chain
+  fmt_class <- if (format == "gt") "gt_uni" else "ft_uni"
 
-  # Create a list of models, one for each exposure
-  model_list <- lapply(exposures, function(x)
-  # fit model using internal helper function
-    .fit_uni_model(data, outcome, x, approach))
-
-  # Assign names and remove failed models (NULLs)
+  # ---- fit, tidy, stack ------------------------------------------------------
+  model_list <- lapply(exposures, function(x) .fit_uni_model(data, outcome, x, approach))
   names(model_list) <- exposures
   model_list <- Filter(Negate(is.null), model_list)
+  if (!length(model_list))
+    stop("All models failed. Check data and exposure specifications.", call. = FALSE)
 
-  # Stop if no models succeeded
-  if (length(model_list) == 0)
-    stop("All models failed. Please check your data or exposures.",
-         call. = FALSE)
+  tidy_list <- Map(function(fit, var) .tidy_uni(fit, var, approach), model_list, names(model_list))
+  tidy_list <- Filter(Negate(is.null), tidy_list)
+  if (!length(tidy_list))
+    stop("No estimable coefficients for supplied exposures.", call. = FALSE)
 
-  # Create a list of formatted gtsummary tables (one per exposure)
-  tbl_list <- Map(function(fit, var) {
-    gtsummary::tbl_regression(fit, exponentiate = approach != "linear") |>
-      gtsummary::modify_header(estimate = label_est) |>
-      gtsummary::add_n(location = "label")
-  }, model_list, names(model_list))
+  td <- do.call(rbind, tidy_list)
 
-  # Stack the tables into one combined output
-  result <- gtsummary::tbl_stack(tbl_list) |>
-    gtsummary::remove_abbreviation(remove_abbrev) |>
-    gtsummary::modify_abbreviation(abbreviation)
+  # ---- display + build table -------------------------------------------------
+  effect_label <- .get_effect_label(approach)
+  display_df   <- .make_display(td, data, outcome, approach, effect_label)
+  .must_be_display_df(display_df)
 
-  # get model summaries
+  source_note  <- .abbrev_note(approach)
+
+  tbl <- if (format == "gt") {
+    .build_gt(display_df, effect_label, source_note, theme)
+  } else {
+    .build_flextable(display_df, effect_label, source_note, theme)
+  }
+
+  # ---- summaries & diagnostics ----------------------------------------------
   model_summaries <- lapply(model_list, summary)
 
-  # Reg check for linear approach only
-  reg_diagnostics <- if (approach == "linear") {
-    Map(.reg_check_linear, model_list, names(model_list))
-  } else {
-    "Regression diagnostics only available for 'linear' models."
+  # Always define a default first (belt-and-braces)
+  reg_diagnostics <- list(message = "Regression diagnostics available only for 'linear' models.")
+
+  if (identical(approach, "linear")) {
+    reg_diagnostics <- lapply(names(model_list), function(v) {
+      .reg_check_linear(model_list[[v]], exposure = v)
+    })
+    names(reg_diagnostics) <- names(model_list)
   }
 
-  # Add metadata as attributes to support other functions of the package
-  attr(result, "approach") <- approach
-  attr(result, "source") <- "uni_reg"
-  class(result) <- c("uni_reg", class(result))
-  attr(result, "models") <- model_list
-  attr(result, "model_summaries") <- model_summaries
-  attr(result, "reg_diagnostics") <- reg_diagnostics
 
-  # return result
-  result
+  # ---- return ----------------------------------------------------------------
+  res <- list(
+    table           = tbl,
+    table_body      = td,
+    table_display   = display_df,
+    models          = model_list,
+    model_summaries = model_summaries,
+    reg_check       = reg_diagnostics,
+    approach        = approach,
+    format          = format,
+    source          = "uni_reg"
+  )
+  class(res) <- c("gtregression", "uni_reg", fmt_class, class(res))
+  res
 }
-# S3 print
-#' @export
-`$.uni_reg` <- function(x, name) {
-  if (name == "models") {
-    model_list <- attr(x, "models")
-    lapply(model_list, print)
-    return(invisible(model_list))
-  }
-  if (name == "model_summaries") {
-    return(attr(x, "model_summaries"))
-  }
-  if (name == "reg_check") {
-    return(attr(x, "reg_diagnostics"))
-  }
-  if (name == "table") {
-    return(x)
-  }
-  # Fall back to default behaviour for other gtsummary fields
-  NextMethod("$")
-}
+

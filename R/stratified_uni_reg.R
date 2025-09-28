@@ -56,89 +56,68 @@
 #' @importFrom purrr map
 #' @importFrom broom tidy
 #' @importFrom gtsummary tbl_stack
+
 #' @export
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
-                               approach = "logit") {
-  # input checks through internal helpers
+                               approach = "logit",
+                               format   = c("gt","flextable"),
+                               theme    = c("minimal")) {
+  format <- match.arg(format)
+  theme  <- .resolve_theme(theme)
+
   .validate_uni_inputs(data, outcome, exposures, approach)
+  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.", call. = FALSE)
 
-  # check stratifier presence
-  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.",
-                                         call. = FALSE)
+  data <- data[!is.na(data[[stratifier]]), , drop = FALSE]
+  levs <- .strata_levels(data, stratifier)
 
-  # Inform users as the process is time consuming
   message("Running stratified univariate regression by: ", stratifier)
 
-  # remove NAs
-  data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
-  strata_levels <- unique(data[[stratifier]])
-
-  # initialise results
-  tbl_list <- list()
-  spanners <- character()
-  models_list <- list()
-  summaries_list <- list()
-  diagnostics_list <- list()
-
-  # Model fit
-  for (lev in strata_levels) {
-    message("  > Stratum: ", stratifier, " = ", lev)
-    data_stratum <- data[data[[stratifier]] == lev, , drop = FALSE]
-
-    result <- tryCatch(
-      {
-        uni <- uni_reg(
-          data = data_stratum,
-          outcome = outcome,
-          exposures = exposures,
-          approach = approach
-        )
-      },
-      error = function(e) {
-        warning("Skipping stratum ", lev, ": ", e$message, call. = FALSE)
-        NULL
-      }
+  per_stratum <- list()
+  for (lv in levs) {
+    message("  > Stratum: ", stratifier, " = ", lv)
+    dlev <- data[data[[stratifier]] == lv, , drop = FALSE]
+    res  <- tryCatch(
+      uni_reg(dlev, outcome, exposures, approach = approach, format = format, theme = theme),
+      error = function(e) { warning("Skipping stratum ", lv, ": ", e$message, call. = FALSE); NULL }
     )
-    # if model fit is successful
-    if (!is.null(result)) {
-      tbl_list[[length(tbl_list) + 1]] <- result
-      models_list[[lev]] <- attr(result, "models")
-      summaries_list[[lev]] <- attr(result, "model_summaries")
-      diagnostics_list[[lev]] <- attr(result, "reg_check")
-      spanners <- c(spanners, paste0("**", stratifier, " = ", lev, "**"))
-    }
+    if (!is.null(res)) per_stratum[[as.character(lv)]] <- res
+  }
+  if (!length(per_stratum)) stop("No valid models across strata.", call. = FALSE)
+
+  built <- .strata_build_wide_uni(data, outcome, exposures, stratifier, per_stratum)
+  wide      <- built$wide
+  spanners  <- built$spanners
+  footnotes <- .footnotes_uni_strata(approach)
+  eff_lab   <- .get_effect_label(approach)
+
+  tbl <- if (format == "gt") {
+    .build_gt_strata_wide_uni(wide, spanners, eff_lab, theme, footnotes)
+  } else {
+    .build_flex_strata_wide_uni(wide, spanners, eff_lab, theme, footnotes)
   }
 
-  if (length(tbl_list) == 0) stop("No valid models across strata.")
+  # collect metadata for users
+  models_list <- lapply(per_stratum, `[[`, "models")
+  summaries   <- lapply(per_stratum, `[[`, "model_summaries")
+  diags       <- lapply(per_stratum, `[[`, "reg_check")
 
-  # Put everything together
-  merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
-
-  # Add metadata as attributes
-  attr(merged_tbl, "models") <- models_list
-  attr(merged_tbl, "model_summaries") <- summaries_list
-  attr(merged_tbl, "reg_check") <- diagnostics_list
-  attr(merged_tbl, "approach") <- approach
-  attr(merged_tbl, "source") <- "stratified_uni_reg"
-  # add class
-  class(merged_tbl) <- c("stratified_uni_reg", class(merged_tbl))
-
-  return(merged_tbl)
+  fmt_class <- if (format == "gt") "gt_strata_uni" else "ft_strata_uni"
+  out <- list(
+    table         = tbl,
+    table_display = wide,
+    per_stratum   = per_stratum,
+    models        = models_list,
+    model_summaries = summaries,
+    reg_check     = diags,
+    by            = stratifier,
+    levels        = levs,
+    approach      = approach,
+    format        = format,
+    source        = "stratified_uni_reg"
+  )
+  class(out) <- c("gtregression","stratified_uni_reg", fmt_class, class(out))
+  out
 }
 
-#' @export
-`$.stratified_uni_reg` <- function(x, name) {
-  if (name == "table") {
-    return(x)
-  }
-  if (name == "models") {
-    return(attr(x, "models"))
-  }
-  if (name == "model_summaries") {
-    return(attr(x, "model_summaries"))
-  }
-  if (name == "reg_check") {
-    return(attr(x, "reg_check"))
-  }
-  NextMethod("$")
-}
+

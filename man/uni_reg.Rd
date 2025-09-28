@@ -2,51 +2,55 @@
 % Please edit documentation in R/uni_reg.R
 \name{uni_reg}
 \alias{uni_reg}
-\title{Univariate regression (Odds, Risk, or Rate Ratios)}
+\title{Univariate regression}
 \usage{
-uni_reg(data, outcome, exposures, approach = "logit")
+uni_reg(
+  data,
+  outcome,
+  exposures,
+  approach = "logit",
+  format = c("gt", "flextable"),
+  theme = c("minimal")
+)
 }
 \arguments{
-\item{data}{A data frame containing the variables.}
+\item{data}{data.frame}
 
-\item{outcome}{outcome variable (binary, continuous, or count).}
+\item{outcome}{character scalar; outcome column name}
 
-\item{exposures}{A vector of predictor variables.}
+\item{exposures}{character vector; exposure column names}
 
-\item{approach}{Modeling approach to use. One of:
-`"logit"` (OR), `"log-binomial"` (RR), `"poisson"` (IRR),
-`"robpoisson"` (RR), `"linear"` (Beta coefficients), `"negbin"` (IRR)}
+\item{approach}{one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"}, \code{"linear"}}
+
+\item{format}{one of \code{"gt"} (default) or \code{"flextable"}}
+
+\item{theme}{preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
+\code{"shaded"}, \code{"jama"}) or primitives
+\code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}}
 }
 \value{
-A list of class `uni_reg` and `gtsummary::tbl_stack`, including:
-\itemize{
-  \item A publication-ready regression table (`tbl_stack`)
-  \item Accessor elements:
-    \itemize{
-      \item `$models`: Fitted regression models for each exposure
-      \item `$model_summaries`: Tidy model summaries
-      \item `$reg_check`: Diagnostics (only for linear regression)
-    }
+A list of class \code{c("gtregression","uni_reg", ...)} with elements:
+\describe{
+  \item{table}{A \code{gt_tbl} (when \code{format="gt"}) or \code{flextable} (when \code{format="flextable"}).}
+  \item{table_body}{Data frame of numeric estimates and CIs.}
+  \item{table_display}{Data frame for display (headers + levels).}
+  \item{models}{List of fitted univariate models.}
+  \item{model_summaries}{Per-model \code{summary()} results.}
+  \item{reg_check}{Diagnostics for linear models; message otherwise.}
+  \item{approach, format, source}{Metadata fields.}
 }
 }
 \description{
-Performs univariate regression for each exposure on a binary,
-continuous, or count outcome.
-Depending on `approach`, returns either Odds Ratios (OR), Risk Ratios (RR),
-or Incidence Rate Ratios (IRR).
-}
-\details{
-This function requires the following packages:
-`dplyr`, `purrr`, `gtsummary`, `risks`.
+Create a publication-ready univariate regression table using either
+\pkg{gt} or \pkg{flextable}
 }
 \examples{
-data(PimaIndiansDiabetes2, package = "mlbench")
-library(dplyr)
-pima <- PimaIndiansDiabetes2 |>
-  dplyr::mutate(diabetes = ifelse(diabetes == "pos", 1, 0))
-uni_reg(pima, outcome = "diabetes", exposures = "age", approach = "logit")
+d <- mtcars
+if (requireNamespace("gt", quietly = TRUE)) {
+  uni_reg(d, "am", c("mpg","cyl"), approach = "logit", format = "gt")$table
 }
-\seealso{
-\code{\link{multi_reg}}, \code{\link{plot_reg}}
+if (requireNamespace("flextable", quietly = TRUE)) {
+  uni_reg(d, "am", c("mpg","cyl"), approach = "logit", format = "flextable")$table
 }
-\concept{regression functions}
+
+}

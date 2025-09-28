@@ -10,6 +10,7 @@
 # Prevent global variable warnings
 utils::globalVariables(c(
   ".data",
-  "reference_row", "variable", "label_clean", "header_order", "row_id",
-  "estimate", "conf.low", "conf.high", "approach", "stat_n"
+  "reference_row", "variable", "label_clean", "header_order", "row_id", "label",
+  "estimate", "conf.low", "conf.high", "approach", "stat_n", "row_type", "level",
+  "var_type", "p.value"
 ))

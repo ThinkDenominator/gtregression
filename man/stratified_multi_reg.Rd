@@ -2,47 +2,54 @@
 % Please edit documentation in R/stratified_multi_reg.R
 \name{stratified_multi_reg}
 \alias{stratified_multi_reg}
-\title{Stratified Multivariable Regression (Adjusted OR, RR, IRR, or Beta)}
+\title{Stratified multivariable regression (wide, adjusted; no gtsummary)}
 \usage{
-stratified_multi_reg(data, outcome, exposures, stratifier, approach = "logit")
+stratified_multi_reg(
+  data,
+  outcome,
+  exposures,
+  stratifier,
+  approach = "logit",
+  format = c("gt", "flextable"),
+  theme = c("minimal")
+)
 }
 \arguments{
-\item{data}{A data frame containing the variables.}
+\item{data}{data.frame}
 
-\item{outcome}{name of the outcome variable.}
+\item{outcome}{character scalar; outcome column name}
 
-\item{exposures}{vector specifying the predictor (exposure) variables.}
+\item{exposures}{character vector; predictors included in each model}
 
-\item{stratifier}{A character string specifying the stratifying variable.}
+\item{stratifier}{character scalar; stratifying variable}
 
-\item{approach}{Modeling approach to use. One of:
-`"logit"` (Adjusted Odds Ratios), `"log-binomial"` (Adjusted Risk Ratios),
-`"poisson"` (Adjusted IRRs), `"robpoisson"` (Adjusted RRs),
-or `"linear"` (Beta coefficients), `"negbin"` (Adjusted IRRs).}
+\item{approach}{"logit","log-binomial","poisson","linear","robpoisson","negbin"}
+
+\item{format}{"gt" (default) or "flextable"}
+
+\item{theme}{preset (e.g. "minimal","striped","clinical","shaded","jama")
+or primitives c("plain","zebra","lines","labels_bold","compact","header_shaded")}
 }
 \value{
-An object of class `stratified_multi_reg`, which includes:
-- `table`: A `gtsummary::tbl_stack` object of regression tables by stratum,
-- `models`: A named list of model objects for each stratum,
-- `model_summaries`: A list of tidy model summaries,
-- `reg_check`: Diagnostics results (if available for the model type).
+A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
+\describe{
+  \item{table}{A \code{gt_tbl} (format="gt") or \code{flextable} (format="flextable").}
+  \item{table_display}{Wide data.frame used to build the table.}
+  \item{per_stratum}{Named list of per-stratum results (models/summaries/diagnostics).}
+  \item{models, model_summaries, reg_check}{Named lists by stratum.}
+  \item{by, levels, approach, format, source}{Metadata fields.}
+}
 }
 \description{
-Performs multivariable regression with multiple exposures on
-a binary, count, or continuous outcome,
-stratified by a specified variable.
-NA values in the stratifier are excluded from analysis.
+Fits one multivariable model per stratum and returns a unified wide table:
+a single "Characteristic" column and, under bold spanners for each stratum,
+two columns: "Adjusted <effect>" and "p-value".
 }
-\section{Accessors}{
-
-\describe{
-  \item{\code{$table}}{Stacked table of stratified regression outputs.}
-  \item{\code{$models}}{Named list of fitted models per stratum.}
-  \item{\code{$model_summaries}}{Tidy summaries for each model.}
-  \item{\code{$reg_check}}{Regression diagnostic checks (when applicable).}
+\details{
+The footer shows two lines:
+  1) Abbreviations (from `.abbrev_note()`),
+  2) Per-stratum complete-case N used in the multivariable model.
 }
-}
-
 \examples{
 if (requireNamespace("mlbench", quietly = TRUE) &&
   requireNamespace("dplyr", quietly = TRUE)) {
@@ -65,7 +72,4 @@ if (requireNamespace("mlbench", quietly = TRUE) &&
   stratified_multi$table
 }
 
-}
-\seealso{
-[multi_reg()], [stratified_uni_reg()], [plot_reg()]
 }

@@ -2,71 +2,17 @@
 % Please edit documentation in R/merge_tables.R
 \name{merge_tables}
 \alias{merge_tables}
-\title{Merge Multiple gtsummary Tables (Descriptive, Univariate, Multivariable)}
+\title{Merge tables (descriptive / uni / multi) and preserve look & notes}
 \usage{
-merge_tables(..., spanners = NULL)
+merge_tables(..., spanners = NULL, theme = "minimal")
 }
 \arguments{
-\item{...}{Two or more `gtsummary` table objects to merge.}
+\item{...}{package tables with $table_display (same engine)}
 
-\item{spanners}{Optional character vector of column header titles. If not supplied,
-defaults to `"Table 1"`, `"Univariate"`, `"Multivariable"` etc.}
-}
-\value{
-A merged `gtsummary::tbl_merge` object.
+\item{spanners}{labels over each panel}
+
+\item{theme}{merge theme (preset or primitives)}
 }
 \description{
-Flexibly merges any 2 or more `gtsummary` tables (e.g., from `descriptive_table()`,
-`uni_reg()`, `multi_reg()`) into a single table using `tbl_merge()`.
-Automatically applies column spanners based on the order of inputs.
-}
-\examples{
-\donttest{
-if (requireNamespace("mlbench", quietly = TRUE)) {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-  library(dplyr)
-  library(gtregression)
-
-  # Prepare data
-  pima <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi_cat = cut(
-        mass,
-        breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
-        labels = c("Underweight", "Normal", "Overweight", "Obese")
-      )
-    )
-
-  # Descriptive table
-  desc_tbl <- descriptive_table(pima,
-                                exposures = c("age", "bmi_cat"),
-                                by = "diabetes")
-
-  # Univariate logistic regression
-  uni_tbl <- uni_reg(
-    data = pima,
-    outcome = "diabetes",
-    exposures = c("age", "bmi_cat"),
-    approach = "logit"
-  )
-
-  # Multivariable logistic regression
-  multi_tbl <- multi_reg(
-    data = pima,
-    outcome = "diabetes",
-    exposures = c("age", "bmi_cat"),
-    approach = "logit"
-  )
-
-  # Merge descriptive + univariate + multivariate
-  merge_tables(desc_tbl, uni_tbl, multi_tbl)
-
-  # Merge with custom spanners
-  merge_tables(desc_tbl, uni_tbl, spanners = c("Summary", "Crude"))
-
-  # Merge just uni and multi
-  merge_tables(uni_tbl, multi_tbl)
-}
-}
+Merge tables (descriptive / uni / multi) and preserve look & notes
 }

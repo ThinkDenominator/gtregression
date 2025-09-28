@@ -220,6 +220,8 @@ plot_reg_combine <- function(tbl_uni,
       ggplot2::theme_minimal(base_size = base_size) +
       ggplot2::theme(
         panel.grid.major.y = ggplot2::element_blank(),
+        panel.grid.major.x = ggplot2::element_blank(),
+        panel.grid.minor.x = ggplot2::element_blank(),
         axis.text.y = ggplot2::element_text(hjust = 0),
         plot.title = ggplot2::element_text(face = "bold"),
         plot.margin = ggplot2::margin(10, 40, 10, 10)

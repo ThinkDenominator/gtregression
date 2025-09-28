@@ -1,33 +1,31 @@
-#' Stratified Multivariable Regression (Adjusted OR, RR, IRR, or Beta)
+#' Stratified multivariable regression (wide, adjusted; no gtsummary)
 #'
-#' Performs multivariable regression with multiple exposures on
-#' a binary, count, or continuous outcome,
-#' stratified by a specified variable.
-#' NA values in the stratifier are excluded from analysis.
+#' Fits one multivariable model per stratum and returns a unified wide table:
+#' a single "Characteristic" column and, under bold spanners for each stratum,
+#' two columns: "Adjusted <effect>" and "p-value".
 #'
-#' @param data A data frame containing the variables.
-#' @param outcome name of the outcome variable.
-#' @param exposures vector specifying the predictor (exposure) variables.
-#' @param stratifier A character string specifying the stratifying variable.
-#' @param approach Modeling approach to use. One of:
-#'   `"logit"` (Adjusted Odds Ratios), `"log-binomial"` (Adjusted Risk Ratios),
-#'   `"poisson"` (Adjusted IRRs), `"robpoisson"` (Adjusted RRs),
-#'   or `"linear"` (Beta coefficients), `"negbin"` (Adjusted IRRs).
+#' The footer shows two lines:
+#'   1) Abbreviations (from `.abbrev_note()`),
+#'   2) Per-stratum complete-case N used in the multivariable model.
 #'
-#' @return An object of class `stratified_multi_reg`, which includes:
-#' - `table`: A `gtsummary::tbl_stack` object of regression tables by stratum,
-#' - `models`: A named list of model objects for each stratum,
-#' - `model_summaries`: A list of tidy model summaries,
-#' - `reg_check`: Diagnostics results (if available for the model type).
+#' @param data data.frame
+#' @param outcome character scalar; outcome column name
+#' @param exposures character vector; predictors included in each model
+#' @param stratifier character scalar; stratifying variable
+#' @param approach "logit","log-binomial","poisson","linear","robpoisson","negbin"
+#' @param format "gt" (default) or "flextable"
+#' @param theme preset (e.g. "minimal","striped","clinical","shaded","jama")
+#'   or primitives c("plain","zebra","lines","labels_bold","compact","header_shaded")
 #'
-#' @section Accessors:
+#' @return A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
 #' \describe{
-#'   \item{\code{$table}}{Stacked table of stratified regression outputs.}
-#'   \item{\code{$models}}{Named list of fitted models per stratum.}
-#'   \item{\code{$model_summaries}}{Tidy summaries for each model.}
-#'   \item{\code{$reg_check}}{Regression diagnostic checks (when applicable).}
+#'   \item{table}{A \code{gt_tbl} (format="gt") or \code{flextable} (format="flextable").}
+#'   \item{table_display}{Wide data.frame used to build the table.}
+#'   \item{per_stratum}{Named list of per-stratum results (models/summaries/diagnostics).}
+#'   \item{models, model_summaries, reg_check}{Named lists by stratum.}
+#'   \item{by, levels, approach, format, source}{Metadata fields.}
 #' }
-#' @seealso [multi_reg()], [stratified_uni_reg()], [plot_reg()]
+#' @importFrom stats nobs
 #' @examples
 #' if (requireNamespace("mlbench", quietly = TRUE) &&
 #'   requireNamespace("dplyr", quietly = TRUE)) {
@@ -50,122 +48,74 @@
 #'   stratified_multi$table
 #' }
 #'
-#' @importFrom dplyr filter
-#' @importFrom purrr map
-#' @importFrom broom tidy
-#' @importFrom gtsummary tbl_stack
 #' @export
 stratified_multi_reg <- function(data, outcome, exposures, stratifier,
-                                 approach = "logit") {
+                                 approach = "logit",
+                                 format   = c("gt","flextable"),
+                                 theme    = c("minimal")) {
+  format <- match.arg(format)
+  theme  <- .resolve_theme(theme)
 
-  # checks through internal helpers
   .validate_multi_inputs(data, outcome, exposures, approach)
-  # check stratifier presence
-  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.",
-                                         call. = FALSE)
+  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.", call. = FALSE)
 
-  # Inform user as it takes more time to complete
+  data <- data[!is.na(data[[stratifier]]), , drop = FALSE]
+  levs <- .strata_levels(data, stratifier)
+
   message("Running stratified multivariable regression by: ", stratifier)
 
-  # Remove observations with missing values in the stratifier
-  data <- dplyr::filter(data, !is.na(.data[[stratifier]]))
-  strata_levels <- unique(data[[stratifier]])
-
-  # Initialise result containers
-  tbl_list <- list()
-  spanners <- character()
-  models_list <- list()
-  summaries_list <- list()
-  diagnostics_list <- list()
-
-  # loop through each stratum
-  for (lev in strata_levels) {
-    message("  > Stratum: ", stratifier, " = ", lev)
-
-    # Subset data for the current stratum
-    data_stratum <- dplyr::filter(data, .data[[stratifier]] == lev)
-
-    # multi model fit
-    result <- tryCatch(
-      {
-        fit <- multi_reg(
-          data = data_stratum,
-          outcome = outcome,
-          exposures = exposures,
-          approach = approach
-        )
-      },
-      error = function(e) {
-        warning("Skipping stratum ", lev, ": ", e$message, call. = FALSE)
-        NULL
-      }
+  fits <- list(); tds <- list(); models <- list(); sums <- list(); diags <- list()
+  for (lv in levs) {
+    message("  > Stratum: ", stratifier, " = ", lv)
+    dlev <- data[data[[stratifier]] == lv, , drop = FALSE]
+    fit <- tryCatch(
+      .fit_multi_model(dlev, outcome, exposures, approach),
+      error = function(e) { warning("Skipping stratum ", lv, ": ", e$message, call. = FALSE); NULL }
     )
+    if (is.null(fit)) next
+    td <- .tidy_multi(fit, exposures, approach)
+    if (is.null(td) || !nrow(td)) { warning("Skipping stratum ", lv, ": no estimable coefficients.", call. = FALSE); next }
 
-    # If model was successfully fit, extract components
-    if (!is.null(result)) {
-      tbl_list[[length(tbl_list) + 1]] <- result$table
-      models_list[[lev]] <- attr(result, "models")
-      summaries_list[[lev]] <- attr(result, "model_summaries")
-      diagnostics_list[[lev]] <- attr(result, "reg_check")
-      spanners <- c(spanners, paste0("**", stratifier, " = ", lev, "**"))
-    }
+    key <- as.character(lv)
+    fits[[key]]   <- fit
+    tds[[key]]    <- td
+    models[[key]] <- list(multivariable_model = fit)
+    sums[[key]]   <- list(multivariable_model = summary(fit))
+    diags[[key]]  <- list(multivariable_model = if (approach == "linear") {
+      .reg_check_linear(fit, exposure = "multivariable_model")
+    } else {
+      "Regression diagnostics available only for 'linear' models."
+    })
   }
-  # Stop if no valid models were fit
-  if (length(tbl_list) == 0) stop("No valid models across strata.")
+  if (!length(tds)) stop("No valid models across strata.", call. = FALSE)
 
-  # Remove existing source notes otherwise cant edit them
-  tbl_list <- lapply(tbl_list, function(tbl) gtsummary::remove_source_note(tbl))
+  built <- .strata_build_wide_multi(data, exposures, stratifier, tds)
+  wide      <- built$wide
+  spanners  <- built$spanners
+  eff_lab   <- paste("Adjusted", .get_effect_label(approach))
+  footnotes <- .footnotes_multi_strata(approach, fits, stratifier)
 
-  # Merge the cleaned tables with header spanners
-  merged_tbl <- gtsummary::tbl_merge(tbl_list, tab_spanner = spanners)
+  tbl <- if (format == "gt") {
+    .build_gt_strata_wide_multi(wide, spanners, eff_lab, theme, footnotes)
+  } else {
+    .build_flex_strata_wide_multi(wide, spanners, eff_lab, theme, footnotes)
+  }
 
-  # Extract and clean N values from N_obs_* columns to add a footnote
-  n_obs_cols <- grep("^N_obs_", names(merged_tbl$table_body), value = TRUE)
-
-  n_values <- vapply(n_obs_cols, function(col) {
-    n <- unique(na.omit(merged_tbl$table_body[[col]]))
-    as.character(round(n))
-  }, FUN.VALUE = character(1), USE.NAMES = FALSE)
-
-  #
-  stratum_labels <- strata_levels
-
-  # Create per-stratum footnote text
-  final_note <- paste0(
-    stratifier, " = ", stratum_labels, ": N = ", n_values,
-    " complete cases included per stratum"
+  fmt_class <- if (format == "gt") "gt_strata_multi" else "ft_strata_multi"
+  out <- list(
+    table           = tbl,
+    table_display   = wide,
+    per_stratum     = tds,
+    models          = models,
+    model_summaries = sums,
+    reg_check       = diags,
+    by              = stratifier,
+    levels          = levs,
+    approach        = approach,
+    format          = format,
+    source          = "stratified_multi_reg"
   )
-
-  final_note <- paste(final_note, collapse = "<br>")
-
-  # Add the note to the table
-  merged_tbl <- gtsummary::modify_source_note(merged_tbl, final_note)
-
-  # Add metadata as attributes
-  attr(merged_tbl, "models") <- models_list
-  attr(merged_tbl, "model_summaries") <- summaries_list
-  attr(merged_tbl, "reg_check") <- diagnostics_list
-  attr(merged_tbl, "approach") <- approach
-  attr(merged_tbl, "source") <- "stratified_multi_reg"
-  # Assign class for S3 accessors
-  class(merged_tbl) <- c("stratified_multi_reg", class(merged_tbl))
-
-  return(merged_tbl)
+  class(out) <- c("gtregression","stratified_multi_reg", fmt_class, class(out))
+  out
 }
 
-#' @export
-`$.stratified_multi_reg` <- function(x, name) {
-  if (name == "table") {
-    return(x)
-  }
-  if (name == "models") {
-    return(attr(x, "models"))
-  }
-  if (name == "model_summaries") {
-    return(attr(x, "model_summaries"))
-  }
-  if (name == "reg_check") {
-    return(attr(x, "reg_check"))
-  }
-  NextMethod("$")
-}

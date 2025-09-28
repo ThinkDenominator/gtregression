@@ -2,66 +2,56 @@
 % Please edit documentation in R/multi_reg.R
 \name{multi_reg}
 \alias{multi_reg}
-\title{Multivariable Regression (Adjusted Odds, Risk, or Rate Ratios)}
+\title{Multivariable regression}
 \usage{
-multi_reg(data, outcome, exposures, approach = "logit")
+multi_reg(
+  data,
+  outcome,
+  exposures,
+  approach = "logit",
+  format = c("gt", "flextable"),
+  theme = c("minimal")
+)
 }
 \arguments{
-\item{data}{A data frame containing the analysis variables.}
+\item{data}{data.frame}
 
-\item{outcome}{The name of the outcome variable. Must be a character string.}
+\item{outcome}{character scalar; outcome column name}
 
-\item{exposures}{A character vector of predictor variables to include.}
+\item{exposures}{character vector; exposure column names (all included in one model)}
 
-\item{approach}{Modeling approach to use. One of:
-- `"logit"` for logistic regression (OR),
-- `"log-binomial"` for log-binomial regression (RR),
-- `"poisson"` for Poisson regression (IRR),
-- `"robpoisson"` for robust Poisson regression (RR),
-- `"linear"` for linear regression (Beta coefficients),
-- `"negbin"` for negative binomial regression (IRR).}
+\item{approach}{one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+\code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}}
+
+\item{format}{one of \code{"gt"} (default) or \code{"flextable"}}
+
+\item{theme}{preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
+\code{"shaded"}, \code{"jama"}) or primitives
+\code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}}
 }
 \value{
-An object of class `multi_reg`, extending
-  `gtsummary::tbl_regression`. Additional components can be accessed using:
-  \itemize{
-    \item \code{x$models}: List of fitted model objects.
-    \item \code{x$model_summaries}: List of summary outputs.
-    \item \code{x$reg_check}: Regression diagnostics (only for linear models).
-    \item \code{x$table}: Returns the main regression table.
-  }
+A list of class \code{c("gtregression","multi_reg", ...)} with elements:
+\describe{
+  \item{table}{A \code{gt_tbl} (when \code{format="gt"}) or \code{flextable} (when \code{format="flextable"}).}
+  \item{table_body}{Data frame of adjusted estimates and CIs (per level).}
+  \item{table_display}{Data frame for display (headers + levels) without N column.}
+  \item{models}{List with the single multivariable model.}
+  \item{model_summaries}{\code{summary()} of the fitted model.}
+  \item{reg_check}{Diagnostics for linear model; message otherwise.}
+  \item{approach, format, source}{Metadata fields.}
+}
 }
 \description{
-Fits multivariable regression models for binary, count, or continuous
-outcomes and returns a publication-ready summary table using `gtsummary`.
-Depending on the specified `approach`, the function estimates
-adjusted Odds Ratios (OR), Risk Ratios (RR), Incidence Rate Ratios (IRR),
-or Beta coefficients.
+Create a publication-ready multivariable regression table using either
+\pkg{gt} or \pkg{flextable}, without a gtsummary dependency.
 }
-\section{Accessors}{
-
-\describe{
-  \item{\code{$models}}{List of fitted model objects.}
-  \item{\code{$model_summaries}}{A tibble of tidy regression
-  summaries for each model.}
-}
-}
-
 \examples{
-if (requireNamespace("mlbench", quietly = TRUE)) {
-  data(PimaIndiansDiabetes2, package = "mlbench")
-  pima <- dplyr::mutate(PimaIndiansDiabetes2,
-  diabetes = ifelse(diabetes == "pos", 1, 0))
-  model <- multi_reg(
-    data = pima,
-    outcome = "diabetes",
-    exposures = c("age", "mass"),
-    approach = "logit"
-  )
- print(model)
+d <- mtcars
+if (requireNamespace("gt", quietly = TRUE)) {
+  multi_reg(d, "am", c("mpg","cyl","gear"), approach = "logit", format = "gt")$table
+}
+if (requireNamespace("flextable", quietly = TRUE)) {
+  multi_reg(d, "am", c("mpg","cyl","gear"), approach = "logit", format = "flextable")$table
 }
 
-}
-\seealso{
-[uni_reg()], [plot_reg()], [plot_reg_combine()]
 }

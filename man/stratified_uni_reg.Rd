@@ -8,7 +8,15 @@ stratified by a specified variable. Produces a stacked `gtsummary`
 table with one column per stratum,
 along with underlying models and diagnostics.}
 \usage{
-stratified_uni_reg(data, outcome, exposures, stratifier, approach = "logit")
+stratified_uni_reg(
+  data,
+  outcome,
+  exposures,
+  stratifier,
+  approach = "logit",
+  format = c("gt", "flextable"),
+  theme = c("minimal")
+)
 }
 \arguments{
 \item{data}{A data frame containing the variables.}

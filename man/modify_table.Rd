@@ -2,7 +2,7 @@
 % Please edit documentation in R/modify_table.R
 \name{modify_table}
 \alias{modify_table}
-\title{Modify Regression Table Labels and Layout}
+\title{Modify Regression/Descriptive Tables (labels, headers, caption, notes)}
 \usage{
 modify_table(
   gt_table,
@@ -19,74 +19,35 @@ modify_table(
 )
 }
 \arguments{
-\item{gt_table}{A `gtsummary` table object.}
+\item{gt_table}{Table object produced by this package (must contain `$table_display`).}
 
-\item{variable_labels}{A named vector for relabeling variable names.}
+\item{variable_labels}{Named character vector: `c(old_var = "New label", ...)`.}
 
-\item{level_labels}{A named list for relabeling levels of variables.
-Should be structured as `list(var1 = c(old1 = new1, old2 = new2), ...)`.}
+\item{level_labels}{Named list for factor levels:
+`list(var1 = c(old = "New", ...), var2 = c(...))`.}
 
-\item{header_labels}{A named vector for relabeling column headers. Names
-should match internal column names (e.g., `"estimate"`, `"p.value"`).}
+\item{header_labels}{Named vector to rename visible headers, e.g.
+`c("OR (95% CI)" = "Crude OR", "p-value" = "P")`.}
 
-\item{caption}{A character string used to set the table title.}
+\item{caption}{Optional caption/title.}
 
-\item{bold_labels}{Logical. If `TRUE`, bolds variable labels.}
+\item{bold_labels}{Logical; bold variable (header) rows in the body.}
 
-\item{bold_levels}{Logical. If `TRUE`, bolds factor level labels.}
+\item{bold_levels}{Logical; bold factor level rows in the body.}
 
-\item{remove_N}{Logical. If `TRUE`, hides the `N` column in univariate
-regression tables (`uni_reg`, `uni_reg_nbin`). Ignored for other tables.}
+\item{remove_N}{Logical; if `TRUE`, drops the `N` column for univariate package tables.}
 
-\item{remove_N_obs}{Logical. If `TRUE`, removes the source note showing the
-no of observations in multivariable models (`multi_reg`, `multi_reg_nbin`).}
+\item{remove_N_obs}{Logical; if `TRUE`, suppresses multivariable complete-case footnote.}
 
-\item{remove_abbreviations}{Logical. If `TRUE`, removes default footnotes
-for estimate abbreviations.}
+\item{remove_abbreviations}{Logical; if `TRUE`, removes the Abbreviations footnote line.}
 
-\item{caveat}{A character string to add as a footnote (source note) below
-the table, e.g., "N may vary due to missing data."}
+\item{caveat}{Optional extra footnote.}
 }
 \value{
-A customized `gtsummary` table object with modified labels,
-layout, and options.
+The modified table object (same class as input).
 }
 \description{
-Allows customization of labels, headers, and layout of regression tables
-created using `gtsummary`. Designed for tables from functions like
-`uni_reg()`, `multi_reg()`, etc.
-}
-\examples{
-\donttest{
-if (requireNamespace("mlbench", quietly = TRUE)) {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-  library(dplyr)
-  library(gtregression)
-
-  # Prepare data
-  pima <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi_cat = cut(
-        mass,
-        breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
-        labels = c("Underweight", "Normal", "Overweight", "Obese")
-      )
-    )
-
-  # Descriptive table
-  desc_tbl <- descriptive_table(pima,
-                                exposures = c("age", "bmi_cat"),
-                                by = "diabetes")
-
-  # Univariate logistic regression
-  uni_rr <- uni_reg(
-    data = pima,
-    outcome = "diabetes",
-    exposures = c("age", "bmi_cat"),
-    approach = "logit"
-  )
-}
-}
-
+Works with objects created by this package (class `"gtregression"`:
+`uni_reg()`, `multi_reg()`, `descriptive_table()`, `merge_tables()`).
+No `gtsummary` dependency or fallback.
 }
