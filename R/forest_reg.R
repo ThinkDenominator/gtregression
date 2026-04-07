@@ -21,12 +21,33 @@
 #'   - `plot`: the forest plot
 #'   - `data`: the input data frame (post-processed order, no `se_*` columns)
 #'   - `meta`: model metadata
+#' @importFrom forestploter forest forest_theme
+#' @importFrom grid gpar
+#' @importFrom scales rescale
+#' @examples
+#' if (requireNamespace("gt", quietly = TRUE)) {
+#'   # build uni & multi tables beforehand (example objects: uni_or, multi_or)
+#'   # uni_or  <- uni_reg(data = birthwt, outcome = "low", exposures = c("age","lwt","smoke"), approach = "logit")
+#'   # multi_or <- multi_reg(data = birthwt, outcome = "low", exposures = c("age","lwt","smoke"), approach = "logit")
+#'   # birthwt_summary <- gtsummary::tbl_summary(birthwt, by = "low")
+#'
+#'   # 1) Build + plot in one call (recommended)
+#'   p1 <- forest_reg(uni = uni_or, multi = multi_or, desc = birthwt_summary)
+#'   print(p1)
+#'
+#'   # 2) Or build first, then plot
+#'   df_both_desc <- forest_df(uni = uni_or, multi = multi_or, desc = birthwt_summary)
+#'   p2 <- forest_reg(df_both_desc, side = "left")
+#'   print(p2)
+#' }
+
 #' @export
 forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
                        theme = NULL,
                        ci_col_width = 0.25,
                        side = c("right", "left"),
                        quiet = TRUE,
+                       effects = NULL,
                        ...) {
 
   side <- match.arg(side)

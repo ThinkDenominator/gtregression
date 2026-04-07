@@ -49,6 +49,8 @@ po/*~
 rsconnect/
 /doc/
 /Meta/
-"docs/" 
+"docs/"
 docs
 inst/doc
+.DS_Store
+*.docx

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_reg_combine.R
 \name{plot_reg_combine}
 \alias{plot_reg_combine}
-\title{Side-by-Side Forest Plots: Univariate vs Multivariable}
+\title{Side-by-side forest plots: univariate vs multivariable}
 \usage{
 plot_reg_combine(
   tbl_uni,
@@ -26,61 +26,42 @@ plot_reg_combine(
 )
 }
 \arguments{
-\item{tbl_uni}{Univariate `gtsummary`-like table.}
+\item{tbl_uni}{A univariate \code{gtregression} object.}
 
-\item{tbl_multi}{Multivariable `gtsummary`-like table.}
+\item{tbl_multi}{A multivariable \code{gtregression} object.}
 
 \item{title_uni, title_multi}{Optional panel titles.}
 
-\item{ref_line}{Optional numeric reference line (defaults to 0 for linear,
-1 otherwise, inferred per panel).}
+\item{ref_line}{Optional numeric reference line. If \code{NULL}, uses 0 for
+linear models and 1 otherwise.}
 
-\item{order_y}{Optional character vector to customize header ordering.}
+\item{order_y}{Optional character vector to customize exposure ordering.}
 
-\item{log_x}{Logical. If `TRUE`, use log x-axis (ignored for linear models).}
+\item{log_x}{Logical; if \code{TRUE}, uses log x-axis for non-linear models.}
 
 \item{point_color, errorbar_color}{Base colors for non-significant rows.}
 
-\item{base_size}{Base font size for `theme_minimal()`.}
+\item{base_size}{Base font size for \code{theme_minimal()}.}
 
-\item{show_ref}{Logical; if `TRUE`, include and tag reference levels `(Ref.)`.}
+\item{show_ref}{Logical; if \code{TRUE}, include reference levels as
+\code{(ref)}.}
 
-\item{sig_color, sig_errorbar_color}{Optional colors for significant rows; if
-`NULL`, they reuse the base colors.}
+\item{sig_color, sig_errorbar_color}{Optional colors for significant rows.
+If \code{NULL}, base colors are reused.}
 
-\item{xlim_uni, breaks_uni}{Optional x-limits and breaks for the univariate panel.}
+\item{xlim_uni, breaks_uni}{Optional x-axis limits and breaks for the
+univariate panel.}
 
-\item{xlim_multi, breaks_multi}{Optional x-limits and breaks for the multivariable panel.}
+\item{xlim_multi, breaks_multi}{Optional x-axis limits and breaks for the
+multivariable panel.}
 
-\item{alpha}{Significance level for linear models when `p.value` is available.}
+\item{alpha}{Significance level for linear models when \code{p.value} is
+available.}
 }
 \value{
-A `patchwork` object with two `ggplot2` panels.
+A \code{patchwork} object with two \code{ggplot2} panels.
 }
 \description{
-Creates two aligned forest plots (univariate and multivariable) from
-`gtsummary`-style objects returned by `gtregression` functions
-(e.g., `uni_reg()`, `multi_reg()`).
-}
-\details{
-The y-axis rows are aligned by a unique `(variable, level)` key so each
-estimate appears exactly once per panel. Label styling is plain text by
-default (CRAN-safe). To render bold headers / grey refs in vignettes, pair
-}
-\examples{
-\donttest{
-if (requireNamespace("mlbench", quietly = TRUE) &&
-    requireNamespace("gtregression", quietly = TRUE)) {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-  d <- PimaIndiansDiabetes2
-  d$diabetes <- ifelse(d$diabetes == "pos", 1, 0)
-
-  tbl_u <- gtregression::uni_reg(d, outcome = "diabetes",
-                                 exposures = c("age","glucose"), approach = "logit")
-  tbl_m <- gtregression::multi_reg(d, outcome = "diabetes",
-                                   exposures = c("age","glucose"), approach = "logit")
-  plot_reg_combine(tbl_u, tbl_m,
-                   title_uni = "Univariate", title_multi = "Adjusted")
-}
-}
+Creates two aligned forest plots from \code{gtregression} objects returned by
+\code{uni_reg()} and \code{multi_reg()}.
 }

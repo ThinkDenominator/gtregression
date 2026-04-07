@@ -8,50 +8,68 @@ multi_reg(
   data,
   outcome,
   exposures,
+  adjust_for = NULL,
+  interaction = NULL,
   approach = "logit",
   format = c("gt", "flextable"),
   theme = c("minimal")
 )
 }
 \arguments{
-\item{data}{data.frame}
+\item{data}{A \code{data.frame} containing the variables of interest.}
 
-\item{outcome}{character scalar; outcome column name}
+\item{outcome}{Character scalar; name of the outcome variable.}
 
-\item{exposures}{character vector; exposure column names (all included in one model)}
+\item{exposures}{Character vector; exposure variable(s) to report.
+If \code{adjust_for = NULL}, all exposures are included in a single
+multivariable model. If \code{adjust_for} is supplied, one adjusted
+model is fitted per exposure and only exposure-specific adjusted
+estimate(s) are displayed.}
 
-\item{approach}{one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
-\code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}}
+\item{adjust_for}{Optional character vector of adjustment variables.
+Must not overlap with \code{exposures}.}
 
-\item{format}{one of \code{"gt"} (default) or \code{"flextable"}}
+\item{interaction}{Optional character scalar specifying one interaction term
+using standard formula syntax, e.g. \code{"bmi*sex"}.
+When used with \code{adjust_for}, only a single exposure should be supplied.}
 
-\item{theme}{preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
-\code{"shaded"}, \code{"jama"}) or primitives
-\code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}}
+\item{approach}{Character scalar specifying the regression approach.
+One of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+\code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}.}
+
+\item{format}{Output table format; one of \code{"gt"} (default) or \code{"flextable"}.}
+
+\item{theme}{Table styling preset (e.g. \code{"minimal"}, \code{"striped"},
+\code{"clinical"}, \code{"shaded"}, \code{"jama"}) or a character vector of
+primitives such as \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}.}
 }
 \value{
 A list of class \code{c("gtregression","multi_reg", ...)} with elements:
 \describe{
-  \item{table}{A \code{gt_tbl} (when \code{format="gt"}) or \code{flextable} (when \code{format="flextable"}).}
-  \item{table_body}{Data frame of adjusted estimates and CIs (per level).}
-  \item{table_display}{Data frame for display (headers + levels) without N column.}
-  \item{models}{List with the single multivariable model.}
-  \item{model_summaries}{\code{summary()} of the fitted model.}
-  \item{reg_check}{Diagnostics for linear model; message otherwise.}
-  \item{approach, format, source}{Metadata fields.}
+  \item{table}{A \code{gt_tbl} (if \code{format="gt"}) or \code{flextable}
+  (if \code{format="flextable"}).}
+  \item{table_body}{A data frame of adjusted estimates and confidence intervals
+  for each exposure and level.}
+  \item{table_display}{A data frame used for rendering the final table,
+  including header and level rows.}
+  \item{models}{A list of fitted model(s).}
+  \item{model_summaries}{\code{summary()} output for the fitted model(s).}
+  \item{reg_check}{Regression diagnostics for linear models; otherwise a message.}
+  \item{approach}{The regression approach used.}
+  \item{format}{The output format used.}
+  \item{source}{Function identifier (\code{"multi_reg"}).}
 }
 }
 \description{
 Create a publication-ready multivariable regression table using either
-\pkg{gt} or \pkg{flextable}, without a gtsummary dependency.
+\pkg{gt} or \pkg{flextable}, without a \pkg{gtsummary} dependency.
 }
-\examples{
-d <- mtcars
-if (requireNamespace("gt", quietly = TRUE)) {
-  multi_reg(d, "am", c("mpg","cyl","gear"), approach = "logit", format = "gt")$table
-}
-if (requireNamespace("flextable", quietly = TRUE)) {
-  multi_reg(d, "am", c("mpg","cyl","gear"), approach = "logit", format = "flextable")$table
-}
+\details{
+In default mode (\code{adjust_for = NULL}), all exposures are included in a
+single multivariable model. In adjusted mode, one model is fitted per exposure,
+adjusting for the variables specified in \code{adjust_for}.
 
+Interaction terms specified via \code{interaction} are included in the model
+using standard formula expansion (e.g. \code{bmi*sex}). Interaction effects are
+displayed as additional rows beneath the corresponding exposure.
 }

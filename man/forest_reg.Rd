@@ -13,6 +13,7 @@ forest_reg(
   ci_col_width = 0.25,
   side = c("right", "left"),
   quiet = TRUE,
+  effects = NULL,
   ...
 )
 }
@@ -47,4 +48,21 @@ A `gtregression_forest` object with elements:
 \description{
 Wrapper around `forestploter::forest()` that works directly with
 `forest_df()` output or with raw regression objects.
+}
+\examples{
+if (requireNamespace("gt", quietly = TRUE)) {
+  # build uni & multi tables beforehand (example objects: uni_or, multi_or)
+  # uni_or  <- uni_reg(data = birthwt, outcome = "low", exposures = c("age","lwt","smoke"), approach = "logit")
+  # multi_or <- multi_reg(data = birthwt, outcome = "low", exposures = c("age","lwt","smoke"), approach = "logit")
+  # birthwt_summary <- gtsummary::tbl_summary(birthwt, by = "low")
+
+  # 1) Build + plot in one call (recommended)
+  p1 <- forest_reg(uni = uni_or, multi = multi_or, desc = birthwt_summary)
+  print(p1)
+
+  # 2) Or build first, then plot
+  df_both_desc <- forest_df(uni = uni_or, multi = multi_or, desc = birthwt_summary)
+  p2 <- forest_reg(df_both_desc, side = "left")
+  print(p2)
+}
 }

@@ -18,3 +18,49 @@
   }, character(1))
   c(.abbrev_note(approach), n_lines)
 }
+#' @keywords internal
+#' @noRd
+.adjustment_note <- function(adjust_for) {
+  adjust_for <- unname(adjust_for)
+
+  if (length(adjust_for) == 1) {
+    return(paste0("Adjusted for ", adjust_for))
+  }
+
+  if (length(adjust_for) == 2) {
+    return(paste0("Adjusted for ", adjust_for[1], " and ", adjust_for[2]))
+  }
+
+  paste0(
+    "Adjusted for ",
+    paste(adjust_for[-length(adjust_for)], collapse = ", "),
+    ", and ",
+    adjust_for[length(adjust_for)]
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.interaction_note <- function(interaction) {
+  paste0("Model includes interaction term: ", interaction)
+}
+#' @keywords internal
+#' @noRd
+.n_note_multi_strata <- function(stratifier, n_by_stratum) {
+  if (!length(n_by_stratum)) {
+    return("N reflects complete observations used in each stratum-specific model")
+  }
+
+  parts <- paste0(
+    names(n_by_stratum),
+    ": N = ",
+    unlist(n_by_stratum, use.names = FALSE)
+  )
+
+  paste0(
+    "Complete observations included by ",
+    stratifier,
+    " stratum: ",
+    paste(parts, collapse = "; ")
+  )
+}

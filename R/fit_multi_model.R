@@ -1,50 +1,89 @@
-#' Fit multivariate Regression Model (Internal)
+#' Fit multivariable regression model (Internal)
 #'
 #' Fits a regression model based on the selected approach.
-#' @param data A `data.frame` with outcome and exposures.
-#' @param outcome A string. Name of the outcome variable.
-#' @param exposures A string or character vector of predictor(s).
-#' @param approach A string specifying the regression approach. One of
-#' `"logit"`, `"log-binomial"`, `"poisson"`, `"linear"`, `"robpoisson"`,
-#' or `"negbin"`.
 #'
-#' @return A fitted model object (`glm`, `lm`, `riskratio`, or `negbin`) or `NULL` if fitting fails.
+#' @param data A data.frame containing the analysis variables.
+#' @param outcome A character scalar giving the outcome variable name.
+#' @param exposures A character vector of exposure variable(s).
+#' @param approach A regression approach. One of "logit", "log-binomial",
+#'   "poisson", "linear", "robpoisson", or "negbin".
+#' @param adjust_for Optional character vector of adjustment variables.
+#' @param interaction Optional character scalar specifying an interaction term,
+#'   e.g. "bmi*sex".
+#'
+#' @return A fitted model object or `NULL` if fitting fails.
 #' @keywords internal
-.fit_multi_model <- function(data, outcome, exposures, approach) {
-  formula_str <- paste(outcome, "~", paste(exposures, collapse = " + "))
-  formula <- as.formula(formula_str)
+#' @noRd
+.fit_multi_model <- function(data,
+                             outcome,
+                             exposures,
+                             approach,
+                             adjust_for = NULL,
+                             interaction = NULL) {
 
-  tryCatch({
-    # Fit model by approach
-    fit <- switch(approach,
-                  "logit" = glm(formula,
-                                data = data,
-                                family = binomial("logit")),
-                  "log-binomial" = glm(formula,
-                                       data = data,
-                                       family = binomial("log")),
-                  "poisson" = glm(formula,
-                                  data = data,
-                                  family = poisson("log")),
-                  "linear" = lm(formula,
-                                data = data),
-                  "robpoisson" = risks::riskratio(formula,
-                                                  data = data,
-                                                  approach = "robpoisson"),
-                  "negbin" = MASS::glm.nb(formula,
-                                          data = data,
-                                          control = glm.control(maxit = 200)),
-                  stop(
-                    paste0("Invalid approach: '", approach,
-                           "'. Choose from: logit, log-binomial, poisson, ",
-                           "robpoisson, linear, negbin."),
-                    call. = FALSE
-                  )
-    )
-    return(fit)
-  }, error = function(e) {
-    warning("Model failed for exposure(s) '", paste(exposures, collapse = ", "),
-            "' using '", approach, "': ", e$message, call. = FALSE)
-    return(NULL)
-  })
+  rhs_terms <- unique(c(exposures, adjust_for))
+
+  if (!is.null(interaction) && length(interaction) > 0) {
+    rhs_terms <- unique(c(rhs_terms, interaction))
+  }
+
+  formula_str <- paste(outcome, "~", paste(rhs_terms, collapse = " + "))
+  formula <- stats::as.formula(formula_str)
+
+  tryCatch(
+    {
+      switch(
+        approach,
+        "logit" = stats::glm(
+          formula = formula,
+          data = data,
+          family = stats::binomial("logit")
+        ),
+        "log-binomial" = stats::glm(
+          formula = formula,
+          data = data,
+          family = stats::binomial("log")
+        ),
+        "poisson" = stats::glm(
+          formula = formula,
+          data = data,
+          family = stats::poisson("log")
+        ),
+        "linear" = stats::lm(
+          formula = formula,
+          data = data
+        ),
+        "robpoisson" = risks::riskratio(
+          formula = formula,
+          data = data,
+          approach = "robpoisson"
+        ),
+        "negbin" = MASS::glm.nb(
+          formula = formula,
+          data = data,
+          control = stats::glm.control(maxit = 200)
+        ),
+        stop(
+          paste0(
+            "Invalid approach: '", approach,
+            "'. Choose from: logit, log-binomial, poisson, ",
+            "robpoisson, linear, negbin."
+          ),
+          call. = FALSE
+        )
+      )
+    },
+    error = function(e) {
+      warning(
+        paste0(
+          "Model fitting failed for exposure(s) ",
+          paste(exposures, collapse = ", "),
+          " using approach '", approach, "': ",
+          e$message
+        ),
+        call. = FALSE
+      )
+      NULL
+    }
+  )
 }

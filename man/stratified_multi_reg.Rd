@@ -2,13 +2,15 @@
 % Please edit documentation in R/stratified_multi_reg.R
 \name{stratified_multi_reg}
 \alias{stratified_multi_reg}
-\title{Stratified multivariable regression (wide, adjusted; no gtsummary)}
+\title{Stratified multivariable regression}
 \usage{
 stratified_multi_reg(
   data,
   outcome,
   exposures,
   stratifier,
+  adjust_for = NULL,
+  interaction = NULL,
   approach = "logit",
   format = c("gt", "flextable"),
   theme = c("minimal")
@@ -19,57 +21,41 @@ stratified_multi_reg(
 
 \item{outcome}{character scalar; outcome column name}
 
-\item{exposures}{character vector; predictors included in each model}
+\item{exposures}{character vector; exposure variable(s) to report}
 
 \item{stratifier}{character scalar; stratifying variable}
 
-\item{approach}{"logit","log-binomial","poisson","linear","robpoisson","negbin"}
+\item{adjust_for}{optional character vector of adjustment variables}
 
-\item{format}{"gt" (default) or "flextable"}
+\item{interaction}{optional character scalar specifying one interaction term
+using standard formula syntax, e.g. \code{"bmi*sex"}}
 
-\item{theme}{preset (e.g. "minimal","striped","clinical","shaded","jama")
-or primitives c("plain","zebra","lines","labels_bold","compact","header_shaded")}
+\item{approach}{one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+\code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}}
+
+\item{format}{one of \code{"gt"} (default) or \code{"flextable"}}
+
+\item{theme}{preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
+\code{"shaded"}, \code{"jama"}) or primitives
+\code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}}
 }
 \value{
 A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
 \describe{
   \item{table}{A \code{gt_tbl} (format="gt") or \code{flextable} (format="flextable").}
   \item{table_display}{Wide data.frame used to build the table.}
-  \item{per_stratum}{Named list of per-stratum results (models/summaries/diagnostics).}
+  \item{per_stratum}{Named list of per-stratum regression results.}
   \item{models, model_summaries, reg_check}{Named lists by stratum.}
   \item{by, levels, approach, format, source}{Metadata fields.}
 }
 }
 \description{
-Fits one multivariable model per stratum and returns a unified wide table:
-a single "Characteristic" column and, under bold spanners for each stratum,
-two columns: "Adjusted <effect>" and "p-value".
+Fits multivariable regression models within each stratum and returns a
+unified wide table with one "Characteristic" column and, under bold
+spanners for each stratum, two columns: "Adjusted <effect>" and "p-value".
 }
 \details{
-The footer shows two lines:
-  1) Abbreviations (from `.abbrev_note()`),
-  2) Per-stratum complete-case N used in the multivariable model.
-}
-\examples{
-if (requireNamespace("mlbench", quietly = TRUE) &&
-  requireNamespace("dplyr", quietly = TRUE)) {
-  data(PimaIndiansDiabetes2, package = "mlbench")
-  pima <- dplyr::mutate(
-    PimaIndiansDiabetes2,
-    diabetes = ifelse(diabetes == "pos", 1, 0),
-    glucose_cat = dplyr::case_when(
-      glucose < 140 ~ "Normal",
-      glucose >= 140 ~ "High"
-    )
-  )
-  stratified_multi <- stratified_multi_reg(
-    data = pima,
-    outcome = "diabetes",
-    exposures = c("age", "mass"),
-    stratifier = "glucose_cat",
-    approach = "logit"
-  )
-  stratified_multi$table
-}
-
+If \code{adjust_for = NULL}, all \code{exposures} are included in one
+multivariable model within each stratum. If \code{adjust_for} is supplied,
+one adjusted model is fitted per exposure within each stratum.
 }

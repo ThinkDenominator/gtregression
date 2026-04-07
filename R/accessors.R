@@ -3,7 +3,7 @@
 #' Access fields on gtregression objects with `$`
 #'
 #' Works for any object from this package, since they all carry class
-#' `"gtregression"`. Returns NULL (quietly) if the field isn't present.
+#' `"gtregression"`. Returns NULL (quietly) if the field is not present.
 #'
 #' Common fields:
 #' - table, table_display, table_body
@@ -14,10 +14,18 @@
 #'
 #' @export
 `$.gtregression` <- function(x, name) {
-  # prefer known aliases
-  if (identical(name, "engine") && !is.null(x$format)) return(x$format)
-  if (identical(name, "format") && !is.null(x$engine)) return(x$engine)
+  # avoid recursive calls by using [[ ]] only
+  fmt <- x[["format"]]
+  eng <- x[["engine"]]
 
-  # return if present; otherwise NULL (quietly)
+  # aliases
+  if (identical(name, "engine") && !is.null(fmt)) {
+    return(fmt)
+  }
+  if (identical(name, "format") && !is.null(eng)) {
+    return(eng)
+  }
+
+  # ordinary field access
   x[[name]]
 }

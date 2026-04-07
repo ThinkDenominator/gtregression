@@ -211,48 +211,165 @@
   .validate_exposures(data, exposures)
 }
 
-# Validate Multivariate inputs for multi_reg
+#' Validate inputs for multi_reg
+#'
 #' @keywords internal
 #' @noRd
 .validate_multi_inputs <- function(data,
                                    outcome,
                                    exposures,
-                                   approach) {
-  # validate approach in the function
+                                   approach,
+                                   adjust_for = NULL,
+                                   interaction = NULL) {
+
   .validate_approach(approach, context = "multi_reg")
 
-  # check variable presence
-  if (!outcome %in% names(data))
-    stop("Outcome variable not found in the dataset.", call. = FALSE)
-
-  # check variable presence >1
-  if (!all(exposures %in% names(data)))
-    stop("One or more exposure variables were not found in the dataset.",
-         call. = FALSE)
-
-  # outcome variable validation
-  .validate_outcome_by_approach(data[[outcome]], approach)
-
-  # Validate exposures
-  .validate_exposures(data, exposures)
-
-  # clean the data for complete case analysis
-  # select exposures and outcomes only and drop NAs in the selected cols
-  data_clean <- stats::na.omit(data[, c(outcome, exposures),
-                                          drop = FALSE])
-  # Throw error for null data return
-  if (nrow(data_clean) == 0)
-    stop("No complete cases available for analysis.", call. = FALSE)
-
-  # validate that each exposure has at least 2 unique values
-  insufficient_vars <- exposures[vapply(data_clean[exposures],
-                                        function(x)
-                                          length(unique(na.omit(x))) < 2,
-                                        logical(1))]
-  if (length(insufficient_vars) > 0) {
-    stop("Exposure(s) has less than 2 unique values: ",
-         paste(insufficient_vars, collapse = ", "), call. = FALSE)
+  if (!is.data.frame(data)) {
+    stop("`data` must be a data.frame.", call. = FALSE)
   }
 
-  return(data_clean)
+  if (!is.character(outcome) || length(outcome) != 1) {
+    stop("`outcome` must be a single character string.", call. = FALSE)
+  }
+
+  exposures <- unique(exposures)
+
+  if (!outcome %in% names(data)) {
+    stop("Outcome variable not found in the dataset.", call. = FALSE)
+  }
+
+  if (!is.character(exposures) || length(exposures) < 1) {
+    stop("`exposures` must be a character vector with at least one variable.",
+         call. = FALSE)
+  }
+
+  if (!all(exposures %in% names(data))) {
+    stop(
+      "One or more exposure variables were not found in the dataset.",
+      call. = FALSE
+    )
+  }
+
+  .validate_outcome_by_approach(data[[outcome]], approach)
+  .validate_exposures(data, exposures)
+
+  adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
+
+  if (adjusted_mode) {
+    adjust_for <- unique(adjust_for)
+
+    if (!is.character(adjust_for)) {
+      stop("`adjust_for` must be a character vector.", call. = FALSE)
+    }
+
+    if (!all(adjust_for %in% names(data))) {
+      stop(
+        "One or more adjustment variables were not found in the dataset.",
+        call. = FALSE
+      )
+    }
+
+    if (outcome %in% adjust_for) {
+      stop("Outcome variable cannot be included in `adjust_for`.", call. = FALSE)
+    }
+
+    if (any(exposures %in% adjust_for)) {
+      stop(
+        "In adjusted mode, `exposures` and `adjust_for` must not overlap.",
+        call. = FALSE
+      )
+    }
+
+    .validate_exposures(data, adjust_for)
+  } else {
+    adjust_for <- NULL
+  }
+
+  interaction_vars <- character(0)
+
+  if (!is.null(interaction) && length(interaction) > 0) {
+    if (!is.character(interaction) || length(interaction) != 1) {
+      stop(
+        "`interaction` must be a single character string such as 'bmi*sex'.",
+        call. = FALSE
+      )
+    }
+
+    if (grepl(":", interaction, fixed = TRUE)) {
+      stop(
+        "Use standard interaction syntax with '*', for example 'bmi*sex', not ':'.",
+        call. = FALSE
+      )
+    }
+
+    if (!grepl("\\*", interaction)) {
+      stop(
+        "`interaction` must contain '*', for example 'bmi*sex'.",
+        call. = FALSE
+      )
+    }
+
+    interaction_vars <- trimws(unlist(strsplit(interaction, "\\*")))
+    interaction_vars <- interaction_vars[nzchar(interaction_vars)]
+
+    if (length(interaction_vars) != 2) {
+      stop(
+        "`interaction` must contain exactly two variables, e.g. 'bmi*sex'.",
+        call. = FALSE
+      )
+    }
+
+    if (!all(interaction_vars %in% names(data))) {
+      stop(
+        "One or more variables in `interaction` were not found in the dataset.",
+        call. = FALSE
+      )
+    }
+
+    if (adjusted_mode && length(exposures) != 1) {
+      stop(
+        "When `interaction` is supplied with `adjust_for`, please provide a single exposure.",
+        call. = FALSE
+      )
+    }
+
+    if (!any(exposures %in% interaction_vars)) {
+      stop(
+        "The exposure must be part of the interaction term.",
+        call. = FALSE
+      )
+    }
+  } else {
+    interaction <- NULL
+  }
+
+  vars_needed <- unique(c(outcome, exposures, adjust_for, interaction_vars))
+
+  cc_idx <- stats::complete.cases(data[, vars_needed, drop = FALSE])
+  data_clean <- data[cc_idx, , drop = FALSE]
+
+  if (nrow(data_clean) == 0) {
+    stop("No complete cases available for analysis.", call. = FALSE)
+  }
+
+  vars_to_check <- unique(c(exposures, adjust_for, interaction_vars))
+  vars_to_check <- vars_to_check[vars_to_check %in% names(data_clean)]
+
+  insufficient_vars <- vars_to_check[
+    vapply(
+      data_clean[, vars_to_check, drop = FALSE],
+      function(x) length(unique(stats::na.omit(x))) < 2,
+      logical(1)
+    )
+  ]
+
+  if (length(insufficient_vars) > 0) {
+    stop(
+      "Variable(s) with less than 2 unique values after complete-case filtering: ",
+      paste(insufficient_vars, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  data_clean
 }

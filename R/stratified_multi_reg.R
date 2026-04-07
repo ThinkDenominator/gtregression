@@ -1,99 +1,122 @@
-#' Stratified multivariable regression (wide, adjusted; no gtsummary)
+#' Stratified multivariable regression
 #'
-#' Fits one multivariable model per stratum and returns a unified wide table:
-#' a single "Characteristic" column and, under bold spanners for each stratum,
-#' two columns: "Adjusted <effect>" and "p-value".
+#' Fits multivariable regression models within each stratum and returns a
+#' unified wide table with one "Characteristic" column and, under bold
+#' spanners for each stratum, two columns: "Adjusted <effect>" and "p-value".
 #'
-#' The footer shows two lines:
-#'   1) Abbreviations (from `.abbrev_note()`),
-#'   2) Per-stratum complete-case N used in the multivariable model.
+#' If \code{adjust_for = NULL}, all \code{exposures} are included in one
+#' multivariable model within each stratum. If \code{adjust_for} is supplied,
+#' one adjusted model is fitted per exposure within each stratum.
 #'
 #' @param data data.frame
 #' @param outcome character scalar; outcome column name
-#' @param exposures character vector; predictors included in each model
+#' @param exposures character vector; exposure variable(s) to report
 #' @param stratifier character scalar; stratifying variable
-#' @param approach "logit","log-binomial","poisson","linear","robpoisson","negbin"
-#' @param format "gt" (default) or "flextable"
-#' @param theme preset (e.g. "minimal","striped","clinical","shaded","jama")
-#'   or primitives c("plain","zebra","lines","labels_bold","compact","header_shaded")
+#' @param adjust_for optional character vector of adjustment variables
+#' @param interaction optional character scalar specifying one interaction term
+#'   using standard formula syntax, e.g. \code{"bmi*sex"}
+#' @param approach one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+#'   \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}
+#' @param format one of \code{"gt"} (default) or \code{"flextable"}
+#' @param theme preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
+#'   \code{"shaded"}, \code{"jama"}) or primitives
+#'   \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}
 #'
 #' @return A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
 #' \describe{
 #'   \item{table}{A \code{gt_tbl} (format="gt") or \code{flextable} (format="flextable").}
 #'   \item{table_display}{Wide data.frame used to build the table.}
-#'   \item{per_stratum}{Named list of per-stratum results (models/summaries/diagnostics).}
+#'   \item{per_stratum}{Named list of per-stratum regression results.}
 #'   \item{models, model_summaries, reg_check}{Named lists by stratum.}
 #'   \item{by, levels, approach, format, source}{Metadata fields.}
 #' }
 #' @importFrom stats nobs
-#' @examples
-#' if (requireNamespace("mlbench", quietly = TRUE) &&
-#'   requireNamespace("dplyr", quietly = TRUE)) {
-#'   data(PimaIndiansDiabetes2, package = "mlbench")
-#'   pima <- dplyr::mutate(
-#'     PimaIndiansDiabetes2,
-#'     diabetes = ifelse(diabetes == "pos", 1, 0),
-#'     glucose_cat = dplyr::case_when(
-#'       glucose < 140 ~ "Normal",
-#'       glucose >= 140 ~ "High"
-#'     )
-#'   )
-#'   stratified_multi <- stratified_multi_reg(
-#'     data = pima,
-#'     outcome = "diabetes",
-#'     exposures = c("age", "mass"),
-#'     stratifier = "glucose_cat",
-#'     approach = "logit"
-#'   )
-#'   stratified_multi$table
-#' }
-#'
 #' @export
-stratified_multi_reg <- function(data, outcome, exposures, stratifier,
+stratified_multi_reg <- function(data,
+                                 outcome,
+                                 exposures,
+                                 stratifier,
+                                 adjust_for = NULL,
+                                 interaction = NULL,
                                  approach = "logit",
-                                 format   = c("gt","flextable"),
-                                 theme    = c("minimal")) {
-  format <- match.arg(format)
-  theme  <- .resolve_theme(theme)
+                                 format = c("gt", "flextable"),
+                                 theme = c("minimal")) {
 
-  .validate_multi_inputs(data, outcome, exposures, approach)
-  if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.", call. = FALSE)
+  format <- match.arg(format)
+  theme <- .resolve_theme(theme)
+
+  if (!stratifier %in% names(data)) {
+    stop("Stratifier not found in dataset.", call. = FALSE)
+  }
 
   data <- data[!is.na(data[[stratifier]]), , drop = FALSE]
   levs <- .strata_levels(data, stratifier)
 
   message("Running stratified multivariable regression by: ", stratifier)
 
-  fits <- list(); tds <- list(); models <- list(); sums <- list(); diags <- list()
+  per_stratum <- list()
+  tds <- list()
+  models <- list()
+  sums <- list()
+  diags <- list()
+  n_by_stratum <- list()
+
   for (lv in levs) {
     message("  > Stratum: ", stratifier, " = ", lv)
-    dlev <- data[data[[stratifier]] == lv, , drop = FALSE]
-    fit <- tryCatch(
-      .fit_multi_model(dlev, outcome, exposures, approach),
-      error = function(e) { warning("Skipping stratum ", lv, ": ", e$message, call. = FALSE); NULL }
-    )
-    if (is.null(fit)) next
-    td <- .tidy_multi(fit, exposures, approach)
-    if (is.null(td) || !nrow(td)) { warning("Skipping stratum ", lv, ": no estimable coefficients.", call. = FALSE); next }
 
+    dlev <- data[data[[stratifier]] == lv, , drop = FALSE]
     key <- as.character(lv)
-    fits[[key]]   <- fit
-    tds[[key]]    <- td
-    models[[key]] <- list(multivariable_model = fit)
-    sums[[key]]   <- list(multivariable_model = summary(fit))
-    diags[[key]]  <- list(multivariable_model = if (approach == "linear") {
-      .reg_check_linear(fit, exposure = "multivariable_model")
-    } else {
-      "Regression diagnostics available only for 'linear' models."
-    })
+
+    res_i <- tryCatch(
+      .run_multi_core(
+        data = dlev,
+        outcome = outcome,
+        exposures = exposures,
+        approach = approach,
+        adjust_for = adjust_for,
+        interaction = interaction
+      ),
+      error = function(e) {
+        warning("Skipping stratum ", lv, ": ", e$message, call. = FALSE)
+        NULL
+      }
+    )
+
+    if (is.null(res_i)) {
+      next
+    }
+
+    tds[[key]] <- res_i$table_body
+    models[[key]] <- res_i$models
+    sums[[key]] <- res_i$model_summaries
+    diags[[key]] <- res_i$reg_check
+    n_by_stratum[[key]] <- res_i$n_used
+
+    per_stratum[[key]] <- list(
+      table_body = res_i$table_body,
+      models = res_i$models,
+      model_summaries = res_i$model_summaries,
+      reg_check = res_i$reg_check,
+      n_used = res_i$n_used,
+      adjusted_mode = res_i$adjusted_mode
+    )
   }
-  if (!length(tds)) stop("No valid models across strata.", call. = FALSE)
+
+  if (!length(tds)) {
+    stop("No valid models across strata.", call. = FALSE)
+  }
 
   built <- .strata_build_wide_multi(data, exposures, stratifier, tds)
-  wide      <- built$wide
-  spanners  <- built$spanners
-  eff_lab   <- paste("Adjusted", .get_effect_label(approach))
-  footnotes <- .footnotes_multi_strata(approach, fits, stratifier)
+  wide <- built$wide
+  spanners <- built$spanners
+  eff_lab <- paste("Adjusted", .get_effect_label(approach))
+
+  footnotes <- c(
+    .abbrev_note(approach),
+    if (!is.null(adjust_for) && length(adjust_for) > 0) .adjustment_note(adjust_for) else NULL,
+    if (!is.null(interaction)) .interaction_note(interaction) else NULL,
+    .n_note_multi_strata(stratifier, n_by_stratum)
+  )
 
   tbl <- if (format == "gt") {
     .build_gt_strata_wide_multi(wide, spanners, eff_lab, theme, footnotes)
@@ -102,20 +125,21 @@ stratified_multi_reg <- function(data, outcome, exposures, stratifier,
   }
 
   fmt_class <- if (format == "gt") "gt_strata_multi" else "ft_strata_multi"
+
   out <- list(
-    table           = tbl,
-    table_display   = wide,
-    per_stratum     = tds,
-    models          = models,
+    table = tbl,
+    table_display = wide,
+    per_stratum = per_stratum,
+    models = models,
     model_summaries = sums,
-    reg_check       = diags,
-    by              = stratifier,
-    levels          = levs,
-    approach        = approach,
-    format          = format,
-    source          = "stratified_multi_reg"
+    reg_check = diags,
+    by = stratifier,
+    levels = levs,
+    approach = approach,
+    format = format,
+    source = "stratified_multi_reg"
   )
-  class(out) <- c("gtregression","stratified_multi_reg", fmt_class, class(out))
+
+  class(out) <- c("gtregression", "stratified_multi_reg", fmt_class, class(out))
   out
 }
-

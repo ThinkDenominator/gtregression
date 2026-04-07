@@ -2,11 +2,12 @@
 % Please edit documentation in R/plot_reg.R
 \name{plot_reg}
 \alias{plot_reg}
-\title{Visualize a Regression Model as a Forest Plot}
+\title{Visualize a regression model as a forest plot}
 \usage{
 plot_reg(
   tbl,
   title = NULL,
+  ref_line = NULL,
   order_y = NULL,
   log_x = FALSE,
   xlim = NULL,
@@ -21,85 +22,39 @@ plot_reg(
 )
 }
 \arguments{
-\item{tbl}{A `gtsummary`-like object returned by `gtregression`
-(must contain `table_body` and attributes `source` and `approach`).}
+\item{tbl}{A fitted \code{gtregression} object.}
 
-\item{title}{Optional plot title (character).}
+\item{title}{Optional plot title.}
 
-\item{order_y}{Optional character vector to customize the y-axis header ordering.}
+\item{ref_line}{Optional numeric value for the reference line.
+Defaults to 0 for linear models and 1 otherwise.}
 
-\item{log_x}{Logical. If `TRUE`, log x-axis (ignored for linear models).}
+\item{order_y}{Optional character vector specifying exposure order.}
 
-\item{xlim}{Optional numeric vector of length 2 for x-axis limits.}
+\item{log_x}{Logical; if \code{TRUE}, use a log-scaled x-axis for non-linear models.}
 
-\item{breaks}{Optional numeric vector for x-axis tick breaks (ignored if `log_x = TRUE`).}
+\item{xlim}{Optional numeric vector of length 2 specifying x-axis limits.}
 
-\item{point_color}{Fill color for points (default `"#1F77B4"`).}
+\item{breaks}{Optional numeric vector of x-axis tick breaks.}
 
-\item{errorbar_color}{Color for all error bars (default `"#4C4C4C"`).}
+\item{point_color}{Fill color for points.}
 
-\item{base_size}{Base font size for `theme_minimal()` (default `14`).}
+\item{errorbar_color}{Color for error bars.}
 
-\item{show_ref}{Logical. If `TRUE`, includes the reference level on the plot and labels it `(Ref.)`.}
+\item{base_size}{Base font size.}
 
-\item{sig_color}{Optional fill color for **significant** points; if `NULL`,
-significant points reuse `point_color`.}
+\item{show_ref}{Logical; if \code{TRUE}, reference rows are shown.}
 
-\item{sig_errorbar_color}{Optional color for **significant** error bars; if `NULL`,
-significant bars reuse `errorbar_color`.}
+\item{sig_color}{Optional fill color for significant points.}
 
-\item{alpha}{Significance level for linear models when `p.value` is available (default `0.05`).}
+\item{sig_errorbar_color}{Optional color for significant error bars.}
+
+\item{alpha}{Significance level for linear models when \code{p.value} is available.}
 }
 \value{
-A `ggplot2` object representing the forest plot.
+A \code{ggplot2} object.
 }
 \description{
-Creates a forest plot from a `gtsummary`-style object produced by
-`gtregression` functions (e.g., `uni_reg()`, `multi_reg()`).
-The function supports both univariate and multivariable models,
-renders hierarchical labels (variable headers vs. levels), and
-computes significance highlighting using either *p*-values (linear models)
-or CI-vs-reference rules (non-linear models).
-}
-\details{
-**Reference line**: The vertical reference is fixed at `0` for linear models and `1` for all
-other approaches, inferred from `attr(tbl, "approach")`.
-
-**Header / data detection**: Variable headers are recognized via `row_type == "label"`
-together with `header_row` or missing CI; categorical levels use `row_type == "level"`;
-continuous predictors appear as `row_type == "label"` **with** CIs and are treated as data rows.
-
-**Significance highlighting**:
-- For `approach == "linear"` with available `p.value`, rows are significant when `p.value < alpha`.
-- Otherwise, rows are significant when the CI does not cross the reference (`0` or `1` as above).
-  Use `sig_color` / `sig_errorbar_color` to customize the appearance.
-}
-\examples{
-\donttest{
-if (requireNamespace("mlbench", quietly = TRUE) &&
-    requireNamespace("gtregression", quietly = TRUE)) {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-  pima <- PimaIndiansDiabetes2
-  pima$diabetes <- ifelse(pima$diabetes == "pos", 1, 0)
-  pima$bmi_cat <- cut(
-    pima$mass,
-    breaks = c(-Inf, 18.5, 24.9, 29.9, Inf),
-    labels = c("Underweight", "Normal", "Overweight", "Obese")
-  )
-
-  # Univariate logistic regression table via gtregression
-  tbl_uni <- gtregression::uni_reg(
-    data = pima,
-    outcome = "diabetes",
-    exposures = c("age", "bmi_cat"),
-    approach = "logit"
-  )
-
-  p <- plot_reg(tbl_uni, title = "Univariate (logit)", sig_color = "#D55E00")
-  print(p)
-}
-}
-}
-\seealso{
-\code{\link{uni_reg}}, \code{\link{multi_reg}}, \code{\link{plot_reg_combine}}
+Creates a forest plot from a fitted \code{gtregression} object produced by
+functions such as \code{uni_reg()} or \code{multi_reg()}.
 }

@@ -2,17 +2,22 @@
 % Please edit documentation in R/merge_tables.R
 \name{merge_tables}
 \alias{merge_tables}
-\title{Merge tables (descriptive / uni / multi) and preserve look & notes}
+\title{Merge gtregression tables and preserve structure and notes}
 \usage{
 merge_tables(..., spanners = NULL, theme = "minimal")
 }
 \arguments{
-\item{...}{package tables with $table_display (same engine)}
+\item{...}{Two or more \code{gtregression} objects containing
+\code{$table_display}.}
 
-\item{spanners}{labels over each panel}
+\item{spanners}{Character vector of spanner labels, one per table.
+If \code{NULL}, defaults to \code{"Table 1"}, \code{"Table 2"}, etc.}
 
-\item{theme}{merge theme (preset or primitives)}
+\item{theme}{Merge theme preset or vector of primitives.}
+}
+\value{
+A merged table object of class \code{c("merged_table","gtregression", ...)}.
 }
 \description{
-Merge tables (descriptive / uni / multi) and preserve look & notes
+Merge gtregression tables and preserve structure and notes
 }

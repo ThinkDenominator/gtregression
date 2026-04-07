@@ -184,15 +184,29 @@ descriptive_table <- function(data,
     hdr <- data.frame(
       Characteristic = unique(df$var),
       is_header = TRUE, var = unique(df$var), level = NA_character_,
-      type = "header", stringsAsFactors=FALSE
+      type = "header", stringsAsFactors = FALSE
     )
     levs <- subset(df, type != "header")
     if (!nrow(levs)) return(hdr)
-    levs$Characteristic <- ifelse(levs$type=="continuous", unique(df$var), paste0("  ", levs$level))
+
+    # --- NEW: continuous-only variables -> single row, no duplicate header ---
+    if (all(levs$type == "continuous")) {
+      levs$Characteristic <- unique(df$var)     # no indent
+      levs$is_header      <- TRUE               # bold like a header
+      # keep type == "continuous" so add_group_col() will compute summaries
+      levs <- levs[, c("Characteristic","is_header","var","level","type"), drop = FALSE]
+      return(levs)                              # <- do NOT prepend hdr
+    }
+
+    # categorical (and mixed) path unchanged
+    levs$Characteristic <- ifelse(levs$type == "continuous",
+                                  unique(df$var),
+                                  paste0("  ", levs$level))
     levs$is_header <- FALSE
-    levs <- levs[, c("Characteristic","is_header","var","level","type"), drop=FALSE]
+    levs <- levs[, c("Characteristic","is_header","var","level","type"), drop = FALSE]
     rbind(hdr, levs)
   }))
+
   rownames(display) <- NULL
 
   # ---- fill cells (no header cells content) ----

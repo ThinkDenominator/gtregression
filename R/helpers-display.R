@@ -10,7 +10,7 @@
   complete_n <- function(d, y, x) sum(stats::complete.cases(d[, c(y, x), drop = FALSE]))
 
   blocks <- lapply(split(td, td$exposure), function(df) {
-    exp_nm  <- unique(df$exposure)
+    exp_nm  <- unique(df$exposure)[1]
     N_here  <- complete_n(data, outcome, exp_nm)
     is_fact <- any(df$ref)
 
@@ -58,42 +58,84 @@
 #' @keywords internal
 #' @noRd
 .make_display_multi <- function(td, data, outcome, effect_label) {
-  stopifnot(all(c("exposure","level","estimate","conf.low","conf.high","p.value","ref") %in% names(td)))
+  stopifnot(all(c(
+    "exposure", "level", "estimate", "conf.low", "conf.high", "p.value", "ref"
+  ) %in% names(td)))
 
   fmt_est_ci <- function(est, lo, hi, digits = 2) {
     f <- function(x) formatC(x, digits = digits, format = "f", big.mark = ",")
-    paste0(f(est), " (", f(lo), "\u2013", f(hi), ")")  # en dash
+    paste0(f(est), " (", f(lo), "\u2013", f(hi), ")")
   }
+
   fmt_p <- .fmt_p
 
   blocks <- lapply(split(td, td$exposure), function(df) {
-    exp_nm  <- unique(df$exposure)
+    exp_nm <- unique(df$exposure)[1]
     is_fact <- any(df$ref)
 
-    if (!is_fact) {
-      est <- df$estimate[1]; lo <- df$conf.low[1]; hi <- df$conf.high[1]; p <- df$p.value[1]
+    # Case 1: continuous exposure with a single row
+    if (!is_fact && nrow(df) == 1) {
+      est <- df$estimate[1]
+      lo  <- df$conf.low[1]
+      hi  <- df$conf.high[1]
+      p   <- df$p.value[1]
+
       header <- data.frame(Characteristic = exp_nm, stringsAsFactors = FALSE)
       header[[effect_label]] <- fmt_est_ci(est, lo, hi)
-      header[["p-value"]]    <- fmt_p(p)
-      header$is_header       <- TRUE
-      header[, c("Characteristic", effect_label, "p-value", "is_header"), drop = FALSE]
-    } else {
-      header <- data.frame(Characteristic = exp_nm, stringsAsFactors = FALSE)
-      header[[effect_label]] <- ""
-      header[["p-value"]]    <- ""
-      header$is_header       <- TRUE
+      header[["p-value"]] <- fmt_p(p)
+      header$is_header <- TRUE
 
-      lev <- df
-      lev$Characteristic <- ifelse(lev$ref, lev$level, paste0("  ", lev$level))
-      lev[[effect_label]] <- ifelse(lev$ref, "\u2014",  # em dash for ref
-                                    fmt_est_ci(lev$estimate, lev$conf.low, lev$conf.high))
-      lev[["p-value"]] <- ifelse(lev$ref, "", fmt_p(lev$p.value))
-      lev$is_header <- FALSE
-      lev <- lev[, c("Characteristic", effect_label, "p-value", "is_header"), drop = FALSE]
-
-      rbind(header[, names(lev)], lev, make.row.names = FALSE)
+      return(header[, c("Characteristic", effect_label, "p-value", "is_header"),
+                    drop = FALSE])
     }
+
+    # Case 2: factor exposure OR continuous exposure with interaction rows
+    header <- data.frame(Characteristic = exp_nm, stringsAsFactors = FALSE)
+    header[[effect_label]] <- if (is_fact) "" else fmt_est_ci(
+      df$estimate[df$level == exp_nm][1],
+      df$conf.low[df$level == exp_nm][1],
+      df$conf.high[df$level == exp_nm][1]
+    )
+    header[["p-value"]] <- if (is_fact) "" else fmt_p(
+      df$p.value[df$level == exp_nm][1]
+    )
+    header$is_header <- TRUE
+
+    lev <- df
+
+    # For factor exposures: show reference and levels underneath
+    if (is_fact) {
+      lev$Characteristic <- ifelse(lev$ref, lev$level, paste0("  ", lev$level))
+      lev[[effect_label]] <- ifelse(
+        lev$ref,
+        "\u2014",
+        fmt_est_ci(lev$estimate, lev$conf.low, lev$conf.high)
+      )
+      lev[["p-value"]] <- ifelse(lev$ref, "", fmt_p(lev$p.value))
+    } else {
+      # For continuous exposures with interaction rows:
+      # keep only non-main rows under the header
+      lev <- lev[lev$level != exp_nm, , drop = FALSE]
+
+      if (nrow(lev) > 0) {
+        lev$Characteristic <- paste0("  ", lev$level)
+        lev[[effect_label]] <- fmt_est_ci(lev$estimate, lev$conf.low, lev$conf.high)
+        lev[["p-value"]] <- fmt_p(lev$p.value)
+      }
+    }
+
+    lev$is_header <- FALSE
+
+    lev <- lev[, c("Characteristic", effect_label, "p-value", "is_header"),
+               drop = FALSE]
+
+    if (nrow(lev) == 0) {
+      return(header[, names(lev), drop = FALSE])
+    }
+
+    rbind(header[, names(lev), drop = FALSE], lev, make.row.names = FALSE)
   })
+
   do.call(rbind, blocks)
 }
 

@@ -2,36 +2,22 @@
 % Please edit documentation in R/check_collinearity.R
 \name{check_collinearity}
 \alias{check_collinearity}
-\title{Check Collinearity Using VIF for Fitted Models}
+\title{Check collinearity using VIF for fitted models}
 \usage{
 check_collinearity(model)
 }
 \arguments{
-\item{model}{A fitted model object with class "uni_reg", "multi_reg",
-"uni_reg_nbin", or "multi_reg_nbin".}
+\item{model}{A fitted model object returned by \code{uni_reg()},
+\code{multi_reg()}, \code{uni_reg_nbin()}, \code{multi_reg_nbin()},
+or compatible \code{gtregression} functions.}
 }
 \value{
-A tibble containing VIF values and interpretation.
-For multivariable models, returns one tibble.
-For univariate models, an error is raised indicating VIF is not applicable.
+For multivariable models, a tibble if a single fitted model is present,
+or a named list of tibbles if multiple fitted models are present.
+
+For univariate models, an error is raised indicating that VIF is not applicable.
 }
 \description{
-Computes Variance Inflation Factors (VIF) for fitted models returned by
-uni_reg(), multi_reg(), uni_reg_nbin(), or multi_reg_nbin().
-Returns one VIF table per model. For multivariate models only
-}
-\examples{
-if (requireNamespace("gtregression", quietly = TRUE) &&
-  requireNamespace("mlbench", quietly = TRUE) &&
-  getRversion() >= "4.1.0") {
-  data(PimaIndiansDiabetes2, package = "mlbench")
-  pima <- PimaIndiansDiabetes2 |> dplyr::filter(!is.na(diabetes))
-  pima$diabetes <- ifelse(pima$diabetes == "pos", 1, 0)
-  fit <- multi_reg(pima,
-    outcome = "diabetes",
-    exposures = c("age", "mass", "glucose"),
-    approach = "logit"
-  )
-  check_collinearity(fit)
-}
+Computes Variance Inflation Factors (VIF) for fitted multivariable models
+returned by \code{multi_reg()} or related functions.
 }
