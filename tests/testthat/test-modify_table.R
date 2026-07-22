@@ -118,6 +118,43 @@ test_that("modify_table works for descriptive and merged tables", {
   expect_true("Smoking" %in% merged_mod$table_display$Characteristic)
 })
 
+test_that("modified input labels still align when tables are merged", {
+  skip_if_not_installed("flextable")
+
+  df <- birthwt_modify_data()
+
+  desc <- descriptive_table(
+    data = df,
+    exposures = c("age", "smoke"),
+    by = "low",
+    show_overall = "last",
+    format = flextable
+  )
+  desc <- modify_table(desc, variable_labels = c(smoke = "Smoking status"))
+
+  uni <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = logit,
+    format = flextable
+  )
+
+  merged <- merge_tables(desc, uni, spanners = c("Descriptive", "Crude"))
+  merged <- modify_table(merged, variable_labels = c(smoke = "Smoking status"))
+
+  expect_equal(sum(trimws(merged$table_display$Characteristic) == "Smoking status"), 1L)
+
+  header_text <- vapply(
+    merged$table$header$content$data,
+    function(part) part$txt[1],
+    character(1)
+  )
+  expect_false(any(grepl("_p[0-9]+$", header_text)))
+  expect_true(all(c("Descriptive", "Crude", "Low BW", "OR (95% CI)", "p-value") %in%
+                    header_text))
+})
+
 test_that("modify_table works for flextable outputs", {
   skip_if_not_installed("flextable")
 

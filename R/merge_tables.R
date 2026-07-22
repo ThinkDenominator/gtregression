@@ -33,30 +33,93 @@
 #'
 #' @keywords internal
 #' @noRd
-.canonical_map <- function(df) {
+.canonical_row_ids <- function(obj, df) {
+  body <- obj[["table_body"]]
+
+  if (is.data.frame(body) && all(c("var", "level", "type") %in% names(body))) {
+    ids <- character()
+    for (v in unique(body$var)) {
+      rows <- body[body$var == v, , drop = FALSE]
+      data_rows <- rows[rows$type != "header", , drop = FALSE]
+
+      if (!nrow(data_rows)) {
+        ids <- c(ids, paste0(v, "||", v))
+      } else if (all(data_rows$type == "continuous")) {
+        ids <- c(ids, paste0(v, "||", v))
+      } else {
+        ids <- c(
+          ids,
+          paste0(v, "||__header__"),
+          paste0(v, "||", data_rows$level)
+        )
+      }
+    }
+    if (length(ids) == nrow(df)) {
+      return(ids)
+    }
+  }
+
+  if (is.data.frame(body) && all(c("exposure", "level", "ref") %in% names(body))) {
+    ids <- character()
+    for (v in unique(body$exposure)) {
+      rows <- body[body$exposure == v, , drop = FALSE]
+      is_fact <- any(rows$ref %in% TRUE)
+
+      if (!is_fact && nrow(rows) == 1L) {
+        ids <- c(ids, paste0(v, "||", v))
+      } else {
+        levels <- rows$level
+        if (!is_fact) {
+          levels <- levels[levels != v]
+        }
+        ids <- c(
+          ids,
+          paste0(v, "||__header__"),
+          paste0(v, "||", levels)
+        )
+      }
+    }
+    if (length(ids) == nrow(df)) {
+      return(ids)
+    }
+  }
+
+  NULL
+}
+
+.canonical_map <- function(obj) {
+  df <- if (is.list(obj) && !is.null(obj[["table_display"]])) {
+    obj[["table_display"]]
+  } else {
+    obj
+  }
   stopifnot(all(c("Characteristic", "is_header") %in% names(df)))
 
-  ids <- rep(NA_character_, nrow(df))
-  current_var <- NA_character_
+  ids <- .canonical_row_ids(obj, df)
 
-  for (i in seq_len(nrow(df))) {
-    ch <- trimws(df$Characteristic[i])
-    ih <- isTRUE(df$is_header[i])
+  if (is.null(ids)) {
+    ids <- rep(NA_character_, nrow(df))
+    current_var <- NA_character_
 
-    if (ih) {
-      current_var <- ch
+    for (i in seq_len(nrow(df))) {
+      ch <- trimws(df$Characteristic[i])
+      ih <- isTRUE(df$is_header[i])
 
-      # Continuous/main-effect rows live on the header line; categorical
-      # headers are structural rows and should still be preserved.
-      if (i == nrow(df) || isTRUE(df$is_header[i + 1])) {
-        ids[i] <- paste0(current_var, "||", current_var)
+      if (ih) {
+        current_var <- ch
+
+        # Continuous/main-effect rows live on the header line; categorical
+        # headers are structural rows and should still be preserved.
+        if (i == nrow(df) || isTRUE(df$is_header[i + 1])) {
+          ids[i] <- paste0(current_var, "||", current_var)
+        } else {
+          ids[i] <- paste0(current_var, "||__header__")
+        }
       } else {
-        ids[i] <- paste0(current_var, "||__header__")
+        lvl <- trimws(df$Characteristic[i])
+        lvl <- sub("\\s*\\((Ref\\.|ref)\\)$", "", lvl)
+        ids[i] <- paste0(current_var, "||", lvl)
       }
-    } else {
-      lvl <- trimws(df$Characteristic[i])
-      lvl <- sub("\\s*\\((Ref\\.|ref)\\)$", "", lvl)
-      ids[i] <- paste0(current_var, "||", lvl)
     }
   }
 
@@ -70,10 +133,13 @@
     lookup[[ids[i]]] <- df[i, content_cols, drop = FALSE]
   }
 
+  labels <- stats::setNames(as.character(df$Characteristic), ids)
+
   list(
     row_ids_order = ids,
     content_cols = content_cols,
-    lookup = lookup
+    lookup = lookup,
+    labels = labels
   )
 }
 
@@ -81,9 +147,7 @@
 #' across all input tables
 #' @keywords internal
 #' @noRd
-.build_merged_skeleton <- function(tbls) {
-  maps <- lapply(tbls, function(x) .canonical_map(x[["table_display"]]))
-
+.build_merged_skeleton <- function(maps) {
   all_ids <- unique(unlist(
     lapply(maps, `[[`, "row_ids_order"),
     use.names = FALSE
@@ -96,7 +160,15 @@
     lvl <- parts[2]
 
     is_header <- identical(var, lvl) || identical(lvl, "__header__")
-    char <- if (is_header) var else paste0("  ", lvl)
+    label <- NA_character_
+    for (map in maps) {
+      hit <- unname(map$labels[id])
+      if (!is.na(hit) && nzchar(hit)) {
+        label <- hit
+        break
+      }
+    }
+    char <- if (!is.na(label)) label else if (is_header) var else paste0("  ", lvl)
 
     data.frame(
       Characteristic = char,
@@ -260,8 +332,8 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
     stop("Length of `spanners` must equal number of tables.", call. = FALSE)
   }
 
-  maps <- lapply(tbls, function(x) .canonical_map(x[["table_display"]]))
-  skeleton <- .build_merged_skeleton(tbls)
+  maps <- lapply(tbls, .canonical_map)
+  skeleton <- .build_merged_skeleton(maps)
   base_ids <- skeleton$row_id
 
   merged_cols <- list()
@@ -555,6 +627,7 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
   res <- list(
     table = merged_tbl,
     table_display = merged_display,
+    column_labels = col_labels,
     spanners = spanners,
     engine = engine,
     footnotes = footnotes,

@@ -284,13 +284,21 @@ modify_table <- function(gt_table,
     stopifnot(requireNamespace("gt", quietly = TRUE))
     out <- reorder_univariate_cols(display_df)
 
-    # header label mapping: gt expects a list(colname = "New Label")
-    if (!is.null(header_labels)) {
-      lab_list <- as.list(header_labels)
-      names(lab_list) <- names(header_labels)
-    } else {
-      lab_list <- NULL
+    merged_labels <- NULL
+    if (inherits(tbl, "merged_table") && !is.null(tbl$column_labels)) {
+      merged_labels <- c(
+        Characteristic = "Characteristic",
+        unlist(tbl$column_labels, use.names = TRUE)
+      )
+      merged_labels <- merged_labels[names(merged_labels) %in% names(out)]
     }
+
+    lab_values <- if (!is.null(merged_labels)) merged_labels else header_labels
+    if (!is.null(header_labels)) {
+      lab_values[names(header_labels)] <- unname(header_labels)
+    }
+    lab_list <- if (!is.null(lab_values)) as.list(lab_values) else NULL
+    names(lab_list) <- names(lab_values)
 
     tb <- gt::gt(out) |>
       gt::cols_label(.list = lab_list) |>
@@ -328,6 +336,25 @@ modify_table <- function(gt_table,
     tb <- gt::tab_style(tb, gt::cell_text(indent = gt::px(12)),
                         locations = gt::cells_body(rows = display_df$is_header %in% FALSE,
                                                    columns = "Characteristic"))
+    if (inherits(tbl, "merged_table") && !is.null(tbl$spanners) &&
+        !is.null(tbl$column_labels)) {
+      start <- 2L
+      for (i in seq_along(tbl$spanners)) {
+        cols_i <- names(tbl$column_labels[[i]])
+        cols_i <- cols_i[cols_i %in% names(out)]
+        k <- length(cols_i)
+        if (k > 0) {
+          tb <- gt::tab_spanner(
+            tb,
+            label = tbl$spanners[i],
+            columns = names(out)[start:(start + k - 1L)]
+          )
+          start <- start + k
+        }
+      }
+      tb <- gt::tab_style(tb, gt::cell_text(weight = "bold"),
+                          locations = gt::cells_column_spanners())
+    }
     # caption
     if (!is.null(caption)) tb <- gt::tab_caption(tb, caption = caption)
     # footnotes
@@ -344,15 +371,40 @@ modify_table <- function(gt_table,
     # NA -> "" (older flextable compat)
     out[] <- lapply(out, function(x) { x[is.na(x)] <- ""; x })
 
-    # rename headers by changing column names (no reordering)
+    merged_labels <- NULL
+    if (inherits(tbl, "merged_table") && !is.null(tbl$column_labels)) {
+      merged_labels <- c(
+        Characteristic = "Characteristic",
+        unlist(tbl$column_labels, use.names = TRUE)
+      )
+      merged_labels <- merged_labels[names(merged_labels) %in% names(out)]
+    }
+
+    labels <- stats::setNames(names(out), names(out))
+    if (!is.null(merged_labels)) {
+      labels[names(merged_labels)] <- unname(merged_labels)
+    }
     if (!is.null(header_labels)) {
-      nn <- colnames(out)
-      hit <- nn %in% names(header_labels)
-      nn[hit] <- unname(header_labels[nn[hit]])
-      colnames(out) <- nn
+      labels[names(header_labels)] <- unname(header_labels)
     }
 
     ft <- flextable::flextable(out)
+    ft <- flextable::set_header_labels(ft, values = labels)
+    if (inherits(tbl, "merged_table") && !is.null(tbl$spanners) &&
+        !is.null(tbl$column_labels)) {
+      widths <- c(
+        1L,
+        vapply(tbl$column_labels, function(x) {
+          sum(names(x) %in% names(out))
+        }, integer(1))
+      )
+      keep <- c(TRUE, widths[-1] > 0)
+      ft <- flextable::add_header_row(
+        ft,
+        values = c("", tbl$spanners)[keep],
+        colwidths = widths[keep]
+      )
+    }
     ft <- flextable::align(ft, j = "Characteristic", align = "left",  part = "all")
     ft <- flextable::align(ft, j = setdiff(names(out), "Characteristic"), align = "center", part = "all")
     ft <- flextable::bold(ft, part = "header", bold = TRUE)
