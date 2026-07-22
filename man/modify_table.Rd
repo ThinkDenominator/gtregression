@@ -19,15 +19,18 @@ modify_table(
 )
 }
 \arguments{
-\item{gt_table}{Table object produced by this package (must contain `$table_display`).}
+\item{gt_table}{Table object produced by this package (must contain
+\code{$table_display}).}
 
-\item{variable_labels}{Named character vector: `c(old_var = "New label", ...)`.}
+\item{variable_labels}{Named character vector, for example
+\code{c(old_var = "New label", ...)}.}
 
 \item{level_labels}{Named list for factor levels:
-`list(var1 = c(old = "New", ...), var2 = c(...))`.}
+\code{list(var1 = c(old = "New", ...), var2 = c(...))}.}
 
-\item{header_labels}{Named vector to rename visible headers, e.g.
-`c("OR (95% CI)" = "Crude OR", "p-value" = "P")`.}
+\item{header_labels}{Named character vector to rename visible headers, e.g.
+\code{c("OR (95\% CI)" = "Crude OR", "p-value" = "P")}. Common aliases
+such as \code{estimate}, \code{p.value}, and \code{N} are also accepted.}
 
 \item{caption}{Optional caption/title.}
 
@@ -35,11 +38,14 @@ modify_table(
 
 \item{bold_levels}{Logical; bold factor level rows in the body.}
 
-\item{remove_N}{Logical; if `TRUE`, drops the `N` column for univariate package tables.}
+\item{remove_N}{Logical; if \code{TRUE}, drops the \code{N} column for
+univariate package tables.}
 
-\item{remove_N_obs}{Logical; if `TRUE`, suppresses multivariable complete-case footnote.}
+\item{remove_N_obs}{Logical; if \code{TRUE}, suppresses multivariable
+complete-case footnote.}
 
-\item{remove_abbreviations}{Logical; if `TRUE`, removes the Abbreviations footnote line.}
+\item{remove_abbreviations}{Logical; if \code{TRUE}, removes the
+Abbreviations footnote line.}
 
 \item{caveat}{Optional extra footnote.}
 }
@@ -47,7 +53,31 @@ modify_table(
 The modified table object (same class as input).
 }
 \description{
-Works with objects created by this package (class `"gtregression"`:
-`uni_reg()`, `multi_reg()`, `descriptive_table()`, `merge_tables()`).
-No `gtsummary` dependency or fallback.
+Works with objects created by this package (class \code{"gtregression"}):
+\code{uni_reg()}, \code{multi_reg()}, \code{descriptive_table()},
+and \code{merge_tables()}.
+No \pkg{gtsummary} dependency or fallback.
+}
+\examples{
+birthwt_data <- data_birthwt |>
+  dplyr::mutate(
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+  )
+
+tbl <- uni_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = c("age", "smoke", "ht"),
+  approach = logit
+)
+
+modify_table(
+  tbl,
+  variable_labels = c(age = "Maternal age", smoke = "Smoking"),
+  level_labels = list(smoke = c(Yes = "Smoker")),
+  header_labels = c(estimate = "Crude OR", p.value = "P"),
+  caption = "Univariable regression for low birth weight"
+)$table
 }

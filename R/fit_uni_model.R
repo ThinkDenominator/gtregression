@@ -6,11 +6,12 @@
 #' @param outcome A string. Name of the outcome variable.
 #' @param exposures A string or character vector of predictor(s).
 #' @param approach A string specifying the regression approach. One of
-#' `"logit"`, `"log-binomial"`, `"poisson"`, `"linear"`, `"robpoisson"`, or `"negbin"`.
+#' `"logit"`, `"logbinomial"`, `"poisson"`, `"linear"`, `"robpoisson"`, or `"negbin"`.
 #'
 #' @return A fitted model object (`glm`, `lm`, `riskratio`, or `negbin`) or `NULL` if fitting fails.
 #' @keywords internal
 .fit_uni_model <- function(data, outcome, exposures, approach) {
+  approach <- .normalize_approach(approach)
   formula <- as.formula(paste(outcome, "~", exposures))
 
   tryCatch({
@@ -19,7 +20,7 @@
                   "logit" = glm(formula,
                                 data = data,
                                 family = binomial("logit")),
-                  "log-binomial" = glm(formula,
+                  "logbinomial" = glm(formula,
                                        data = data,
                                        family = binomial("log")),
                   "poisson" = glm(formula,
@@ -35,7 +36,7 @@
                                           control = glm.control(maxit = 200)),
                   stop(
                     paste0("Invalid approach: '", approach,
-                           "'. Choose from: logit, log-binomial, poisson, ",
+                           "'. Choose from: logit, logbinomial, poisson, ",
                            "robpoisson, linear, negbin."),
                     call. = FALSE
                   )

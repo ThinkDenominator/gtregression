@@ -16,7 +16,7 @@
 #'   using standard formula syntax, e.g. \code{"bmi*sex"}.
 #'   When used with \code{adjust_for}, only a single exposure should be supplied.
 #' @param approach Character scalar specifying the regression approach.
-#'   One of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+#'   One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 #'   \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}.
 #' @param format Output table format; one of \code{"gt"} (default) or \code{"flextable"}.
 #' @param theme Table styling preset (e.g. \code{"minimal"}, \code{"striped"},
@@ -37,6 +37,10 @@
 #'   \item{approach}{The regression approach used.}
 #'   \item{format}{The output format used.}
 #'   \item{source}{Function identifier (\code{"multi_reg"}).}
+#'   \item{adjusted_mode}{Whether one adjusted model per exposure was fitted.}
+#'   \item{adjust_for}{Adjustment variables supplied by the user, if any.}
+#'   \item{exposures}{Exposure variables supplied by the user.}
+#'   \item{interaction}{Interaction term supplied by the user, if any.}
 #' }
 #'
 #' @details
@@ -58,6 +62,15 @@ multi_reg <- function(data,
                       approach = "logit",
                       format = c("gt", "flextable"),
                       theme = c("minimal")) {
+
+  approach <- .choice_arg(
+    substitute(approach),
+    env = parent.frame(),
+    choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
+  )
+  approach <- .normalize_approach(approach)
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  theme <- .choice_arg(substitute(theme), env = parent.frame())
 
   format <- match.arg(format)
   theme <- .resolve_theme(theme)
@@ -122,7 +135,11 @@ multi_reg <- function(data,
     reg_check = core$reg_check,
     approach = approach,
     format = format,
-    source = "multi_reg"
+    source = "multi_reg",
+    adjusted_mode = core$adjusted_mode,
+    adjust_for = if (isTRUE(core$adjusted_mode)) unique(adjust_for) else NULL,
+    exposures = unique(exposures),
+    interaction = interaction
   )
 
   class(res) <- c("gtregression", "multi_reg", fmt_class, class(res))

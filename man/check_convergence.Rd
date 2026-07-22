@@ -9,7 +9,8 @@ check_convergence(
   exposures,
   outcome,
   approach = "logit",
-  multivariate = FALSE
+  multivariate = FALSE,
+  format = c("tibble", "gt", "flextable")
 )
 }
 \arguments{
@@ -23,21 +24,26 @@ If \code{multivariate = TRUE}, exposures are included together.}
 
 \item{approach}{A character string specifying the regression approach.
 One of:
-  \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+  \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
   \code{"robpoisson"}, or \code{"negbin"}.}
 
 \item{multivariate}{Logical. If \code{TRUE},
 checks convergence for a multivariable model;
   otherwise, performs checks for each univariate model.}
+
+\item{format}{Output format. One of \code{"tibble"}, \code{"gt"}, or
+\code{"flextable"}. The default \code{"tibble"} returns the original
+data-frame style output.}
 }
 \value{
-A data frame summarizing convergence diagnostics, including:
+A data frame, \code{gt_tbl}, or \code{flextable} summarizing
+convergence diagnostics, including:
 \describe{
   \item{\code{Exposure}}{Name of the exposure variable.}
   \item{\code{Model}}{The regression approach used.}
   \item{\code{Converged}}{\code{TRUE} if the model converged successfully;
    \code{FALSE} otherwise.}
-  \item{\code{Max.prob}}{Maximum predicted probability or
+  \item{\code{Max.prob.}}{Maximum predicted probability or
   fitted value in the dataset.}
 }
 }
@@ -53,7 +59,7 @@ which is acceptable when estimating risk ratios but should not be interpreted
 as actual probabilities.
 
 This function is useful for identifying convergence issues, especially for
-\code{"log-binomial"} models, which often fail to converge .
+\code{"logbinomial"} models, which often fail to converge.
 }
 \examples{
 if (requireNamespace("gtregression", quietly = TRUE)) {
@@ -61,14 +67,14 @@ if (requireNamespace("gtregression", quietly = TRUE)) {
 
   check_convergence(
     data = data_PimaIndiansDiabetes,
-    exposures = c("age", "bmi"),
+    exposures = c("age", "mass"),
     outcome = "diabetes",
     approach = "logit"
   )
 
   check_convergence(
     data = data_PimaIndiansDiabetes,
-    exposures = c("age", "bmi"),
+    exposures = c("age", "mass"),
     outcome = "diabetes",
     approach = "logit",
     multivariate = TRUE

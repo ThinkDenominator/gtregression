@@ -1,103 +1,159 @@
-test_that("merge_tables works with tbl_summary and tbl_regression", {
-  skip_if_not_installed("gtregression")
-  skip_if_not_installed("gtsummary")
-  skip_if_not_installed("tibble")
+birthwt_merge_data <- function() {
+  data_birthwt |>
+    dplyr::mutate(
+      race = factor(race, levels = c(1, 2, 3),
+                    labels = c("White", "Black", "Other")),
+      smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+      ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+      ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+      low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+      ptl_cat = factor(ifelse(ptl > 0, "Yes", "No"), levels = c("No", "Yes"))
+    )
+}
 
-  data("data_PimaIndiansDiabetes", package = "gtregression")
-  Pima <- data_PimaIndiansDiabetes |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |> # Convert outcome to numeric b                                                                                                                                                                                                                                                                     inary
-    mutate(bmi = case_when(
-      mass < 25 ~ "Normal",
-      mass >= 25 & mass < 30 ~ "Overweight",
-      mass >= 30 ~ "Obese",
-      TRUE ~ NA_character_),
-      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-      age_cat = case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"),
-      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = ifelse(pregnant > 2, "High parity", "Low parity"),
-      npreg_cat = factor(npreg_cat, levels = c("Low parity", "High parity")),
-      glucose_cat= case_when(glucose<=140~ "Normal", glucose>140~"High"),
-      glucose_cat= factor(glucose_cat, levels = c("Normal", "High")),
-      bp_cat = case_when(
-        pressure < 80 ~ "Normal",
-        pressure >= 80 ~ "High"
-      ),
-      bp_cat= factor(bp_cat, levels = c("Normal", "High")),
-      triceps_cat = case_when(
-        triceps < 23 ~ "Normal",
-        triceps >= 23 ~ "High"
-      ),
-      triceps_cat= factor(triceps_cat, levels = c("Normal", "High")),
-      insulin_cat = case_when(
-        insulin < 30 ~ "Low",
-        insulin >= 30 & insulin < 150 ~ "Normal",
-        insulin >= 150 ~ "High"
-      ),
-      insulin_cat = factor(insulin_cat, levels = c("Low", "Normal", "High"))
-    ) |>
-    mutate(
-      dpf_cat = case_when(
-        pedigree <= 0.2 ~ "Low Genetic Risk",
-        pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
-        pedigree > 0.5 ~ "High Genetic Risk"
-      )
-    ) |>
-    mutate(dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))) |>
-    mutate(diabetes_cat= case_when(diabetes== 1~ "Diabetes positive", TRUE~ "Diabetes negative")) |>
-    mutate(diabetes_cat= factor(diabetes_cat, levels = c("Diabetes negative","Diabetes positive" )))
+test_that("merge_tables combines native gtregression objects", {
+  df <- birthwt_merge_data()
 
-  # Create descriptive table
-  desc_tbl <- Pima |>
-    dplyr::select(age_cat, npreg_cat, bmi, glucose_cat, bp_cat, triceps_cat, diabetes_cat, insulin_cat, dpf_cat) |>
-    tbl_summary(by = diabetes_cat)
-
-  # Create univariate regression table
-  uni_tbl <- gtregression::uni_reg(
-    data = Pima,
-    outcome = "diabetes",
-    exposures = c("age", "mass"),
-    approach= "logit"
+  desc_tbl <- descriptive_table(
+    data = df,
+    exposures = c("age", "lwt", "race", "smoke", "ht"),
+    by = "low",
+    show_overall = "last",
+    format = gt
+  )
+  uni_tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "lwt", "race", "smoke", "ht"),
+    approach = logit,
+    format = gt
   )
 
-  # Create multivariable regression table
-  multi_tbl <- gtregression::multi_reg(
-    data = Pima,
-    outcome = "diabetes",
-    exposures = c("age", "mass"),
-    approach= "logit"
+  merged <- merge_tables(
+    desc_tbl,
+    uni_tbl,
+    spanners = c("Descriptive", "Univariable"),
+    theme = shaded
   )
 
-  # Test merge with auto spanners
-  merged1 <- merge_tables(desc_tbl, uni_tbl)
-  expect_s3_class(merged1, "gtsummary")
-  expect_equal(length(merged1$tbls), 2)
-
-  # Test merge with custom spanners
-  merged2 <- merge_tables(uni_tbl, multi_tbl)
-  expect_s3_class(merged2, "gtsummary")
-  expect_equal(length(merged2$tbls), 2)
-
-  # Test merge with 3 tables
-  merged3 <- merge_tables(desc_tbl, uni_tbl, multi_tbl)
-  expect_s3_class(merged3, "gtsummary")
-  expect_equal(length(merged3$tbls), 3)
-
-  # Error if less than 2 tables
-  expect_error(merge_tables(desc_tbl), "At least two gtsummary tables")
-
-  # Error if mismatched spanners
-  expect_error(merge_tables(uni_tbl, multi_tbl, spanners = "Only one"), "must match the number of tables")
+  expect_s3_class(merged, "gtregression")
+  expect_s3_class(merged, "merged_table")
+  expect_s3_class(merged, "gt_merge")
+  expect_s3_class(merged$table, "gt_tbl")
+  expect_equal(merged$spanners, c("Descriptive", "Univariable"))
+  expect_equal(merged$engine, "gt")
+  expect_equal(merged$part_sources, c("descriptive_table", "uni_reg"))
+  expect_true(all(c("Characteristic", "is_header") %in% names(merged$table_display)))
+  expect_true(any(trimws(merged$table_display$Characteristic) == "smoke"))
+  expect_true(any(grepl("OR", names(merged$table_display), fixed = TRUE)))
+  expect_true(any(grepl("percentages are by column", merged$footnotes)))
+  expect_true(any(grepl("OR = Odds Ratio", merged$footnotes, fixed = TRUE)))
 })
-test_that("merge_tables handles invalid inputs", {
-  skip_if_not_installed("gtsummary")
 
-  # Test with non-gtsummary object
-  expect_error(merge_tables(data.frame(x = 1:5)),
-               "At least two gtsummary tables are required to merge.")
+test_that("merge_tables aligns univariable and adjusted multivariable tables", {
+  df <- birthwt_merge_data()
 
-  # Test with single table
-  expect_error(merge_tables(gtsummary::tbl_summary(mtcars)), "At least two gtsummary tables are required")
+  uni_tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht", "ui"),
+    approach = logit
+  )
+  multi_tbl <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht", "ui"),
+    adjust_for = c("age", "lwt"),
+    approach = logit
+  )
+
+  merged <- merge_tables(uni_tbl, multi_tbl, spanners = c("Crude", "Adjusted"))
+
+  expect_equal(merged$spanners, c("Crude", "Adjusted"))
+  expect_equal(merged$part_sources, c("uni_reg", "multi_reg"))
+  expect_true(any(trimws(merged$table_display$Characteristic) == "Yes"))
+  expect_true(any(grepl("Adjusted.OR", names(merged$table_display), fixed = TRUE)))
+  expect_true(any(grepl("Adjusted for age and lwt", merged$footnotes, fixed = TRUE)))
+})
+
+test_that("merge_tables supports three-table merges and default spanners", {
+  df <- birthwt_merge_data()
+
+  desc_tbl <- descriptive_table(df, exposures = c("age", "smoke"), by = "low")
+  uni_tbl <- uni_reg(df, outcome = "low", exposures = c("age", "smoke"), approach = logit)
+  multi_tbl <- multi_reg(df, outcome = "low", exposures = c("age", "smoke"), approach = logit)
+
+  merged <- merge_tables(desc_tbl, uni_tbl, multi_tbl)
+
+  expect_s3_class(merged, "merged_table")
+  expect_equal(merged$spanners, c("Table 1", "Table 2", "Table 3"))
+  expect_equal(merged$part_sources, c("descriptive_table", "uni_reg", "multi_reg"))
+  expect_true(ncol(merged$table_display) > ncol(desc_tbl$table_display))
+})
+
+test_that("merge_tables supports flextable output", {
+  skip_if_not_installed("flextable")
+
+  df <- birthwt_merge_data()
+
+  uni_tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = logit,
+    format = flextable
+  )
+  multi_tbl <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = logit,
+    format = flextable
+  )
+
+  merged <- merge_tables(uni_tbl, multi_tbl, theme = striped)
+
+  expect_s3_class(merged, "ft_merge")
+  expect_s3_class(merged$table, "flextable")
+  expect_equal(merged$engine, "flextable")
+})
+
+test_that("merge_tables validates inputs", {
+  df <- birthwt_merge_data()
+
+  uni_gt <- uni_reg(df, outcome = "low", exposures = "smoke", approach = logit)
+  multi_gt <- multi_reg(df, outcome = "low", exposures = "smoke", approach = logit)
+
+  expect_error(merge_tables(uni_gt), "at least two tables")
+  expect_error(merge_tables(data.frame(x = 1), multi_gt), "All inputs must be outputs")
+  expect_error(merge_tables(uni_gt, multi_gt, spanners = "Only one"), "Length of `spanners`")
+
+  skip_if_not_installed("flextable")
+  uni_ft <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = "smoke",
+    approach = logit,
+    format = flextable
+  )
+  expect_error(merge_tables(uni_gt, uni_ft), "same engine")
+})
+
+test_that("merge_tables rejects malformed package-like inputs", {
+  bad <- structure(
+    list(
+      table_display = data.frame(Characteristic = "age", is_header = TRUE),
+      table = list()
+    ),
+    class = "gtregression"
+  )
+
+  good <- uni_reg(
+    data = birthwt_merge_data(),
+    outcome = "low",
+    exposures = "age",
+    approach = logit
+  )
+
+  expect_error(merge_tables(bad, good), "same engine")
 })

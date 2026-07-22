@@ -1,193 +1,308 @@
-test_that("stratified_multi_reg returns a gtsummary tbl_merge object", {
-  library(gtregression)
-  library(mlbench)
-  library(dplyr)
-  library(gtsummary)
-
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi = case_when(
-        mass < 25 ~ "Normal",
-        mass >= 25 & mass < 30 ~ "Overweight",
-        mass >= 30 ~ "Obese",
-        TRUE ~ NA_character_
-      ),
-      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-      age_cat = case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"
-      ),
-      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = factor(ifelse(pregnant > 2, "High parity", "Low parity"),
-                         levels = c("Low parity", "High parity")
-      ),
-      glucose_cat = factor(case_when(
-        glucose < 140 ~ "Normal",
-        glucose >= 140 ~ "High"
-      ), levels = c("Normal", "High"))
-    )
-
-  result <- tryCatch(
-    {
-      stratified_multi_reg(
-        data = pima_data,
-        outcome = "diabetes",
-        exposures = c("bmi", "age_cat", "npreg_cat"),
-        stratifier = "glucose_cat",
-        approach = "robpoisson"
-      )
-    },
-    error = function(e) {
-      message("Error: ", e$message)
-      return(NULL)
-    }
-  )
-
-  if (is.null(result)) {
-    skip("Skipping test: No valid models across strata.")
-  } else {
-    expect_s3_class(result, "stratified_multi_reg")
-    expect_s3_class(result, "tbl_merge")
-  }
-})
-
-test_that("stratified_multi_reg excludes NA values in stratifier", {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      glucose_cat = factor(case_when(
-        glucose < 140 ~ "Normal",
-        glucose >= 140 ~ "High"
-      ), levels = c("Normal", "High")),
-      bmi = factor(case_when(
-        mass < 25 ~ "Normal",
-        mass >= 25 & mass < 30 ~ "Overweight",
-        TRUE ~ "Obese"
-      )),
-      age_cat = cut(age, breaks = c(0, 30, 50, Inf), labels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = factor(ifelse(pregnant > 2, "High parity", "Low parity"))
-    )
-
-  pima_data$glucose_cat[1:5] <- NA
-
-  result <- tryCatch(
-    {
-      suppressWarnings(
-        stratified_multi_reg(
-          data = pima_data,
-          outcome = "diabetes",
-          exposures = c("bmi", "age_cat", "npreg_cat"),
-          stratifier = "glucose_cat",
-          approach = "robpoisson"
-        )
-      )
-    },
-    error = function(e) {
-      message("Error: ", e$message)
-      return(NULL)
-    }
-  )
-
-  if (is.null(result)) {
-    skip("Skipping test: No valid models across strata due to NA stratifier.")
-  } else {
-    expect_s3_class(result, "stratified_multi_reg")
-    expect_s3_class(result, "tbl_merge")
-  }
-})
-
-
-test_that("stratified_multi_reg runs with robpoisson and produces estimates", {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi = factor(case_when(
-        mass < 25 ~ "Normal",
-        mass >= 25 & mass < 30 ~ "Overweight",
-        TRUE ~ "Obese"
-      )),
-      age_cat = cut(age, breaks = c(0, 30, 50, Inf), labels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = factor(ifelse(pregnant > 2, "High parity", "Low parity")),
-      glucose_cat = factor(case_when(glucose < 140 ~ "Normal", glucose >= 140 ~ "High"))
-    )
-
-  result <- tryCatch(
-    {
-      suppressWarnings(
-        stratified_multi_reg(
-          data = pima_data,
-          outcome = "diabetes",
-          exposures = c("bmi", "age_cat", "npreg_cat"),
-          stratifier = "glucose_cat",
-          approach = "robpoisson"
-        )
-      )
-    },
-    error = function(e) {
-      message("Error: ", e$message)
-      return(NULL)
-    }
-  )
-
-  if (is.null(result)) {
-    skip("Skipping test: No valid models across strata.")
-  } else {
-    expect_s3_class(result, "stratified_multi_reg")
-    expect_s3_class(result, "tbl_merge")
-  }
-})
-
-test_that("stratified_multi_reg works with negbin", {
-  skip_if_not_installed("MASS")
-
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
+birthwt_strata_multi_data <- function() {
+  data_birthwt |>
     dplyr::mutate(
-      count_outcome = round(glucose / 10),
-      bmi = dplyr::case_when(
-        mass < 25 ~ "Normal",
-        mass >= 25 & mass < 30 ~ "Overweight",
-        mass >= 30 ~ "Obese",
-        TRUE ~ NA_character_
-      ),
-      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-      age_cat = cut(age, breaks = c(0, 30, 50, Inf), labels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = factor(ifelse(pregnant > 2, "High parity", "Low parity")),
-      glucose_cat = factor(case_when(glucose < 140 ~ "Normal", glucose >= 140 ~ "High"))
-    ) |>
-    dplyr::filter(complete.cases(count_outcome, bmi, age_cat, npreg_cat, glucose_cat))
-
-  result <- tryCatch(
-    {
-      suppressWarnings(
-        stratified_multi_reg(
-          data = pima_data,
-          outcome = "count_outcome",
-          exposures = c("bmi", "age_cat", "npreg_cat"),
-          stratifier = "glucose_cat",
-          approach = "negbin"
-        )
+      race = factor(race, levels = c(1, 2, 3),
+                    labels = c("White", "Black", "Other")),
+      smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+      ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+      ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+      low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+      ptl_cat = ifelse(ptl > 0, "Yes", "No"),
+      ftv_cat = dplyr::case_when(
+        ftv == 0 ~ "None",
+        ftv == 1 ~ "One",
+        ftv >= 2 ~ "Two or more"
       )
-    },
-    error = function(e) {
-      message("Error: ", e$message)
-      return(NULL)
-    }
+    ) |>
+    dplyr::mutate(
+      ptl_cat = factor(ptl_cat, levels = c("No", "Yes")),
+      ftv_cat = factor(ftv_cat, levels = c("None", "One", "Two or more"))
+    )
+}
+
+test_that("stratified_multi_reg returns a gtregression object for full logit models", {
+  df <- birthwt_strata_multi_data()
+
+  res <- suppressMessages(
+    stratified_multi_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("age", "lwt", "smoke"),
+      stratifier = "race",
+      approach = logit,
+      format = gt
+    )
   )
 
-  if (is.null(result)) {
-    skip("Skipping test: No valid models across strata for negbin.")
-  } else {
-    expect_s3_class(result, "stratified_multi_reg")
-    expect_s3_class(result, "tbl_merge")
-  }
+  expect_s3_class(res, "gtregression")
+  expect_s3_class(res, "stratified_multi_reg")
+  expect_s3_class(res, "gt_strata_multi")
+  expect_s3_class(res$table, "gt_tbl")
+  expect_equal(res$approach, "logit")
+  expect_equal(res$format, "gt")
+  expect_equal(res$source, "stratified_multi_reg")
+  expect_equal(res$by, "race")
+  expect_equal(res$levels, c("White", "Black", "Other"))
+  expect_named(
+    res,
+    c("table", "table_display", "per_stratum", "models",
+      "model_summaries", "reg_check", "by", "levels", "approach",
+      "format", "source")
+  )
+  expect_named(res$models, c("White", "Black", "Other"))
+  expect_named(res$models$White, "multivariable_model")
+  expect_true(all(c("Characteristic", "is_header", "..eff__White",
+                    "..p__White") %in% names(res$table_display)))
+})
+
+test_that("stratified_multi_reg adjust_for fits one adjusted model per exposure", {
+  df <- birthwt_strata_multi_data()
+
+  res <- suppressMessages(
+    stratified_multi_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("smoke", "ht", "ui"),
+      stratifier = "race",
+      adjust_for = c("age", "lwt"),
+      approach = logit,
+      theme = clinical
+    )
+  )
+
+  expect_s3_class(res, "stratified_multi_reg")
+  expect_named(res$models$White, c("smoke", "ht", "ui"))
+  expect_named(res$model_summaries$White, c("smoke", "ht", "ui"))
+  expect_true(res$per_stratum$White$adjusted_mode)
+  expect_true(res$per_stratum$Black$adjusted_mode)
+  expect_true(all(c("smoke", "ht", "ui") %in% res$table_display$Characteristic))
+})
+
+test_that("stratified_multi_reg preserves factor strata order and excludes missing strata", {
+  df <- birthwt_strata_multi_data()
+  df$race <- factor(df$race, levels = c("Other", "White", "Black"))
+  df$race[1:3] <- NA
+
+  res <- suppressMessages(
+    stratified_multi_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("age", "smoke"),
+      stratifier = "race",
+      approach = "logit"
+    )
+  )
+
+  expect_equal(res$levels, c("Other", "White", "Black"))
+  expect_named(res$models, c("Other", "White", "Black"))
+  expect_true(all(!grepl("NA", names(res$table_display), fixed = TRUE)))
+})
+
+test_that("stratified_multi_reg accepts bare and quoted options", {
+  df <- birthwt_strata_multi_data()
+
+  bare <- suppressMessages(
+    stratified_multi_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("age", "smoke"),
+      stratifier = "race",
+      approach = logit,
+      format = gt,
+      theme = clinical
+    )
+  )
+  quoted <- suppressMessages(
+    stratified_multi_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("age", "smoke"),
+      stratifier = "race",
+      approach = "logit",
+      format = "gt",
+      theme = "clinical"
+    )
+  )
+
+  expect_equal(bare$approach, quoted$approach)
+  expect_equal(bare$format, quoted$format)
+  expect_equal(bare$table_display, quoted$table_display)
+})
+
+test_that("stratified_multi_reg supports flextable output", {
+  skip_if_not_installed("flextable")
+
+  df <- birthwt_strata_multi_data()
+
+  res <- suppressMessages(
+    stratified_multi_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("smoke", "ht"),
+      stratifier = "race",
+      adjust_for = c("age", "lwt"),
+      approach = logit,
+      format = flextable
+    )
+  )
+
+  expect_s3_class(res, "ft_strata_multi")
+  expect_s3_class(res$table, "flextable")
+  expect_equal(res$format, "flextable")
+})
+
+test_that("stratified_multi_reg passes interactions to stratum-specific models", {
+  df <- birthwt_strata_multi_data()
+
+  res <- suppressMessages(
+    stratified_multi_reg(
+      data = df,
+      outcome = "low",
+      exposures = "smoke",
+      stratifier = "race",
+      adjust_for = c("age", "lwt"),
+      interaction = "smoke*ht",
+      approach = logit
+    )
+  )
+
+  expect_s3_class(res, "stratified_multi_reg")
+  expect_named(res$models$White, "smoke")
+  expect_match(
+    paste(deparse(stats::formula(res$models$White$smoke)), collapse = " "),
+    "smoke \\* ht"
+  )
+})
+
+test_that("stratified_multi_reg returns diagnostics for linear models", {
+  df <- birthwt_strata_multi_data()
+
+  res <- suppressMessages(
+    stratified_multi_reg(
+      data = df,
+      outcome = "bwt",
+      exposures = c("age", "lwt", "smoke"),
+      stratifier = "race",
+      approach = linear
+    )
+  )
+
+  expect_s3_class(res, "stratified_multi_reg")
+  expect_equal(res$approach, "linear")
+  expect_true("..eff__White" %in% names(res$table_display))
+  expect_true("multivariable_model" %in% names(res$reg_check$White))
+  expect_true("Test" %in% names(res$reg_check$White$multivariable_model))
+})
+
+test_that("stratified_multi_reg validates invalid inputs through stratum failures", {
+  df <- birthwt_strata_multi_data()
+
+  expect_error(
+    stratified_multi_reg(
+      df,
+      outcome = "low",
+      exposures = "age",
+      stratifier = "not_here",
+      approach = logit
+    ),
+    "Stratifier not found"
+  )
+  expect_error(
+    suppressWarnings(
+      suppressMessages(
+        stratified_multi_reg(
+          df,
+          outcome = "low",
+          exposures = "not_here",
+          stratifier = "race",
+          approach = logit
+        )
+      )
+    ),
+    "No valid models across strata"
+  )
+  expect_error(
+    suppressWarnings(
+      suppressMessages(
+        stratified_multi_reg(
+          df,
+          outcome = "bwt",
+          exposures = "age",
+          stratifier = "race",
+          approach = logit
+        )
+      )
+    ),
+    "No valid models across strata"
+  )
+})
+
+test_that("stratified_multi_reg validates adjustment and interaction inputs", {
+  df <- birthwt_strata_multi_data()
+
+  expect_error(
+    suppressWarnings(
+      suppressMessages(
+        stratified_multi_reg(
+          df,
+          outcome = "low",
+          exposures = "smoke",
+          stratifier = "race",
+          adjust_for = "smoke",
+          approach = logit
+        )
+      )
+    ),
+    "No valid models across strata"
+  )
+  expect_error(
+    suppressWarnings(
+      suppressMessages(
+        stratified_multi_reg(
+          df,
+          outcome = "low",
+          exposures = "smoke",
+          stratifier = "race",
+          adjust_for = "low",
+          approach = logit
+        )
+      )
+    ),
+    "No valid models across strata"
+  )
+  expect_error(
+    suppressWarnings(
+      suppressMessages(
+        stratified_multi_reg(
+          df,
+          outcome = "low",
+          exposures = "smoke",
+          stratifier = "race",
+          interaction = "smoke:ht",
+          approach = logit
+        )
+      )
+    ),
+    "No valid models across strata"
+  )
+})
+
+test_that("stratified_multi_reg errors when no valid strata remain", {
+  df <- birthwt_strata_multi_data()
+  df$race <- NA_character_
+
+  expect_error(
+    suppressWarnings(
+      suppressMessages(
+        stratified_multi_reg(
+          df,
+          outcome = "low",
+          exposures = c("age", "lwt"),
+          stratifier = "race",
+          approach = logit
+        )
+      )
+    ),
+    "No valid models across strata"
+  )
 })

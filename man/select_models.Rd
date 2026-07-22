@@ -9,48 +9,54 @@ select_models(
   outcome,
   exposures,
   approach = "logit",
-  direction = "forward"
+  direction = "forward",
+  format = c("tibble", "gt", "flextable")
 )
 }
 \arguments{
 \item{data}{A data frame containing the outcome and predictor variables.}
 
-\item{outcome}{A character string indicating the outcome variable.}
+\item{outcome}{A single character string indicating the outcome variable.}
 
-\item{exposures}{vector of predictor variables to consider in the model.}
+\item{exposures}{Character vector of predictor variables to consider.}
 
 \item{approach}{Regression method. One of:
-\code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+\code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 \code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.}
 
 \item{direction}{Stepwise selection direction. One of:
 \code{"forward"} (default), \code{"backward"}, or \code{"both"}.}
+
+\item{format}{Output format for an optional viewing table. One of
+\code{"tibble"}, \code{"gt"}, or \code{"flextable"}. The default
+\code{"tibble"} keeps the original list structure.}
 }
 \value{
 A list with the following components:
 \itemize{
-  \item \code{results_table}: A tibble summarising each tested model's metric
-  (AIC, BIC, deviance, log-likelihood, adjusted R² if applicable).
-  \item \code{best_model}: The best-fitting model object based on low AIC.
-  \item \code{all_models}: A named list of all fitted models.
+  \item \code{results_table}: A tibble summarising each accepted step's
+  model metrics (AIC, BIC, deviance, log-likelihood, and adjusted R-squared
+  for linear models).
+  \item \code{best_model}: The best-fitting model object based on lowest AIC.
+  \item \code{all_models}: A named list of the accepted stepwise models.
+  \item \code{table}: A formatted \code{gt_tbl} or \code{flextable} when
+  \code{format} is \code{"gt"} or \code{"flextable"}.
 }
 }
 \description{
 Performs stepwise model selection using forward, backward, or both directions
- across different regression approaches.
-Returns a summary table with evaluation
-metrics (AIC, BIC, log-likelihood, deviance) and the best model.
+across different regression approaches. The function returns a summary table
+with evaluation metrics and the best model based on the lowest AIC.
 }
 \examples{
-data <- data_PimaIndiansDiabetes
+data <- data_birthwt
 stepwise <- select_models(
   data = data,
-  outcome = "glucose",
-  exposures = c("age", "pregnant", "mass"),
+  outcome = "bwt",
+  exposures = c("age", "lwt", "smoke"),
   approach = "linear",
   direction = "forward"
 )
-summary(stepwise)
 stepwise$results_table
 stepwise$best_model
 

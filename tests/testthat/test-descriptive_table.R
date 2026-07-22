@@ -1,238 +1,173 @@
-test_that("descriptive_table works with basic inputs", {
-  skip_if_not_installed("gtsummary")
-  skip_if_not_installed("dplyr")
+test_that("descriptive_table works with basic categorical inputs", {
+  df <- data.frame(
+    group = factor(c("A", "A", "B", "B")),
+    status = factor(c("No", "Yes", "No", "Yes")),
+    risk = factor(c("Low", "High", "High", NA), levels = c("Low", "High"))
+  )
 
-  data("data_PimaIndiansDiabetes", package = "gtregression")
+  tbl <- descriptive_table(
+    data = df,
+    exposures = c("status", "risk"),
+    by = "group"
+  )
 
-  pima_data <- data_PimaIndiansDiabetes |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |> # Convert outcome to numeric b                                                                                                                                                                                                                                                                     inary
-    mutate(bmi = case_when(
-      mass < 25 ~ "Normal",
-      mass >= 25 & mass < 30 ~ "Overweight",
-      mass >= 30 ~ "Obese",
-      TRUE ~ NA_character_),
-      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-      age_cat = case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"),
-      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = ifelse(pregnant > 2, "High parity", "Low parity"),
-      npreg_cat = factor(npreg_cat, levels = c("Low parity", "High parity")),
-      glucose_cat= case_when(glucose<=140~ "Normal", glucose>140~"High"),
-      glucose_cat= factor(glucose_cat, levels = c("Normal", "High")),
-      bp_cat = case_when(
-        pressure < 80 ~ "Normal",
-        pressure >= 80 ~ "High"
-      ),
-      bp_cat= factor(bp_cat, levels = c("Normal", "High")),
-      triceps_cat = case_when(
-        triceps < 23 ~ "Normal",
-        triceps >= 23 ~ "High"
-      ),
-      triceps_cat= factor(triceps_cat, levels = c("Normal", "High")),
-      insulin_cat = case_when(
-        insulin < 30 ~ "Low",
-        insulin >= 30 & insulin < 150 ~ "Normal",
-        insulin >= 150 ~ "High"
-      ),
-      insulin_cat = factor(insulin_cat, levels = c("Low", "Normal", "High"))
-    ) |>
-    mutate(
-      dpf_cat = case_when(
-        pedigree <= 0.2 ~ "Low Genetic Risk",
-        pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
-        pedigree > 0.5 ~ "High Genetic Risk"
-      )
-    ) |>
-    mutate(dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))) |>
-    mutate(diabetes_cat= case_when(diabetes== 1~ "Diabetes positive", TRUE~ "Diabetes negative")) |>
-    mutate(diabetes_cat= factor(diabetes_cat, levels = c("Diabetes negative","Diabetes positive" )))
+  expect_s3_class(tbl, "descriptive_table")
+  expect_s3_class(tbl$table, "gt_tbl")
+  expect_equal(tbl$by, "group")
+  expect_equal(tbl$levels, c("A", "B"))
+  expect_equal(tbl$table_display$A[tbl$table_display$Characteristic == "  Yes"], "1 (50.0%)")
+  expect_equal(tbl$table_display$B[tbl$table_display$Characteristic == "  Low"], "0 (0.0%)")
+  expect_true("(Missing)" %in% trimws(tbl$table_display$Characteristic))
+  expect_match(tbl$footnotes[1], "percentages are by column")
+})
+
+test_that("descriptive_table handles row percentages and overall position", {
+  df <- data.frame(
+    group = factor(c("A", "A", "B", "B", "B"), levels = c("A", "B")),
+    status = factor(c("No", "Yes", "No", "No", "Yes"))
+  )
+
+  tbl <- descriptive_table(
+    data = df,
+    exposures = "status",
+    by = "group",
+    percent = "row",
+    show_overall = "last"
+  )
+
+  expect_named(tbl$table_display, c("Characteristic", "is_header", "A", "B", "Overall"))
+  expect_equal(tbl$table_display$A[tbl$table_display$Characteristic == "  No"], "1 (33.3%)")
+  expect_equal(tbl$table_display$B[tbl$table_display$Characteristic == "  No"], "2 (66.7%)")
+  expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "  No"], "3")
+  expect_match(tbl$footnotes[1], "percentages are by row")
+})
+
+test_that("descriptive_table falls back to column percentages without by", {
+  df <- data.frame(status = factor(c("No", "Yes", "No")))
 
   expect_warning(
-    tbl <- descriptive_table(
-      data = pima_data,
-      exposures = c("bmi", "age_cat", "npreg_cat", "bp_cat", "triceps_cat",
-                    "insulin_cat", "dpf_cat"),
-      by = "diabetes_cat"
-    ),
-    regexp= NA
+    tbl <- descriptive_table(df, "status", percent = "rows"),
+    "`percent = \"row\"` requires `by`"
   )
 
-  expect_s3_class(tbl, "descriptive_table")
+  expect_named(tbl$table_display, c("Characteristic", "is_header", "Overall"))
+  expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "  No"], "2 (66.7%)")
 })
 
-test_that("descriptive_table works with row percentages", {
-  data("data_PimaIndiansDiabetes", package = "gtregression")
-
-  pima_data <- data_PimaIndiansDiabetes |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |> # Convert outcome to numeric b                                                                                                                                                                                                                                                                     inary
-    mutate(bmi = case_when(
-      mass < 25 ~ "Normal",
-      mass >= 25 & mass < 30 ~ "Overweight",
-      mass >= 30 ~ "Obese",
-      TRUE ~ NA_character_),
-      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-      age_cat = case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"),
-      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = ifelse(pregnant > 2, "High parity", "Low parity"),
-      npreg_cat = factor(npreg_cat, levels = c("Low parity", "High parity")),
-      glucose_cat= case_when(glucose<=140~ "Normal", glucose>140~"High"),
-      glucose_cat= factor(glucose_cat, levels = c("Normal", "High")),
-      bp_cat = case_when(
-        pressure < 80 ~ "Normal",
-        pressure >= 80 ~ "High"
-      ),
-      bp_cat= factor(bp_cat, levels = c("Normal", "High")),
-      triceps_cat = case_when(
-        triceps < 23 ~ "Normal",
-        triceps >= 23 ~ "High"
-      ),
-      triceps_cat= factor(triceps_cat, levels = c("Normal", "High")),
-      insulin_cat = case_when(
-        insulin < 30 ~ "Low",
-        insulin >= 30 & insulin < 150 ~ "Normal",
-        insulin >= 150 ~ "High"
-      ),
-      insulin_cat = factor(insulin_cat, levels = c("Low", "Normal", "High"))
-    ) |>
-    mutate(
-      dpf_cat = case_when(
-        pedigree <= 0.2 ~ "Low Genetic Risk",
-        pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
-        pedigree > 0.5 ~ "High Genetic Risk"
-      )
-    ) |>
-    mutate(dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))) |>
-    mutate(diabetes_cat= case_when(diabetes== 1~ "Diabetes positive", TRUE~ "Diabetes negative")) |>
-    mutate(diabetes_cat= factor(diabetes_cat, levels = c("Diabetes negative","Diabetes positive" )))
-
-  expect_error(
-    tbl <- descriptive_table(
-      data = pima_data,
-      exposures = c("bmi", "age_cat", "npreg_cat", "bp_cat", "triceps_cat"),
-      by = "diabetes_cat",
-      percent = "row",
-      show_overall = "last"
-    ),
-    regex= NA
+test_that("descriptive_table handles dichotomous single-row values", {
+  df <- data.frame(
+    named = factor(c("No", "Yes", "No", "Yes")),
+    formula = factor(c("Low", "High", "High", "Low"))
   )
-  expect_s3_class(tbl, "descriptive_table")
-})
 
-test_that("descriptive_table handles single_row correctly", {
-  data("data_PimaIndiansDiabetes", package = "gtregression")
-
-  pima_data <- data_PimaIndiansDiabetes |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |> # Convert outcome to numeric b                                                                                                                                                                                                                                                                     inary
-    mutate(bmi = case_when(
-      mass < 25 ~ "Normal",
-      mass >= 25 & mass < 30 ~ "Overweight",
-      mass >= 30 ~ "Obese",
-      TRUE ~ NA_character_),
-      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-      age_cat = case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"),
-      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = ifelse(pregnant > 2, "High parity", "Low parity"),
-      npreg_cat = factor(npreg_cat, levels = c("Low parity", "High parity")),
-      glucose_cat= case_when(glucose<=140~ "Normal", glucose>140~"High"),
-      glucose_cat= factor(glucose_cat, levels = c("Normal", "High")),
-      bp_cat = case_when(
-        pressure < 80 ~ "Normal",
-        pressure >= 80 ~ "High"
-      ),
-      bp_cat= factor(bp_cat, levels = c("Normal", "High")),
-      triceps_cat = case_when(
-        triceps < 23 ~ "Normal",
-        triceps >= 23 ~ "High"
-      ),
-      triceps_cat= factor(triceps_cat, levels = c("Normal", "High")),
-      insulin_cat = case_when(
-        insulin < 30 ~ "Low",
-        insulin >= 30 & insulin < 150 ~ "Normal",
-        insulin >= 150 ~ "High"
-      ),
-      insulin_cat = factor(insulin_cat, levels = c("Low", "Normal", "High"))
-    ) |>
-    mutate(
-      dpf_cat = case_when(
-        pedigree <= 0.2 ~ "Low Genetic Risk",
-        pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
-        pedigree > 0.5 ~ "High Genetic Risk"
-      )
-    ) |>
-    mutate(dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))) |>
-    mutate(diabetes_cat= case_when(diabetes== 1~ "Diabetes positive", TRUE~ "Diabetes negative")) |>
-    mutate(diabetes_cat= factor(diabetes_cat, levels = c("Diabetes negative","Diabetes positive" )))
-
-  tbl <- suppressWarnings(descriptive_table(
-    data = pima_data,
-    exposures = c("bp_cat", "triceps_cat"),
-    by = "diabetes_cat",
+  tbl_named <- descriptive_table(
+    df,
+    "named",
     show_dichotomous = "single_row",
-    value = list(bp_cat ~ "High", triceps_cat ~ "High")
+    value = list(named = "Yes")
+  )
+  tbl_formula <- descriptive_table(
+    df,
+    "formula",
+    show_dichotomous = "single_row",
+    value = list(formula ~ "High")
+  )
 
-  ))
-
-  expect_s3_class(tbl, "descriptive_table")
+  expect_equal(tbl_named$table_display$Characteristic, c("named", "  Yes"))
+  expect_equal(tbl_formula$table_display$Characteristic, c("formula", "  High"))
 })
 
-test_that("descriptive_table errors with missing variable", {
-  data("data_PimaIndiansDiabetes", package = "gtregression")
-
-  pima_data <- data_PimaIndiansDiabetes |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |> # Convert outcome to numeric b                                                                                                                                                                                                                                                                     inary
-    mutate(bmi = case_when(
-      mass < 25 ~ "Normal",
-      mass >= 25 & mass < 30 ~ "Overweight",
-      mass >= 30 ~ "Obese",
-      TRUE ~ NA_character_),
-      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-      age_cat = case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"),
-      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = ifelse(pregnant > 2, "High parity", "Low parity"),
-      npreg_cat = factor(npreg_cat, levels = c("Low parity", "High parity")),
-      glucose_cat= case_when(glucose<=140~ "Normal", glucose>140~"High"),
-      glucose_cat= factor(glucose_cat, levels = c("Normal", "High")),
-      bp_cat = case_when(
-        pressure < 80 ~ "Normal",
-        pressure >= 80 ~ "High"
-      ),
-      bp_cat= factor(bp_cat, levels = c("Normal", "High")),
-      triceps_cat = case_when(
-        triceps < 23 ~ "Normal",
-        triceps >= 23 ~ "High"
-      ),
-      triceps_cat= factor(triceps_cat, levels = c("Normal", "High")),
-      insulin_cat = case_when(
-        insulin < 30 ~ "Low",
-        insulin >= 30 & insulin < 150 ~ "Normal",
-        insulin >= 150 ~ "High"
-      ),
-      insulin_cat = factor(insulin_cat, levels = c("Low", "Normal", "High"))
-    ) |>
-    mutate(
-      dpf_cat = case_when(
-        pedigree <= 0.2 ~ "Low Genetic Risk",
-        pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
-        pedigree > 0.5 ~ "High Genetic Risk"
-      )
-    ) |>
-    mutate(dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk", "Moderate Genetic Risk", "High Genetic Risk"))) |>
-    mutate(diabetes_cat= case_when(diabetes== 1~ "Diabetes positive", TRUE~ "Diabetes negative")) |>
-    mutate(diabetes_cat= factor(diabetes_cat, levels = c("Diabetes negative","Diabetes positive" )))
-
-  expect_error(
-    descriptive_table(data = pima_data, exposures = c("not_in_data")),
-    "not found in the data"
+test_that("descriptive_table chooses sensible default single-row levels", {
+  df <- data.frame(
+    logical_var = c(TRUE, FALSE, TRUE),
+    numeric_var = c(0, 1, 1),
+    char_var = c("a", "b", "a")
   )
+
+  tbl_logical <- descriptive_table(df, "logical_var", show_dichotomous = "single_row")
+  tbl_numeric <- descriptive_table(df, "numeric_var", show_dichotomous = "single_row")
+  tbl_char <- descriptive_table(df, "char_var", show_dichotomous = "single_row")
+
+  expect_equal(tbl_logical$table_display$Characteristic, c("logical_var", "  TRUE"))
+  expect_equal(tbl_numeric$table_display$Characteristic, c("numeric_var", "  1"))
+  expect_equal(tbl_char$table_display$Characteristic, c("char_var", "  b"))
+})
+
+test_that("descriptive_table handles continuous summaries", {
+  df <- data.frame(
+    mean_var = c(1, 2, 3, 4),
+    median_var = c(1, 2, 10, NA),
+    mode_var = c(1, 1, 2, 3),
+    count_var = c(1, 2, NA, 4),
+    empty_var = c(NA_real_, NA_real_, NA_real_, NA_real_)
+  )
+
+  tbl <- descriptive_table(
+    df,
+    c("mean_var", "median_var", "mode_var", "count_var", "empty_var"),
+    statistic = c(
+      mean_var = "mean",
+      median_var = "median",
+      mode_var = "mode",
+      count_var = "count"
+    )
+  )
+
+  expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "mean_var"], "2.5 (1.3)")
+  expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "median_var"], "2.0 (1.5-6.0)")
+  expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "mode_var"], "1.0")
+  expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "count_var"], "N = 3")
+  expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "empty_var"], "")
+  expect_match(tbl$footnotes[2], "Continuous summaries")
+})
+
+test_that("descriptive_table supports flextable and theme options", {
+  skip_if_not_installed("flextable")
+
+  df <- data.frame(
+    group = factor(c("A", "A", "B")),
+    status = factor(c("No", "Yes", "No"))
+  )
+
+  tbl <- descriptive_table(
+    df,
+    "status",
+    by = "group",
+    format = "flextable",
+    theme = "striped",
+    show_overall = "first"
+  )
+
+  expect_s3_class(tbl, "ft_desc")
+  expect_s3_class(tbl$table, "flextable")
+  expect_named(tbl$table_display, c("Characteristic", "is_header", "Overall", "A", "B"))
+})
+
+test_that("descriptive_table accepts custom theme primitives", {
+  df <- data.frame(status = factor(c("No", "Yes", "No")))
+
+  tbl <- descriptive_table(df, "status", theme = c("HEADER_SHADED", "compact"))
+
+  expect_s3_class(tbl, "gt_desc")
+  expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "  No"], "2 (66.7%)")
+})
+
+test_that("descriptive_table can hide missing rows", {
+  df <- data.frame(status = factor(c("No", "Yes", NA)))
+
+  tbl <- descriptive_table(df, "status", show_missing = "no")
+
+  expect_false("(Missing)" %in% trimws(tbl$table_display$Characteristic))
+})
+
+test_that("descriptive_table gives clear errors for invalid inputs", {
+  df <- data.frame(x = 1:3, y = 4:6, group = c("A", "B", "A"))
+
+  expect_error(descriptive_table(df, character(0)), "`exposures` must be")
+  expect_error(descriptive_table(df, 1), "`exposures` must be")
+  expect_error(descriptive_table(df, "x", by = c("group", "y")), "`by` must be")
+  expect_error(descriptive_table(df, "not_in_data"), "Variables not found")
+  expect_error(descriptive_table(df, "x", digits = -1), "`digits` must be")
+  expect_error(descriptive_table(df, "x", statistic = c(x = "range")), "Unsupported statistic")
+  expect_error(descriptive_table(df, "x", statistic = c("mean")), "`statistic` must be")
 })

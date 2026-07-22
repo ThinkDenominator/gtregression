@@ -2,16 +2,24 @@
 % Please edit documentation in R/dissect.R
 \name{dissect}
 \alias{dissect}
-\title{Dissect a Dataset Before Regression}
+\title{Dissect a dataset before regression}
 \usage{
-dissect(data)
+dissect(data, verbose = FALSE, format = c("tibble", "gt", "flextable"))
 }
 \arguments{
 \item{data}{A data frame.}
+
+\item{verbose}{Logical; if \code{TRUE}, print the summary and interpretation
+notes. The tibble is returned invisibly only when printed by the console.}
+
+\item{format}{Output format. One of \code{"tibble"}, \code{"gt"}, or
+\code{"flextable"}. The default \code{"tibble"} keeps the output easy to
+use in pipelines.}
 }
 \value{
-A tibble with columns: Variable, Type, Missing (%), Unique, Levels,
-and Regression Hint.
+A tibble, \code{gt_tbl}, or \code{flextable}, depending on
+  \code{format}. The tibble has columns: Variable, Type, Missing (%), Unique,
+  Levels, Compatibility, and Hint.
 }
 \description{
 Returns a tidy summary of each variable's structure, missingness, uniqueness,
@@ -19,4 +27,8 @@ and suitability for use in regression models.
 }
 \examples{
 dissect(data_birthwt)
+dissect(data_birthwt, format = gt)
+
+# Print interpretation notes for beginners
+dissect(data_birthwt, verbose = TRUE)
 }

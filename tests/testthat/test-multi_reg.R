@@ -1,115 +1,231 @@
-test_that("multi_reg computes estimates correctly across approaches", {
-  library(gtregression)
-  library(mlbench)
-  library(risks)
-  library(dplyr)
-  library(gtsummary)
-
-  # Load and prepare the dataset
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi = case_when(
-        mass < 25 ~ "Normal",
-        mass >= 25 & mass < 30 ~ "Overweight",
-        mass >= 30 ~ "Obese",
-        TRUE ~ NA_character_
-      ),
-      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-      age_cat = case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"
-      ),
-      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
-      npreg_cat = ifelse(pregnant > 2, "High parity", "Low parity"),
-      npreg_cat = factor(npreg_cat, levels = c("Low parity", "High parity")),
-      glucose_cat = factor(ifelse(glucose < 140,
-                                  "Normal", "High"),
-                           levels = c("Normal", "High")),
-      bp_cat = factor(ifelse(pressure < 80, "Normal", "High"),
-                      levels = c("Normal", "High")),
-      triceps_cat = factor(ifelse(triceps < 23, "Normal", "High"),
-                           levels = c("Normal", "High")),
-      insulin_cat = case_when(
-        insulin < 30 ~ "Low",
-        insulin >= 30 & insulin < 150 ~ "Normal",
-        insulin >= 150 ~ "High"
-      ),
-      insulin_cat = factor(insulin_cat, levels = c("Low", "Normal", "High")),
-      dpf_cat = case_when(
-        pedigree <= 0.2 ~ "Low Genetic Risk",
-        pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
-        pedigree > 0.5 ~ "High Genetic Risk"
-      ),
-      dpf_cat = factor(dpf_cat, levels = c("Low Genetic Risk",
-                                           "Moderate Genetic Risk",
-                                           "High Genetic Risk"))
-    )
-
-  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat",
-                 "triceps_cat", "insulin_cat", "dpf_cat")
-  valid_approaches <- c("logit", "log-binomial", "poisson",
-                        "robpoisson", "linear")
-
-  for (approach in valid_approaches) {
-    outcome_var <- if (approach == "linear") "mass" else
-      if (approach == "poisson") "pregnant" else "diabetes"
-
-    if (approach == "log-binomial") {
-      skip_on_cran() # May fail due to convergence on CRAN
-
-      expect_error(
-        suppressWarnings(
-          multi_reg(
-            data = pima_data,
-            outcome = outcome_var,
-            exposures = exposures,
-            approach = "log-binomial"
-          )
-        ),
-        regexp = "Model fitting failed"
+birthwt_multi_data <- function() {
+  data_birthwt |>
+    dplyr::mutate(
+      race = factor(race, levels = c(1, 2, 3),
+                    labels = c("White", "Black", "Other")),
+      smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+      ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+      ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+      low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+      ptl_cat = ifelse(ptl > 0, "Yes", "No"),
+      ftv_cat = dplyr::case_when(
+        ftv == 0 ~ "None",
+        ftv == 1 ~ "One",
+        ftv >= 2 ~ "Two or more"
       )
-    } else {
-      result <- suppressWarnings(
-        multi_reg(
-          data = pima_data,
-          outcome = outcome_var,
-          exposures = exposures,
-          approach = approach
-        )
-      )
-
-      expect_s3_class(result, "tbl_regression")
-      expect_s3_class(result, "gtsummary")
-      expect_true("estimate" %in% names(result$table_body))
-      expect_equal(attr(result, "approach"), approach)
-      expect_equal(attr(result, "source"), "multi_reg")
-    }
-  }
-
-  # Validate known input errors
-  expect_error(
-    multi_reg(data = pima_data, outcome = "mass",
-              exposures = c("age_cat"), approach = "logit"),
-    regexp = paste0(
-      "This approach requires either a factor variable or numeric ",
-      "variable coded as 0 and 1 \\(or 1 and 2\\)"
+    ) |>
+    dplyr::mutate(
+      ptl_cat = factor(ptl_cat, levels = c("No", "Yes")),
+      ftv_cat = factor(ftv_cat, levels = c("None", "One", "Two or more"))
     )
+}
+
+test_that("multi_reg returns a gtregression object for default logit models", {
+  df <- birthwt_multi_data()
+
+  res <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "lwt", "race", "smoke"),
+    approach = logit,
+    format = gt
   )
 
-  expect_error(
-    multi_reg(data = pima_data, outcome = "diabetes",
-              exposures = c("bmi"), approach = "linear"),
-    "Linear regression requires a continuous outcome."
+  expect_s3_class(res, "gtregression")
+  expect_s3_class(res, "multi_reg")
+  expect_s3_class(res, "gt_multi")
+  expect_s3_class(res$table, "gt_tbl")
+  expect_equal(res$approach, "logit")
+  expect_equal(res$format, "gt")
+  expect_equal(res$source, "multi_reg")
+  expect_named(
+    res,
+    c("table", "table_body", "table_display", "models",
+      "model_summaries", "reg_check", "approach", "format", "source",
+      "adjusted_mode", "adjust_for", "exposures", "interaction")
+  )
+  expect_false(res$adjusted_mode)
+  expect_null(res$adjust_for)
+  expect_equal(res$exposures, c("age", "lwt", "race", "smoke"))
+  expect_null(res$interaction)
+  expect_named(res$models, "multivariable_model")
+  expect_s3_class(res$models$multivariable_model, "glm")
+  expect_s3_class(res$model_summaries$multivariable_model, "summary.glm")
+  expect_true(all(c("exposure", "level", "estimate", "conf.low",
+                    "conf.high", "p.value", "ref") %in% names(res$table_body)))
+  expect_true(all(c("Characteristic", "Adjusted OR (95% CI)", "p-value",
+                    "is_header") %in% names(res$table_display)))
+  expect_true(any(res$table_body$ref))
+  expect_true("Regression diagnostics available only for 'linear' models." %in% res$reg_check)
+})
+
+test_that("multi_reg adjusted mode fits one model per exposure", {
+  df <- birthwt_multi_data()
+
+  res <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht", "ui"),
+    adjust_for = c("age", "lwt", "race"),
+    approach = "logit",
+    theme = clinical
   )
 
-  # Valid Poisson test with count outcome
-  expect_s3_class(
-    suppressWarnings(multi_reg(data = pima_data, outcome = "pregnant",
-                               exposures = c("bmi"), approach = "poisson")),
-    "tbl_regression"
+  expect_s3_class(res, "multi_reg")
+  expect_named(res$models, c("smoke", "ht", "ui"))
+  expect_named(res$model_summaries, c("smoke", "ht", "ui"))
+  expect_named(res$reg_check, c("smoke", "ht", "ui"))
+  expect_true(res$adjusted_mode)
+  expect_equal(res$adjust_for, c("age", "lwt", "race"))
+  expect_equal(res$exposures, c("smoke", "ht", "ui"))
+  expect_equal(unique(res$table_body$exposure), c("smoke", "ht", "ui"))
+  expect_true(all(vapply(res$models, inherits, logical(1), what = "glm")))
+})
+
+test_that("multi_reg accepts bare and quoted output options", {
+  df <- birthwt_multi_data()
+
+  bare <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = logit,
+    format = gt,
+    theme = minimal
+  )
+  quoted <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = "logit",
+    format = "gt",
+    theme = "minimal"
+  )
+
+  expect_equal(bare$approach, quoted$approach)
+  expect_equal(bare$format, quoted$format)
+  expect_equal(bare$table_display, quoted$table_display)
+})
+
+test_that("multi_reg supports flextable output", {
+  skip_if_not_installed("flextable")
+
+  df <- birthwt_multi_data()
+
+  res <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = logit,
+    format = flextable
+  )
+
+  expect_s3_class(res, "ft_multi")
+  expect_s3_class(res$table, "flextable")
+  expect_equal(res$format, "flextable")
+})
+
+test_that("multi_reg supports interaction terms in logit models", {
+  df <- birthwt_multi_data()
+
+  res <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = "smoke",
+    adjust_for = c("age", "lwt"),
+    interaction = "smoke*ht",
+    approach = logit
+  )
+
+  expect_s3_class(res, "multi_reg")
+  expect_named(res$models, "smoke")
+  expect_match(
+    paste(deparse(stats::formula(res$models$smoke)), collapse = " "),
+    "smoke \\* ht"
+  )
+  expect_equal(res$table_body$level, c("No", "Yes"))
+})
+
+test_that("multi_reg returns diagnostics for linear models", {
+  df <- birthwt_multi_data()
+
+  res <- multi_reg(
+    data = df,
+    outcome = "bwt",
+    exposures = c("age", "lwt", "race"),
+    approach = linear
+  )
+
+  expect_s3_class(res, "multi_reg")
+  expect_s3_class(res$models$multivariable_model, "lm")
+  expect_true("Adjusted Beta (95% CI)" %in% names(res$table_display))
+  expect_type(res$reg_check, "list")
+  expect_named(res$reg_check, "multivariable_model")
+  expect_true("Test" %in% names(res$reg_check$multivariable_model))
+})
+
+test_that("multi_reg validates required variables and outcome types", {
+  df <- birthwt_multi_data()
+
+  expect_error(
+    multi_reg(df, outcome = "not_here", exposures = "age", approach = logit),
+    "Outcome variable not found"
+  )
+  expect_error(
+    multi_reg(df, outcome = "low", exposures = "not_here", approach = logit),
+    "exposure variables were not found"
+  )
+  expect_error(
+    multi_reg(df, outcome = "bwt", exposures = "age", approach = logit),
+    "requires either a factor variable"
+  )
+  expect_error(
+    multi_reg(df, outcome = "low", exposures = "age", approach = linear),
+    "Linear regression requires a continuous outcome"
+  )
+})
+
+test_that("multi_reg validates adjustment and interaction inputs", {
+  df <- birthwt_multi_data()
+
+  expect_error(
+    multi_reg(
+      df,
+      outcome = "low",
+      exposures = "smoke",
+      adjust_for = "smoke",
+      approach = logit
+    ),
+    "must not overlap"
+  )
+  expect_error(
+    multi_reg(
+      df,
+      outcome = "low",
+      exposures = "smoke",
+      adjust_for = "low",
+      approach = logit
+    ),
+    "Outcome variable cannot be included"
+  )
+  expect_error(
+    multi_reg(
+      df,
+      outcome = "low",
+      exposures = "smoke",
+      interaction = "smoke:ht",
+      approach = logit
+    ),
+    "not ':'"
+  )
+  expect_error(
+    multi_reg(
+      df,
+      outcome = "low",
+      exposures = "smoke",
+      interaction = "age*lwt",
+      approach = logit
+    ),
+    "exposure must be part"
   )
 })

@@ -19,7 +19,7 @@
     if (.is_ratio(approach)) { est <- exp(est); lo <- exp(lo); hi <- exp(hi) }
     term <- rn[idx]
     lvl  <- sub(paste0("^`?", exposure, "`?"), "", term)
-    lvl[lvl == ""] <- exposure  # continuous → single row at header
+    lvl[lvl == ""] <- exposure  # continuous -> single row at header
     lvl  <- sub("^[:\\.]?", "", lvl)
 
     df_nonref <- data.frame(
@@ -120,7 +120,7 @@
       parts <- gsub("`", "", parts, fixed = TRUE)
 
       # Always return full readable interaction
-      return(paste(parts, collapse = " × "))
+      return(paste(parts, collapse = " x "))
     }
 
     term_clean
@@ -181,7 +181,7 @@
       )
 
       if (!is.null(df_nonref)) {
-        is_interaction <- grepl("×", df_nonref$level, fixed = TRUE)
+        is_interaction <- grepl(" x ", df_nonref$level, fixed = TRUE)
 
         ord_main <- match(df_nonref$level, levs)
         ord_main[is.na(ord_main)] <- Inf

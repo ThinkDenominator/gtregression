@@ -1,67 +1,89 @@
-" Stratified Univariate Regression (Odds, Risk, or Rate Ratios)
-#"
-#' Performs univariate regression for each exposure on a
-#' binary, count, or continuous outcome,
-#' stratified by a specified variable. Produces a stacked `gtsummary`
-#' table with one column per stratum,
-#' along with underlying models and diagnostics.
+#' Stratified univariable regression
+#'
+#' Fit univariable regression models within each level of a stratifier and
+#' combine the results into a publication-ready stratified table rendered with
+#' \pkg{gt} or \pkg{flextable}.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome name of the outcome variable.
-#' @param exposures A vector specifying the predictor (exposure) variables.
-#' @param stratifier A character string specifying the stratifier
-#' @param approach Modeling approach to use. One of:
-#'   `"logit"` (Odds Ratios), `"log-binomial"` (Risk Ratios),
-#'   `"poisson"` (Incidence Rate Ratios), `"robpoisson"` (Robust RR),
-#'    `"linear"` (Beta coefficients), `"negbin"` (Incidence Rate Ratios),.
+#' @param outcome Character scalar; name of the outcome variable.
+#' @param exposures Character vector of exposure variables to model.
+#' @param stratifier Character scalar; name of the stratifying variable.
+#' @param approach Modeling approach. One of \code{"logit"},
+#'   \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
+#'   \code{"linear"}, or \code{"negbin"}.
+#' @param format Output table format; one of \code{"gt"} or
+#'   \code{"flextable"}.
+#' @param theme Table styling preset or theme primitives.
 #'
-#' @return An object of class `stratified_uni_reg`, which includes:
-#' - `table`: A `gtsummary::tbl_stack` object with stratified results,
-#' - `models`: A list of fitted models for each stratum,
-#' - `model_summaries`: A tidy list of model summaries,
-#' - `reg_check`: A tibble of regression diagnostics (when available).
+#' @return A list of class
+#'   \code{c("gtregression", "stratified_uni_reg", ...)} with elements:
+#' \describe{
+#'   \item{\code{table}}{A rendered \code{gt_tbl} or \code{flextable}.}
+#'   \item{\code{table_display}}{Display-ready wide stratified results.}
+#'   \item{\code{per_stratum}}{List of complete \code{uni_reg()} results by
+#'   stratum.}
+#'   \item{\code{models}}{List of fitted model objects by stratum.}
+#'   \item{\code{model_summaries}}{List of model summaries by stratum.}
+#'   \item{\code{reg_check}}{Regression diagnostics by stratum.}
+#'   \item{\code{by}}{The stratifier variable.}
+#'   \item{\code{levels}}{Strata included in the analysis.}
+#'   \item{\code{approach}}{The regression approach used.}
+#'   \item{\code{format}}{The output format used.}
+#'   \item{\code{source}}{Function identifier
+#'   (\code{"stratified_uni_reg"}).}
+#' }
 #'
 #' @section Accessors:
 #' \describe{
-#'   \item{\code{$table}}{Stacked stratified regression table.}
+#'   \item{\code{$table}}{Rendered stratified regression table.}
+#'   \item{\code{$table_display}}{Wide display data used to build the table.}
+#'   \item{\code{$per_stratum}}{Full \code{uni_reg()} result objects by
+#'   stratum.}
 #'   \item{\code{$models}}{List of fitted model objects for each stratum.}
-#'   \item{\code{$model_summaries}}{List of tidy model summaries.}
+#'   \item{\code{$model_summaries}}{List of model summaries.}
 #'   \item{\code{$reg_check}}{Diagnostic check results (when applicable).}
 #' }
 #'
 #' @seealso [multi_reg()], [plot_reg()], [identify_confounder()]
 #'
 #' @examples
-#' if (requireNamespace("mlbench", quietly = TRUE) &&
-#'   requireNamespace("dplyr", quietly = TRUE)) {
-#'   data(PimaIndiansDiabetes2, package = "mlbench")
-#'   pima <- dplyr::mutate(
-#'     PimaIndiansDiabetes2,
-#'     diabetes = ifelse(diabetes == "pos", 1, 0),
-#'     glucose_cat = dplyr::case_when(
-#'       glucose < 140 ~ "Normal",
-#'       glucose >= 140 ~ "High"
-#'     )
+#' birthwt_data <- data_birthwt |>
+#'   transform(
+#'     race = factor(race, levels = c(1, 2, 3),
+#'                   labels = c("White", "Black", "Other")),
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     low = factor(low, levels = c(0, 1),
+#'                  labels = c("Normal BW", "Low BW"))
 #'   )
-#'   stratified_uni <- stratified_uni_reg(
-#'     data = pima,
-#'     outcome = "diabetes",
-#'     exposures = c("age", "mass"),
-#'     stratifier = "glucose_cat",
-#'     approach = "logit"
-#'   )
-#'   stratified_uni$table
-#' }
+#'
+#' stratified_uni <- stratified_uni_reg(
+#'   data = birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("age", "lwt", "smoke"),
+#'   stratifier = "race",
+#'   approach = logit
+#' )
+#'
+#' stratified_uni$table
 #'
 #' @importFrom purrr map
 #' @importFrom broom tidy
-#' @importFrom gtsummary tbl_stack
+
 
 #' @export
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit",
                                format   = c("gt","flextable"),
                                theme    = c("minimal")) {
+  approach <- .choice_arg(
+    substitute(approach),
+    env = parent.frame(),
+    choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
+  )
+  approach <- .normalize_approach(approach)
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  theme <- .choice_arg(substitute(theme), env = parent.frame())
+
   format <- match.arg(format)
   theme  <- .resolve_theme(theme)
 
@@ -119,5 +141,3 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   class(out) <- c("gtregression","stratified_uni_reg", fmt_class, class(out))
   out
 }
-
-

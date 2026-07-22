@@ -12,19 +12,23 @@
 #' @param outcome A character string specifying the outcome variable.
 #' @param approach A character string specifying the regression approach.
 #' One of:
-#'   \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+#'   \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 #'   \code{"robpoisson"}, or \code{"negbin"}.
 #' @param multivariate Logical. If \code{TRUE},
 #' checks convergence for a multivariable model;
 #'   otherwise, performs checks for each univariate model.
+#' @param format Output format. One of \code{"tibble"}, \code{"gt"}, or
+#'   \code{"flextable"}. The default \code{"tibble"} returns the original
+#'   data-frame style output.
 #'
-#' @return A data frame summarizing convergence diagnostics, including:
+#' @return A data frame, \code{gt_tbl}, or \code{flextable} summarizing
+#' convergence diagnostics, including:
 #' \describe{
 #'   \item{\code{Exposure}}{Name of the exposure variable.}
 #'   \item{\code{Model}}{The regression approach used.}
 #'   \item{\code{Converged}}{\code{TRUE} if the model converged successfully;
 #'    \code{FALSE} otherwise.}
-#'   \item{\code{Max.prob}}{Maximum predicted probability or
+#'   \item{\code{Max.prob.}}{Maximum predicted probability or
 #'   fitted value in the dataset.}
 #' }
 #'
@@ -34,7 +38,7 @@
 #' as actual probabilities.
 #'
 #' This function is useful for identifying convergence issues, especially for
-#' \code{"log-binomial"} models, which often fail to converge .
+#' \code{"logbinomial"} models, which often fail to converge.
 #'
 #' @seealso [identify_confounder()],  [interaction_models()]
 #'
@@ -44,14 +48,14 @@
 #'
 #'   check_convergence(
 #'     data = data_PimaIndiansDiabetes,
-#'     exposures = c("age", "bmi"),
+#'     exposures = c("age", "mass"),
 #'     outcome = "diabetes",
 #'     approach = "logit"
 #'   )
 #'
 #'   check_convergence(
 #'     data = data_PimaIndiansDiabetes,
-#'     exposures = c("age", "bmi"),
+#'     exposures = c("age", "mass"),
 #'     outcome = "diabetes",
 #'     approach = "logit",
 #'     multivariate = TRUE
@@ -62,21 +66,99 @@ check_convergence <- function(data,
                               exposures,
                               outcome,
                               approach = "logit",
-                              multivariate = FALSE) {
+                              multivariate = FALSE,
+                              format = c("tibble", "gt", "flextable")) {
+
+  if (!is.data.frame(data)) {
+    stop("`data` must be a data frame.", call. = FALSE)
+  }
+  if (!is.character(exposures) || length(exposures) < 1L ||
+      anyNA(exposures) || any(!nzchar(exposures))) {
+    stop("`exposures` must be a non-empty character vector.", call. = FALSE)
+  }
+  if (!is.character(outcome) || length(outcome) != 1L ||
+      is.na(outcome) || !nzchar(outcome)) {
+    stop("`outcome` must be a single character variable name.", call. = FALSE)
+  }
+  if (!is.logical(multivariate) || length(multivariate) != 1L ||
+      is.na(multivariate)) {
+    stop("`multivariate` must be TRUE or FALSE.", call. = FALSE)
+  }
+  format <- .choice_arg(
+    substitute(format),
+    env = parent.frame(),
+    choices = c("tibble", "gt", "flextable")
+  )
+  format <- match.arg(format, c("tibble", "gt", "flextable"))
+
+  missing_vars <- setdiff(c(outcome, exposures), names(data))
+  if (length(missing_vars)) {
+    stop("Variables not found: ", paste(missing_vars, collapse = ", "),
+         call. = FALSE)
+  }
+
+  approach <- .choice_arg(
+    substitute(approach),
+    env = parent.frame(),
+    choices = c("logit","logbinomial","poisson","robpoisson","negbin")
+  )
+  approach <- .normalize_approach(approach)
 
   .validate_approach(approach, context = "check_convergence")
-
-  .validate_outcome_by_approach(data[[outcome]], approach)
 
   # Return early if dataset is empty
 
   if (nrow(data) == 0) {
-    return(data.frame(
-      Exposure = if (multivariate) NA else character(0),
+    empty <- data.frame(
+      Exposure = character(0),
       Model = character(0),
       Converged = logical(0),
       Max.prob. = numeric(0)
-    ))
+    )
+    if (format == "tibble") {
+      return(empty)
+    }
+    return(.build_check_convergence_table(empty, format = format))
+  }
+
+  .validate_outcome_by_approach(data[[outcome]], approach)
+
+  fit_model <- function(fmla) {
+    switch(approach,
+      "logit" = stats::glm(fmla, data = data, family = stats::binomial("logit")),
+      "logbinomial" = stats::glm(fmla, data = data, family = stats::binomial("log")),
+      "poisson" = stats::glm(fmla, data = data, family = stats::poisson("log")),
+      "negbin" = MASS::glm.nb(fmla, data = data),
+      risks::riskratio(formula = fmla, data = data, approach = approach)
+    )
+  }
+
+  extract_convergence <- function(fit) {
+    if ("converged" %in% names(fit)) {
+      return(isTRUE(fit$converged))
+    }
+    if (!is.null(fit$conv)) {
+      return(isTRUE(fit$conv == 0))
+    }
+    NA
+  }
+
+  extract_max_prob <- function(fit) {
+    max_prob <- if ("maxprob" %in% names(fit)) {
+      fit$maxprob
+    } else {
+      max(stats::predict(fit, type = "response"), na.rm = TRUE)
+    }
+    as.numeric(max_prob)
+  }
+
+  warn_if_large_robpoisson <- function(max_prob) {
+    if (approach == "robpoisson" && is.finite(max_prob) && max_prob > 1) {
+      warning(
+        "robpoisson: predicted fitted value exceeds 1; interpret estimates with caution.",
+        call. = FALSE
+      )
+    }
   }
 
   results_list <- list()
@@ -84,26 +166,14 @@ check_convergence <- function(data,
   if (!multivariate) {
     # Loop through exposures and fit separate models
     for (exposure in exposures) {
-      fmla <- stats::as.formula(paste(outcome, "~", exposure))
+      fmla <- stats::reformulate(exposure, response = outcome)
       result <- tryCatch({
-          fit <- switch(approach,
-            "logit" = glm(fmla, data = data, family = binomial("logit")),
-            "log-binomial" = glm(fmla, data = data, family = binomial("log")),
-            "poisson" = glm(fmla, data = data, family = poisson("log")),
-            "negbin" = MASS::glm.nb(fmla, data = data),
-            risks::riskratio(formula = fmla, data = data, approach = approach)
-          )
+          fit <- fit_model(fmla)
           # Extract convergence status and predicted max
-          converged <- if ("converged" %in% names(fit)) fit$converged
-          else if (!is.null(fit$conv)) fit$conv == 0
-          else NA
-          max_prob <- if ("maxprob" %in% names(fit)) fit$maxprob
-          else max(predict(fit, type = "response"), na.rm = TRUE)
+          converged <- extract_convergence(fit)
+          max_prob <- extract_max_prob(fit)
           # Warning if robpoisson max_prob > 1
-          if (approach == "robpoisson" && max_prob > 1) {
-            warning("robpoisson: Predicted probability exceeds 1.
-              Interpret estimates with caution.", call. = FALSE)
-          }
+          warn_if_large_robpoisson(max_prob)
           data.frame(Exposure = exposure, Model = approach,
                      Converged = converged, Max.prob. = max_prob)
         },
@@ -116,26 +186,14 @@ check_convergence <- function(data,
     }
   } else {
     # Build multivariable model
-    fmla <- stats::as.formula(paste(outcome, "~",
-                                    paste(exposures, collapse = " + ")))
+    fmla <- stats::reformulate(exposures, response = outcome)
     result <- tryCatch({
-        fit <- switch(approach,
-          "logit" = glm(fmla, data = data, family = binomial("logit")),
-          "log-binomial" = glm(fmla, data = data, family = binomial("log")),
-          "poisson" = glm(fmla, data = data, family = poisson("log")),
-          "negbin" = MASS::glm.nb(fmla, data = data),
-          risks::riskratio(formula = fmla, data = data, approach = approach)
-        )
-        converged <- if ("converged" %in% names(fit)) fit$converged
-        else if (!is.null(fit$conv)) fit$conv == 0 else NA
-        max_prob <- if ("maxprob" %in% names(fit)) fit$maxprob
-        else max(predict(fit, type = "response"), na.rm = TRUE)
+        fit <- fit_model(fmla)
+        converged <- extract_convergence(fit)
+        max_prob <- extract_max_prob(fit)
 
         # Custom warning if predicted prob > 1
-        if (approach == "robpoisson" && max_prob > 1) {
-          warning("robpoisson: Predicted probability exceeds 1.
-              Interpret estimates with caution.", call. = FALSE)
-        }
+        warn_if_large_robpoisson(max_prob)
         data.frame(Exposure = paste(exposures, collapse = " + "),
                    Model = approach, Converged = converged,
                    Max.prob. = max_prob)
@@ -153,5 +211,71 @@ check_convergence <- function(data,
     results_list[["multivariable"]] <- result
   }
 
-  return(do.call(rbind, results_list))
+  out <- do.call(rbind, results_list)
+  if (format == "tibble") {
+    return(out)
+  }
+  .build_check_convergence_table(out, format = format)
+}
+
+#' Build formatted convergence table
+#' @keywords internal
+#' @noRd
+.build_check_convergence_table <- function(result,
+                                           format = c("gt", "flextable")) {
+  format <- match.arg(format, c("gt", "flextable"))
+  note <- paste(
+    "Screening aid only; inspect non-convergence, impossible fitted values,",
+    "and model specification before interpreting estimates."
+  )
+
+  display <- result |>
+    dplyr::mutate(
+      Converged = dplyr::case_when(
+        is.na(.data$Converged) ~ "",
+        .data$Converged ~ "Yes",
+        TRUE ~ "No"
+      ),
+      Max.prob. = dplyr::if_else(
+        is.na(.data$Max.prob.),
+        "",
+        formatC(.data$Max.prob., digits = 3, format = "f")
+      )
+    )
+
+  if (format == "gt") {
+    return(
+      gt::gt(display) |>
+        gt::tab_header(title = "Convergence check") |>
+        gt::cols_label(Max.prob. = "Max fitted value") |>
+        gt::cols_align(align = "left", columns = c("Exposure", "Model")) |>
+        gt::cols_align(align = "center", columns = c("Converged", "Max.prob.")) |>
+        gt::tab_style(
+          style = gt::cell_text(weight = "bold"),
+          locations = gt::cells_column_labels()
+        ) |>
+        gt::tab_style(
+          style = gt::cell_fill(color = "#e7f5ec"),
+          locations = gt::cells_body(rows = .data$Converged == "Yes")
+        ) |>
+        gt::tab_style(
+          style = gt::cell_fill(color = "#fde2e2"),
+          locations = gt::cells_body(rows = .data$Converged == "No")
+        ) |>
+        gt::tab_source_note(gt::md(note))
+    )
+  }
+
+  ft <- flextable::flextable(display)
+  ft <- flextable::set_caption(ft, caption = "Convergence check")
+  ft <- flextable::set_header_labels(ft, Max.prob. = "Max fitted value")
+  ft <- flextable::align(ft, j = c("Exposure", "Model"), align = "left", part = "all")
+  ft <- flextable::align(ft, j = c("Converged", "Max.prob."), align = "center", part = "all")
+  ft <- flextable::bold(ft, part = "header", bold = TRUE)
+  ft <- flextable::bg(ft, i = which(display$Converged == "Yes"), bg = "#e7f5ec", part = "body")
+  ft <- flextable::bg(ft, i = which(display$Converged == "No"), bg = "#fde2e2", part = "body")
+  ft <- flextable::add_footer_lines(ft, values = note)
+  ft <- flextable::fontsize(ft, size = 8, part = "footer")
+  ft <- flextable::italic(ft, italic = TRUE, part = "footer")
+  flextable::autofit(ft)
 }

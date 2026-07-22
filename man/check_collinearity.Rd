@@ -4,20 +4,40 @@
 \alias{check_collinearity}
 \title{Check collinearity using VIF for fitted models}
 \usage{
-check_collinearity(model)
+check_collinearity(model, format = c("tibble", "gt", "flextable"))
 }
 \arguments{
-\item{model}{A fitted model object returned by \code{uni_reg()},
-\code{multi_reg()}, \code{uni_reg_nbin()}, \code{multi_reg_nbin()},
-or compatible \code{gtregression} functions.}
+\item{model}{A fitted model object returned by \code{multi_reg()},
+\code{stratified_multi_reg()}, or compatible \code{gtregression}
+functions. Univariable model objects are rejected because VIF is not
+applicable.}
+
+\item{format}{Output format. One of \code{"tibble"}, \code{"gt"}, or
+\code{"flextable"}. The default \code{"tibble"} preserves the original
+tibble or nested-list output.}
 }
 \value{
-For multivariable models, a tibble if a single fitted model is present,
-or a named list of tibbles if multiple fitted models are present.
+For multivariable models, a tibble if a single fitted model is
+present, or a named list of tibbles if multiple fitted models are present.
+With \code{format = "gt"} or \code{format = "flextable"}, leaf tibbles are
+converted to formatted tables while preserving any list nesting. The tibble
+contains:
+\describe{
+  \item{\code{Variable}}{Model term.}
+  \item{\code{VIF}}{Variance inflation factor. For multi-degree-of-freedom
+  terms, this is the adjusted GVIF: \code{GVIF^(1 / (2 * Df))}.}
+  \item{\code{Interpretation}}{Simple interpretation based on common cut
+  points: no collinearity, moderate, or high.}
+}
 
 For univariate models, an error is raised indicating that VIF is not applicable.
 }
 \description{
 Computes Variance Inflation Factors (VIF) for fitted multivariable models
 returned by \code{multi_reg()} or related functions.
+}
+\details{
+If the \pkg{car} package is installed, \code{check_collinearity()}
+uses \code{car::vif()}. Otherwise, it computes VIF/GVIF from the fitted model
+matrix so that diagnostics remain available without an additional dependency.
 }

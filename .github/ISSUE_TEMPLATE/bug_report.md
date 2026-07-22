@@ -1,10 +1,9 @@
 ---
 name: Bug report
-about: Report something that isn't working as expected
+about: Report something that is not working as expected
 title: "[BUG]"
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 **Describe the bug**
@@ -12,9 +11,9 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Run '...'
-3. See error '...'
+1. Go to `...`
+2. Run `...`
+3. See error `...`
 
 **Expected behavior**
 What you expected to happen.

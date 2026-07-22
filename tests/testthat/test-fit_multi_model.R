@@ -29,8 +29,8 @@ test_that(".fit_multi_model returns correct model class for each approach", {
   expect_s3_class(m_logit, "glm")
   expect_equal(family(m_logit)$family, "binomial")
 
-  # log-binomial
-  m_logbin <- .fit_multi_model(df, outcome = "diabetes", exposures = exposures, approach = "log-binomial")
+  # logbinomial
+  m_logbin <- .fit_multi_model(df, outcome = "diabetes", exposures = exposures, approach = "logbinomial")
   expect_s3_class(m_logbin, "glm")
   expect_equal(family(m_logbin)$link, "log")
 
@@ -67,6 +67,5 @@ test_that(".fit_multi_model returns NULL and warns on failure", {
   expect_warning({
     model <- .fit_multi_model(df_fail, outcome = "outcome", exposures = c("x1", "x2"), approach = "logit")
     expect_null(model)
-  }, regexp = "Model failed for")
+  }, regexp = "Model fitting failed")
 })
-

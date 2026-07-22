@@ -3,14 +3,13 @@ name: Feature request
 about: Suggest an idea or improvement for the package
 title: "[FEATURE]"
 labels: enhancement
-assignees: ''
-
+assignees: ""
 ---
 
 **Is your feature request related to a problem?**
 Please explain clearly.
 
-**Describe the solution you'd like**
+**Describe the solution you would like**
 What do you want to see in the package?
 
 **Additional context**

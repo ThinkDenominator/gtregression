@@ -1,81 +1,160 @@
-test_that("modify_table() works correctly with pima_data", {
-  skip_if_not_installed("gtregression")
-  skip_if_not_installed("gtsummary")
-  skip_if_not_installed("dplyr")
-
-  library(gtregression)
-  library(gtsummary)
-  library(dplyr)
-
-  data("data_PimaIndiansDiabetes", package = "gtregression")
-
-  pima_data <- data_PimaIndiansDiabetes |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi = case_when(
-        mass < 25 ~ "Normal",
-        mass >= 25 & mass < 30 ~ "Overweight",
-        mass >= 30 ~ "Obese",
-        TRUE ~ NA_character_
-      ),
-      bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-      age_cat = case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"
-      ),
-      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older"))
+birthwt_modify_data <- function() {
+  data_birthwt |>
+    dplyr::mutate(
+      race = factor(race, levels = c(1, 2, 3),
+                    labels = c("White", "Black", "Other")),
+      smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+      ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+      ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+      low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
     )
+}
 
-  exposures <- c("bmi", "age_cat")
+test_that("modify_table updates package-native univariable gt tables", {
+  df <- birthwt_modify_data()
 
-  uni_rr <- uni_reg(pima_data,
-                    outcome = "diabetes",
-                    exposures = exposures,
-                    approach = "log-binomial")
+  tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "smoke", "ht"),
+    approach = logit
+  )
 
-  tbl_custom <- suppressWarnings(
-    modify_table(
-    uni_rr,
-    variable_labels = c(age_cat = "Age", bmi = "BMI"),
-    level_labels = list(age_cat = c(
-      `Young` = "Young Adults",
-      `Older` = "Older Adults"
-    )),
-    header_labels = c(estimate = "Unadjusted RR", `p.value` = "P value"),
-    caption = "Table 1: Univariate Regression",
-    bold_labels = TRUE,
+  modified <- modify_table(
+    tbl,
+    variable_labels = c(age = "Maternal age", smoke = "Smoking", ht = "Hypertension"),
+    level_labels = list(smoke = c(Yes = "Smoker"), ht = c(No = "No hypertension")),
+    header_labels = c(estimate = "Crude OR", p.value = "P"),
+    caption = "Table 1. Univariable regression",
     remove_N = TRUE,
+    caveat = "Interpret with clinical context."
+  )
+
+  expect_s3_class(modified, "gtregression")
+  expect_s3_class(modified, "uni_reg")
+  expect_s3_class(modified$table, "gt_tbl")
+  expect_false("N" %in% names(modified$table_display))
+  expect_true("Maternal age" %in% modified$table_display$Characteristic)
+  expect_true("Smoking" %in% modified$table_display$Characteristic)
+  expect_true("  Smoker" %in% modified$table_display$Characteristic)
+  expect_true("  No hypertension" %in% modified$table_display$Characteristic)
+  expect_equal(modified$caption, "Table 1. Univariable regression")
+  expect_true(any(grepl("Interpret with clinical context", modified$footnotes, fixed = TRUE)))
+})
+
+test_that("modify_table validates header aliases and preserves visible headers", {
+  df <- birthwt_modify_data()
+  tbl <- uni_reg(df, outcome = "low", exposures = c("age", "smoke"), approach = logit)
+
+  modified <- modify_table(
+    tbl,
+    header_labels = c("OR (95% CI)" = "Odds ratio", "p-value" = "P value")
+  )
+
+  expect_s3_class(modified$table, "gt_tbl")
+  expect_true("OR (95% CI)" %in% names(modified$table_display))
+  expect_error(
+    modify_table(tbl, header_labels = c(not_a_column = "Nope")),
+    "columns not found"
+  )
+})
+
+test_that("modify_table works for adjusted multivariable tables and footnote options", {
+  df <- birthwt_modify_data()
+
+  tbl <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht"),
+    adjust_for = c("age", "lwt"),
+    approach = logit
+  )
+
+  keep_notes <- modify_table(tbl, caveat = "Adjusted model.")
+  renamed <- modify_table(tbl, header_labels = c(estimate = "Adjusted OR", p.value = "P"))
+  drop_notes <- modify_table(
+    tbl,
     remove_abbreviations = TRUE,
-    caveat = "Interpret results with caution due to missing data."
+    remove_N_obs = TRUE,
+    caveat = "Adjusted model."
   )
+
+  expect_s3_class(keep_notes, "multi_reg")
+  expect_s3_class(renamed$table, "gt_tbl")
+  expect_true(any(grepl("OR = Odds Ratio", keep_notes$footnotes, fixed = TRUE)))
+  expect_true(any(grepl("Adjusted model", keep_notes$footnotes, fixed = TRUE)))
+  expect_false(any(grepl("OR = Odds Ratio", drop_notes$footnotes, fixed = TRUE)))
+  expect_false(any(grepl("complete observations included", drop_notes$footnotes, fixed = TRUE)))
+})
+
+test_that("modify_table works for descriptive and merged tables", {
+  df <- birthwt_modify_data()
+
+  desc <- descriptive_table(
+    data = df,
+    exposures = c("age", "smoke"),
+    by = "low",
+    show_overall = "last"
+  )
+  uni <- uni_reg(df, outcome = "low", exposures = c("age", "smoke"), approach = logit)
+  merged <- merge_tables(desc, uni, spanners = c("Descriptive", "Univariable"))
+
+  desc_mod <- modify_table(
+    desc,
+    variable_labels = c(age = "Age", smoke = "Smoking"),
+    level_labels = list(smoke = c(Yes = "Smoker"))
+  )
+  merged_mod <- modify_table(
+    merged,
+    variable_labels = c(age = "Age", smoke = "Smoking")
   )
 
-  expect_s3_class(tbl_custom, "gtsummary")
+  expect_s3_class(desc_mod, "descriptive_table")
+  expect_s3_class(merged_mod, "merged_table")
+  expect_true("Age" %in% desc_mod$table_display$Characteristic)
+  expect_true("  Smoker" %in% desc_mod$table_display$Characteristic)
+  expect_true("Smoking" %in% merged_mod$table_display$Characteristic)
+})
 
-  labels <- tbl_custom$table_body$label[tbl_custom$table_body$row_type
-                                        == "label"]
-  expect_true("Age" %in% labels)
-  expect_true("BMI" %in% labels)
+test_that("modify_table works for flextable outputs", {
+  skip_if_not_installed("flextable")
 
-  levels_updated <- tbl_custom$table_body$label[tbl_custom$table_body$row_type
-                                                == "level"]
-  expect_true("Young Adults" %in% levels_updated)
-  expect_true("Older Adults" %in% levels_updated)
+  df <- birthwt_modify_data()
+  tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = logit,
+    format = flextable
+  )
 
-  header_info <- tbl_custom$table_styling$header
-  expect_true("Unadjusted RR" %in% header_info$label)
-  expect_true("P value" %in% header_info$label)
+  modified <- modify_table(
+    tbl,
+    variable_labels = c(smoke = "Smoking"),
+    header_labels = c(estimate = "Crude OR"),
+    bold_labels = TRUE,
+    bold_levels = TRUE,
+    caption = "Flextable regression"
+  )
 
-  # Check that column 'stat_n' is hidden (N column removed)
-  expect_true("stat_n" %in% names(tbl_custom$table_body))
-  expect_true("N" %in% names(tbl_custom$table_body))
+  expect_s3_class(modified, "ft_uni")
+  expect_s3_class(modified$table, "flextable")
+  expect_true("Smoking" %in% modified$table_display$Characteristic)
+})
 
-  # Check if caveat added to source note
-  caveat_text <- tbl_custom$table_styling$source_note$source_note
-  expect_true(any(grepl("Interpret results with caution", caveat_text)))
+test_that("modify_table validates inputs clearly", {
+  df <- birthwt_modify_data()
+  tbl <- uni_reg(df, outcome = "low", exposures = "smoke", approach = logit)
 
-  # Check that abbreviation footnote has been removed
-  abbrev_removed <- is.null(tbl_custom$table_styling$source_note_abbreviation)
-  expect_true(abbrev_removed)
+  expect_error(modify_table(data.frame(x = 1)), "gtregression object")
+  expect_error(modify_table(tbl, variable_labels = c("Smoking")), "variable_labels")
+  expect_error(modify_table(tbl, level_labels = c(Yes = "Smoker")), "level_labels")
+  expect_error(modify_table(tbl, level_labels = list(smoke = c("Smoker"))), "level_labels\\$smoke")
+  expect_error(modify_table(tbl, bold_labels = NA), "`bold_labels` must be")
+  expect_error(modify_table(tbl, bold_levels = 1), "`bold_levels` must be")
+  expect_error(modify_table(tbl, remove_N = NA), "`remove_N` must be")
+  expect_error(modify_table(tbl, remove_N_obs = c(TRUE, FALSE)), "`remove_N_obs` must be")
+  expect_error(modify_table(tbl, remove_abbreviations = "yes"), "`remove_abbreviations` must be")
+  expect_error(modify_table(tbl, caption = NA_character_), "`caption` must be")
+  expect_error(modify_table(tbl, caveat = c("a", "b")), "`caveat` must be")
 })

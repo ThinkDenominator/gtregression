@@ -37,7 +37,6 @@ Depends:
     R (>= 4.1.0)
 Imports:
     dplyr,
-    gtsummary,
     risks,
     purrr,
     MASS,
@@ -46,7 +45,6 @@ Imports:
     lmtest,
     patchwork,
     ggplot2,
-    tidyr,
     utils,
     sandwich,
     tibble,
@@ -54,7 +52,9 @@ Imports:
     broom.helpers,
     gt,
     officer,
-    flextable
+    flextable,
+    scales (>= 1.3.0),
+    forestploter
 VignetteBuilder: knitr
 Suggests:
     testthat (>= 3.1.5),
@@ -64,11 +64,10 @@ Suggests:
     car,
     forcats,
     pkgdown,
-    scales (>= 1.3.0),
     ggtext
-RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 Config/Needs/website: 
     pkgdown
 URL: https://thinkdenominator.github.io/gtregression/
 BugReports: https://github.com/ThinkDenominator/gtregression/issues
+Config/roxygen2/version: 8.0.0

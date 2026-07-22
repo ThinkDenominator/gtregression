@@ -1,186 +1,213 @@
-test_that("plot_reg: returns ggplot and correct x-axis labels across approaches", {
-  local_edition(3)
-
-  skip_if_not_installed("mlbench")
-  skip_if_not_installed("gtregression")
-
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  d <- PimaIndiansDiabetes2 |>
+birthwt_plot_data <- function() {
+  data_birthwt |>
     dplyr::mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      bmi = dplyr::case_when(
-        mass < 25 ~ "Normal",
-        mass < 30 ~ "Overweight",
-        TRUE ~ "Obese"
+      race = factor(race, levels = c(1, 2, 3),
+                    labels = c("White", "Black", "Other")),
+      smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+      ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+      ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+      low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+      ptl_cat = factor(ifelse(ptl > 0, "Yes", "No"), levels = c("No", "Yes")),
+      ftv_cat = dplyr::case_when(
+        ftv == 0 ~ "None",
+        ftv == 1 ~ "One",
+        ftv >= 2 ~ "Two or more"
       ),
-      age_cat = dplyr::case_when(
-        age < 30 ~ "Young",
-        age < 50 ~ "Middle-aged",
-        TRUE ~ "Older"
-      ),
-      npreg_cat   = ifelse(pregnant > 2, "High parity", "Low parity"),
-      glucose_cat = dplyr::if_else(glucose < 140, "Normal", "High"),
-      bp_cat      = dplyr::if_else(pressure < 80, "Normal", "High"),
-      triceps_cat = dplyr::if_else(triceps < 23, "Normal", "High"),
-      insulin_cat = dplyr::case_when(
-        insulin < 30 ~ "Low",
-        insulin < 150 ~ "Normal",
-        TRUE ~ "High"
-      ),
-      dpf_cat = dplyr::case_when(
-        pedigree <= 0.2 ~ "Low Genetic Risk",
-        pedigree <= 0.5 ~ "Moderate Genetic Risk",
-        TRUE ~ "High Genetic Risk"
-      )
-    ) |>
-    dplyr::mutate(
-      dplyr::across(
-        c(bmi, age_cat, npreg_cat, glucose_cat, bp_cat, triceps_cat,
-          insulin_cat, dpf_cat),
-        ~ factor(.x)
-      )
+      ftv_cat = factor(ftv_cat, levels = c("None", "One", "Two or more"))
     )
+}
 
-  exposures <- c("bmi", "age_cat", "npreg_cat", "glucose_cat", "bp_cat",
-                 "triceps_cat", "insulin_cat", "dpf_cat")
+test_that("plot_reg returns ggplot and correct x-axis labels", {
+  df <- birthwt_plot_data()
 
-  exp_labels <- list(
-    "logit"        = "Odds Ratio",
-    "log-binomial" = "Risk Ratio",
-    "robpoisson"   = "Risk Ratio",
-    "linear"       = "Beta Coefficient"
+  tbl_logit <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "lwt", "smoke", "ht"),
+    approach = logit
+  )
+  tbl_linear <- uni_reg(
+    data = df,
+    outcome = "bwt",
+    exposures = c("age", "lwt", "smoke"),
+    approach = linear
   )
 
-  for (ap in names(exp_labels)) {
-    outcome <- if (ap == "linear") "mass" else "diabetes"
+  p_logit <- plot_reg(tbl_logit)
+  p_linear <- plot_reg(tbl_linear)
 
-    tbl_u <- gtregression::uni_reg(
-      data = d, outcome = outcome, exposures = exposures, approach = ap
-    )
-    p <- gtregression::plot_reg(tbl_u)
-    expect_s3_class(p, "ggplot")
+  expect_s3_class(p_logit, "ggplot")
+  expect_s3_class(p_linear, "ggplot")
+  expect_match(p_logit$labels$x, "Odds Ratio", fixed = TRUE)
+  expect_match(p_linear$labels$x, "Beta Coefficient", fixed = TRUE)
 
-    # base label
-    expect_match(p$labels$x, exp_labels[[ap]], fixed = TRUE)
-
-    # log_x respected only when not linear
-    p_log <- gtregression::plot_reg(tbl_u, log_x = TRUE)
-    if (ap == "linear") {
-      expect_false(grepl("log scale", p_log$labels$x, fixed = TRUE))
-    } else {
-      expect_true(grepl("log scale", p_log$labels$x, fixed = TRUE))
-    }
-  }
+  expect_true(grepl("log scale", plot_reg(tbl_logit, log_x = TRUE)$labels$x, fixed = TRUE))
+  expect_false(grepl("log scale", plot_reg(tbl_linear, log_x = TRUE)$labels$x, fixed = TRUE))
 })
 
-test_that("plot_reg: header/data/ref detection + show_ref toggle + order_y", {
-  local_edition(3)
-  skip_if_not_installed("mlbench")
-  skip_if_not_installed("gtregression")
+test_that("plot_reg supports multi_reg adjusted mode", {
+  df <- birthwt_plot_data()
 
-  data("PimaIndiansDiabetes2", package = "mlbench")
-  d <- PimaIndiansDiabetes2
-  d$diabetes <- ifelse(d$diabetes == "pos", 1, 0)
-  d$bmi <- cut(d$mass, c(-Inf, 25, 30, Inf), labels = c("Normal", "Overweight", "Obese"))
-  d$age_cat <- cut(d$age, c(-Inf, 30, 50, Inf), labels = c("Young","Middle-aged","Older"))
-
-  exposures <- c("bmi", "age_cat")
-
-  tbl <- gtregression::uni_reg(d, outcome = "diabetes", exposures = exposures, approach = "logit")
-
-  # default: show_ref = TRUE → label contains "(Ref.)"
-  p1 <- gtregression::plot_reg(tbl, show_ref = TRUE)
-  expect_true(any(grepl("\\(Ref\\.\\)", p1$data$label_clean)))
-
-  # hide ref → no "(Ref.)"
-  p2 <- gtregression::plot_reg(tbl, show_ref = FALSE)
-  expect_false(any(grepl("\\(Ref\\.\\)", p2$data$label_clean)))
-
-  # order_y respected for headers — compare by variable (not human label)
-  ord <- rev(exposures)
-  p3  <- gtregression::plot_reg(tbl, order_y = ord)
-  headers_vars <- p3$data |>
-    dplyr::filter(.data$is_header) |>
-    dplyr::pull(.data$variable)
-  expect_equal(unname(headers_vars), ord)
-})
-
-test_that("plot_reg: significance uses p.value for linear and CI rule otherwise", {
-  local_edition(3)
-  skip_if_not_installed("mlbench")
-  skip_if_not_installed("gtregression")
-
-  data("PimaIndiansDiabetes2", package = "mlbench")
-  d <- PimaIndiansDiabetes2
-  d$mass <- as.numeric(d$mass)
-
-  # linear: monotone in alpha; alpha=0 should yield 0 significant
-  tbl_lin <- gtregression::uni_reg(
-    d, outcome = "mass",
-    exposures = c("age","glucose","triceps"),
-    approach = "linear"
+  tbl <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht", "ui"),
+    adjust_for = c("age", "lwt"),
+    approach = logit
   )
 
-  p_alpha0 <- gtregression::plot_reg(tbl_lin, alpha = 0)
-  sig0 <- sum(p_alpha0$data$is_sig & p_alpha0$data$is_data, na.rm = TRUE)
-  expect_equal(sig0, 0L)
+  p <- plot_reg(tbl)
 
-  p_alpha1 <- gtregression::plot_reg(tbl_lin, alpha = 1)
-  sig1 <- sum(p_alpha1$data$is_sig & p_alpha1$data$is_data, na.rm = TRUE)
-  expect_true(sig1 >= sig0)
-
-  # non-linear uses CI vs 1 (no header/ref in sig set)
-  d2 <- d
-  d2$diabetes <- ifelse(d2$diabetes == "pos", 1, 0)
-  tbl_logit <- gtregression::uni_reg(d2, outcome = "diabetes",
-                                     exposures = c("age","glucose"),
-                                     approach = "logit")
-  p_logit <- gtregression::plot_reg(tbl_logit)
-  expect_true(all(!p_logit$data$is_header[p_logit$data$is_sig]))
-  expect_true(all(!p_logit$data$ref_flag[p_logit$data$is_sig]))
+  expect_s3_class(p, "ggplot")
+  expect_match(p$labels$x, "Adjusted Odds Ratio", fixed = TRUE)
+  expect_equal(p$labels$caption, "Adjusted for age and lwt")
+  expect_null(plot_reg(tbl, show_adjustment_note = FALSE)$labels$caption)
+  expect_equal(plot_reg(tbl, caption = "Custom note")$labels$caption, "Custom note")
+  expect_true(all(c("smoke", "ht", "ui") %in% p$data$exposure))
 })
 
-test_that("plot_reg: errorbar geom selection + auto xlim includes ref", {
-  local_edition(3)
-  skip_if_not_installed("mlbench")
-  skip_if_not_installed("gtregression")
+test_that("plot_reg handles reference rows, ordering, significance, and x limits", {
+  df <- birthwt_plot_data()
 
-  data("PimaIndiansDiabetes2", package = "mlbench")
-  d <- PimaIndiansDiabetes2
-  d$diabetes <- ifelse(d$diabetes == "pos", 1, 0)
-
-  tbl <- gtregression::uni_reg(
-    d, outcome = "diabetes", exposures = c("age","glucose"), approach = "logit"
+  tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht", "age"),
+    approach = logit
   )
 
-  p <- gtregression::plot_reg(tbl)
+  p_ref <- plot_reg(tbl, show_ref = TRUE)
+  p_no_ref <- plot_reg(tbl, show_ref = FALSE)
 
-  # errorbar geom: accept either geom_errorbar or geom_errorbarh
-  gclasses <- vapply(p$layers, function(L) class(L$geom)[1], character(1))
-  expect_true(any(grepl("GeomErrorbarh|GeomErrorbar", gclasses)))
+  expect_true(any(grepl("(ref)", p_ref$data$label_clean, fixed = TRUE)))
+  expect_false(any(grepl("(ref)", p_no_ref$data$label_clean, fixed = TRUE)))
 
-  # auto xlim includes reference line (=1 for logit)
-  lims <- p$coordinates$limits$x
+  p_ordered <- plot_reg(tbl, order_y = c("age", "smoke", "ht"))
+  expect_equal(p_ordered$data$exposure[p_ordered$data$is_header], c("age", "smoke", "ht"))
+
+  p_breaks <- plot_reg(tbl, breaks = c(0.5, 1, 2, 4), xlim = c(0.25, 6))
+  expect_s3_class(p_breaks, "ggplot")
+
+  expect_true(all(!p_ref$data$is_header[p_ref$data$is_sig]))
+  expect_true(all(!p_ref$data$ref[p_ref$data$is_sig]))
+
+  lims <- p_ref$coordinates$limits$x
   expect_true(is.numeric(lims) && length(lims) == 2)
   expect_true(1 >= lims[1] && 1 <= lims[2])
+
+  gclasses <- vapply(p_ref$layers, function(layer) class(layer$geom)[1], character(1))
+  expect_true(any(grepl("GeomErrorbarh|GeomErrorbar", gclasses)))
 })
 
-test_that("plot_reg: sig_color and sig_errorbar_color map when there is a sig row", {
-  local_edition(3)
-  skip_if_not_installed("mlbench")
-  skip_if_not_installed("gtregression")
+test_that("plot_reg uses p values for linear significance", {
+  df <- birthwt_plot_data()
 
-  data("PimaIndiansDiabetes2", package = "mlbench")
-  d <- PimaIndiansDiabetes2
-  d$diabetes <- ifelse(d$diabetes == "pos", 1, 0)
-
-  # choose a strongly associated exposure to ensure at least one significant CI
-  tbl <- gtregression::uni_reg(
-    d, outcome = "diabetes", exposures = c("glucose"), approach = "logit"
+  tbl <- uni_reg(
+    data = df,
+    outcome = "bwt",
+    exposures = c("age", "lwt"),
+    approach = linear
   )
-  p <- gtregression::plot_reg(tbl, sig_color = "#FF00FF", sig_errorbar_color = "#00FF00")
-  # at least one sig row among data rows
-  expect_false(any(p$data$is_sig & p$data$is_data, na.rm = TRUE))
+
+  p_alpha0 <- plot_reg(tbl, alpha = 0)
+  p_alpha1 <- plot_reg(tbl, alpha = 1)
+
+  sig0 <- sum(p_alpha0$data$is_sig & p_alpha0$data$is_data, na.rm = TRUE)
+  sig1 <- sum(p_alpha1$data$is_sig & p_alpha1$data$is_data, na.rm = TRUE)
+
+  expect_equal(sig0, 0L)
+  expect_true(sig1 >= sig0)
 })
 
+test_that("plot_reg validates unsupported inputs", {
+  df <- birthwt_plot_data()
+
+  stratified <- suppressMessages(
+    stratified_uni_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("age", "smoke"),
+      stratifier = "race",
+      approach = logit
+    )
+  )
+
+  expect_error(plot_reg(mtcars), "gtregression object")
+  expect_error(plot_reg(stratified), "does not support stratified")
+})
+
+test_that("plot_reg validates malformed gtregression objects", {
+  good_body <- data.frame(
+    exposure = "age",
+    level = "age",
+    estimate = 1,
+    conf.low = 0.8,
+    conf.high = 1.2,
+    p.value = 0.5,
+    ref = FALSE
+  )
+  good_display <- data.frame(Characteristic = "age", is_header = TRUE)
+
+  no_source <- structure(
+    list(table_body = good_body, table_display = good_display, approach = "logit"),
+    class = "gtregression"
+  )
+  no_body <- structure(
+    list(table_display = good_display, source = "uni_reg", approach = "logit"),
+    class = "gtregression"
+  )
+  no_display <- structure(
+    list(table_body = good_body, source = "uni_reg", approach = "logit"),
+    class = "gtregression"
+  )
+  bad_body <- structure(
+    list(
+      table_body = good_body[, setdiff(names(good_body), "ref"), drop = FALSE],
+      table_display = good_display,
+      source = "uni_reg",
+      approach = "logit"
+    ),
+    class = "gtregression"
+  )
+  bad_display <- structure(
+    list(
+      table_body = good_body,
+      table_display = data.frame(Characteristic = "age"),
+      source = "uni_reg",
+      approach = "logit"
+    ),
+    class = "gtregression"
+  )
+
+  expect_error(plot_reg(no_source), "source")
+  expect_error(plot_reg(no_body), "table_body")
+  expect_error(plot_reg(no_display), "table_display")
+  expect_error(plot_reg(bad_body), "requires `table_body`")
+  expect_error(plot_reg(bad_display), "requires `table_display`")
+})
+
+test_that("plot_reg includes non-factor extra rows when display has only headers", {
+  body <- data.frame(
+    exposure = c("age", "age"),
+    level = c("age", "age:smokeYes"),
+    estimate = c(1.1, 1.3),
+    conf.low = c(0.9, 1.0),
+    conf.high = c(1.4, 1.8),
+    p.value = c(0.2, 0.04),
+    ref = c(FALSE, FALSE)
+  )
+  display <- data.frame(Characteristic = "age", is_header = TRUE)
+  tbl <- structure(
+    list(
+      table_body = body,
+      table_display = display,
+      source = "uni_reg",
+      approach = "logit"
+    ),
+    class = "gtregression"
+  )
+
+  p <- plot_reg(tbl)
+
+  expect_true("age:smokeYes" %in% p$data$label)
+})

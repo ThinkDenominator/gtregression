@@ -1,45 +1,68 @@
-#' Draw a Forest Plot (Publication-Ready)
+#' Draw a publication-ready forest plot
 #'
-#' Wrapper around `forestploter::forest()` that works directly with
-#' `forest_df()` output or with raw regression objects.
+#' Wrapper around \code{forestploter::forest()} that works directly with
+#' \code{forest_df()} output or with \code{gtregression} regression objects.
+#' It can show descriptive columns and one or two model effect columns in a
+#' table-style forest plot.
 #'
-#' @param df Output of `forest_df()`. If `NULL`, will be built from (uni, multi, desc).
-#' @param uni,multi,desc Optional gtregression objects to pass through to `forest_df()`.
-#' @param theme Optional `forestploter::forest_theme()`. If `NULL`, a sensible default is used.
-#'   You may pass colors and styling either here (e.g., `ci_col`, `refline_gp`) or via `...`.
+#' @param df Output of \code{forest_df()}. If \code{NULL}, it is built from
+#'   \code{uni}, \code{multi}, and \code{desc}.
+#' @param uni,multi,desc Optional \code{gtregression} objects to pass through to
+#'   \code{forest_df()}.
+#' @param theme Optional \code{forestploter::forest_theme()}. If \code{NULL}, a
+#'   sensible default is used. You may pass colors and styling either here or
+#'   through \code{...}.
 #' @param ci_col_width Numeric or length-2 numeric. Relative width of the CI column(s).
-#'   A vector like `c(0.22, 0.26)` lets you tune uni vs adjusted columns separately.
+#'   A vector like \code{c(0.22, 0.26)} lets you tune unadjusted and adjusted
+#'   columns separately.
 #' @param side Character. For each effect, position of the plot relative to the effect-size text:
-#'   `"left"` = plot first then text; `"right"` = text first then plot.
-#'   **Note:** The `Characteristic` column (and any descriptive/summary columns) always remains on the left.
-#' @param bold_headers Logical. Bold the exposure headers (non-indented rows) in the first column. Default `TRUE`.
+#'   \code{"left"} = plot first then text; \code{"right"} = text first then plot.
+#'   The \code{Characteristic} column and descriptive columns remain on the left.
 #' @param quiet Logical. Suppress forestploter warnings. Default = `TRUE`.
-#' @param ... Passed to `forestploter::forest()`. Common options include:
-#'   `ci_col`, `point_col`, `point_shape`, `rowheight`, `ticks_at`, `title`, `footnote`.
+#' @param effects Optional effect labels passed to \code{forestploter::forest()}.
+#' @param ticks_at Optional numeric vector, or length-2 list for two effect
+#'   columns, specifying x-axis tick positions. If \code{NULL},
+#'   \code{forestploter::forest()} chooses the default ticks.
+#' @param ticks_digits Optional number of digits for x-axis tick labels.
+#' @param ... Passed to \code{forestploter::forest()}. Common options include
+#'   \code{title} and \code{footnote}.
 #'
-#' @return A `gtregression_forest` object with elements:
-#'   - `plot`: the forest plot
-#'   - `data`: the input data frame (post-processed order, no `se_*` columns)
-#'   - `meta`: model metadata
+#' @return A \code{gtregression_forest} object with elements:
+#' \describe{
+#'   \item{\code{plot}}{The forest plot object.}
+#'   \item{\code{data}}{The plotting data sent to \code{forestploter::forest()}.}
+#'   \item{\code{input_data}}{The original \code{forest_df()} data, including
+#'   standard-error helper columns.}
+#'   \item{\code{meta}}{Model metadata, including reference line and x-axis
+#'   transformation.}
+#' }
 #' @importFrom forestploter forest forest_theme
 #' @importFrom grid gpar
 #' @importFrom scales rescale
 #' @examples
-#' if (requireNamespace("gt", quietly = TRUE)) {
-#'   # build uni & multi tables beforehand (example objects: uni_or, multi_or)
-#'   # uni_or  <- uni_reg(data = birthwt, outcome = "low", exposures = c("age","lwt","smoke"), approach = "logit")
-#'   # multi_or <- multi_reg(data = birthwt, outcome = "low", exposures = c("age","lwt","smoke"), approach = "logit")
-#'   # birthwt_summary <- gtsummary::tbl_summary(birthwt, by = "low")
+#' birthwt_data <- data_birthwt |>
+#'   transform(
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+#'     low = factor(low, levels = c(0, 1),
+#'                  labels = c("Normal BW", "Low BW"))
+#'   )
 #'
-#'   # 1) Build + plot in one call (recommended)
-#'   p1 <- forest_reg(uni = uni_or, multi = multi_or, desc = birthwt_summary)
-#'   print(p1)
+#' uni_or <- uni_reg(
+#'   birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("age", "lwt", "smoke", "ht"),
+#'   approach = logit
+#' )
+#' multi_or <- multi_reg(
+#'   birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("smoke", "ht"),
+#'   adjust_for = c("age", "lwt"),
+#'   approach = logit
+#' )
 #'
-#'   # 2) Or build first, then plot
-#'   df_both_desc <- forest_df(uni = uni_or, multi = multi_or, desc = birthwt_summary)
-#'   p2 <- forest_reg(df_both_desc, side = "left")
-#'   print(p2)
-#' }
+#' forest_reg(uni = uni_or, multi = multi_or)
 
 #' @export
 forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
@@ -48,14 +71,83 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
                        side = c("right", "left"),
                        quiet = TRUE,
                        effects = NULL,
+                       ticks_at = NULL,
+                       ticks_digits = NULL,
                        ...) {
 
+  side <- .choice_arg(substitute(side), env = parent.frame(), choices = c("right", "left"))
   side <- match.arg(side)
+  if (!is.logical(quiet) || length(quiet) != 1L || is.na(quiet)) {
+    stop("`quiet` must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (!is.numeric(ci_col_width) || anyNA(ci_col_width) ||
+      !length(ci_col_width) || !length(ci_col_width) %in% c(1L, 2L) ||
+      any(ci_col_width <= 0)) {
+    stop("`ci_col_width` must be a positive numeric value or length-2 numeric vector.",
+         call. = FALSE)
+  }
+  if (!is.null(effects) && !is.character(effects)) {
+    stop("`effects` must be NULL or a character vector.", call. = FALSE)
+  }
+  validate_ticks <- function(x, name) {
+    if (is.null(x)) return(invisible(NULL))
+    ok <- is.numeric(x) && length(x) > 0L && !anyNA(x)
+    if (!ok) {
+      stop("`", name, "` must be NULL or a numeric vector.", call. = FALSE)
+    }
+    invisible(NULL)
+  }
+  if (is.list(ticks_at)) {
+    if (!length(ticks_at)) {
+      stop("`ticks_at` must be NULL, a numeric vector, or a non-empty list of numeric vectors.",
+           call. = FALSE)
+    }
+    lapply(ticks_at, validate_ticks, name = "ticks_at")
+  } else {
+    validate_ticks(ticks_at, "ticks_at")
+  }
+  if (!is.null(ticks_digits) &&
+      (!is.numeric(ticks_digits) || length(ticks_digits) != 1L ||
+       is.na(ticks_digits) || ticks_digits < 0)) {
+    stop("`ticks_digits` must be NULL or a single non-negative number.", call. = FALSE)
+  }
+  if (!is.null(ticks_digits)) ticks_digits <- as.integer(ticks_digits)
 
   # build df if needed
   if (is.null(df)) {
-    stopifnot(inherits(uni, "gtregression"))
-    df <- forest_df(uni = uni, multi = multi, desc = desc)
+    if (is.null(uni) && inherits(multi, "gtregression")) {
+      df <- forest_df(uni = multi, desc = desc)
+    } else if (!inherits(uni, "gtregression")) {
+      stop(
+        "Provide `df = forest_df(...)`, a `gtregression` object in `uni`, or a `multi_reg()` object in `multi`.",
+        call. = FALSE
+      )
+    } else {
+      df <- forest_df(uni = uni, multi = multi, desc = desc)
+    }
+  } else if (!is.data.frame(df)) {
+    stop("`df` must be a data frame created by `forest_df()`.", call. = FALSE)
+  }
+
+  if (!is.null(df) && !is.null(uni) && is.data.frame(uni)) {
+    stop(
+      "When `df` is supplied, do not pass another data frame as the second argument. ",
+      "Use `forest_df(uni, multi, desc = ...)` to combine inputs before calling `forest_reg()`.",
+      call. = FALSE
+    )
+  }
+
+  if (!("Characteristic" %in% names(df))) {
+    stop("`df` must contain a `Characteristic` column.", call. = FALSE)
+  }
+  if (is.null(attr(df, "est")) || !("se_uni" %in% names(df)) ||
+      !is.numeric(df$se_uni)) {
+    stop(
+      "`df` does not contain forest plot estimates. ",
+      "Use `forest_df()` with a `uni_reg()` or `multi_reg()` object; ",
+      "a descriptive-only `forest_df()` cannot be drawn by `forest_reg()`.",
+      call. = FALSE
+    )
   }
 
   # detect meta
@@ -93,38 +185,7 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
 
 
 
-  # --- per-plot xlim (one per CI column) ---
-  if (has_multi) {
-    # plot 1 (univariate)
-    lo1 <- lo[[1]]; hi1 <- hi[[1]]
-    f1  <- is.finite(lo1) & is.finite(hi1)
-    r1  <- range(c(lo1[f1], hi1[f1], meta$ref_line), na.rm = TRUE)
-    if (!all(is.finite(r1))) r1 <- if (meta$x_trans %in% c("log","log2","log10")) c(0.5, 2) else c(-1, 1)
-    d1  <- diff(r1); if (!is.finite(d1) || d1 == 0) d1 <- 0.1
-    xlim1 <- c(r1[1] - d1 * 0.10, r1[2] + d1 * 0.10)
-    if (meta$x_trans %in% c("log","log2","log10")) xlim1[1] <- max(xlim1[1], 1e-6)
-
-    # plot 2 (adjusted)
-    lo2 <- lo[[2]]; hi2 <- hi[[2]]
-    f2  <- is.finite(lo2) & is.finite(hi2)
-    r2  <- range(c(lo2[f2], hi2[f2], meta$ref_line), na.rm = TRUE)
-    if (!all(is.finite(r2))) r2 <- if (meta$x_trans %in% c("log","log2","log10")) c(0.5, 2) else c(-1, 1)
-    d2  <- diff(r2); if (!is.finite(d2) || d2 == 0) d2 <- 0.1
-    xlim2 <- c(r2[1] - d2 * 0.10, r2[2] + d2 * 0.10)
-    if (meta$x_trans %in% c("log","log2","log10")) xlim2[1] <- max(xlim2[1], 1e-6)
-
-    # pass a list of xlims (one per plot)
-    xlim <- list(xlim1, xlim2)
-
-  } else {
-    # single plot
-    f   <- is.finite(lo) & is.finite(hi)
-    r   <- range(c(lo[f], hi[f], meta$ref_line), na.rm = TRUE)
-    if (!all(is.finite(r))) r <- if (meta$x_trans %in% c("log","log2","log10")) c(0.5, 2) else c(-1, 1)
-    d   <- diff(r); if (!is.finite(d) || d == 0) d <- 0.1
-    xlim <- c(r[1] - d * 0.10, r[2] + d * 0.10)
-    if (meta$x_trans %in% c("log","log2","log10")) xlim[1] <- max(xlim[1], 1e-6)
-  }
+  xlim <- NULL
 
 
   # weights based on SE (smaller SE → bigger boxes)
@@ -141,25 +202,6 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
   }
   df_plot <- df[, setdiff(names(df), c("se_uni","se_adj")), drop = FALSE]
 
-  # --- expand effect labels by renaming columns (no helpers) ---
-  nm    <- names(df_plot)
-  oldnm <- nm  # keep a copy for matching
-
-  short <- c("OR (95% CI)", "RR (95% CI)", "IRR (95% CI)", "Beta (95% CI)")
-  long  <- c("Odds Ratio (95% CI)",
-             "Risk Ratio (95% CI)",
-             "Incidence Rate Ratio (95% CI)",
-             "Linear Regression Coefficient (95% CI)")
-
-  # exact matches (unadjusted)
-  idx <- match(oldnm, short)
-  nm[!is.na(idx)] <- long[idx[!is.na(idx)]]
-
-  # exact matches with "Adjusted " prefix
-  idx2 <- match(oldnm, paste0("Adjusted ", short))
-  nm[!is.na(idx2)] <- paste0("Adjusted ", long[idx2[!is.na(idx2)]])
-
-  names(df_plot) <- nm
   # --- position the plot columns per `side` and recompute ci_col ---
   # --- enforce layout rules: Characteristics/desc on the left; plot/text order by `side` ---
 
@@ -175,6 +217,12 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
 
   ci_adj <- ci_cols_all[grepl("^Adjusted\\s+", ci_cols_all)]
   ci_adj <- ci_adj[1] %||% NA_character_
+
+  # Multi-only inputs have one plot anchor but an adjusted effect label.
+  if (is.na(ci_uni) && !is.na(ci_adj) && " " %in% anchor_cols && !"  " %in% anchor_cols) {
+    ci_uni <- ci_adj
+    ci_adj <- NA_character_
+  }
 
   # 2) Characteristic + desc columns = everything that's not an anchor or CI text
   left_cols <- setdiff(nm, c(anchor_cols, ci_cols_all))   # preserve original order
@@ -210,6 +258,8 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
     x_trans    = meta$x_trans,
     ref_line   = meta$ref_line,
     xlim       = xlim,
+    ticks_at   = ticks_at,
+    ticks_digits = ticks_digits,
     ci_col_width = ci_col_width,
     theme      = theme,
     side       = side,
@@ -219,7 +269,10 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
 
   plt <- if (quiet) suppressWarnings(draw()) else draw()
 
-  structure(list(plot = plt, data = df, meta = meta),
+  meta$ticks_at <- ticks_at
+  meta$ticks_digits <- ticks_digits
+
+  structure(list(plot = plt, data = df_plot, input_data = df, meta = meta),
             class = c("gtregression_forest", "list"))
 }
 

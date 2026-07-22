@@ -10,19 +10,22 @@
 #' @keywords internal
 #' @noRd
 .validate_approach <- function(approach, context = NULL) {
+  approach_input <- approach
+  approach <- .normalize_approach(approach)
+
   # Define valid approaches per context
   valid <- switch(context,
-                  "uni_reg" = c("logit", "log-binomial", "poisson",
+                  "uni_reg" = c("logit", "logbinomial", "poisson",
                                 "robpoisson", "linear", "negbin"),
-                  "multi_reg" = c("logit", "log-binomial", "poisson",
+                  "multi_reg" = c("logit", "logbinomial", "poisson",
                                   "robpoisson", "linear", "negbin"),
-                  "interaction_models" = c("logit", "log-binomial", "poisson",
+                  "interaction_models" = c("logit", "logbinomial", "poisson",
                                            "robpoisson", "negbin", "linear"),
-                  "check_convergence" = c("logit", "log-binomial", "poisson",
+                  "check_convergence" = c("logit", "logbinomial", "poisson",
                                           "robpoisson", "negbin"),
-                  "identify_confounder" = c("logit", "log-binomial", "poisson",
+                  "identify_confounder" = c("logit", "logbinomial", "poisson",
                                             "robpoisson", "negbin", "linear"),
-                  "select_models" = c("logit", "log-binomial", "poisson",
+                  "select_models" = c("logit", "logbinomial", "poisson",
                                       "robpoisson", "negbin", "linear"),
                   stop("The function '", context, "' is not recognized.\n",
                        "Please use a valid function")
@@ -30,7 +33,7 @@
 
   # Validate the chosen approach
   if (!approach %in% valid) {
-    stop(approach, "  is not a valid approach for ", context, ".\n",
+    stop(approach_input, "  is not a valid approach for ", context, ".\n",
          "Valid options: ", paste(valid, collapse = ", "), call. = FALSE)
   }
 
@@ -135,6 +138,8 @@
 #' @keywords internal
 #' @noRd
 .validate_outcome_by_approach <- function(outcome, approach) {
+  approach <- .normalize_approach(approach)
+
   # Missing outcome values in cols
   if (all(is.na(outcome))) {
     stop("All values in the outcome variable are missing.",
@@ -169,7 +174,7 @@
   }
 
   # apply logic
-  if (approach %in% c("logit", "log-binomial", "robpoisson") &&
+  if (approach %in% c("logit", "logbinomial", "robpoisson") &&
       !is_binary(outcome)) {
     stop("This approach requires either a factor variable ",
          "or numeric variable coded as 0 and 1 (or 1 and 2).", call. = FALSE)

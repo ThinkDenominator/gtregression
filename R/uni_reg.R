@@ -6,7 +6,7 @@
 #' @param data data.frame
 #' @param outcome character scalar; outcome column name
 #' @param exposures character vector; exposure column names
-#' @param approach one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"}, \code{"linear"}
+#' @param approach one of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"}, \code{"linear"}
 #' @param format one of \code{"gt"} (default) or \code{"flextable"}
 #' @param theme preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 #'   \code{"shaded"}, \code{"jama"}) or primitives
@@ -40,6 +40,15 @@ uni_reg <- function(data,
                     approach = "logit",
                     format = c("gt","flextable"),
                     theme = c("minimal")) {
+
+  approach <- .choice_arg(
+    substitute(approach),
+    env = parent.frame(),
+    choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
+  )
+  approach <- .normalize_approach(approach)
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  theme <- .choice_arg(substitute(theme), env = parent.frame())
 
   format <- match.arg(format)
   theme  <- .resolve_theme(theme)
@@ -106,4 +115,3 @@ uni_reg <- function(data,
   class(res) <- c("gtregression", "uni_reg", fmt_class, class(res))
   res
 }
-

@@ -21,8 +21,8 @@ test_that(".fit_uni_model returns correct model class (PimaIndiansDiabetes2)", {
   expect_s3_class(m1, "glm")
   expect_equal(family(m1)$family, "binomial")
 
-  # log-binomial
-  m2 <- .fit_uni_model(df, outcome = "diabetes", exposure = "age_cat", approach = "log-binomial")
+  # logbinomial
+  m2 <- .fit_uni_model(df, outcome = "diabetes", exposure = "age_cat", approach = "logbinomial")
   expect_s3_class(m2, "glm")
   expect_equal(family(m2)$link, "log")
 
@@ -50,6 +50,8 @@ test_that(".fit_uni_model returns correct model class (PimaIndiansDiabetes2)", {
 })
 
 test_that(".fit_uni_model handles model fitting failure gracefully", {
+  skip_if_not_installed("mlbench")
+
   data("PimaIndiansDiabetes2", package = "mlbench")
 
   df <- PimaIndiansDiabetes2 |>

@@ -12,5 +12,68 @@ utils::globalVariables(c(
   ".data",
   "reference_row", "variable", "label_clean", "header_order", "row_id", "label",
   "estimate", "conf.low", "conf.high", "approach", "stat_n", "row_type", "level",
-  "var_type", "p.value"
+  "var_type", "p.value", "type", "ref"
 ))
+
+#' Normalize quoted or bare option arguments
+#'
+#' @keywords internal
+#' @noRd
+.choice_arg <- function(expr,
+                        env = parent.frame(),
+                        choices = NULL,
+                        aliases = NULL,
+                        lower = TRUE) {
+  normalize_one <- function(x) {
+    if (is.character(x)) {
+      out <- if (lower) tolower(x) else x
+      if (!is.null(aliases)) {
+        idx <- match(out, names(aliases))
+        out[!is.na(idx)] <- unname(aliases[idx[!is.na(idx)]])
+      }
+      return(out)
+    }
+
+    if (is.symbol(x)) {
+      name <- as.character(x)
+      key <- if (lower) tolower(name) else name
+
+      if (!is.null(aliases) && key %in% names(aliases)) {
+        return(unname(aliases[[key]]))
+      }
+
+      choice_keys <- if (lower) tolower(choices) else choices
+      if (!is.null(choices) && key %in% choice_keys) {
+        return(if (lower) key else name)
+      }
+
+      if (exists(name, envir = env, inherits = TRUE)) {
+        return(get(name, envir = env, inherits = TRUE))
+      }
+
+      return(if (lower) key else name)
+    }
+
+    if (is.call(x) && identical(x[[1L]], as.name("c"))) {
+      return(unlist(lapply(as.list(x)[-1L], normalize_one), use.names = FALSE))
+    }
+
+    eval(x, envir = env)
+  }
+
+  out <- normalize_one(expr)
+  if (is.character(out) && lower) {
+    out <- tolower(out)
+  }
+  out
+}
+
+#' Normalize regression approach spellings
+#'
+#' @keywords internal
+#' @noRd
+.normalize_approach <- function(approach) {
+  approach <- tolower(as.character(approach))
+  approach[approach == "log-binomial"] <- "logbinomial"
+  approach
+}

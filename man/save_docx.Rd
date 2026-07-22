@@ -2,37 +2,56 @@
 % Please edit documentation in R/save_functions.R
 \name{save_docx}
 \alias{save_docx}
-\title{Save Multiple Tables and Plots to a Word Document}
+\title{Save multiple tables and plots to a Word document}
 \usage{
-save_docx(tables = NULL, plots = NULL, filename = "report.docx", titles = NULL)
-}
-\arguments{
-\item{tables}{A list of gtsummary tables.}
-
-\item{plots}{A list of ggplot2 plot objects.}
-
-\item{filename}{File name for the output (with or without .docx extension).}
-
-\item{titles}{Optional. A character vector of titles.}
-}
-\value{
-A Word document saved to a temporary directory (if no path is given). No object is returned.
-}
-\description{
-Saves a collection of gtsummary tables and ggplot2 plots into a .docx file.
-}
-\examples{
-\donttest{
-library(gtsummary)
-library(ggplot2)
-tbl <- tbl_regression(glm(mpg ~ hp + wt, data = mtcars))
-p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
-  geom_point()
 save_docx(
-  tables = list(tbl),
-  plots = list(p),
-  filename = file.path(tempdir(), "report.docx"),
-  titles = c("Table 1: Regression", "Figure 1: Scatterplot")
+  tables = NULL,
+  plots = NULL,
+  filename = "report.docx",
+  titles = NULL,
+  plot_width = 6,
+  plot_height = 5
 )
 }
+\arguments{
+\item{tables}{A list of tables. Each element may be a \code{gtregression}
+object, \code{merged_table} object, \code{gt_tbl}, or \code{flextable}.}
+
+\item{plots}{A list of \code{ggplot2} plot objects.}
+
+\item{filename}{File name for the output, with or without \code{.docx}. If no
+directory is supplied, the file is saved in \code{tempdir()}.}
+
+\item{titles}{Optional character vector of titles for tables and plots in
+the order they are added.}
+
+\item{plot_width}{Width of inserted plots in inches.}
+
+\item{plot_height}{Height of inserted plots in inches.}
+}
+\value{
+Saves the Word document to disk. Invisibly returns the normalized
+  file path.
+}
+\description{
+Saves a collection of \code{gtregression} tables, merged tables,
+\code{gt_tbl}/\code{flextable} objects, and \code{ggplot2} plots into a
+single Word document.
+}
+\examples{
+birthwt_data <- data_birthwt |>
+  dplyr::mutate(
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+  )
+
+tbl <- uni_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = c("age", "smoke"),
+  approach = logit,
+  format = flextable
+)
+
+save_docx(tables = tbl, filename = tempfile("report"))
 }

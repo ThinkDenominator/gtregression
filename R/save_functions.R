@@ -20,12 +20,25 @@
   )
 }
 
+#' Check whether an object is table-like for save helpers
+#' @keywords internal
+#' @noRd
+.is_save_table_like <- function(x) {
+  inherits(x, c("gtregression", "merged_table", "gt_tbl", "flextable"))
+}
+
 #' Normalize output filename
 #' @keywords internal
 #' @noRd
 .normalize_save_path <- function(filename, ext) {
-  stopifnot(is.character(filename), length(filename) == 1L, nzchar(filename))
-  stopifnot(is.character(ext), length(ext) == 1L, nzchar(ext))
+  if (!is.character(filename) || length(filename) != 1L ||
+      is.na(filename) || !nzchar(filename)) {
+    stop("`filename` must be a single non-empty character string.", call. = FALSE)
+  }
+  if (!is.character(ext) || length(ext) != 1L ||
+      is.na(ext) || !nzchar(ext)) {
+    stop("`ext` must be a single non-empty character string.", call. = FALSE)
+  }
 
   if (!grepl(paste0("\\.", ext, "$"), filename, ignore.case = TRUE)) {
     filename <- paste0(filename, ".", ext)
@@ -50,31 +63,42 @@
 #'
 #' @param tbl A \code{gtregression} object, \code{merged_table} object,
 #'   \code{gt_tbl}, or \code{flextable}.
-#' @param filename File name for the output. Extension is optional.
+#' @param filename File name for the output. Extension is optional. If no
+#'   directory is supplied, the file is saved in \code{tempdir()}.
 #' @param format Output format. One of \code{"docx"}, \code{"pdf"}, or
 #'   \code{"html"}.
 #'
 #' @return Saves the file to disk. Invisibly returns the normalized file path.
+#'
+#' @examples
+#' birthwt_data <- data_birthwt |>
+#'   dplyr::mutate(
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+#'   )
+#'
+#' tbl <- uni_reg(
+#'   data = birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("age", "smoke"),
+#'   approach = logit
+#' )
+#'
+#' save_table(tbl, filename = tempfile("table"), format = html)
 #' @export
 save_table <- function(tbl,
                        filename = "table",
                        format = c("docx", "pdf", "html")) {
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("docx", "pdf", "html"))
   format <- match.arg(format)
   filename <- .normalize_save_path(filename, format)
 
   obj <- .resolve_table_object(tbl)
 
-  if (inherits(plot, "ggplot")) {
-    if (requireNamespace("ggtext", quietly = TRUE)) {
-      loadNamespace("ggtext")
-    }
-  }
-
   if (inherits(obj, "gt_tbl")) {
     if (!requireNamespace("gt", quietly = TRUE)) {
       stop("Package 'gt' is required to save gt tables.", call. = FALSE)
     }
-
     gt::gtsave(data = obj, filename = filename)
 
   } else if (inherits(obj, "flextable")) {
@@ -110,13 +134,20 @@ save_table <- function(tbl,
 #' Saves a \code{ggplot2} plot to a file in PNG, PDF, or JPG format.
 #'
 #' @param plot A \code{ggplot2} object.
-#' @param filename Name of the file to save, with or without extension.
+#' @param filename Name of the file to save, with or without extension. If no
+#'   directory is supplied, the file is saved in \code{tempdir()}.
 #' @param format Output format. One of \code{"png"}, \code{"pdf"}, or \code{"jpg"}.
 #' @param width Width of the saved plot in inches.
 #' @param height Height of the saved plot in inches.
 #' @param dpi Resolution of the plot in dots per inch.
 #'
 #' @return Saves the file to disk. Invisibly returns the normalized file path.
+#'
+#' @examples
+#' p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
+#'   ggplot2::geom_point()
+#'
+#' save_plot(p, filename = tempfile("plot"), format = png)
 #' @importFrom ggplot2 ggsave
 #' @export
 save_plot <- function(plot,
@@ -125,10 +156,20 @@ save_plot <- function(plot,
                       width = 8,
                       height = 6,
                       dpi = 300) {
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("png", "pdf", "jpg"))
   format <- match.arg(format)
 
   if (!inherits(plot, "ggplot")) {
     stop("`plot` must be a ggplot2 object.", call. = FALSE)
+  }
+  if (!is.numeric(width) || length(width) != 1L || is.na(width) || width <= 0) {
+    stop("`width` must be a single positive number.", call. = FALSE)
+  }
+  if (!is.numeric(height) || length(height) != 1L || is.na(height) || height <= 0) {
+    stop("`height` must be a single positive number.", call. = FALSE)
+  }
+  if (!is.numeric(dpi) || length(dpi) != 1L || is.na(dpi) || dpi <= 0) {
+    stop("`dpi` must be a single positive number.", call. = FALSE)
   }
 
   filename <- .normalize_save_path(filename, format)
@@ -159,7 +200,8 @@ save_plot <- function(plot,
 #' @param tables A list of tables. Each element may be a \code{gtregression}
 #'   object, \code{merged_table} object, \code{gt_tbl}, or \code{flextable}.
 #' @param plots A list of \code{ggplot2} plot objects.
-#' @param filename File name for the output, with or without \code{.docx}.
+#' @param filename File name for the output, with or without \code{.docx}. If no
+#'   directory is supplied, the file is saved in \code{tempdir()}.
 #' @param titles Optional character vector of titles for tables and plots in
 #'   the order they are added.
 #' @param plot_width Width of inserted plots in inches.
@@ -167,6 +209,23 @@ save_plot <- function(plot,
 #'
 #' @return Saves the Word document to disk. Invisibly returns the normalized
 #'   file path.
+#'
+#' @examples
+#' birthwt_data <- data_birthwt |>
+#'   dplyr::mutate(
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+#'   )
+#'
+#' tbl <- uni_reg(
+#'   data = birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("age", "smoke"),
+#'   approach = logit,
+#'   format = flextable
+#' )
+#'
+#' save_docx(tables = tbl, filename = tempfile("report"))
 #' @export
 #' @importFrom officer read_docx body_add_par body_add_gg
 #' @importFrom flextable body_add_flextable
@@ -179,11 +238,29 @@ save_docx <- function(tables = NULL,
   if (!requireNamespace("officer", quietly = TRUE)) {
     stop("Package 'officer' is required.", call. = FALSE)
   }
-  if (!requireNamespace("flextable", quietly = TRUE)) {
-    stop("Package 'flextable' is required.", call. = FALSE)
-  }
 
   filename <- .normalize_save_path(filename, "docx")
+
+  if (!is.null(tables) && .is_save_table_like(tables)) {
+    tables <- list(tables)
+  }
+  if (!is.null(plots) && inherits(plots, "ggplot")) {
+    plots <- list(plots)
+  }
+  if (!is.null(tables) && (is.data.frame(tables) || !is.list(tables))) {
+    stop("`tables` must be NULL, a table object, or a list of table objects.", call. = FALSE)
+  }
+  if (!is.null(plots) && (is.data.frame(plots) || !is.list(plots))) {
+    stop("`plots` must be NULL, a ggplot2 object, or a list of ggplot2 objects.", call. = FALSE)
+  }
+  if (!is.numeric(plot_width) || length(plot_width) != 1L ||
+      is.na(plot_width) || plot_width <= 0) {
+    stop("`plot_width` must be a single positive number.", call. = FALSE)
+  }
+  if (!is.numeric(plot_height) || length(plot_height) != 1L ||
+      is.na(plot_height) || plot_height <= 0) {
+    stop("`plot_height` must be a single positive number.", call. = FALSE)
+  }
 
   n_tables <- if (is.null(tables)) 0L else length(tables)
   n_plots  <- if (is.null(plots)) 0L else length(plots)
@@ -205,6 +282,10 @@ save_docx <- function(tables = NULL,
   idx <- 1L
 
   if (!is.null(tables)) {
+    if (!requireNamespace("flextable", quietly = TRUE)) {
+      stop("Package 'flextable' is required to add tables to a DOCX file.", call. = FALSE)
+    }
+
     for (tbl in tables) {
       obj <- .resolve_table_object(tbl)
 

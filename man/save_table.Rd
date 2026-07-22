@@ -2,27 +2,40 @@
 % Please edit documentation in R/save_functions.R
 \name{save_table}
 \alias{save_table}
-\title{Save a Single Regression Table}
+\title{Save a single regression or summary table}
 \usage{
 save_table(tbl, filename = "table", format = c("docx", "pdf", "html"))
 }
 \arguments{
-\item{tbl}{A gtsummary object (e.g., tbl_regression(), tbl_summary()).}
+\item{tbl}{A \code{gtregression} object, \code{merged_table} object,
+\code{gt_tbl}, or \code{flextable}.}
 
-\item{filename}{File name to save the output. Extension is optional.}
+\item{filename}{File name for the output. Extension is optional. If no
+directory is supplied, the file is saved in \code{tempdir()}.}
 
-\item{format}{Output format. One of "docx", "pdf", or "html".}
+\item{format}{Output format. One of \code{"docx"}, \code{"pdf"}, or
+\code{"html"}.}
 }
 \value{
-Saves the file to a temporary directory (if no path is given). Does not return an object.
+Saves the file to disk. Invisibly returns the normalized file path.
 }
 \description{
-Saves a gtsummary table as a Word, PDF, or HTML file
+Saves a \code{gtregression} table, merged table, \code{gt_tbl}, or
+\code{flextable} as a Word, PDF, or HTML file.
 }
 \examples{
-\donttest{
-model <- glm(mpg ~ hp + wt, data = mtcars)
-tbl <- gtsummary::tbl_regression(model)
-save_table(tbl, filename = file.path(tempdir(), "regression_table"), format = "docx")
-}
+birthwt_data <- data_birthwt |>
+  dplyr::mutate(
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+  )
+
+tbl <- uni_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = c("age", "smoke"),
+  approach = logit
+)
+
+save_table(tbl, filename = tempfile("table"), format = html)
 }

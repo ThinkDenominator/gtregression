@@ -15,9 +15,10 @@ test_that("dissect() covers all branches and returns a tibble", {
                        "2020-01-04","2020-01-05","2020-01-06"))  # Date -> maybe
   )
 
-  res <- dissect(df)
+  expect_silent(res <- dissect(df))
   expect_s3_class(res, "tbl_df")
-  expect_true(all(c("Variable","Type","Missing (%)","Unique","Levels","Compatibility") %in% names(res)))
+  expect_true(all(c("Variable", "Type", "Missing (%)", "Unique", "Levels",
+                    "Compatibility", "Hint") %in% names(res)))
   expect_equal(nrow(res), ncol(df))
 
   get_row <- function(v) res[res$Variable == v, , drop = FALSE]
@@ -42,8 +43,45 @@ test_that("dissect() covers all branches and returns a tibble", {
 
   expect_equal(get_row("const")$Unique, 1)
   expect_equal(get_row("num2")$Unique, 2)
+  expect_match(get_row("num2")$Hint, "binary coding")
+  expect_match(get_row("allNA")$Hint, "missing")
+})
+
+test_that("dissect() can print beginner interpretation notes", {
+  df <- data.frame(x = c(1, 2, 3), y = factor(c("a", "b", "a")))
+
+  expect_message(
+    printed <- dissect(df, verbose = TRUE),
+    "Interpretation notes"
+  )
+
+  expect_s3_class(printed, "tbl_df")
+})
+
+test_that("dissect() can return gt and flextable outputs", {
+  df <- data.frame(
+    x = c(1, 2, 3),
+    y = factor(c("a", "b", "a")),
+    z = rep(NA, 3)
+  )
+
+  gt_out <- dissect(df, format = gt)
+  ft_out <- dissect(df, format = "flextable")
+
+  expect_s3_class(gt_out, "gt_tbl")
+  expect_s3_class(ft_out, "flextable")
+  expect_equal(names(gt_out$`_data`), c(
+    "Variable", "Type", "Missing (%)", "Unique", "Levels",
+    "Compatibility", "Hint"
+  ))
+  expect_match(
+    as.character(gt_out$`_source_notes`[[1]]),
+    "Screening aid only"
+  )
 })
 
 test_that("dissect() errors on non-data.frame", {
   expect_error(dissect(1:3), "must be a data frame", fixed = TRUE)
+  expect_error(dissect(data.frame(x = 1), verbose = NA), "`verbose` must be")
+  expect_error(dissect(data.frame(x = 1), format = "bad"), "should be one of")
 })

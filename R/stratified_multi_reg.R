@@ -8,28 +8,61 @@
 #' multivariable model within each stratum. If \code{adjust_for} is supplied,
 #' one adjusted model is fitted per exposure within each stratum.
 #'
-#' @param data data.frame
-#' @param outcome character scalar; outcome column name
-#' @param exposures character vector; exposure variable(s) to report
-#' @param stratifier character scalar; stratifying variable
-#' @param adjust_for optional character vector of adjustment variables
-#' @param interaction optional character scalar specifying one interaction term
+#' @param data A data frame containing the variables.
+#' @param outcome Character scalar; name of the outcome variable.
+#' @param exposures Character vector of exposure variables to report.
+#' @param stratifier Character scalar; name of the stratifying variable.
+#' @param adjust_for Optional character vector of adjustment variables.
+#'   This argument works the same way as in \code{multi_reg()}.
+#' @param interaction Optional character scalar specifying one interaction term
 #'   using standard formula syntax, e.g. \code{"bmi*sex"}
-#' @param approach one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+#' @param approach One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 #'   \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}
-#' @param format one of \code{"gt"} (default) or \code{"flextable"}
-#' @param theme preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
+#' @param format One of \code{"gt"} (default) or \code{"flextable"}.
+#' @param theme Preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 #'   \code{"shaded"}, \code{"jama"}) or primitives
 #'   \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}
 #'
 #' @return A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
 #' \describe{
-#'   \item{table}{A \code{gt_tbl} (format="gt") or \code{flextable} (format="flextable").}
-#'   \item{table_display}{Wide data.frame used to build the table.}
-#'   \item{per_stratum}{Named list of per-stratum regression results.}
-#'   \item{models, model_summaries, reg_check}{Named lists by stratum.}
-#'   \item{by, levels, approach, format, source}{Metadata fields.}
+#'   \item{\code{table}}{A \code{gt_tbl} (format = \code{"gt"}) or
+#'   \code{flextable} (format = \code{"flextable"}).}
+#'   \item{\code{table_display}}{Wide data frame used to build the table.}
+#'   \item{\code{per_stratum}}{Named list of per-stratum regression results.}
+#'   \item{\code{models}}{Named list of fitted models by stratum.}
+#'   \item{\code{model_summaries}}{Named list of model summaries by stratum.}
+#'   \item{\code{reg_check}}{Named list of diagnostics by stratum.}
+#'   \item{\code{by}, \code{levels}, \code{approach}, \code{format}, \code{source}}{Metadata fields.}
 #' }
+#'
+#' @examples
+#' birthwt_data <- data_birthwt |>
+#'   transform(
+#'     race = factor(race, levels = c(1, 2, 3),
+#'                   labels = c("White", "Black", "Other")),
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+#'     ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+#'     low = factor(low, levels = c(0, 1),
+#'                  labels = c("Normal BW", "Low BW"))
+#'   )
+#'
+#' stratified_multi <- stratified_multi_reg(
+#'   data = birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("age", "lwt", "smoke", "ht"),
+#'   stratifier = "race",
+#'   approach = logit
+#' )
+#'
+#' stratified_adjusted <- stratified_multi_reg(
+#'   data = birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("smoke", "ht", "ui"),
+#'   stratifier = "race",
+#'   adjust_for = c("age", "lwt"),
+#'   approach = logit
+#' )
 #' @importFrom stats nobs
 #' @export
 stratified_multi_reg <- function(data,
@@ -41,6 +74,15 @@ stratified_multi_reg <- function(data,
                                  approach = "logit",
                                  format = c("gt", "flextable"),
                                  theme = c("minimal")) {
+
+  approach <- .choice_arg(
+    substitute(approach),
+    env = parent.frame(),
+    choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
+  )
+  approach <- .normalize_approach(approach)
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  theme <- .choice_arg(substitute(theme), env = parent.frame())
 
   format <- match.arg(format)
   theme <- .resolve_theme(theme)

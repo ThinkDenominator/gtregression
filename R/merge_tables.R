@@ -25,8 +25,10 @@
 #' Build canonical row-id map for a table_display object
 #'
 #' Rules:
-#' - header followed immediately by another header (or end of table)
-#'   is treated as a continuous/main-effect row and gets id var||var
+#' - every header row is retained
+#' - header followed immediately by another header (or end of table) is treated
+#'   as a continuous/main-effect row and gets id var||var
+#' - categorical headers get id var||__header__
 #' - non-header rows get id current_var||level
 #'
 #' @keywords internal
@@ -44,9 +46,12 @@
     if (ih) {
       current_var <- ch
 
-      # continuous/main-effect row lives on the header line
+      # Continuous/main-effect rows live on the header line; categorical
+      # headers are structural rows and should still be preserved.
       if (i == nrow(df) || isTRUE(df$is_header[i + 1])) {
         ids[i] <- paste0(current_var, "||", current_var)
+      } else {
+        ids[i] <- paste0(current_var, "||__header__")
       }
     } else {
       lvl <- trimws(df$Characteristic[i])
@@ -90,7 +95,7 @@
     var <- parts[1]
     lvl <- parts[2]
 
-    is_header <- identical(var, lvl)
+    is_header <- identical(var, lvl) || identical(lvl, "__header__")
     char <- if (is_header) var else paste0("  ", lvl)
 
     data.frame(
@@ -113,6 +118,12 @@
   approach <- obj[["approach"]]
   if (!is.null(approach) && exists(".abbrev_note", mode = "function")) {
     out <- c(out, .abbrev_note(approach))
+  }
+
+  adjust_for <- obj[["adjust_for"]]
+  if (!is.null(adjust_for) && length(adjust_for) &&
+      exists(".adjustment_note", mode = "function")) {
+    out <- c(out, .adjustment_note(adjust_for))
   }
 
   models <- obj[["models"]]
@@ -157,9 +168,43 @@
 #'   If \code{NULL}, defaults to \code{"Table 1"}, \code{"Table 2"}, etc.
 #' @param theme Merge theme preset or vector of primitives.
 #'
-#' @return A merged table object of class \code{c("merged_table", ...)}.
+#' @return A merged table object of class
+#'   \code{c("gtregression", "merged_table", ...)}.
+#'
+#' @examples
+#' birthwt_data <- data_birthwt |>
+#'   dplyr::mutate(
+#'     race = factor(race, levels = c(1, 2, 3),
+#'                   labels = c("White", "Black", "Other")),
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+#'     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+#'   )
+#'
+#' uni_tbl <- uni_reg(
+#'   data = birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("age", "lwt", "smoke", "ht"),
+#'   approach = logit
+#' )
+#'
+#' multi_tbl <- multi_reg(
+#'   data = birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("smoke", "ht"),
+#'   adjust_for = c("age", "lwt"),
+#'   approach = logit
+#' )
+#'
+#' merge_tables(
+#'   uni_tbl,
+#'   multi_tbl,
+#'   spanners = c("Univariable", "Adjusted")
+#' )
 #' @export
 merge_tables <- function(..., spanners = NULL, theme = "minimal") {
+  theme <- .choice_arg(substitute(theme), env = parent.frame())
+
   tbls <- list(...)
 
   if (length(tbls) < 2L) {
@@ -518,7 +563,7 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
     source = "merge_tables"
   )
 
-  class(res) <- c("merged_table", engine_class, "list")
+  class(res) <- c("gtregression", "merged_table", engine_class, "list")
   res
 }
 

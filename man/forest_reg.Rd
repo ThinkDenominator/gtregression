@@ -2,7 +2,7 @@
 % Please edit documentation in R/forest_reg.R
 \name{forest_reg}
 \alias{forest_reg}
-\title{Draw a Forest Plot (Publication-Ready)}
+\title{Draw a publication-ready forest plot}
 \usage{
 forest_reg(
   df = NULL,
@@ -14,55 +14,82 @@ forest_reg(
   side = c("right", "left"),
   quiet = TRUE,
   effects = NULL,
+  ticks_at = NULL,
+  ticks_digits = NULL,
   ...
 )
 }
 \arguments{
-\item{df}{Output of `forest_df()`. If `NULL`, will be built from (uni, multi, desc).}
+\item{df}{Output of \code{forest_df()}. If \code{NULL}, it is built from
+\code{uni}, \code{multi}, and \code{desc}.}
 
-\item{uni, multi, desc}{Optional gtregression objects to pass through to `forest_df()`.}
+\item{uni, multi, desc}{Optional \code{gtregression} objects to pass through to
+\code{forest_df()}.}
 
-\item{theme}{Optional `forestploter::forest_theme()`. If `NULL`, a sensible default is used.
-You may pass colors and styling either here (e.g., `ci_col`, `refline_gp`) or via `...`.}
+\item{theme}{Optional \code{forestploter::forest_theme()}. If \code{NULL}, a
+sensible default is used. You may pass colors and styling either here or
+through \code{...}.}
 
 \item{ci_col_width}{Numeric or length-2 numeric. Relative width of the CI column(s).
-A vector like `c(0.22, 0.26)` lets you tune uni vs adjusted columns separately.}
+A vector like \code{c(0.22, 0.26)} lets you tune unadjusted and adjusted
+columns separately.}
 
 \item{side}{Character. For each effect, position of the plot relative to the effect-size text:
-`"left"` = plot first then text; `"right"` = text first then plot.
-**Note:** The `Characteristic` column (and any descriptive/summary columns) always remains on the left.}
+\code{"left"} = plot first then text; \code{"right"} = text first then plot.
+The \code{Characteristic} column and descriptive columns remain on the left.}
 
 \item{quiet}{Logical. Suppress forestploter warnings. Default = `TRUE`.}
 
-\item{...}{Passed to `forestploter::forest()`. Common options include:
-`ci_col`, `point_col`, `point_shape`, `rowheight`, `ticks_at`, `title`, `footnote`.}
+\item{effects}{Optional effect labels passed to \code{forestploter::forest()}.}
 
-\item{bold_headers}{Logical. Bold the exposure headers (non-indented rows) in the first column. Default `TRUE`.}
+\item{ticks_at}{Optional numeric vector, or length-2 list for two effect
+columns, specifying x-axis tick positions. If \code{NULL},
+\code{forestploter::forest()} chooses the default ticks.}
+
+\item{ticks_digits}{Optional number of digits for x-axis tick labels.}
+
+\item{...}{Passed to \code{forestploter::forest()}. Common options include
+\code{title} and \code{footnote}.}
 }
 \value{
-A `gtregression_forest` object with elements:
-  - `plot`: the forest plot
-  - `data`: the input data frame (post-processed order, no `se_*` columns)
-  - `meta`: model metadata
+A \code{gtregression_forest} object with elements:
+\describe{
+  \item{\code{plot}}{The forest plot object.}
+  \item{\code{data}}{The plotting data sent to \code{forestploter::forest()}.}
+  \item{\code{input_data}}{The original \code{forest_df()} data, including
+  standard-error helper columns.}
+  \item{\code{meta}}{Model metadata, including reference line and x-axis
+  transformation.}
+}
 }
 \description{
-Wrapper around `forestploter::forest()` that works directly with
-`forest_df()` output or with raw regression objects.
+Wrapper around \code{forestploter::forest()} that works directly with
+\code{forest_df()} output or with \code{gtregression} regression objects.
+It can show descriptive columns and one or two model effect columns in a
+table-style forest plot.
 }
 \examples{
-if (requireNamespace("gt", quietly = TRUE)) {
-  # build uni & multi tables beforehand (example objects: uni_or, multi_or)
-  # uni_or  <- uni_reg(data = birthwt, outcome = "low", exposures = c("age","lwt","smoke"), approach = "logit")
-  # multi_or <- multi_reg(data = birthwt, outcome = "low", exposures = c("age","lwt","smoke"), approach = "logit")
-  # birthwt_summary <- gtsummary::tbl_summary(birthwt, by = "low")
+birthwt_data <- data_birthwt |>
+  transform(
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1),
+                 labels = c("Normal BW", "Low BW"))
+  )
 
-  # 1) Build + plot in one call (recommended)
-  p1 <- forest_reg(uni = uni_or, multi = multi_or, desc = birthwt_summary)
-  print(p1)
+uni_or <- uni_reg(
+  birthwt_data,
+  outcome = "low",
+  exposures = c("age", "lwt", "smoke", "ht"),
+  approach = logit
+)
+multi_or <- multi_reg(
+  birthwt_data,
+  outcome = "low",
+  exposures = c("smoke", "ht"),
+  adjust_for = c("age", "lwt"),
+  approach = logit
+)
 
-  # 2) Or build first, then plot
-  df_both_desc <- forest_df(uni = uni_or, multi = multi_or, desc = birthwt_summary)
-  p2 <- forest_reg(df_both_desc, side = "left")
-  print(p2)
-}
+forest_reg(uni = uni_or, multi = multi_or)
 }

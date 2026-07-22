@@ -1,0 +1,83 @@
+---
+title: "Diagnostics and Model Selection"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Diagnostics and Model Selection}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Diagnostics and Model Selection
+
+Before the final table goes into a manuscript, check the model. These helpers
+keep diagnostics close to the regression workflow.
+
+```{r diag-setup, message=FALSE, warning=FALSE}
+library(gtregression)
+library(dplyr)
+
+data("data_birthwt", package = "gtregression")
+
+birthwt_data <- data_birthwt |>
+  mutate(
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+    ptl_cat = factor(ifelse(ptl > 0, "Yes", "No"), levels = c("No", "Yes"))
+  )
+
+exposures <- c("age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat")
+```
+
+## Convergence
+
+```{r diag-convergence, message=FALSE, warning=FALSE}
+check_convergence(
+  data = birthwt_data,
+  exposures = exposures,
+  outcome = "low",
+  approach = logit,
+  multivariate = TRUE,
+  format = gt
+)
+```
+
+## Collinearity
+
+```{r diag-collinearity, message=FALSE, warning=FALSE}
+birthwt_multi <- multi_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = exposures,
+  approach = logit
+)
+
+check_collinearity(birthwt_multi, format = gt)
+```
+
+## Stepwise Model Selection
+
+```{r diag-select, message=FALSE, warning=FALSE}
+selected <- select_models(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = exposures,
+  approach = logit,
+  direction = forward,
+  format = gt
+)
+
+selected$table
+```
+
+## What To Inspect
+
+- `check_convergence()`: convergence status and maximum fitted probabilities.
+  Use `format = gt` or `format = flextable` for viewing tables.
+- `check_collinearity()`: VIF and interpretation. Nested model outputs keep
+  their list structure when formatted.
+- `select_models()`: `$results_table`, `$best_model`, `$all_models`, and
+  `$table` when `format = gt` or `format = flextable`.

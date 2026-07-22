@@ -2,7 +2,7 @@
 % Please edit documentation in R/interaction_models.R
 \name{interaction_models}
 \alias{interaction_models}
-\title{Compare Models With and Without Interaction Term}
+\title{Compare Models With and Without an Interaction Term}
 \usage{
 interaction_models(
   data,
@@ -12,49 +12,57 @@ interaction_models(
   effect_modifier,
   approach = "logit",
   test = c("LRT", "Wald"),
-  verbose = TRUE
+  alpha = 0.05,
+  verbose = FALSE,
+  format = c("tibble", "gt", "flextable")
 )
 }
 \arguments{
 \item{data}{A data frame containing all required variables.}
 
-\item{outcome}{The name of the outcome variable}
+\item{outcome}{Outcome variable name.}
 
-\item{exposure}{The name of the main exposure variable.}
+\item{exposure}{Main exposure variable name.}
 
-\item{covariates}{character vector of additional covariates to adjust for}
+\item{covariates}{Optional character vector of additional covariates.}
 
-\item{effect_modifier}{The name of the variable to test for interaction}
+\item{effect_modifier}{Variable name for the potential effect modifier.}
 
-\item{approach}{The regression modeling approach to use. One of:
-\code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
-\code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.}
+\item{approach}{Regression approach. One of \code{"logit"},
+\code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
+\code{"negbin"}, or \code{"linear"}.}
 
-\item{test}{Type of statistical test for model comparison. Either:
-\code{"LRT"} (likelihood ratio test, default) or \code{"Wald"}.}
+\item{test}{Statistical test for model comparison. One of \code{"LRT"} or
+\code{"Wald"}.}
 
-\item{verbose}{Logical; if \code{TRUE},
-prints a basic interpretation of whether interaction is
-likely present (default = \code{FALSE}).}
+\item{alpha}{Significance threshold used to classify the interaction result.}
+
+\item{verbose}{Logical; if \code{TRUE}, prints a short interpretation.}
+
+\item{format}{Output format for an optional viewing table. One of
+\code{"tibble"}, \code{"gt"}, or \code{"flextable"}. The default
+\code{"tibble"} keeps the original list structure.}
 }
 \value{
-A list with the following elements:
-\itemize{
-  \item \code{model_no_interaction}: The model without the interaction term.
-  \item \code{model_with_interaction}: The model with the interaction term.
-  \item \code{p_value}: The p-value for interaction (based on selected test).
-  \item \code{interpretation}: A brief text interpretation if
-  \code{verbose = TRUE}.
-}
+A list with model objects, formulas, p-value, decision, and a
+  one-row summary tibble. When \code{format} is \code{"gt"} or
+  \code{"flextable"}, the list also includes \code{table}.
 }
 \description{
-This function fits two models—one with and one without an interaction term
-between an exposure and a potential effect modifier—
-and compares them using either a likelihood ratio test (LRT) or Wald test.
-It is useful for assessing whether there is statistical evidence of
-interaction (effect modification).
+Fits two models, one with and one without an interaction term between an
+exposure and a potential effect modifier. The models are compared using a
+likelihood ratio test or Wald test to assess statistical evidence of
+interaction.
 }
-\examples{
-data <- data_PimaIndiansDiabetes
-
+\details{
+Use this function when the interaction is planned or clinically/causally
+motivated and you want a focused model comparison. Mantel-Haenszel estimation
+is not used here because this function tests an explicit interaction term in
+a regression model. For broader screening of candidate confounders or effect
+modifiers, including Mantel-Haenszel-supported checks when appropriate, use
+\code{\link{identify_confounder}()}.
+}
+\seealso{
+\code{\link{identify_confounder}()} for broader confounding and
+  effect-modification screening.
 }

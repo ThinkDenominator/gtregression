@@ -5,6 +5,9 @@
 #'
 #' @param tbl A fitted \code{gtregression} object.
 #' @param title Optional plot title.
+#' @param caption Optional plot caption. If \code{NULL}, an adjustment note is
+#'   added automatically for adjusted \code{multi_reg()} objects when
+#'   \code{show_adjustment_note = TRUE}.
 #' @param ref_line Optional numeric value for the reference line.
 #'   Defaults to 0 for linear models and 1 otherwise.
 #' @param order_y Optional character vector specifying exposure order.
@@ -18,6 +21,8 @@
 #' @param sig_color Optional fill color for significant points.
 #' @param sig_errorbar_color Optional color for significant error bars.
 #' @param alpha Significance level for linear models when \code{p.value} is available.
+#' @param show_adjustment_note Logical; if \code{TRUE}, add a default caption
+#'   describing \code{adjust_for} variables when available.
 #'
 #' @return A \code{ggplot2} object.
 #' @importFrom rlang .data
@@ -25,6 +30,7 @@
 #' @export
 plot_reg <- function(tbl,
                      title = NULL,
+                     caption = NULL,
                      ref_line = NULL,
                      order_y = NULL,
                      log_x = FALSE,
@@ -36,10 +42,23 @@ plot_reg <- function(tbl,
                      show_ref = TRUE,
                      sig_color = NULL,
                      sig_errorbar_color = NULL,
-                     alpha = 0.05) {
+                     alpha = 0.05,
+                     show_adjustment_note = TRUE) {
 
   if (!inherits(tbl, "gtregression")) {
     stop("`tbl` must be a gtregression object.", call. = FALSE)
+  }
+
+  source_type <- tbl$source
+  approach <- .normalize_approach(tbl$approach)
+
+  if (is.null(source_type) || is.null(approach)) {
+    stop("`tbl` must contain `source` and `approach`.", call. = FALSE)
+  }
+
+  if (identical(source_type, "stratified_multi_reg") ||
+      identical(source_type, "stratified_uni_reg")) {
+    stop("plot_reg() does not support stratified objects.", call. = FALSE)
   }
 
   if (is.null(tbl$table_body) || !nrow(tbl$table_body)) {
@@ -52,17 +71,6 @@ plot_reg <- function(tbl,
 
   df_body <- tbl$table_body
   df_disp <- tbl$table_display
-  source_type <- tbl$source
-  approach <- tbl$approach
-
-  if (is.null(source_type) || is.null(approach)) {
-    stop("`tbl` must contain `source` and `approach`.", call. = FALSE)
-  }
-
-  if (identical(source_type, "stratified_multi_reg") ||
-      identical(source_type, "stratified_uni_reg")) {
-    stop("plot_reg() does not support stratified objects.", call. = FALSE)
-  }
 
   req_body <- c("exposure", "level", "estimate", "conf.low", "conf.high", "p.value", "ref")
   if (!all(req_body %in% names(df_body))) {
@@ -93,7 +101,7 @@ plot_reg <- function(tbl,
 
   base_label <- dplyr::case_when(
     approach == "logit" ~ "Odds Ratio",
-    approach == "log-binomial" ~ "Risk Ratio",
+    approach == "logbinomial" ~ "Risk Ratio",
     approach %in% c("poisson", "negbin") ~ "Incidence Rate Ratio",
     approach == "robpoisson" ~ "Risk Ratio",
     approach == "linear" ~ "Beta Coefficient",
@@ -108,6 +116,8 @@ plot_reg <- function(tbl,
   if (log_x) {
     x_axis_label <- paste0(x_axis_label, " (log scale)")
   }
+
+  caption <- .plot_adjustment_caption(tbl, caption, show_adjustment_note)
 
   # ---- build header order from table_display ----
   header_rows <- df_disp[df_disp$is_header, , drop = FALSE]
@@ -307,7 +317,7 @@ plot_reg <- function(tbl,
       limits = levels(plot_df$row_id),
       drop = FALSE
     ) +
-    ggplot2::labs(title = title, x = x_axis_label, y = NULL) +
+    ggplot2::labs(title = title, x = x_axis_label, y = NULL, caption = caption) +
     ggplot2::theme_minimal(base_size = base_size) +
     ggplot2::theme(
       panel.grid.major.y = ggplot2::element_blank(),
@@ -330,6 +340,25 @@ plot_reg <- function(tbl,
   }
 
   p
+}
+
+#' Plot adjustment caption helper (internal)
+#' @keywords internal
+#' @noRd
+.plot_adjustment_caption <- function(tbl, caption = NULL, show_adjustment_note = TRUE) {
+  if (!is.null(caption)) {
+    return(caption)
+  }
+  if (!isTRUE(show_adjustment_note)) {
+    return(NULL)
+  }
+
+  adjust_for <- tbl$adjust_for
+  if (is.null(adjust_for) || !length(adjust_for)) {
+    return(NULL)
+  }
+
+  .adjustment_note(adjust_for)
 }
 
 #' Horizontal CI helper (internal)

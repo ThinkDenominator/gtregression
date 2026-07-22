@@ -18,30 +18,32 @@
 #' Publication-ready summary of categorical and continuous variables
 #' (optionally stratified). Mimics the OG gtsummary style:
 #' * column headers include N, e.g. "Overall, N=200"
-#' * categorical rows shown as n (%)
+#' * categorical rows shown as n (\%)
 #' * continuous rows default to Median (IQR) (footnote reflects summary)
 #'
 #' @param data data.frame
 #' @param exposures character; variables to summarise
 #' @param by optional single grouping variable
 #' @param percent "column" (default) or "row"; aliases like "col"/"rows" accepted
-#' @param digits integer; decimals for % and continuous stats (default 1)
+#' @param digits integer; decimals for \% and continuous stats (default 1)
 #' @param show_missing "ifany" (default) or "no"
 #' @param show_dichotomous "all_levels" (default) or "single_row"
 #' @param show_overall "no" (default), "first", or "last"
 #' @param statistic optional named vector per continuous var:
-#'   values in {"mean","median","mode","count"}
+#'   values in "mean","median","mode","count"
 #'   (default is "median" = Median (IQR))
-#' @param value optional named list for single-row binaries (e.g., list(sex="Female"))
+#' @param value optional named list for single-row binaries (e.g., list(sex="Female"));
+#'   formula entries like list(sex ~ "Female") are also accepted
 #' @param format "gt" (default) or "flextable"
 #' @param theme preset or primitives
 #'
-#' @return list with class c("gtregression","descriptive_table", <engine>):
-#'   \itemize{
-#'     \item $table: gt_tbl or flextable
-#'     \item $table_display: display-ready data
-#'     \item $table_body: long audit data (var/level/type)
-#'     \item metadata fields
+#' @return A list with class \code{c("gtregression", "descriptive_table", ...)}
+#'   containing:
+#'   \describe{
+#'     \item{\code{table}}{A \code{gt_tbl} or \code{flextable}.}
+#'     \item{\code{table_display}}{Display-ready data.}
+#'     \item{\code{table_body}}{Long audit data with variable, level, and type.}
+#'     \item{metadata}{Additional metadata fields.}
 #'   }
 #' @export
 descriptive_table <- function(data,
@@ -58,9 +60,20 @@ descriptive_table <- function(data,
                               theme = c("minimal")) {
 
   # ---- normalize choices (accept aliases) ----
-  percent <- tolower(percent[1])
-  if (percent %in% c("col","cols","column","columns")) percent <- "column"
-  if (percent %in% c("row","rows","rowwise"))          percent <- "row"
+  percent <- .choice_arg(
+    substitute(percent),
+    env = parent.frame(),
+    choices = c("column","row"),
+    aliases = c(col = "column", cols = "column", columns = "column",
+                rows = "row", rowwise = "row")
+  )
+  show_missing <- .choice_arg(substitute(show_missing), env = parent.frame(), choices = c("ifany","no"))
+  show_dichotomous <- .choice_arg(substitute(show_dichotomous), env = parent.frame(), choices = c("all_levels","single_row"))
+  show_overall <- .choice_arg(substitute(show_overall), env = parent.frame(), choices = c("no","first","last"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  theme <- .choice_arg(substitute(theme), env = parent.frame())
+
+  percent <- percent[1]
   show_missing     <- match.arg(tolower(show_missing[1]),     c("ifany","no"))
   show_dichotomous <- match.arg(tolower(show_dichotomous[1]), c("all_levels","single_row"))
   show_overall     <- match.arg(tolower(show_overall[1]),     c("no","first","last"))
@@ -69,7 +82,25 @@ descriptive_table <- function(data,
   theme            <- .resolve_theme_desc(theme)
 
   # ---- checks ----
-  stopifnot(is.character(exposures), length(exposures) >= 1)
+  if (!is.character(exposures) || length(exposures) < 1) {
+    stop("`exposures` must be a non-empty character vector.", call. = FALSE)
+  }
+  if (!is.null(by) && (!is.character(by) || length(by) != 1L)) {
+    stop("`by` must be NULL or a single character variable name.", call. = FALSE)
+  }
+  if (!is.numeric(digits) || length(digits) != 1L || is.na(digits) || digits < 0) {
+    stop("`digits` must be a single non-negative number.", call. = FALSE)
+  }
+  digits <- as.integer(digits)
+  if (!is.null(statistic)) {
+    if (is.null(names(statistic)) || any(!nzchar(names(statistic)))) {
+      stop("`statistic` must be a named vector.", call. = FALSE)
+    }
+    bad_stats <- setdiff(as.character(statistic), c("mean","median","mode","count"))
+    if (length(bad_stats)) {
+      stop("Unsupported statistic: ", paste(bad_stats, collapse = ", "), call. = FALSE)
+    }
+  }
   data <- as.data.frame(data)
   missing_vars <- setdiff(c(exposures, by), names(data))
   if (length(missing_vars)) stop("Variables not found: ", paste(missing_vars, collapse=", "), call.=FALSE)
@@ -80,7 +111,7 @@ descriptive_table <- function(data,
 
   # ---- helpers ----
   fmt_num <- function(x, d = digits) formatC(x, digits = d, format="f", big.mark=",")
-  fmt_pct <- function(p, d = digits) if (is.na(p)) "" else paste0(fmt_num(100*p, d), "%")
+  fmt_pct <- function(p, d = digits) if (is.na(p)) paste0(fmt_num(0, d), "%") else paste0(fmt_num(100*p, d), "%")
   is_binary <- function(x) { ux <- unique(x[!is.na(x)]); length(ux) == 2 }
   pick_single_level <- function(x) {
     ux <- unique(x[!is.na(x)]); if (length(ux) != 2) return(NA_character_)
@@ -99,7 +130,7 @@ descriptive_table <- function(data,
       paste0(fmt_num(m, d), " (", fmt_num(s, d), ")")
     } else if (stat == "median") {
       md <- stats::median(x); q <- stats::quantile(x, c(.25,.75), names=FALSE)
-      paste0(fmt_num(md, d), " (", fmt_num(q[1], d), "–", fmt_num(q[2], d), ")")
+      paste0(fmt_num(md, d), " (", fmt_num(q[1], d), "-", fmt_num(q[2], d), ")")
     } else if (stat == "mode") {
       tab <- sort(table(x), decreasing = TRUE); md <- as.numeric(names(tab)[1])
       paste0(fmt_num(md, d))
@@ -119,8 +150,14 @@ descriptive_table <- function(data,
     idx <- match(v, names(statistic)); if (is.na(idx)) NA_character_ else statistic[[idx]]
   }
   get_single_level <- function(vname) {
-    if (is.null(value) || is.null(names(value))) return(NA_character_)
-    idx <- match(vname, names(value)); if (is.na(idx)) NA_character_ else as.character(value[[idx]])
+    if (is.null(value)) return(NA_character_)
+    if (!is.null(names(value)) && vname %in% names(value)) return(as.character(value[[vname]]))
+    for (entry in value) {
+      if (inherits(entry, "formula") && length(entry) == 3L && identical(as.character(entry[[2]]), vname)) {
+        return(as.character(entry[[3]]))
+      }
+    }
+    NA_character_
   }
 
   # ---- by levels and group Ns (for headers) ----
@@ -139,11 +176,6 @@ descriptive_table <- function(data,
       group_idx   <- append(group_idx,   values = list(Overall = rep(TRUE, nrow(data))), after = where - 1L)
     }
   }
-  group_Ns <- vapply(group_names, function(gn) sum(!is.na(data[[exposures[1]]][group_idx[[gn]]])) , numeric(1))
-  # N in header should reflect total non-missing per group considering all variables;
-  # to mirror gtsummary we use N of the grouping column (or all rows). Safer approach:
-  group_Ns <- vapply(group_names, function(gn) sum(rowSums(!is.na(data[exposures])[group_idx[[gn]], , drop=FALSE]) > 0), numeric(1))
-
   # ---- construct long body (header + levels; NO N CELLS) ----
   body_rows <- list()
   for (v in exposures) {
@@ -363,40 +395,6 @@ descriptive_table <- function(data,
     }
     ft
   }
-  # Build a human label for continuous stats (change if your function differs)
-  cont_label <- "Median (IQR)"  # or compute from your options
-
-  # Auto footnotes for descriptive table
-  .desc_build_notes <- function(by, percent, cont_label, single_row) {
-    notes <- c("Categorical variables shown as n (%).")
-
-    if (!is.null(by)) {
-      if (identical(percent, "row")) {
-        notes <- c(notes, "Percentages are within-row across groups; Overall shows counts for categorical rows.")
-      } else {
-        notes <- c(notes, "Percentages are within-column within groups.")
-      }
-    } else {
-      notes <- c(notes, "Percentages are overall (single column).")
-    }
-
-    notes <- c(notes, paste0("Continuous variables shown as ", cont_label, "."))
-    if (isTRUE(single_row)) {
-      notes <- c(notes, "Binary variables displayed as a single level (n %).")
-    }
-    notes
-  }
-
-  # attach footnotes as an attribute (picked up by merge_tables)
-  desc_notes <- .desc_build_notes(
-    by          = by,
-    percent     = percent,
-    cont_label  = cont_label,
-    single_row  = identical(show_dichotomous, "single_row")
-  )
-
-
-
   tbl <- if (format == "gt") build_gt(display, header_labels, foot, theme)
   else                build_flex(display, header_labels, foot, theme)
 
@@ -416,5 +414,3 @@ descriptive_table <- function(data,
   class(res) <- c("gtregression","descriptive_table", engine_class, class(res))
   res
 }
-
-

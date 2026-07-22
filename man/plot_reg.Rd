@@ -7,6 +7,7 @@
 plot_reg(
   tbl,
   title = NULL,
+  caption = NULL,
   ref_line = NULL,
   order_y = NULL,
   log_x = FALSE,
@@ -18,13 +19,18 @@ plot_reg(
   show_ref = TRUE,
   sig_color = NULL,
   sig_errorbar_color = NULL,
-  alpha = 0.05
+  alpha = 0.05,
+  show_adjustment_note = TRUE
 )
 }
 \arguments{
 \item{tbl}{A fitted \code{gtregression} object.}
 
 \item{title}{Optional plot title.}
+
+\item{caption}{Optional plot caption. If \code{NULL}, an adjustment note is
+added automatically for adjusted \code{multi_reg()} objects when
+\code{show_adjustment_note = TRUE}.}
 
 \item{ref_line}{Optional numeric value for the reference line.
 Defaults to 0 for linear models and 1 otherwise.}
@@ -50,6 +56,9 @@ Defaults to 0 for linear models and 1 otherwise.}
 \item{sig_errorbar_color}{Optional color for significant error bars.}
 
 \item{alpha}{Significance level for linear models when \code{p.value} is available.}
+
+\item{show_adjustment_note}{Logical; if \code{TRUE}, add a default caption
+describing \code{adjust_for} variables when available.}
 }
 \value{
 A \code{ggplot2} object.

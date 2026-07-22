@@ -1,77 +1,149 @@
 url: https://thinkdenominator.github.io/gtregression/
 template:
   bootstrap: 5
-  bootswatch: flatly
+  bootswatch: zephyr
   logo: man/figures/gtregression_hex.png
 
 home:
   title: gtregression
-  description: Publication-ready regression tables made easy
+  description: Publication-ready regression tables and plots for logistic, log-binomial, Poisson, robust Poisson, negative binomial, and linear models
   links:
+    - text: Start Here
+      href: articles/gtregression-intro.html
+    - text: Visualise Regression Results
+      href: articles/visualise-results.html
     - text: Function Overview
       href: reference/index.html
-    - text: Why we built gtregression
-      href: articles/gtregression-intro.html
 
 navbar:
   structure:
     left: [home, reference, articles]
     right: [github]
+  components:
+    home:
+      text: Get started
+      href: index.html
+    reference:
+      text: Functions
+      href: reference/index.html
+    articles:
+      text: Workflows
+      menu:
+      - text: Start Here
+        href: articles/gtregression-intro.html
+      - text: Tables
+        href: articles/descriptive-tables.html
+      - text: Regression
+        href: articles/regression-tables.html
+      - text: Visualise
+        href: articles/visualise-results.html
+      - text: Stratify
+        href: articles/stratified-analysis.html
+      - text: Diagnostics
+        href: articles/diagnostics-selection.html
+      - text: Interpret
+        href: articles/confounding-interaction.html
+      - text: Export
+        href: articles/customize-export.html
+
+articles:
+  - title: "Start Here"
+    navbar: "Start Here"
+    contents:
+      - gtregression-intro
+
+  - title: "Tables"
+    navbar: "Tables"
+    contents:
+      - descriptive-tables
+      - regression-tables
+
+  - title: "Visualise"
+    navbar: "Visualise"
+    contents:
+      - visualise-results
+
+  - title: "Stratify"
+    navbar: "Stratify"
+    contents:
+      - stratified-analysis
+
+  - title: "Diagnostics"
+    navbar: "Diagnostics"
+    contents:
+      - diagnostics-selection
+
+  - title: "Interpret"
+    navbar: "Interpret"
+    contents:
+      - confounding-interaction
+
+  - title: "Export"
+    navbar: "Export"
+    contents:
+      - customize-export
 
 reference:
-  - title: "Descriptive & Compatibility Tools"
-    desc: "Summarise and check data compatibility"
+  - title: "Describe and Check Data"
+    desc: "Create baseline descriptive tables and inspect variable compatibility before modeling."
     contents:
       - descriptive_table
       - dissect
 
-  - title: "Regression Functions"
-    desc: "Fit univariate and multivariable models"
+  - title: "Regression Tables"
+    desc: "Create publication-ready crude, adjusted, and multivariable regression tables."
     contents:
       - uni_reg
       - multi_reg
 
-  - title: "Regression Functions by stratifier"
-    desc: "Fit univariate and multivariable models by stratifier"
+  - title: "Stratified Regression Tables"
+    desc: "Repeat univariable or adjusted models within levels of a stratifier."
     contents:
       - stratified_uni_reg
       - stratified_multi_reg
 
-  - title: "Model Selection & Diagnostics"
-    desc: "Model selection, collinearity, and convergence tools"
+  - title: "Visualise Regression Results"
+    desc: "Turn regression tables into forest plots and publication-style forest tables."
     contents:
-      - select_models
-      - check_collinearity
-      - check_convergence
+      - plot_reg
+      - plot_reg_combine
+      - forest_df
+      - forest_reg
 
-  - title: "Confounding & Interaction"
-    desc: "Identify confounders and effect modifiers"
+  - title: "Diagnostics and Model Selection"
+    desc: "Check convergence, collinearity, and candidate model paths."
+    contents:
+      - check_convergence
+      - check_collinearity
+      - select_models
+
+  - title: "Confounding and Interaction"
+    desc: "Support interpretation with confounding and interaction checks."
     contents:
       - identify_confounder
       - interaction_models
 
-  - title: "Tables & Customization"
-    desc: "Customize regression output tables"
+  - title: "Modify, Merge, and Export"
+    desc: "Polish tables, combine outputs, and save tables, plots, or Word reports."
     contents:
       - modify_table
+      - merge_tables
       - save_table
       - save_docx
-      - merge_tables
-
-  - title: "Plotting"
-    desc: "Forest plots of regression models"
-    contents:
-      - plot_reg
-      - plot_reg_combine
       - save_plot
 
-  - title: "Example Datasets"
-    desc: "Built-in datasets for demo and testing"
+  - title: "Object Helpers"
+    desc: "Inspect and print objects returned by gtregression functions."
     contents:
+      - "$.gtregression"
+      - print.gtregression
+
+  - title: "Example Datasets"
+    desc: "Built-in datasets for examples, teaching, and tests."
+    contents:
+      - data_birthwt
       - data_PimaIndiansDiabetes
       - data_gt_quin
-      - data_birthwt
       - data_epilepsy
       - data_infertility
       - data_lungcancer
-

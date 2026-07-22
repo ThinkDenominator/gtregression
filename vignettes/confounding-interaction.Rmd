@@ -1,0 +1,100 @@
+---
+title: "Confounding and Interaction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Confounding and Interaction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Confounding and Interaction
+
+Confounding asks whether adjustment changes the exposure effect. Interaction
+asks whether the exposure effect differs across another variable.
+
+These checks are screening aids for viewing and organising results. Use DAGs,
+subject-matter knowledge, and study design to decide which variables are
+confounders or effect modifiers. Automated change-in-estimate and interaction
+checks should not be used as the sole basis for model adjustment.
+
+## Which Function Should I Use?
+
+| Question | Use | Why |
+|---|---|---|
+| Could these candidate variables be confounders or effect modifiers? | `identify_confounder()` | Screens crude, adjusted, Mantel-Haenszel, and interaction signals together. |
+| Does this planned interaction term improve the model? | `interaction_models()` | Compares models with and without `exposure:effect_modifier` using LRT or Wald tests. |
+| Do I need a Mantel-Haenszel estimate? | `identify_confounder(method = mh)` or `identify_confounder(method = both)` | MH is a stratified pooled estimate for eligible binary/categorical settings, not a formal interaction-term test. |
+
+A practical workflow is:
+
+1. Use DAGs, prior literature, and study design to list important variables.
+2. Use `identify_confounder()` to organise screening evidence for candidate
+   confounders or effect modifiers.
+3. Use `interaction_models()` when you have a planned interaction hypothesis.
+4. If interaction is important, consider stratified reporting with
+   `stratified_uni_reg()` or `stratified_multi_reg()`.
+
+```{r ci-setup, message=FALSE, warning=FALSE}
+library(gtregression)
+library(dplyr)
+
+data("data_birthwt", package = "gtregression")
+
+birthwt_data <- data_birthwt |>
+  mutate(
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+  )
+```
+
+## Identify Confounders
+
+Use `method = change` for the model-based change-in-estimate method. Use
+`method = mh` or `method = both` when Mantel-Haenszel is appropriate.
+The output is intentionally tidy rather than publication-first.
+
+```{r confounder, message=FALSE, warning=FALSE}
+confounder_check <- identify_confounder(
+  data = birthwt_data,
+  outcome = "low",
+  exposure = "smoke",
+  potential_confounder = c("race", "ht"),
+  approach = logit,
+  method = both
+)
+
+confounder_check$summary
+```
+
+## Test Interaction
+
+`interaction_models()` compares models with and without the interaction term.
+It is deliberately model-based and uses `LRT` or `Wald`, not
+Mantel-Haenszel. Use it when the interaction term is planned or supported by
+clinical, causal, or subject-matter reasoning.
+
+```{r interaction, message=FALSE, warning=FALSE}
+interaction_check <- interaction_models(
+  data = birthwt_data,
+  outcome = "low",
+  exposure = "smoke",
+  effect_modifier = "race",
+  covariates = c("age", "lwt"),
+  approach = logit,
+  test = LRT,
+  format = gt
+)
+
+interaction_check$table
+```
+
+## What To Inspect
+
+- `identify_confounder()`: `$summary`, `$table`, and `$details`.
+- `interaction_models()`: `$summary`, `$table`, `$p_value`, `$decision`, and
+  fitted model objects.
+- Use subject-matter knowledge with these outputs. The functions support
+  interpretation; they do not replace the study design.

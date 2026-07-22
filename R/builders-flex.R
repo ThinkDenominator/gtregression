@@ -124,7 +124,7 @@
   if ("compact" %in% theme) ft <- flextable::padding(ft, padding = 2, part = "body")
 
   ft <- flextable::autofit(ft)
-  ft <- flextable::add_footer_lines(ft, values = c(.abbrev_note)) # caller passes a vector; see orchestrator
+  ft <- flextable::add_footer_lines(ft, values = footnotes)
   ft <- flextable::align(ft, part = "footer", align = "left")
   ft
 }

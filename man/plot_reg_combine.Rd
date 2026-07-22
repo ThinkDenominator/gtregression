@@ -9,6 +9,7 @@ plot_reg_combine(
   tbl_multi,
   title_uni = NULL,
   title_multi = NULL,
+  caption = NULL,
   ref_line = NULL,
   order_y = NULL,
   log_x = FALSE,
@@ -22,7 +23,8 @@ plot_reg_combine(
   breaks_uni = NULL,
   xlim_multi = NULL,
   breaks_multi = NULL,
-  alpha = 0.05
+  alpha = 0.05,
+  show_adjustment_note = TRUE
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ plot_reg_combine(
 \item{tbl_multi}{A multivariable \code{gtregression} object.}
 
 \item{title_uni, title_multi}{Optional panel titles.}
+
+\item{caption}{Optional combined plot caption. If \code{NULL}, an adjustment
+note is added automatically from \code{tbl_multi} when
+\code{show_adjustment_note = TRUE}.}
 
 \item{ref_line}{Optional numeric reference line. If \code{NULL}, uses 0 for
 linear models and 1 otherwise.}
@@ -57,6 +63,9 @@ multivariable panel.}
 
 \item{alpha}{Significance level for linear models when \code{p.value} is
 available.}
+
+\item{show_adjustment_note}{Logical; if \code{TRUE}, add a default caption
+describing \code{adjust_for} variables from \code{tbl_multi} when available.}
 }
 \value{
 A \code{patchwork} object with two \code{ggplot2} panels.

@@ -28,7 +28,7 @@ descriptive_table(
 
 \item{percent}{"column" (default) or "row"; aliases like "col"/"rows" accepted}
 
-\item{digits}{integer; decimals for % and continuous stats (default 1)}
+\item{digits}{integer; decimals for \% and continuous stats (default 1)}
 
 \item{show_missing}{"ifany" (default) or "no"}
 
@@ -37,28 +37,30 @@ descriptive_table(
 \item{show_overall}{"no" (default), "first", or "last"}
 
 \item{statistic}{optional named vector per continuous var:
-values in {"mean","median","mode","count"}
+values in "mean","median","mode","count"
 (default is "median" = Median (IQR))}
 
-\item{value}{optional named list for single-row binaries (e.g., list(sex="Female"))}
+\item{value}{optional named list for single-row binaries (e.g., list(sex="Female"));
+formula entries like list(sex ~ "Female") are also accepted}
 
 \item{format}{"gt" (default) or "flextable"}
 
 \item{theme}{preset or primitives}
 }
 \value{
-list with class c("gtregression","descriptive_table", <engine>):
-  \itemize{
-    \item $table: gt_tbl or flextable
-    \item $table_display: display-ready data
-    \item $table_body: long audit data (var/level/type)
-    \item metadata fields
+A list with class \code{c("gtregression", "descriptive_table", ...)}
+  containing:
+  \describe{
+    \item{\code{table}}{A \code{gt_tbl} or \code{flextable}.}
+    \item{\code{table_display}}{Display-ready data.}
+    \item{\code{table_body}}{Long audit data with variable, level, and type.}
+    \item{metadata}{Additional metadata fields.}
   }
 }
 \description{
 Publication-ready summary of categorical and continuous variables
 (optionally stratified). Mimics the OG gtsummary style:
 * column headers include N, e.g. "Overall, N=200"
-* categorical rows shown as n (%)
+* categorical rows shown as n (\%)
 * continuous rows default to Median (IQR) (footnote reflects summary)
 }

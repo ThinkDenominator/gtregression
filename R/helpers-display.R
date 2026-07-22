@@ -4,7 +4,7 @@
   stopifnot(all(c("exposure","level","estimate","conf.low","conf.high","p.value","ref") %in% names(td)))
   fmt_est_ci <- function(est, lo, hi, digits = 2) {
     f <- function(x) formatC(x, digits = digits, format = "f", big.mark = ",")
-    paste0(f(est), " (", f(lo), "–", f(hi), ")")
+    paste0(f(est), " (", f(lo), "-", f(hi), ")")
   }
   fmt_p <- function(p) ifelse(is.na(p), "", ifelse(p < 0.001, "<0.001", formatC(p, format = "f", digits = 3)))
   complete_n <- function(d, y, x) sum(stats::complete.cases(d[, c(y, x), drop = FALSE]))
@@ -31,7 +31,7 @@
 
       lev <- df
       lev$Characteristic <- ifelse(lev$ref, lev$level, paste0("  ", lev$level))
-      lev[[effect_label]] <- ifelse(lev$ref, "—",
+      lev[[effect_label]] <- ifelse(lev$ref, "--",
                                     fmt_est_ci(lev$estimate, lev$conf.low, lev$conf.high))
       lev[["p-value"]] <- ifelse(lev$ref, "", fmt_p(lev$p.value))
       lev$N <- NA_integer_

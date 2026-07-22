@@ -20,7 +20,7 @@ uni_reg(
 
 \item{exposures}{character vector; exposure column names}
 
-\item{approach}{one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"}, \code{"linear"}}
+\item{approach}{one of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"}, \code{"linear"}}
 
 \item{format}{one of \code{"gt"} (default) or \code{"flextable"}}
 

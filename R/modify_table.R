@@ -7,6 +7,18 @@
   df <- as.data.frame(display_df, stringsAsFactors = FALSE)
   stopifnot(all(c("Characteristic","is_header") %in% names(df)))
 
+  .must_be_named_character(variable_labels, "variable_labels", allow_null = TRUE)
+  if (!is.null(level_labels) &&
+      (!is.list(level_labels) || is.null(names(level_labels)) ||
+       any(!nzchar(names(level_labels))))) {
+    stop("`level_labels` must be a named list.", call. = FALSE)
+  }
+  if (!is.null(level_labels)) {
+    for (nm in names(level_labels)) {
+      .must_be_named_character(level_labels[[nm]], paste0("level_labels$", nm), allow_null = FALSE)
+    }
+  }
+
   # carry variable name down so we can match levels
   var_id <- character(nrow(df))
   cur <- NA_character_
@@ -48,27 +60,118 @@
   df
 }
 
+#' Validate named character vector inputs
+#' @keywords internal
+#' @noRd
+.must_be_named_character <- function(x, arg, allow_null = TRUE) {
+  if (is.null(x) && isTRUE(allow_null)) {
+    return(invisible(TRUE))
+  }
+  if (!is.character(x) || is.null(names(x)) || any(!nzchar(names(x)))) {
+    stop("`", arg, "` must be a named character vector.", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+#' Normalize common header aliases to visible table_display names
+#' @keywords internal
+#' @noRd
+.normalize_header_labels <- function(header_labels, display_df, approach = NULL) {
+  .must_be_named_character(header_labels, "header_labels", allow_null = TRUE)
+  if (is.null(header_labels)) {
+    return(NULL)
+  }
+
+  out <- header_labels
+  effect_cols <- setdiff(names(display_df), c("Characteristic", "is_header", "N", "p-value"))
+  effect_col <- if (length(effect_cols) == 1L) effect_cols else NA_character_
+  aliases <- c(
+    estimate = effect_col,
+    p.value = "p-value",
+    p_value = "p-value",
+    pvalue = "p-value",
+    N = "N"
+  )
+
+  for (nm in names(out)) {
+    if (!nm %in% names(display_df) && nm %in% names(aliases) && !is.na(aliases[[nm]])) {
+      names(out)[names(out) == nm] <- aliases[[nm]]
+    }
+  }
+
+  bad <- setdiff(names(out), names(display_df))
+  if (length(bad)) {
+    stop(
+      "`header_labels` contains columns not found in the table: ",
+      paste(bad, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  out
+}
+
+#' Validate logical scalar inputs
+#' @keywords internal
+#' @noRd
+.must_be_flag <- function(x, arg) {
+  if (!is.logical(x) || length(x) != 1L || is.na(x)) {
+    stop("`", arg, "` must be TRUE or FALSE.", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 # ---------- main: modify labels/headers/notes and rebuild (gtregression only) ----------
 #' Modify Regression/Descriptive Tables (labels, headers, caption, notes)
 #'
-#' Works with objects created by this package (class `"gtregression"`:
-#' `uni_reg()`, `multi_reg()`, `descriptive_table()`, `merge_tables()`).
-#' No `gtsummary` dependency or fallback.
+#' Works with objects created by this package (class \code{"gtregression"}):
+#' \code{uni_reg()}, \code{multi_reg()}, \code{descriptive_table()},
+#' and \code{merge_tables()}.
+#' No \pkg{gtsummary} dependency or fallback.
 #'
-#' @param gt_table Table object produced by this package (must contain `$table_display`).
-#' @param variable_labels Named character vector: `c(old_var = "New label", ...)`.
+#' @param gt_table Table object produced by this package (must contain
+#'   \code{$table_display}).
+#' @param variable_labels Named character vector, for example
+#'   \code{c(old_var = "New label", ...)}.
 #' @param level_labels Named list for factor levels:
-#'   `list(var1 = c(old = "New", ...), var2 = c(...))`.
-#' @param header_labels Named vector to rename visible headers, e.g.
-#'   `c("OR (95% CI)" = "Crude OR", "p-value" = "P")`.
+#'   \code{list(var1 = c(old = "New", ...), var2 = c(...))}.
+#' @param header_labels Named character vector to rename visible headers, e.g.
+#'   \code{c("OR (95\% CI)" = "Crude OR", "p-value" = "P")}. Common aliases
+#'   such as \code{estimate}, \code{p.value}, and \code{N} are also accepted.
 #' @param caption Optional caption/title.
 #' @param bold_labels Logical; bold variable (header) rows in the body.
 #' @param bold_levels Logical; bold factor level rows in the body.
-#' @param remove_N Logical; if `TRUE`, drops the `N` column for univariate package tables.
-#' @param remove_N_obs Logical; if `TRUE`, suppresses multivariable complete-case footnote.
-#' @param remove_abbreviations Logical; if `TRUE`, removes the Abbreviations footnote line.
+#' @param remove_N Logical; if \code{TRUE}, drops the \code{N} column for
+#'   univariate package tables.
+#' @param remove_N_obs Logical; if \code{TRUE}, suppresses multivariable
+#'   complete-case footnote.
+#' @param remove_abbreviations Logical; if \code{TRUE}, removes the
+#'   Abbreviations footnote line.
 #' @param caveat Optional extra footnote.
 #' @return The modified table object (same class as input).
+#'
+#' @examples
+#' birthwt_data <- data_birthwt |>
+#'   dplyr::mutate(
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+#'     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+#'   )
+#'
+#' tbl <- uni_reg(
+#'   data = birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("age", "smoke", "ht"),
+#'   approach = logit
+#' )
+#'
+#' modify_table(
+#'   tbl,
+#'   variable_labels = c(age = "Maternal age", smoke = "Smoking"),
+#'   level_labels = list(smoke = c(Yes = "Smoker")),
+#'   header_labels = c(estimate = "Crude OR", p.value = "P"),
+#'   caption = "Univariable regression for low birth weight"
+#' )$table
 #' @export
 modify_table <- function(gt_table,
                          variable_labels = NULL,
@@ -90,12 +193,28 @@ modify_table <- function(gt_table,
          call. = FALSE)
   }
 
+  .must_be_named_character(variable_labels, "variable_labels", allow_null = TRUE)
+  .must_be_named_character(header_labels, "header_labels", allow_null = TRUE)
+  .must_be_flag(bold_labels, "bold_labels")
+  .must_be_flag(bold_levels, "bold_levels")
+  .must_be_flag(remove_N, "remove_N")
+  .must_be_flag(remove_N_obs, "remove_N_obs")
+  .must_be_flag(remove_abbreviations, "remove_abbreviations")
+  if (!is.null(caption) && (!is.character(caption) || length(caption) != 1L || is.na(caption))) {
+    stop("`caption` must be NULL or a single character string.", call. = FALSE)
+  }
+  if (!is.null(caveat) && (!is.character(caveat) || length(caveat) != 1L || is.na(caveat))) {
+    stop("`caveat` must be NULL or a single character string.", call. = FALSE)
+  }
+
   # --------- relabel display safely ----------
   tbl$table_display <- .relabel_display(
     tbl$table_display,
     variable_labels = variable_labels,
     level_labels    = level_labels
   )
+
+  header_labels <- .normalize_header_labels(header_labels, tbl$table_display, tbl$approach)
 
   # --------- optionally drop N column (for uni tables) ----------
   if (isTRUE(remove_N) && "N" %in% names(tbl$table_display)) {
@@ -136,6 +255,10 @@ modify_table <- function(gt_table,
   # user caveat last
   if (!is.null(caveat) && nzchar(caveat)) footnotes <- c(footnotes, caveat)
   footnotes <- unique(footnotes[nzchar(footnotes)])
+  tbl$footnotes <- footnotes
+  if (!is.null(caption)) {
+    tbl$caption <- caption
+  }
 
   # --------- reorder visible columns for univariate: N → Effect → p-value ----------
   reorder_univariate_cols <- function(display_df) {

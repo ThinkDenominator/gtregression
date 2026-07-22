@@ -12,6 +12,9 @@
 #' - parts, spanners (for merged tables)
 #' - by, levels (for descriptive tables)
 #'
+#' @param x A \code{gtregression} object.
+#' @param name Field name to access.
+#'
 #' @export
 `$.gtregression` <- function(x, name) {
   # avoid recursive calls by using [[ ]] only

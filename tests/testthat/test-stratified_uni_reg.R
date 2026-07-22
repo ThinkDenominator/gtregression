@@ -1,179 +1,204 @@
-test_that("stratified_uni_reg returns a gtsummary tbl_merge object with logit", {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
-    mutate(
-      bmi = factor(case_when(
-        mass < 25 ~ "Normal",
-        mass >= 25 & mass < 30 ~ "Overweight",
-        mass >= 30 ~ "Obese"
-      ), levels = c("Normal", "Overweight", "Obese")),
-      age_cat = factor(case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"
-      ), levels = c("Young", "Middle-aged", "Older")),
-      glucose_cat = factor(case_when(
-        glucose < 140 ~ "Normal",
-        glucose >= 140 ~ "High"
-      ), levels = c("Normal", "High"))
-    )
-
-  result <- suppressWarnings(
-    stratified_uni_reg(
-      data = pima_data,
-      outcome = "diabetes",
-      exposures = c("age_cat", "bmi"),
-      stratifier = "glucose_cat",
-      approach = "logit"
-    )
-  )
-
-  expect_s3_class(result, "tbl_merge")
-  expect_true("gtsummary" %in% class(result))
-})
-
-
-test_that("stratified_uni_reg excludes NA values in stratifier", {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      age_cat = factor(ifelse(age < 50, "Under 50", "50+")),
-      glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal")),
-      bmi = factor(ifelse(mass >= 30, "Obese", "Not obese"))
-    )
-
-  pima_data$glucose_cat[1:5] <- NA # introduce missing
-
-  result <- suppressWarnings(
-    stratified_uni_reg(
-      data = pima_data,
-      outcome = "diabetes",
-      exposures = c("age_cat", "bmi"),
-      stratifier = "glucose_cat",
-      approach = "logit"
-    )
-  )
-
-  expect_s3_class(result, "tbl_merge")
-})
-
-
-test_that("stratified_uni_reg errors for invalid inputs", {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal"))
-    )
-
-  expect_error(
-    stratified_uni_reg(
-      data = pima_data,
-      outcome = "diabetes",
-      exposures = c("invalid_var"),
-      stratifier = "glucose_cat",
-      approach = "logit"
-    ),
-    "One or more exposure variables were not found in the dataset."
-  )
-
-  expect_error(
-    stratified_uni_reg(
-      data = pima_data,
-      outcome = "diabetes",
-      exposures = c("age"),
-      stratifier = "not_in_data",
-      approach = "logit"
-    ),
-    "Stratifier not found in dataset."
-  )
-})
-
-
-test_that("stratified_uni_reg works with robpoisson", {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      age_cat = factor(ifelse(age < 50, "Under 50", "50+")),
-      glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal")),
-      bmi = factor(ifelse(mass >= 30, "Obese", "Not obese"))
-    )
-
-  result <- suppressWarnings(
-    stratified_uni_reg(
-      data = pima_data,
-      outcome = "diabetes",
-      exposures = c("age_cat", "bmi"),
-      stratifier = "glucose_cat",
-      approach = "robpoisson"
-    )
-  )
-
-  expect_s3_class(result, "tbl_merge")
-})
-
-test_that("stratified_uni_reg works with negbin", {
-  skip_if_not_installed("MASS")
-
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
+birthwt_strata_uni_data <- function() {
+  data_birthwt |>
     dplyr::mutate(
-      age_cat = dplyr::case_when(
-        age < 30 ~ "Young",
-        age >= 30 & age < 50 ~ "Middle-aged",
-        age >= 50 ~ "Older"
-      ),
-      age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
-      bmi_cat = dplyr::case_when(
-        mass < 25 ~ "Normal",
-        mass >= 25 & mass < 30 ~ "Overweight",
-        mass >= 30 ~ "Obese"
-      ),
-      bmi_cat = factor(bmi_cat, levels = c("Normal", "Overweight", "Obese")),
-      glucose_cat = factor(ifelse(glucose >= 140, "High", "Normal"))
+      race = factor(race, levels = c(1, 2, 3),
+                    labels = c("White", "Black", "Other")),
+      smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+      ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+      ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+      low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+      ptl_cat = ifelse(ptl > 0, "Yes", "No"),
+      ftv_cat = dplyr::case_when(
+        ftv == 0 ~ "None",
+        ftv == 1 ~ "One",
+        ftv >= 2 ~ "Two or more"
+      )
     ) |>
-    dplyr::filter(complete.cases(age_cat, bmi_cat, glucose_cat))
+    dplyr::mutate(
+      ptl_cat = factor(ptl_cat, levels = c("No", "Yes")),
+      ftv_cat = factor(ftv_cat, levels = c("None", "One", "Two or more"))
+    )
+}
 
-  result <- suppressWarnings(
+test_that("stratified_uni_reg returns a gtregression object for logit models", {
+  df <- birthwt_strata_uni_data()
+
+  res <- suppressMessages(
     stratified_uni_reg(
-      data = pima_data,
-      outcome = "glucose",
-      exposures = c("bmi_cat"),
-      stratifier = "age_cat",
-      approach = "negbin"
+      data = df,
+      outcome = "low",
+      exposures = c("age", "lwt", "smoke", "ht"),
+      stratifier = "race",
+      approach = logit,
+      format = gt
     )
   )
 
-  expect_s3_class(result, "tbl_merge")
-  expect_true("stratified_uni_reg" %in% class(result))
+  expect_s3_class(res, "gtregression")
+  expect_s3_class(res, "stratified_uni_reg")
+  expect_s3_class(res, "gt_strata_uni")
+  expect_s3_class(res$table, "gt_tbl")
+  expect_equal(res$approach, "logit")
+  expect_equal(res$format, "gt")
+  expect_equal(res$source, "stratified_uni_reg")
+  expect_equal(res$by, "race")
+  expect_equal(res$levels, c("White", "Black", "Other"))
+  expect_named(
+    res,
+    c("table", "table_display", "per_stratum", "models",
+      "model_summaries", "reg_check", "by", "levels", "approach",
+      "format", "source")
+  )
+  expect_named(res$per_stratum, c("White", "Black", "Other"))
+  expect_true(all(vapply(res$per_stratum, inherits, logical(1), what = "uni_reg")))
+  expect_true(all(c("Characteristic", "is_header", "..N__White",
+                    "..eff__White", "..p__White") %in% names(res$table_display)))
 })
 
+test_that("stratified_uni_reg preserves factor level order and excludes missing strata", {
+  df <- birthwt_strata_uni_data()
+  df$race <- factor(df$race, levels = c("Other", "White", "Black"))
+  df$race[1:3] <- NA
 
-
-test_that("stratified_uni_reg errors when no valid strata exist", {
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  pima_data <- PimaIndiansDiabetes2 |>
-    mutate(
-      diabetes = ifelse(diabetes == "pos", 1, 0),
-      glucose_cat = NA # All NA in stratifier
+  res <- suppressMessages(
+    stratified_uni_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("age", "smoke"),
+      stratifier = "race",
+      approach = "logit"
     )
+  )
+
+  expect_equal(res$levels, c("Other", "White", "Black"))
+  expect_named(res$per_stratum, c("Other", "White", "Black"))
+  expect_true(all(!grepl("NA", names(res$table_display), fixed = TRUE)))
+})
+
+test_that("stratified_uni_reg accepts bare and quoted options", {
+  df <- birthwt_strata_uni_data()
+
+  bare <- suppressMessages(
+    stratified_uni_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("age", "smoke"),
+      stratifier = "race",
+      approach = logit,
+      format = gt,
+      theme = clinical
+    )
+  )
+  quoted <- suppressMessages(
+    stratified_uni_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("age", "smoke"),
+      stratifier = "race",
+      approach = "logit",
+      format = "gt",
+      theme = "clinical"
+    )
+  )
+
+  expect_equal(bare$approach, quoted$approach)
+  expect_equal(bare$format, quoted$format)
+  expect_equal(bare$table_display, quoted$table_display)
+})
+
+test_that("stratified_uni_reg supports flextable output", {
+  skip_if_not_installed("flextable")
+
+  df <- birthwt_strata_uni_data()
+
+  res <- suppressMessages(
+    stratified_uni_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("age", "smoke"),
+      stratifier = "race",
+      approach = logit,
+      format = flextable
+    )
+  )
+
+  expect_s3_class(res, "ft_strata_uni")
+  expect_s3_class(res$table, "flextable")
+  expect_equal(res$format, "flextable")
+})
+
+test_that("stratified_uni_reg returns diagnostics for linear models", {
+  df <- birthwt_strata_uni_data()
+
+  res <- suppressMessages(
+    stratified_uni_reg(
+      data = df,
+      outcome = "bwt",
+      exposures = c("age", "lwt", "smoke"),
+      stratifier = "race",
+      approach = linear
+    )
+  )
+
+  expect_s3_class(res, "stratified_uni_reg")
+  expect_true(any(grepl("..eff__White", names(res$table_display), fixed = TRUE)))
+  expect_equal(res$approach, "linear")
+  expect_true(all(vapply(res$reg_check, is.list, logical(1))))
+  expect_true("age" %in% names(res$reg_check$White))
+  expect_true("Test" %in% names(res$reg_check$White$age))
+})
+
+test_that("stratified_uni_reg validates missing variables and outcome types", {
+  df <- birthwt_strata_uni_data()
 
   expect_error(
     stratified_uni_reg(
-      data = pima_data,
-      outcome = "diabetes",
-      exposures = c("age", "mass"),
-      stratifier = "glucose_cat",
-      approach = "logit"
+      df,
+      outcome = "low",
+      exposures = "not_here",
+      stratifier = "race",
+      approach = logit
     ),
-    regexp = "No valid models across strata."
+    "exposure variables were not found"
+  )
+  expect_error(
+    stratified_uni_reg(
+      df,
+      outcome = "low",
+      exposures = "age",
+      stratifier = "not_here",
+      approach = logit
+    ),
+    "Stratifier not found"
+  )
+  expect_error(
+    stratified_uni_reg(
+      df,
+      outcome = "bwt",
+      exposures = "age",
+      stratifier = "race",
+      approach = logit
+    ),
+    "requires either a factor variable"
+  )
+})
+
+test_that("stratified_uni_reg errors when no valid strata remain", {
+  df <- birthwt_strata_uni_data()
+  df$race <- NA_character_
+
+  expect_error(
+    suppressWarnings(
+      suppressMessages(
+        stratified_uni_reg(
+          df,
+          outcome = "low",
+          exposures = c("age", "lwt"),
+          stratifier = "race",
+          approach = logit
+        )
+      )
+    ),
+    "No valid models across strata"
   )
 })

@@ -2,7 +2,7 @@
 % Please edit documentation in R/identify_confounder.R
 \name{identify_confounder}
 \alias{identify_confounder}
-\title{Identify Confounders Using the Change-in-Estimate Method}
+\title{Identify confounders and effect modifiers}
 \usage{
 identify_confounder(
   data,
@@ -10,62 +10,81 @@ identify_confounder(
   exposure,
   potential_confounder,
   approach = "logit",
-  threshold = 10
+  method = "change",
+  threshold = 10,
+  emm_threshold = 10,
+  emm_test = c("interaction", "both", "estimate"),
+  interaction_alpha = 0.05,
+  format = c("gt", "flextable"),
+  theme = c("minimal")
 )
 }
 \arguments{
-\item{data}{A data frame containing the variables.}
+\item{data}{A data frame.}
 
-\item{outcome}{The name of the outcome variable (character string).}
+\item{outcome}{Outcome variable name.}
 
-\item{exposure}{The primary exposure variable (character string).}
+\item{exposure}{Exposure variable name(s). Can be a character scalar or vector.}
 
-\item{potential_confounder}{One or more variables to test as potential confounders.}
+\item{potential_confounder}{Candidate confounder/effect-modifier variable
+name(s). Can be a character scalar or vector.}
 
-\item{approach}{The regression modeling approach. One of:
-\code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
-\code{"negbin"}, \code{"robpoisson"}, or \code{"linear"}.}
+\item{approach}{Regression approach. One of \code{"logit"},
+\code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
+\code{"linear"}, or \code{"negbin"}.}
 
-\item{threshold}{Numeric. Percent change threshold to define confounding
-(default = 10). If the absolute percent change exceeds this, the variable
-is flagged as a confounder.}
+\item{method}{Confounding assessment method. One of \code{"change"},
+\code{"mh"}, or \code{"both"}. \code{"change"} compares crude and
+adjusted model estimates. \code{"mh"} compares crude and
+Mantel-Haenszel pooled estimates and is available for binary outcome,
+binary exposure, and categorical strata. \code{"both"} uses either method.}
+
+\item{threshold}{Percent change threshold for confounding assessment.}
+
+\item{emm_threshold}{Threshold for relative spread in stratum-specific
+estimates when using estimate-based effect-modification screening.}
+
+\item{emm_test}{One of \code{"interaction"}, \code{"both"}, or
+\code{"estimate"}.}
+
+\item{interaction_alpha}{Alpha threshold for interaction p-values.}
+
+\item{format}{Output table format. One of \code{"gt"} or
+\code{"flextable"}.}
+
+\item{theme}{Table theme preset or primitives.}
 }
 \value{
-If one confounder is provided, prints crude and adjusted estimates
-with a confounding flag. If multiple are given, returns a tibble with:
+If a single exposure-candidate pair is supplied, returns a detailed list.
+
+If multiple combinations are supplied, returns a list with:
 \describe{
-  \item{covariate}{Name of potential confounder.}
-  \item{crude_est}{Crude effect estimate.}
-  \item{adjusted_est}{Adjusted estimate including the confounder.}
-  \item{pct_change}{Percent change from crude to adjusted.}
-  \item{is_confounder}{Logical: whether confounding threshold is exceeded.}
+  \item{summary}{A tibble with one row per exposure-candidate combination.}
+  \item{details}{A named list of detailed results for each combination.}
 }
 }
 \description{
-Identifies whether one or more variables are confounders by comparing
-the crude and adjusted effect estimates of a primary exposure on an outcome.
-A variable is flagged as a confounder if its inclusion changes the estimate
-by more than a specified threshold (default = 10%).
+Assesses whether one or more candidate variables act as confounders or
+effect modifiers for one or more exposures.
 }
 \details{
-Supports logistic, log-binomial, Poisson, robust Poisson, negative binomial,
-and linear regression approaches.
+The function first assesses possible effect modification using
+stratum-specific estimates and/or an interaction test. If no important
+effect modification is detected, it then assesses confounding using the
+selected method.
 
+This is a screening aid for viewing and organising results. Confounding and
+effect modification should be interpreted using subject-matter knowledge,
+study design, and causal diagrams such as DAGs. Automated change-in-estimate
+and interaction checks should not be used as the sole basis for model
+adjustment.
 
-This method does not evaluate effect modification. Use causal diagrams
-(e.g., DAGs) and subject-matter knowledge to supplement decisions.
-}
-\examples{
-data <- data_PimaIndiansDiabetes
-identify_confounder(
-  data = data,
-  outcome = "glucose",
-  exposure = "insulin",
-  potential_confounder = "age_cat",
-  approach = "linear"
-)
-
+Use this function when you want to screen one or more candidate variables and
+organise crude, adjusted, Mantel-Haenszel, and effect-modification signals in
+one place. For a focused comparison of models with and without a planned
+exposure-by-modifier interaction term, use \code{\link{interaction_models}()}.
 }
 \seealso{
-[check_convergence()], [interaction_models()]
+\code{\link{interaction_models}()} for focused model comparison of
+  a planned interaction term.
 }

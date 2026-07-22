@@ -2,7 +2,7 @@
 % Please edit documentation in R/save_functions.R
 \name{save_plot}
 \alias{save_plot}
-\title{Save a Single Plot}
+\title{Save a single plot}
 \usage{
 save_plot(
   plot,
@@ -14,29 +14,28 @@ save_plot(
 )
 }
 \arguments{
-\item{plot}{A ggplot2 object.}
+\item{plot}{A \code{ggplot2} object.}
 
-\item{filename}{Name of the file to save, with or without extension.}
+\item{filename}{Name of the file to save, with or without extension. If no
+directory is supplied, the file is saved in \code{tempdir()}.}
 
-\item{format}{Output format. One of "png", "pdf", or "jpg".}
+\item{format}{Output format. One of \code{"png"}, \code{"pdf"}, or \code{"jpg"}.}
 
 \item{width}{Width of the saved plot in inches.}
 
 \item{height}{Height of the saved plot in inches.}
 
-\item{dpi}{Resolution of the plot in dots per inch (default is 300).}
+\item{dpi}{Resolution of the plot in dots per inch.}
 }
 \value{
-Saves the file to a temporary directory (if no path is given).
+Saves the file to disk. Invisibly returns the normalized file path.
 }
 \description{
-Saves a ggplot2 plot to a file in PNG, PDF, or JPG format.
+Saves a \code{ggplot2} plot to a file in PNG, PDF, or JPG format.
 }
 \examples{
-\donttest{
-library(ggplot2)
-p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
-  geom_point()
-save_plot(p, filename = file.path(tempdir(), "scatterplot"), format = "png")
-}
+p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
+  ggplot2::geom_point()
+
+save_plot(p, filename = tempfile("plot"), format = png)
 }

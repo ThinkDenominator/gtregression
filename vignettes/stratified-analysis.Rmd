@@ -1,0 +1,73 @@
+---
+title: "Stratified Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Stratified Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Stratified Analysis
+
+Stratified regression repeats the analysis inside each subgroup and places the
+results side by side. It is useful when the same association may look different
+across groups.
+
+```{r strata-setup, message=FALSE, warning=FALSE}
+library(gtregression)
+library(dplyr)
+
+data("data_birthwt", package = "gtregression")
+
+birthwt_data <- data_birthwt |>
+  mutate(
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+    ptl_cat = factor(ifelse(ptl > 0, "Yes", "No"), levels = c("No", "Yes"))
+  )
+```
+
+## Univariable by Stratum
+
+```{r strata-uni, message=FALSE, warning=FALSE}
+strata_uni <- stratified_uni_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = c("age", "lwt", "smoke", "ht", "ui", "ptl_cat"),
+  stratifier = "race",
+  approach = logit,
+  theme = clinical
+)
+
+strata_uni$table
+```
+
+## Adjusted by Stratum
+
+Use `adjust_for` when each exposure should be adjusted for the same variables
+within each stratum.
+
+```{r strata-multi, message=FALSE, warning=FALSE}
+strata_multi <- stratified_multi_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = c("smoke", "ht", "ui", "ptl_cat"),
+  stratifier = "race",
+  adjust_for = c("age", "lwt"),
+  approach = logit,
+  theme = striped
+)
+
+strata_multi$table
+```
+
+## What To Inspect
+
+- `$table`: rendered side-by-side table.
+- `$table_display`: wide data used to build the table.
+- `$models`: fitted models by stratum.
+- `$reg_check`: diagnostics for linear models.

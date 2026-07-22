@@ -17,36 +17,40 @@ stratified_multi_reg(
 )
 }
 \arguments{
-\item{data}{data.frame}
+\item{data}{A data frame containing the variables.}
 
-\item{outcome}{character scalar; outcome column name}
+\item{outcome}{Character scalar; name of the outcome variable.}
 
-\item{exposures}{character vector; exposure variable(s) to report}
+\item{exposures}{Character vector of exposure variables to report.}
 
-\item{stratifier}{character scalar; stratifying variable}
+\item{stratifier}{Character scalar; name of the stratifying variable.}
 
-\item{adjust_for}{optional character vector of adjustment variables}
+\item{adjust_for}{Optional character vector of adjustment variables.
+This argument works the same way as in \code{multi_reg()}.}
 
-\item{interaction}{optional character scalar specifying one interaction term
+\item{interaction}{Optional character scalar specifying one interaction term
 using standard formula syntax, e.g. \code{"bmi*sex"}}
 
-\item{approach}{one of \code{"logit"}, \code{"log-binomial"}, \code{"poisson"},
+\item{approach}{One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}}
 
-\item{format}{one of \code{"gt"} (default) or \code{"flextable"}}
+\item{format}{One of \code{"gt"} (default) or \code{"flextable"}.}
 
-\item{theme}{preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
+\item{theme}{Preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 \code{"shaded"}, \code{"jama"}) or primitives
 \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}}
 }
 \value{
 A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
 \describe{
-  \item{table}{A \code{gt_tbl} (format="gt") or \code{flextable} (format="flextable").}
-  \item{table_display}{Wide data.frame used to build the table.}
-  \item{per_stratum}{Named list of per-stratum regression results.}
-  \item{models, model_summaries, reg_check}{Named lists by stratum.}
-  \item{by, levels, approach, format, source}{Metadata fields.}
+  \item{\code{table}}{A \code{gt_tbl} (format = \code{"gt"}) or
+  \code{flextable} (format = \code{"flextable"}).}
+  \item{\code{table_display}}{Wide data frame used to build the table.}
+  \item{\code{per_stratum}}{Named list of per-stratum regression results.}
+  \item{\code{models}}{Named list of fitted models by stratum.}
+  \item{\code{model_summaries}}{Named list of model summaries by stratum.}
+  \item{\code{reg_check}}{Named list of diagnostics by stratum.}
+  \item{\code{by}, \code{levels}, \code{approach}, \code{format}, \code{source}}{Metadata fields.}
 }
 }
 \description{
@@ -58,4 +62,33 @@ spanners for each stratum, two columns: "Adjusted <effect>" and "p-value".
 If \code{adjust_for = NULL}, all \code{exposures} are included in one
 multivariable model within each stratum. If \code{adjust_for} is supplied,
 one adjusted model is fitted per exposure within each stratum.
+}
+\examples{
+birthwt_data <- data_birthwt |>
+  transform(
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1),
+                 labels = c("Normal BW", "Low BW"))
+  )
+
+stratified_multi <- stratified_multi_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = c("age", "lwt", "smoke", "ht"),
+  stratifier = "race",
+  approach = logit
+)
+
+stratified_adjusted <- stratified_multi_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = c("smoke", "ht", "ui"),
+  stratifier = "race",
+  adjust_for = c("age", "lwt"),
+  approach = logit
+)
 }

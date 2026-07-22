@@ -1,11 +1,12 @@
 #' @keywords internal
 #' @noRd
 .abbrev_note <- function(approach) {
+  approach <- .normalize_approach(approach)
   note <- switch(
     approach,
     "linear"       = "Beta = Linear regression coefficient; CI = Confidence Interval.",
     "logit"        = "OR = Odds Ratio; CI = Confidence Interval.",
-    "log-binomial" = "RR = Risk Ratio; CI = Confidence Interval.",
+    "logbinomial" = "RR = Risk Ratio; CI = Confidence Interval.",
     "poisson"      = "IRR = Incidence Rate Ratio; CI = Confidence Interval.",
     "robpoisson"   = "RR = Relative Risk; CI = Confidence Interval.",
     "negbin"       = "IRR = Incidence Rate Ratio; CI = Confidence Interval.",
@@ -15,13 +16,13 @@
 }
 #' @keywords internal
 #' @noRd
-.is_ratio <- function(a) a %in% c("logit","log-binomial","poisson", "robpoisson", "negbin")
+.is_ratio <- function(a) .normalize_approach(a) %in% c("logit","logbinomial","poisson", "robpoisson", "negbin")
 #' @keywords internal
 #' @noRd
-.get_effect_label <- function(a) switch(a,
+.get_effect_label <- function(a) switch(.normalize_approach(a),
                                         "linear"       = "Beta (95% CI)",
                                         "logit"        = "OR (95% CI)",
-                                        "log-binomial" = "RR (95% CI)",
+                                        "logbinomial" = "RR (95% CI)",
                                         "poisson"      = "IRR (95% CI)",
                                         "robpoisson"   = "RR (95% CI)",
                                         "negbin"       = "IRR (95% CI)"

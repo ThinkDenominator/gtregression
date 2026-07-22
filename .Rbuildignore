@@ -1,41 +1,43 @@
-^\\.Rproj$                 # project file
-^\\.Rproj\\.user$          # RStudio project metadata
-^\\.Rhistory$              # R history
-^\\.RData$                 # R workspace
-^\\.RDataTmp.*$            # temporary R workspace files
-^\\.DS_Store$              # macOS system file
-
-^gtregression\\.Rproj$     # specific project file
-^README\\.Rmd$             # optional, if not building README from Rmd
-^README - Rubes\\.md$      # personal file
-^LICENSE\\.md$             # optional, CRAN uses LICENSE not LICENSE.md
-^renv$                    # renv project folder
-^renv\\.lock$              # renv lock file
-
-^doc$                      # auto-generated docs
-^docs$                      # auto-generated docs
-^Meta$                     # leftover meta info from builds
-
-^tests/testthat\\.Rout\\.fail$  # failed test outputs
-^tests/testthat\\.Rout$         # test outputs
-
-^.*~$                      # backup files
-^\.Rproj\.user$
-^_pkgdown\.yml$
-^docs$
-^pkgdown$
-^doc$
-^Meta$
-^cran-comments\.md$
-^CRAN-SUBMISSION$
-^LICENSE\.md$
-^README\.Rmd$
+# RStudio and local session files
+^\.Rproj$
 ^gtregression\.Rproj$
-^index\.md$
+^\.Rproj\.user$
+^\.Rhistory$
+^.*\.Rhistory$
+^\.RData$
+^.*\.RData$
+^\.RDataTmp.*$
+^\.DS_Store$
+^.*/\.DS_Store$
+
+# Development-only project files
+^README\.Rmd$
+^README - Rubes\.md$
+^LICENSE\.md$
 ^renv$
 ^renv\.lock$
 ^\.github$
 ^\.zenodo\.json$
 ^codecov\.yml$
-^.*\.Rhistory$
-^.*\.RData$
+^_pkgdown\.yml$
+^pkgdown$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+
+# Generated documentation and build metadata
+^doc$
+^docs$
+^Meta$
+^index\.md$
+^tests/testthat\.Rout\.fail$
+^tests/testthat\.Rout$
+
+# Local output artifacts
+^Rplots\.pdf$
+^tests/testthat/Rplots\.pdf$
+^Why_Denominators_Matter.*\.docx$
+
+# Tool/editor metadata
+^.*~$
+^\.positai$
+^\.claude$

@@ -5,7 +5,7 @@
 #' @param data A data.frame containing the analysis variables.
 #' @param outcome A character scalar giving the outcome variable name.
 #' @param exposures A character vector of exposure variable(s).
-#' @param approach A regression approach. One of "logit", "log-binomial",
+#' @param approach A regression approach. One of "logit", "logbinomial",
 #'   "poisson", "linear", "robpoisson", or "negbin".
 #' @param adjust_for Optional character vector of adjustment variables.
 #' @param interaction Optional character scalar specifying an interaction term,
@@ -20,6 +20,7 @@
                              approach,
                              adjust_for = NULL,
                              interaction = NULL) {
+  approach <- .normalize_approach(approach)
 
   rhs_terms <- unique(c(exposures, adjust_for))
 
@@ -39,7 +40,7 @@
           data = data,
           family = stats::binomial("logit")
         ),
-        "log-binomial" = stats::glm(
+        "logbinomial" = stats::glm(
           formula = formula,
           data = data,
           family = stats::binomial("log")
@@ -66,7 +67,7 @@
         stop(
           paste0(
             "Invalid approach: '", approach,
-            "'. Choose from: logit, log-binomial, poisson, ",
+            "'. Choose from: logit, logbinomial, poisson, ",
             "robpoisson, linear, negbin."
           ),
           call. = FALSE

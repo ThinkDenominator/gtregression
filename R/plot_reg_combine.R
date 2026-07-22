@@ -6,6 +6,9 @@
 #' @param tbl_uni A univariate \code{gtregression} object.
 #' @param tbl_multi A multivariable \code{gtregression} object.
 #' @param title_uni,title_multi Optional panel titles.
+#' @param caption Optional combined plot caption. If \code{NULL}, an adjustment
+#'   note is added automatically from \code{tbl_multi} when
+#'   \code{show_adjustment_note = TRUE}.
 #' @param ref_line Optional numeric reference line. If \code{NULL}, uses 0 for
 #'   linear models and 1 otherwise.
 #' @param order_y Optional character vector to customize exposure ordering.
@@ -22,6 +25,8 @@
 #'   multivariable panel.
 #' @param alpha Significance level for linear models when \code{p.value} is
 #'   available.
+#' @param show_adjustment_note Logical; if \code{TRUE}, add a default caption
+#'   describing \code{adjust_for} variables from \code{tbl_multi} when available.
 #'
 #' @return A \code{patchwork} object with two \code{ggplot2} panels.
 #' @importFrom rlang .data
@@ -31,6 +36,7 @@ plot_reg_combine <- function(tbl_uni,
                              tbl_multi,
                              title_uni = NULL,
                              title_multi = NULL,
+                             caption = NULL,
                              ref_line = NULL,
                              order_y = NULL,
                              log_x = FALSE,
@@ -44,7 +50,8 @@ plot_reg_combine <- function(tbl_uni,
                              breaks_uni = NULL,
                              xlim_multi = NULL,
                              breaks_multi = NULL,
-                             alpha = 0.05) {
+                             alpha = 0.05,
+                             show_adjustment_note = TRUE) {
 
   if (!inherits(tbl_uni, "gtregression")) {
     stop("`tbl_uni` must be a gtregression object.", call. = FALSE)
@@ -77,9 +84,10 @@ plot_reg_combine <- function(tbl_uni,
   }
 
   get_axis_label <- function(approach, adjusted = FALSE) {
+    approach <- .normalize_approach(approach)
     base <- dplyr::case_when(
       approach == "logit" ~ "Odds Ratio",
-      approach == "log-binomial" ~ "Risk Ratio",
+      approach == "logbinomial" ~ "Risk Ratio",
       approach %in% c("poisson", "negbin") ~ "Incidence Rate Ratio",
       approach == "robpoisson" ~ "Risk Ratio",
       approach == "linear" ~ "Beta Coefficient",
@@ -397,5 +405,12 @@ plot_reg_combine <- function(tbl_uni,
     show_y = FALSE
   )
 
-  patchwork::wrap_plots(p1, p2, ncol = 2, widths = c(1.2, 1))
+  out <- patchwork::wrap_plots(p1, p2, ncol = 2, widths = c(1.2, 1))
+
+  caption <- .plot_adjustment_caption(tbl_multi, caption, show_adjustment_note)
+  if (!is.null(caption)) {
+    out <- out + patchwork::plot_annotation(caption = caption)
+  }
+
+  out
 }

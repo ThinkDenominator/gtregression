@@ -11,372 +11,185 @@ editor_options:
 # %\VignetteEncoding{UTF-8}
 ```
 
-<p align="left">
+:::::: gtreg-hero
+:::: {}
 
-<img src="man/figures/gtregression_hex.png" 
-alt="gtregression logo" width="180"/>
+<h1>gtregression</h1>
 
-</p>
+<p>Publication-ready regression tables and forest plots for real-world
+health data. Fit models, compare estimates, visualise results, and
+export manuscript-ready outputs without hand-formatting every
+coefficient.</p>
 
-# gtregression
+::: gtreg-actions
+<a href="articles/gtregression-intro.html">Start the
+workflow</a><a class="secondary" href="reference/index.html">Explore
+functions</a>
+:::
+::::
+
+::: {}
+<img src="man/figures/gtregression_hex.png" alt="gtregression logo"/>
+:::
+::::::
+
 <!-- badges: start -->
+
 [![R-CMD-check](https://github.com/ThinkDenominator/gtregression/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ThinkDenominator/gtregression/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/ThinkDenominator/gtregression/actions/workflows/pkgdown.yaml/badge.svg)](https://ThinkDenominator.github.io/gtregression/)
-[![CRAN status](https://www.r-pkg.org/badges/version/gtregression)](https://CRAN.R-project.org/package=gtregression)
-[![CRAN checks](https://badges.cranchecks.info/worst/gtregression.svg)](https://cran.r-project.org/web/checks/check_results_gtregression.html)
-
-[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
-[![Downloads - month](https://cranlogs.r-pkg.org/badges/last-month/gtregression)](https://cran.r-project.org/package=gtregression)
-[![Downloads - total](https://cranlogs.r-pkg.org/badges/grand-total/gtregression)](https://cran.r-project.org/package=gtregression)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/gtregression)](https://CRAN.R-project.org/package=gtregression)
+[![CRAN
+checks](https://badges.cranchecks.info/worst/gtregression.svg)](https://cran.r-project.org/web/checks/check_results_gtregression.html)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+[![License:
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 [![Codecov](https://codecov.io/gh/ThinkDenominator/gtregression/branch/main/graph/badge.svg)](https://app.codecov.io/gh/ThinkDenominator/gtregression)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16905350.svg)](https://doi.org/10.5281/zenodo.16905350)
+
 <!-- badges: end -->
 
-## Motivation 
+## Publication-Ready Regression Tables and Plots
 
-Many academics and public health professionals in low- and middle-income 
-countries (LMICs) hesitate to use R due to its steep learning curve. Instead, 
-they often rely on menu-driven software like SPSS or Epi Info, which limits 
-their ability to perform reproducible and advanced analyses. As a step towards 
-addressing this gap, we created the gtregression package to simplify regression 
-modelling in R. The package offers user-friendly syntax, intuitive functions, 
-and publication-ready outputs—empowering analysts to adopt open-source tools 
-with confidence.
+`gtregression` helps you move from model to manuscript: fit regression
+models, produce clean tables, visualise estimates, merge outputs, and
+export results without hand-formatting every coefficient.
 
-## About the Package
+It supports logistic, log-binomial, Poisson, robust Poisson, negative
+binomial, linear, adjusted, and stratified regression workflows.
 
-`gtregression` is an R package that simplifies regression modeling and
-generates publication-ready tables using the `gtsummary` ecosystem. It
-supports a variety of regression approaches with built-in tools for
-model diagnostics, selection, and confounder identification—all designed
-to provide beginner and intermediate R users with clean, interpretable
-output.
+| Build | What you get |
+|------------------------------------|------------------------------------|
+| Descriptive tables | Grouped summaries with row or column percentages |
+| Regression tables | Crude, adjusted, stratified, and linear model outputs |
+| Visualisations | Forest plots and publication-style forest tables |
+| Interpretation helpers | Confounding, interaction, convergence, and collinearity checks |
+| Exports | HTML, PDF, PNG, and Word-ready outputs |
 
-This package was created with the aim of empowering R users in low- and
-middle-income countries (LMICs) by offering a simpler and more
-accessible coding experience. We sincerely thank the authors and
-contributors of foundational R packages such as `gtsummary`, `MASS`,
-`RISKS`, `dplyr`, and others—without whom this project would not have
-been possible.
+::::::: gtreg-workflow
+::: gtreg-step
+<strong>Describe</strong>Build baseline tables with grouped summaries.
+:::
 
-## Table of Contents
+::: gtreg-step
+<strong>Model</strong>Fit crude, adjusted, and stratified regressions.
+:::
 
--   [Vision](#vision)
--   [Features](#features)
--   [Installation](#installation)
--   [Quick Start](#quick-start)
--   [Key Functions](#key-functions)
--   [Contributing](#contributing)
--   [Authors](#authors)
--   [License](#license)
+::: gtreg-step
+<strong>Visualise</strong>Create plots and forest tables for estimates.
+:::
 
-## Vision {#vision}
+::: gtreg-step
+<strong>Export</strong>Save polished tables, figures, and Word outputs.
+:::
+:::::::
 
-At its core, `gtregression` is more than just a statistical tool—it is a
-commitment to open access, simplicity, and inclusivity in health data
-science. Our team is driven by the vision of empowering researchers,
-students, and public health professionals in LMICs through
-user-friendly, well-documented tools that minimize coding burden and
-maximize interpretability.
+## Why It Exists
 
-We believe in the democratization of data science and aim to promote
-open-source resources for impactful and equitable research globally.
+Many students, researchers, and public health analysts need regression
+outputs that are readable, reproducible, and report-ready.
+`gtregression` keeps the R syntax beginner-friendly while preserving
+transparent model objects underneath.
 
-## Features {#features}
-
--   Supports multiple regression approaches:
-    -   Logistic (logit)
-    -   Log-binomial
-    -   Poisson / Robust Poisson
-    -   Negative Binomial
-    -   Linear Regression
--   Univariable and multivariable regression
--   Confounder identification using crude and adjusted estimates
--   Stepwise model selection (AIC/BIC/adjusted R²)
--   Stratified regression support
--   Formatted outputs using `gtsummary`
--   Built-in example datasets: `PimaIndiansDiabetes2`, `birthwt`, `epil`
-
-## Installation {#installation}
+## Install
 
 ``` r
-# Install from CRAN
 install.packages("gtregression")
 
-# Or install the development version from GitHub
+# Development version
 devtools::install_github("ThinkDenominator/gtregression")
 ```
 
-## Quick Start {#quick-start}
+## Five-Minute Workflow
 
 ``` r
-# Load necessary libraries
 library(gtregression)
+library(dplyr)
 
-# Load example dataset
-data("data_PimaIndiansDiabetes", package="gtregression")
+data("data_birthwt", package = "gtregression")
 
-# Convert diabetes outcome to binary and create categorical variables
-pima_data <- data_PimaIndiansDiabetes |>
-  mutate(diabetes = ifelse(diabetes == "pos", 1, 0)) |>
-  mutate(bmi = case_when(
-    mass < 25 ~ "Normal",
-    mass >= 25 & mass < 30 ~ "Overweight",
-    mass >= 30 ~ "Obese",
-    TRUE ~ NA_character_),                                       
-    bmi = factor(bmi, levels = c("Normal", "Overweight", "Obese")),
-    age_cat = case_when(
-      age < 30 ~ "Young",
-      age >= 30 & age < 50 ~ "Middle-aged",
-      age >= 50 ~ "Older"),
-    age_cat = factor(age_cat, levels = c("Young", "Middle-aged", "Older")),
-    npreg_cat = ifelse(pregnant > 2, "High parity", "Low parity"),
-    npreg_cat = factor(npreg_cat, levels = c("Low parity", "High parity")),
-    glucose_cat= case_when(glucose<=140~ "Normal", glucose>140~"High"),
-    glucose_cat= factor(glucose_cat, levels = c("Normal", "High")),
-    bp_cat = case_when(
-      pressure < 80 ~ "Normal",
-      pressure >= 80 ~ "High"
-    ),
-    bp_cat= factor(bp_cat, levels = c("Normal", "High")),
-    triceps_cat = case_when(
-      triceps < 23 ~ "Normal",
-      triceps >= 23 ~ "High"
-    ),
-    triceps_cat= factor(triceps_cat, levels = c("Normal", "High")),
-    insulin_cat = case_when(
-      insulin < 30 ~ "Low",
-      insulin >= 30 & insulin < 150 ~ "Normal",
-      insulin >= 150 ~ "High"
-    ),
-    insulin_cat = factor(insulin_cat, levels = c("Low", "Normal", "High"))
-  ) |>
+birthwt_data <- data_birthwt |>
   mutate(
-    dpf_cat = case_when(
-      pedigree <= 0.2 ~ "Low Genetic Risk",
-      pedigree > 0.2 & pedigree <= 0.5 ~ "Moderate Genetic Risk",
-      pedigree > 0.5 ~ "High Genetic Risk"
-    )
-  ) |>
-  mutate(dpf_cat = factor(dpf_cat, 
-              levels = c("Low Genetic Risk", 
-                          "Moderate Genetic Risk", 
-                          "High Genetic Risk"))) |>
-  mutate(diabetes_cat= case_when(diabetes== 1~ "Diabetes positive", 
-                                TRUE~ "Diabetes negative")) |>
-  mutate(diabetes_cat= factor(diabetes_cat, 
-                        levels = c("Diabetes negative","Diabetes positive" )))
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+  )
 
-# Descriptive statistics table
-exposures <- c("bmi", "age_cat", "npreg_cat", "bp_cat", "triceps_cat",
-               "insulin_cat", "dpf_cat")
+exposures <- c("age", "lwt", "race", "smoke", "ht", "ui")
 
-# Create a descriptive table by diabetes category
-des_tbl = descriptive_table(data= pima_data, 
-                             exposures = exposures, 
-                             by= "diabetes_cat")
-                             
-# Check the data compatibility
-dissect(pima_data)
-
-# Univariable regression
-uni_tbl = uni_reg(
-  data = pima_data,
-  outcome = "diabetes",
+desc <- descriptive_table(
+  birthwt_data,
   exposures = exposures,
-  approach = "logit"
+  by = "low",
+  percent = column,
+  show_overall = last
 )
 
-# check models and summaries
-uni_tbl$models
-uni_tbl$model_summaries
-
-# Plot univariable regression results
-plot_reg(uni_tbl, 
-         title = "Univariable Regression Results")
-         
-# multivariable regression
-multi_tbl = multi_reg(
-  data = pima_data,
-  outcome = "diabetes",
+uni <- uni_reg(
+  birthwt_data,
+  outcome = "low",
   exposures = exposures,
-  approach = "logit"
+  approach = logit
 )
 
-# check models and summaries
-multi_tbl$models
-multi_tbl$model_summaries
+multi <- multi_reg(
+  birthwt_data,
+  outcome = "low",
+  exposures = c("smoke", "ht", "ui"),
+  adjust_for = c("age", "lwt", "race"),
+  approach = logit
+)
 
-# Plot univariable regression results
-plot_reg(multi_tbl, 
-         title = "Multivariable Regression Results")
-
-# combined plots
-plot_reg_combine(
-  uni_tbl, 
-  multi_tbl, 
-  title = "Univariable vs Multivariable Regression Results")
-  
-# combine the tables
-merge_table(des_tbl, uni_tbl, multi_tbl, 
-            spanners = c("**Descriptive**",
-            "**Univariate**", 
-            "**Multivariable**"))
-
-# Save the table as a Word document
-save_table(des_tbl, filename = "des_tbl", format = "docx")
-
-save_docx(
-  tables = list(des_tbl, uni_tbl, multi_tbl),
-  filename = "Outputs.docx")
-  
-# Stratified regression
-stratified_uni_reg(pima_data,
-                     outcome= "diabetes",
-                     exposures =c("bmi", "insulin_cat", "age_cat", "dpf_cat"),
-                     approach = "logit",
-                     stratifier = "glucose_cat")
-                     
-stratified_multi_reg(pima_data,
-                     outcome= "diabetes",
-                     exposures =c("bmi", "insulin_cat", "age_cat", "dpf_cat"),
-                     approach = "logit",
-                     stratifier = "glucose_cat")
-                     
-# Check model convergence
-check_convergence(pima_data, 
-                  exposures = exposures, 
-                  outcome = "diabetes", 
-                  approach = "logit", 
-                  multivariate = F)
-                  
-check_convergence(pima_data, 
-                  exposures = exposures, 
-                  outcome = "diabetes", 
-                  approach = "logit", 
-                  multivariate = T)
-
-
-# identify confounders
-identify_confounder(pima_data,
-                    outcome = "diabetes",
-                    exposure = "npreg_cat",
-                    potential_confounder = "bp_cat",
-                    approach = "logit")
-                     
-# check interactions
-interaction_models(pima_data,
-                   outcome,
-                   exposure = "bmi",
-                   effect_modifier = "glucose_cat",
-                   covariates = c("insulin_cat", "age_cat", "dpf_cat"),
-                   approach = "logit")
+plot_reg(multi, title = "Adjusted Regression for Low Birth Weight")
 ```
 
-## Key Functions {#key-functions}
+Objects stay inspectable:
 
-### Descriptive & Compatibility Tools
+``` r
+desc$table
+uni$table
+multi$table
+multi$models
+```
 
-| Function Name        | Purpose                               |
-|----------------------|---------------------------------------|
-| `descriptive_table()`| Summarise exposures by outcome groups |
-| `dissect()`          | Check outcome-exposure compatibility  |
+## Browse by Task
 
-### Regression Functions - Fit univariate and multivariable models
+| Task | Start here |
+|------------------------------------|------------------------------------|
+| First workflow | [Start Here](https://thinkdenominator.github.io/gtregression/articles/gtregression-intro.html) |
+| Descriptive summaries | [Descriptive Tables](https://thinkdenominator.github.io/gtregression/articles/descriptive-tables.html) |
+| Regression tables | [Regression Tables](https://thinkdenominator.github.io/gtregression/articles/regression-tables.html) |
+| Visualise estimates | [Visualise Results](https://thinkdenominator.github.io/gtregression/articles/visualise-results.html) |
+| Stratified models | [Stratified Analysis](https://thinkdenominator.github.io/gtregression/articles/stratified-analysis.html) |
+| Diagnostics and selection | [Diagnostics](https://thinkdenominator.github.io/gtregression/articles/diagnostics-selection.html) |
+| Confounding and interaction | [Interpret](https://thinkdenominator.github.io/gtregression/articles/confounding-interaction.html) |
+| Merge and export | [Customize and Export](https://thinkdenominator.github.io/gtregression/articles/customize-export.html) |
 
-| Function Name | Purpose                              |
-|---------------|--------------------------------------|
-| `uni_reg()`   | Univariable regression (OR/RR/IRR/β) |
-| `multi_reg()` | Multivariable regression             |
+## Function Map
 
-### Regression Functions by stratifier
-
-| Function Name            | Purpose                             |
-|--------------------------|-------------------------------------|
-| `stratified_uni_reg()`   | Stratified univariable regression   |
-| `stratified_multi_reg()` | Stratified multivariable regression |
-
-### Model Diagnostics & Selection
-
-| Function Name         | Purpose                                          |
-|-----------------------|--------------------------------------------------|
-| `check_convergence()` | Evaluate model convergence and max fitted values |
-| `select_models()`     | Stepwise model selection (AIC/BIC/adjusted R²)   |
-
-### Confounding & Interaction
-
-| Function Name           | Purpose                                           |
-|------------------------|----------------------------------------------------|
-| `identify_confounder()` | Confounding assessment via % change or MH method  |
-| `interaction_models()`  | Compare models with and without interaction terms |
-
-### Plots & Exports
-
-| Function Name        | Purpose                                        |
-|----------------------|------------------------------------------------|
-| `plot_reg()`         | Forest plot for a single regression model      |
-| `plot_reg_combine()` | Side-by-side forest plots for uni/multi models |
-| `modify_table()`     | Customize column labels or output structure    |
-| `save_table()`       | Export table to `.html`, `.csv`, `.docx`       |
-| `save_docx()`        | Save table as Word document (`.docx`)          |
-| `save_plot()`        | Save plot as `.png`, `.pdf`, etc.              |
-| `merge_tables()`      | Combine descriptive and regression tables      |
-
-## Contributing {#contributing}
-
-We welcome issues, feature requests, and pull requests.
-
-1.  Fork the repository
-2.  Create a new branch: `git checkout -b feature/my-feature`
-3.  Commit your changes: `git commit -m "Add feature"`
-4.  Push to GitHub: `git push origin feature/my-feature`
-5.  Open a Pull Request
-
-## Authors {#authors}
-
-The `gtregression` package is developed and maintained by a
-collaborative team committed to making regression modeling accessible,
-especially for public health professionals and researchers in LMICs.
-
--   **Rubeshkumar Polani**\
-    [rubesh.pc\@gmail.com](mailto:rubesh@thinkdenominator.com){.email}\
-    ORCID: [0000-0002-0418-7592](https://orcid.org/0000-0002-0418-7592)\
-    *Creator and Author*
-
--   **Salin K Eliyas**\
-    [salins13\@gmail.com](mailto:salins13@gmail.com){.email}\
-    ORCID: [0000-0002-8020-5860](https://orcid.org/0000-0002-8020-5860)\
-    *Author*
-
--   **Manikandanesan Sakthivel**\
-    [nesanmbbs\@gmail.com](mailto:nesanmbbs@gmail.com){.email}\
-    ORCID: [0000-0002-5438-3970](https://orcid.org/0000-0002-5438-3970)\
-    *Author*
-
--   **Yuvaraj Krishnamoorthy**\
-    [yuvaraj\@propulevidence.org](mailto:yuvaraj@propulevidence.org){.email}\
-    ORCID: [0000-0003-4688-510X](https://orcid.org/0000-0003-4688-510X)\
-    *Author*
-
--   **Marie Gilbert Majella**\
-    [gilbert2691\@gmail.com](mailto:gilbert2691@gmail.com){.email}\
-    ORCID: [0000-0003-4036-5162](https://orcid.org/0000-0003-4036-5162)\
-    *Author*
-
-## License {#license}
-
-MIT License. See LICENSE for details.
+| Workflow | Functions |
+|------------------------------------|------------------------------------|
+| Describe | `descriptive_table()`, `dissect()` |
+| Model | `uni_reg()`, `multi_reg()` |
+| Stratify | `stratified_uni_reg()`, `stratified_multi_reg()` |
+| Visualise | `plot_reg()`, `plot_reg_combine()`, `forest_df()`, `forest_reg()` |
+| Diagnose | `check_convergence()`, `check_collinearity()`, `select_models()` |
+| Interpret | `identify_confounder()`, `interaction_models()` |
+| Polish and export | `modify_table()`, `merge_tables()`, `save_table()`, `save_plot()`, `save_docx()` |
 
 ## Citation
 
 If you use `gtregression` in your work, please cite it as:
 
-> Rubeshkumar, P., Eliyas, S. K., Sakthivel, M., Krishnamoorthy, Y., & Majella, M. G. (2025). *ThinkDenominator/gtregression: CRAN v1.1.0 (CRAN)*. Zenodo. https://doi.org/10.5281/zenodo.16905350
+Polani R, Eliyas SK, Sakthivel M, Krishnamoorthy Y, Majella MG.
+*gtregression: Tools for Creating Publication-Ready Regression Tables.*
+Zenodo. <https://doi.org/10.5281/zenodo.16905350>
 
 ## Acknowledgements
 
-The gtregression package icon uses the **“Hearts”** symbol created by 
-[Kim Sun Young](https://thenounproject.com/creator/hookeeak/) from 
-[The Noun Project](https://thenounproject.com), used under the Creative Commons 
-Attribution (CC BY 3.0) license.
+`gtregression` builds on the R ecosystem, including `gtsummary`, `gt`,
+`flextable`, `MASS`, `risks`, `dplyr`, `ggplot2`, and related packages.

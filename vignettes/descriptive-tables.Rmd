@@ -1,0 +1,95 @@
+---
+title: "Descriptive Tables"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Descriptive Tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Descriptive Tables
+
+Start with a table that people can actually read. `descriptive_table()` creates
+publication-ready summaries for continuous, categorical, and mixed exposure
+sets.
+
+```{r desc-setup, message=FALSE, warning=FALSE}
+library(gtregression)
+library(dplyr)
+
+data("data_birthwt", package = "gtregression")
+
+birthwt_data <- data_birthwt |>
+  mutate(
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+    ptl_cat = factor(ifelse(ptl > 0, "Yes", "No"), levels = c("No", "Yes")),
+    ftv_cat = factor(case_when(
+      ftv == 0 ~ "None",
+      ftv == 1 ~ "One",
+      ftv >= 2 ~ "Two or more"
+    ), levels = c("None", "One", "Two or more"))
+  )
+
+birthwt_exposures <- c(
+  "age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat", "ftv_cat"
+)
+```
+
+## Column Percentages
+
+Use column percentages when the table is grouped by outcome or another column.
+
+```{r desc-column, message=FALSE, warning=FALSE}
+desc_column <- descriptive_table(
+  data = birthwt_data,
+  exposures = birthwt_exposures,
+  by = "low",
+  percent = column,
+  show_overall = last,
+  theme = clinical
+)
+
+desc_column$table
+```
+
+## Row Percentages
+
+Use row percentages when the question is how each exposure level is distributed
+across groups.
+
+```{r desc-row, message=FALSE, warning=FALSE}
+descriptive_table(
+  data = birthwt_data,
+  exposures = birthwt_exposures,
+  by = "low",
+  percent = row,
+  show_overall = first,
+  show_missing = no,
+  theme = striped
+)$table
+```
+
+## Word-Friendly Output
+
+Switch to `format = flextable` when the next stop is a Word report.
+
+```{r desc-flex, message=FALSE, warning=FALSE}
+descriptive_table(
+  data = birthwt_data,
+  exposures = birthwt_exposures,
+  by = "low",
+  percent = column,
+  format = flextable
+)$table
+```
+
+## What To Inspect
+
+- `$table`: rendered `gt` or `flextable` output.
+- `$table_body`: clean data behind the table.
+- `$format`: output format used by the table builder.

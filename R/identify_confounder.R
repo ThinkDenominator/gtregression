@@ -6,11 +6,21 @@
                                      exposure,
                                      candidate,
                                      approach = "logit",
+                                     method = "change",
                                      threshold = 10,
                                      emm_threshold = 10,
                                      emm_test = c("both", "estimate", "interaction"),
                                      interaction_alpha = 0.05) {
-  emm_test <- match.arg(emm_test)
+  approach <- .choice_arg(
+    substitute(approach),
+    env = parent.frame(),
+    choices = c("logit","logbinomial","poisson","robpoisson","negbin","linear")
+  )
+  approach <- .normalize_approach(approach)
+  method <- .choice_arg(substitute(method), env = parent.frame(), choices = c("change", "mh", "both"))
+  emm_test <- .choice_arg(substitute(emm_test), env = parent.frame(), choices = c("both", "estimate", "interaction"))
+  method <- match.arg(method, c("change", "mh", "both"))
+  emm_test <- match.arg(emm_test, c("both", "estimate", "interaction"))
 
   .validate_outcome_by_approach(data[[outcome]], approach)
 
@@ -22,10 +32,20 @@
   }
 
   get_model <- function(data, formula, approach) {
+    if (approach == "robpoisson") {
+      response <- all.vars(formula)[[1]]
+      if (is.factor(data[[response]]) || is.character(data[[response]])) {
+        lev <- .binary_levels(data[[response]])
+        if (length(lev) == 2L) {
+          data[[response]] <- .as_binary01(data[[response]], lev)
+        }
+      }
+    }
+
     switch(
       approach,
       "logit" = glm(formula, data = data, family = binomial("logit")),
-      "log-binomial" = glm(formula, data = data, family = binomial("log")),
+      "logbinomial" = glm(formula, data = data, family = binomial("log")),
       "poisson" = glm(formula, data = data, family = poisson("log")),
       "negbin" = MASS::glm.nb(formula, data = data),
       "linear" = lm(formula, data = data),
@@ -92,7 +112,34 @@
     abs((adj_est - crude_est) / crude_est) * 100
   }
 
-  is_confounder <- if (!is.na(pct_change)) pct_change >= threshold else NA
+  mh <- .confounder_mh_estimate(
+    data = dat,
+    outcome = outcome,
+    exposure = exposure,
+    candidate = candidate,
+    approach = approach
+  )
+
+  pct_change_mh <- if (anyNA(c(crude_est, mh$estimate)) || crude_est == 0) {
+    NA_real_
+  } else {
+    abs((mh$estimate - crude_est) / crude_est) * 100
+  }
+
+  is_confounder_model <- if (!is.na(pct_change)) pct_change >= threshold else NA
+  is_confounder_mh <- if (!is.na(pct_change_mh)) pct_change_mh >= threshold else NA
+  is_confounder <- switch(
+    method,
+    "change" = is_confounder_model,
+    "mh" = is_confounder_mh,
+    "both" = if (isTRUE(is_confounder_model) || isTRUE(is_confounder_mh)) {
+      TRUE
+    } else if (isFALSE(is_confounder_model) && isFALSE(is_confounder_mh)) {
+      FALSE
+    } else {
+      NA
+    }
+  )
 
   # stratified estimates
   strata_levels <- unique(stats::na.omit(dat[[candidate]]))
@@ -150,7 +197,7 @@
       inherits(adj_model, c("glm", "lm")) &&
       inherits(int_model, c("glm", "lm"))) {
     lr <- tryCatch(
-      stats::anova(adj_model, int_model, test = "LRT"),
+      suppressWarnings(stats::anova(adj_model, int_model, test = "LRT")),
       error = function(e) NULL
     )
 
@@ -209,7 +256,7 @@
     model_build_recommendation <- "include_interaction"
 
   } else if (isTRUE(is_confounder)) {
-    decision <- "confounding"
+    decision <- "confounder"
 
     decision_strength <- if (emm_signal_strength == "none") {
       "strong"
@@ -217,19 +264,32 @@
       "possible"
     }
 
-    reason <- paste0(
-      "No strong effect modification detected under the chosen EMM rule; crude vs adjusted estimate changed by ",
-      round(pct_change, 1), "%."
+    reason <- .confounder_reason(
+      method = method,
+      pct_change = pct_change,
+      pct_change_mh = pct_change_mh,
+      mh_status = mh$status
     )
 
     recommendation <- paste0("Adjust for ", candidate, ".")
     model_build_recommendation <- "adjust_only"
 
   } else {
-    decision <- "no_role"
+    decision <- if ((method == "mh" && is.na(pct_change_mh)) ||
+                    (all(is.na(c(pct_change, pct_change_mh))) &&
+                     !isTRUE(is_effect_modifier))) {
+      "not_estimable"
+    } else {
+      "no_evidence"
+    }
     decision_strength <- "none"
 
-    reason <- "No strong effect modification and little change between crude and adjusted estimates."
+    reason <- .no_confounder_reason(
+      method = method,
+      pct_change = pct_change,
+      pct_change_mh = pct_change_mh,
+      mh_status = mh$status
+    )
 
     recommendation <- paste0(
       "No clear statistical evidence to include ", candidate,
@@ -244,8 +304,15 @@
     candidate = candidate,
     crude = crude_est,
     adjusted = adj_est,
+    mh_estimate = mh$estimate,
+    mh_method = mh$method,
+    mh_status = mh$status,
     percent_change = pct_change,
+    percent_change_model = pct_change,
+    percent_change_mh = pct_change_mh,
     is_confounder = is_confounder,
+    is_confounder_model = is_confounder_model,
+    is_confounder_mh = is_confounder_mh,
     stratum_estimates = stratum_estimates,
     n_strata_total = n_strata_total,
     n_strata_estimable = n_strata_estimable,
@@ -263,6 +330,145 @@
   )
 }
 
+.binary_levels <- function(x) {
+  x <- x[!is.na(x)]
+  if (is.factor(x)) {
+    levels(droplevels(x))
+  } else {
+    sort(unique(x))
+  }
+}
+
+.as_binary01 <- function(x, levels) {
+  ifelse(x == levels[[2]], 1L, 0L)
+}
+
+.confounder_mh_estimate <- function(data,
+                                    outcome,
+                                    exposure,
+                                    candidate,
+                                    approach) {
+  if (!approach %in% c("logit", "logbinomial", "robpoisson")) {
+    return(list(
+      estimate = NA_real_,
+      method = NA_character_,
+      status = "MH is available only for binary outcome models."
+    ))
+  }
+
+  y_levels <- .binary_levels(data[[outcome]])
+  x_levels <- .binary_levels(data[[exposure]])
+  z_levels <- .binary_levels(data[[candidate]])
+
+  if (length(y_levels) != 2L || length(x_levels) != 2L || length(z_levels) < 2L) {
+    return(list(
+      estimate = NA_real_,
+      method = NA_character_,
+      status = "MH requires binary outcome, binary exposure, and categorical strata."
+    ))
+  }
+
+  y <- .as_binary01(data[[outcome]], y_levels)
+  x <- .as_binary01(data[[exposure]], x_levels)
+  z <- data[[candidate]]
+  keep <- !is.na(y) & !is.na(x) & !is.na(z)
+  y <- y[keep]
+  x <- x[keep]
+  z <- droplevels(factor(z[keep]))
+
+  strata <- levels(z)
+  if (length(strata) < 2L) {
+    return(list(
+      estimate = NA_real_,
+      method = NA_character_,
+      status = "MH requires at least two non-empty strata."
+    ))
+  }
+
+  counts <- lapply(strata, function(s) {
+    idx <- z == s
+    a <- sum(y[idx] == 1L & x[idx] == 1L)
+    b <- sum(y[idx] == 0L & x[idx] == 1L)
+    c <- sum(y[idx] == 1L & x[idx] == 0L)
+    d <- sum(y[idx] == 0L & x[idx] == 0L)
+    c(a = a, b = b, c = c, d = d, n = a + b + c + d)
+  })
+
+  count_mat <- do.call(rbind, counts)
+  count_mat <- count_mat[count_mat[, "n"] > 0, , drop = FALSE]
+  if (nrow(count_mat) < 2L) {
+    return(list(
+      estimate = NA_real_,
+      method = NA_character_,
+      status = "MH requires at least two non-empty strata."
+    ))
+  }
+
+  if (approach == "logit") {
+    numerator <- sum(count_mat[, "a"] * count_mat[, "d"] / count_mat[, "n"])
+    denominator <- sum(count_mat[, "b"] * count_mat[, "c"] / count_mat[, "n"])
+    method <- "mh_or"
+  } else {
+    numerator <- sum(count_mat[, "a"] * (count_mat[, "c"] + count_mat[, "d"]) /
+                       count_mat[, "n"])
+    denominator <- sum(count_mat[, "c"] * (count_mat[, "a"] + count_mat[, "b"]) /
+                         count_mat[, "n"])
+    method <- "mh_rr"
+  }
+
+  if (!is.finite(numerator) || !is.finite(denominator) || denominator <= 0) {
+    return(list(
+      estimate = NA_real_,
+      method = method,
+      status = "MH estimate could not be calculated because of sparse strata."
+    ))
+  }
+
+  list(
+    estimate = unname(numerator / denominator),
+    method = method,
+    status = "calculated"
+  )
+}
+
+.confounder_reason <- function(method, pct_change, pct_change_mh, mh_status) {
+  if (method == "change") {
+    return(paste0(
+      "Crude vs adjusted estimate changed by ",
+      round(pct_change, 1), "%."
+    ))
+  }
+  if (method == "mh") {
+    return(paste0(
+      "Crude vs Mantel-Haenszel estimate changed by ",
+      round(pct_change_mh, 1), "%."
+    ))
+  }
+  paste0(
+    "Confounding detected by change-in-estimate and/or Mantel-Haenszel method",
+    if (!is.na(pct_change)) paste0("; model change = ", round(pct_change, 1), "%") else "",
+    if (!is.na(pct_change_mh)) paste0("; MH change = ", round(pct_change_mh, 1), "%") else "",
+    if (!identical(mh_status, "calculated")) paste0("; MH status: ", mh_status) else "",
+    "."
+  )
+}
+
+.no_confounder_reason <- function(method, pct_change, pct_change_mh, mh_status) {
+  if (method == "change") {
+    if (is.na(pct_change)) return("Model-based change-in-estimate could not be calculated.")
+    return("No strong effect modification and little change between crude and adjusted estimates.")
+  }
+  if (method == "mh") {
+    if (is.na(pct_change_mh)) return(mh_status)
+    return("No strong effect modification and little change between crude and Mantel-Haenszel estimates.")
+  }
+  paste0(
+    "No strong effect modification and no important change by the selected methods",
+    if (!identical(mh_status, "calculated")) paste0("; MH status: ", mh_status) else "",
+    "."
+  )
+}
+
 #' Identify confounders and effect modifiers
 #'
 #' Assesses whether one or more candidate variables act as confounders or
@@ -271,7 +477,18 @@
 #' The function first assesses possible effect modification using
 #' stratum-specific estimates and/or an interaction test. If no important
 #' effect modification is detected, it then assesses confounding using the
-#' change-in-estimate approach.
+#' selected method.
+#'
+#' This is a screening aid for viewing and organising results. Confounding and
+#' effect modification should be interpreted using subject-matter knowledge,
+#' study design, and causal diagrams such as DAGs. Automated change-in-estimate
+#' and interaction checks should not be used as the sole basis for model
+#' adjustment.
+#'
+#' Use this function when you want to screen one or more candidate variables and
+#' organise crude, adjusted, Mantel-Haenszel, and effect-modification signals in
+#' one place. For a focused comparison of models with and without a planned
+#' exposure-by-modifier interaction term, use \code{\link{interaction_models}()}.
 #'
 #' @param data A data frame.
 #' @param outcome Outcome variable name.
@@ -279,14 +496,22 @@
 #' @param potential_confounder Candidate confounder/effect-modifier variable
 #'   name(s). Can be a character scalar or vector.
 #' @param approach Regression approach. One of \code{"logit"},
-#'   \code{"log-binomial"}, \code{"poisson"}, \code{"robpoisson"},
+#'   \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
 #'   \code{"linear"}, or \code{"negbin"}.
+#' @param method Confounding assessment method. One of \code{"change"},
+#'   \code{"mh"}, or \code{"both"}. \code{"change"} compares crude and
+#'   adjusted model estimates. \code{"mh"} compares crude and
+#'   Mantel-Haenszel pooled estimates and is available for binary outcome,
+#'   binary exposure, and categorical strata. \code{"both"} uses either method.
 #' @param threshold Percent change threshold for confounding assessment.
 #' @param emm_threshold Threshold for relative spread in stratum-specific
 #'   estimates when using estimate-based effect-modification screening.
 #' @param emm_test One of \code{"interaction"}, \code{"both"}, or
 #'   \code{"estimate"}.
 #' @param interaction_alpha Alpha threshold for interaction p-values.
+#' @param format Output table format. One of \code{"gt"} or
+#'   \code{"flextable"}.
+#' @param theme Table theme preset or primitives.
 #'
 #' @return
 #' If a single exposure-candidate pair is supplied, returns a detailed list.
@@ -297,12 +522,16 @@
 #'   \item{details}{A named list of detailed results for each combination.}
 #' }
 #'
+#' @seealso \code{\link{interaction_models}()} for focused model comparison of
+#'   a planned interaction term.
+#'
 #' @export
 identify_confounder <- function(data,
                                 outcome,
                                 exposure,
                                 potential_confounder,
                                 approach = "logit",
+                                method = "change",
                                 threshold = 10,
                                 emm_threshold = 10,
                                 emm_test = c("interaction", "both", "estimate"),
@@ -310,8 +539,21 @@ identify_confounder <- function(data,
                                 format = c("gt", "flextable"),
                                 theme = c("minimal")) {
 
-  emm_test <- match.arg(emm_test)
-  format <- match.arg(format)
+  approach <- .choice_arg(
+    substitute(approach),
+    env = parent.frame(),
+    choices = c("logit","logbinomial","poisson","robpoisson","negbin","linear")
+  )
+  approach <- .normalize_approach(approach)
+  .validate_approach(approach, context = "identify_confounder")
+  method <- .choice_arg(substitute(method), env = parent.frame(), choices = c("change", "mh", "both"))
+  emm_test <- .choice_arg(substitute(emm_test), env = parent.frame(), choices = c("interaction", "both", "estimate"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt", "flextable"))
+  theme <- .choice_arg(substitute(theme), env = parent.frame())
+
+  method <- match.arg(method, c("change", "mh", "both"))
+  emm_test <- match.arg(emm_test, c("interaction", "both", "estimate"))
+  format <- match.arg(format, c("gt", "flextable"))
   theme <- .resolve_theme(theme)
 
   if (!is.data.frame(data)) {
@@ -367,14 +609,22 @@ identify_confounder <- function(data,
         candidate = cand_i,
         crude = NA_real_,
         adjusted = NA_real_,
+        mh_estimate = NA_real_,
+        mh_method = NA_character_,
+        mh_status = "Exposure and candidate variable are the same.",
         percent_change = NA_real_,
+        percent_change_model = NA_real_,
+        percent_change_mh = NA_real_,
         is_confounder = NA,
+        is_confounder_model = NA,
+        is_confounder_mh = NA,
         stratum_estimates = NULL,
         n_strata_total = NA_integer_,
         n_strata_estimable = NA_integer_,
         min_stratum_n = NA_integer_,
         emm_statistic = NA_real_,
         emm_basis = "none",
+        emm_signal_strength = "none",
         is_effect_modifier = NA,
         interaction_p = NA_real_,
         decision = "invalid",
@@ -392,6 +642,7 @@ identify_confounder <- function(data,
       exposure = exp_i,
       candidate = cand_i,
       approach = approach,
+      method = method,
       threshold = threshold,
       emm_threshold = emm_threshold,
       emm_test = emm_test,
@@ -403,22 +654,17 @@ identify_confounder <- function(data,
     tibble::tibble(
       exposure = x$exposure,
       candidate = x$candidate,
-      decision = x$decision,
-      decision_strength = x$decision_strength,
-      reason = x$reason,
-      recommendation = x$recommendation,
-      emm_basis = x$emm_basis,
-      emm_signal_strength = x$emm_signal_strength,
-      interaction_p = round(x$interaction_p, 3),
-      emm_statistic = round(x$emm_statistic, 1),
       crude_est = round(x$crude, 3),
       adjusted_est = round(x$adjusted, 3),
-      percent_change = round(x$percent_change, 2),
+      mh_est = round(x$mh_estimate, 3),
+      percent_change = round(x$percent_change_model, 2),
+      percent_change_model = round(x$percent_change_model, 2),
+      percent_change_mh = round(x$percent_change_mh, 2),
       is_confounder = x$is_confounder,
+      interaction_p = round(x$interaction_p, 3),
       is_effect_modifier = x$is_effect_modifier,
-      n_strata_total = x$n_strata_total,
-      n_strata_estimable = x$n_strata_estimable,
-      min_stratum_n = x$min_stratum_n
+      decision = x$decision,
+      recommendation = x$recommendation
     )
   }))
 
@@ -430,37 +676,11 @@ identify_confounder <- function(data,
 
   if (nrow(combos) == 1L) {
     res <- details[[1]]
+    res$summary <- summary_tbl
     res$table <- summary_table
-
-    message("\n------------------------------------------------------------")
-    message("Exposure:            ", res$exposure)
-    message("Candidate variable:  ", res$candidate)
-    message("Crude Estimate:      ", format(round(res$crude, 3), nsmall = 3))
-    message("Adjusted Estimate:   ", format(round(res$adjusted, 3), nsmall = 3))
-    message("% Change from Crude: ", format(round(res$percent_change, 2), nsmall = 2), "%")
-    message("Interaction p-value: ", ifelse(
-      is.na(res$interaction_p), "NA",
-      format(round(res$interaction_p, 3), nsmall = 3)
-    ))
-    message("EMM basis:           ", res$emm_basis)
-    message("Decision:            ", res$decision)
-    message("Decision strength:   ", res$decision_strength)
-    message("Reason:              ", res$reason)
-    message("Recommendation:      ", res$recommendation)
-    message("------------------------------------------------------------\n")
 
     return(invisible(res))
   }
-
-  message("\nSummary of assessed exposure-candidate combinations:\n")
-  print(summary_tbl)
-
-  message(
-    "\nNotes:\n",
-    "* Effect modification is assessed first.\n",
-    "* Confounding is assessed only when no important effect modification is detected.\n",
-    "* Use DAGs and subject-matter knowledge to support interpretation.\n"
-  )
 
   out <- list(
     summary = summary_tbl,
@@ -480,10 +700,17 @@ identify_confounder <- function(data,
 .build_identify_confounder_table <- function(summary_tbl,
                                              format = c("gt", "flextable"),
                                              theme = c("minimal")) {
-  format <- match.arg(format)
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt", "flextable"))
+  theme <- .choice_arg(substitute(theme), env = parent.frame())
+
+  format <- match.arg(format, c("gt", "flextable"))
   theme <- .resolve_theme(theme)
 
   df <- summary_tbl
+  caveat <- paste(
+    "Screening aid only; use DAGs, subject-matter knowledge, and study design",
+    "to decide confounding and effect modification."
+  )
 
   df_display <- df |>
     dplyr::mutate(
@@ -497,20 +724,30 @@ identify_confounder <- function(data,
         "",
         formatC(.data$adjusted_est, digits = 3, format = "f")
       ),
+      mh_est = dplyr::if_else(
+        is.na(.data$mh_est),
+        "",
+        formatC(.data$mh_est, digits = 3, format = "f")
+      ),
       interaction_p = dplyr::if_else(
         is.na(.data$interaction_p),
         "",
         formatC(.data$interaction_p, digits = 3, format = "f")
       ),
-      emm_statistic = dplyr::if_else(
-        is.na(.data$emm_statistic),
-        "",
-        formatC(.data$emm_statistic, digits = 1, format = "f")
-      ),
       percent_change = dplyr::if_else(
         is.na(.data$percent_change),
         "",
         formatC(.data$percent_change, digits = 2, format = "f")
+      ),
+      percent_change_model = dplyr::if_else(
+        is.na(.data$percent_change_model),
+        "",
+        formatC(.data$percent_change_model, digits = 2, format = "f")
+      ),
+      percent_change_mh = dplyr::if_else(
+        is.na(.data$percent_change_mh),
+        "",
+        formatC(.data$percent_change_mh, digits = 2, format = "f")
       ),
       is_confounder = dplyr::case_when(
         is.na(.data$is_confounder) ~ "",
@@ -522,57 +759,44 @@ identify_confounder <- function(data,
         .data$is_effect_modifier ~ "Yes",
         TRUE ~ "No"
       ),
-      n_strata_total = dplyr::if_else(
-        is.na(.data$n_strata_total),
-        "",
-        as.character(.data$n_strata_total)
-      ),
-      n_strata_estimable = dplyr::if_else(
-        is.na(.data$n_strata_estimable),
-        "",
-        as.character(.data$n_strata_estimable)
-      ),
-      min_stratum_n = dplyr::if_else(
-        is.na(.data$min_stratum_n),
-        "",
-        as.character(.data$min_stratum_n)
+      decision = dplyr::recode(
+        .data$decision,
+        effect_modification = "Effect modifier",
+        confounder = "Confounder",
+        no_evidence = "No evidence",
+        not_estimable = "Not estimable",
+        invalid = "Invalid",
+        .default = .data$decision
       )
     ) |>
-    dplyr::select(
+    dplyr::transmute(
       "Exposure" = .data$exposure,
       "Candidate" = .data$candidate,
-      "Decision" = .data$decision,
-      "Strength" = .data$decision_strength,
-      "Reason" = .data$reason,
-      "Recommendation" = .data$recommendation,
-      "EMM basis" = .data$emm_basis,
-      "EMM signal" = .data$emm_signal_strength,
-      "Interaction p" = .data$interaction_p,
-      "EMM statistic" = .data$emm_statistic,
       "Crude estimate" = .data$crude_est,
       "Adjusted estimate" = .data$adjusted_est,
-      "% change" = .data$percent_change,
+      "MH estimate" = .data$mh_est,
+      "% change model" = .data$percent_change_model,
+      "% change MH" = .data$percent_change_mh,
       "Confounder?" = .data$is_confounder,
+      "Interaction p" = .data$interaction_p,
       "Effect modifier?" = .data$is_effect_modifier,
-      "No. strata" = .data$n_strata_total,
-      "Estimable strata" = .data$n_strata_estimable,
-      "Min stratum n" = .data$min_stratum_n
+      "Decision" = .data$decision,
+      "Recommendation" = .data$recommendation
     )
 
   if (format == "gt") {
     tbl <- gt::gt(df_display) |>
-      gt::cols_align(align = "left", columns = c("Exposure", "Candidate", "Decision",
-                                                 "Strength", "Reason", "Recommendation",
-                                                 "EMM basis", "EMM signal")) |>
+      gt::cols_align(align = "left", columns = c("Exposure", "Candidate",
+                                                 "Decision", "Recommendation")) |>
       gt::cols_align(align = "center",
                      columns = setdiff(names(df_display),
                                        c("Exposure", "Candidate", "Decision",
-                                         "Strength", "Reason", "Recommendation",
-                                         "EMM basis", "EMM signal"))) |>
+                                         "Recommendation"))) |>
       gt::tab_style(
         style = gt::cell_text(weight = "bold"),
         locations = gt::cells_column_labels()
-      )
+      ) |>
+      gt::tab_source_note(gt::md(caveat))
 
     if ("zebra" %in% theme) {
       tbl <- gt::opt_row_striping(tbl)
@@ -602,16 +826,14 @@ identify_confounder <- function(data,
   ft <- flextable::flextable(df_display)
   ft <- flextable::align(
     ft,
-    j = c("Exposure", "Candidate", "Decision", "Strength", "Reason",
-          "Recommendation", "EMM basis", "EMM signal"),
+    j = c("Exposure", "Candidate", "Decision", "Recommendation"),
     align = "left",
     part = "all"
   )
   ft <- flextable::align(
     ft,
     j = setdiff(names(df_display),
-                c("Exposure", "Candidate", "Decision", "Strength", "Reason",
-                  "Recommendation", "EMM basis", "EMM signal")),
+                c("Exposure", "Candidate", "Decision", "Recommendation")),
     align = "center",
     part = "all"
   )
@@ -630,6 +852,9 @@ identify_confounder <- function(data,
     ft <- flextable::bg(ft, part = "header", bg = "#f6f8fa")
   }
 
+  ft <- flextable::add_footer_lines(ft, values = caveat)
+  ft <- flextable::fontsize(ft, size = 8, part = "footer")
+  ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   ft <- flextable::autofit(ft)
   ft
 }

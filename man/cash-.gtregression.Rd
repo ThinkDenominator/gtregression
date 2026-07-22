@@ -6,9 +6,14 @@
 \usage{
 \method{$}{gtregression}(x, name)
 }
+\arguments{
+\item{x}{A \code{gtregression} object.}
+
+\item{name}{Field name to access.}
+}
 \description{
 Works for any object from this package, since they all carry class
-`"gtregression"`. Returns NULL (quietly) if the field isn't present.
+`"gtregression"`. Returns NULL (quietly) if the field is not present.
 }
 \details{
 Common fields:
