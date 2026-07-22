@@ -11,6 +11,7 @@
 ^.*/\.DS_Store$
 
 # Development-only project files
+^dev$
 ^README\.Rmd$
 ^README - Rubes\.md$
 ^LICENSE\.md$

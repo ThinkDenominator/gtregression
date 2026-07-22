@@ -443,7 +443,7 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
     labs <- c("Characteristic", unlist(col_labels, use.names = FALSE))
 
     ft <- flextable::flextable(out)
-    ft <- flextable::set_header_labels(ft, .labels = stats::setNames(labs, keys))
+    ft <- flextable::set_header_labels(ft, values = stats::setNames(labs, keys))
     ft <- flextable::align(ft, j = "Characteristic", align = "left", part = "all")
     ft <- flextable::align(
       ft,

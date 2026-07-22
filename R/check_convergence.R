@@ -183,7 +183,7 @@ check_convergence <- function(data,
         },
         error = function(e) {
           data.frame(Exposure = exposure, Model = approach,
-                     Converged = FALSE, Max.prob. = NA)
+                     Converged = FALSE, Max.prob. = NA_real_)
         }
       )
       results_list[[exposure]] <- result
@@ -204,10 +204,10 @@ check_convergence <- function(data,
       },
       error = function(e) {
         warning("Model fitting failed for the selected approach", call. = FALSE)
-        data.frame(Exposure = NA,
+        data.frame(Exposure = paste(exposures, collapse = " + "),
                    Model = approach,
                    Converged = FALSE,
-                   Max.prob. = NA)
+                   Max.prob. = NA_real_)
       }
     )
 
@@ -233,6 +233,8 @@ check_convergence <- function(data,
     "and model specification before interpreting estimates."
   )
 
+  result$Max.prob. <- suppressWarnings(as.numeric(result$Max.prob.))
+
   display <- result |>
     dplyr::mutate(
       Converged = dplyr::case_when(
@@ -240,11 +242,8 @@ check_convergence <- function(data,
         .data$Converged ~ "Yes",
         TRUE ~ "No"
       ),
-      Max.prob. = dplyr::if_else(
-        is.na(.data$Max.prob.),
-        "",
-        formatC(.data$Max.prob., digits = 3, format = "f")
-      )
+      Max.prob. = ifelse(is.na(.data$Max.prob.), "",
+                          formatC(.data$Max.prob., digits = 3, format = "f"))
     )
 
   if (format == "gt") {

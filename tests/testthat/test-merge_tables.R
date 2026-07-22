@@ -11,6 +11,10 @@ birthwt_merge_data <- function() {
     )
 }
 
+flextable_header_text <- function(x) {
+  vapply(x$header$content$data, function(part) part$txt[1], character(1))
+}
+
 test_that("merge_tables combines native gtregression objects", {
   df <- birthwt_merge_data()
 
@@ -48,6 +52,11 @@ test_that("merge_tables combines native gtregression objects", {
   expect_true(any(grepl("OR", names(merged$table_display), fixed = TRUE)))
   expect_true(any(grepl("percentages are by column", merged$footnotes)))
   expect_true(any(grepl("OR = Odds Ratio", merged$footnotes, fixed = TRUE)))
+
+  gt_labels <- as.character(merged$table$`_boxhead`$column_label)
+  expect_false(any(grepl("_p[0-9]+$", gt_labels)))
+  expect_true(all(c("Normal BW", "Low BW", "Overall", "N", "OR (95% CI)", "p-value") %in%
+                    gt_labels))
 })
 
 test_that("merge_tables aligns univariable and adjusted multivariable tables", {
@@ -116,6 +125,11 @@ test_that("merge_tables supports flextable output", {
   expect_s3_class(merged, "ft_merge")
   expect_s3_class(merged$table, "flextable")
   expect_equal(merged$engine, "flextable")
+
+  header_text <- flextable_header_text(merged$table)
+  expect_false(any(grepl("_p[0-9]+$", header_text)))
+  expect_true(all(c("N", "OR (95% CI)", "p-value", "Adjusted OR (95% CI)") %in%
+                    header_text))
 })
 
 test_that("merge_tables validates inputs", {

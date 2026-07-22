@@ -168,6 +168,30 @@ test_that("check_convergence handles empty data and fitting failures", {
 
   expect_false(result$Converged)
   expect_true(is.na(result$Max.prob.))
+
+  result_multi <- suppressWarnings(check_convergence(
+    broken_data,
+    exposures = "all_one",
+    outcome = "diabetes",
+    approach = "logbinomial",
+    multivariate = TRUE,
+    format = tibble
+  ))
+
+  expect_false(result_multi$Converged)
+  expect_equal(result_multi$Exposure, "all_one")
+  expect_true(is.na(result_multi$Max.prob.))
+
+  expect_s3_class(
+    suppressWarnings(check_convergence(
+      broken_data,
+      exposures = "all_one",
+      outcome = "diabetes",
+      approach = "logbinomial",
+      multivariate = TRUE
+    )),
+    "flextable"
+  )
 })
 
 test_that("check_convergence warns for robpoisson fitted values above one", {

@@ -39,6 +39,7 @@ print.gtregression <- function(x, ...) {
 #' @param x An object returned by \code{identify_confounder()}.
 #' @param ... Ignored. Present for compatibility with the generic.
 #'
+#' @noRd
 #' @export
 print.identify_confounder_result <- function(x, ...) {
   if (!is.null(x$summary)) {
