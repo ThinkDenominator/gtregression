@@ -10,17 +10,19 @@ check_convergence(
   outcome,
   approach = "logit",
   multivariate = FALSE,
-  format = c("tibble", "gt", "flextable")
+  format = c("flextable", "gt", "tibble")
 )
 }
 \arguments{
 \item{data}{A data frame containing the dataset.}
 
-\item{exposures}{A character vector of predictor variable names.
+\item{exposures}{A character vector of predictor variable names. Quoted names
+are recommended in scripts, and bare names are also accepted.
 If \code{multivariate = FALSE}, each exposure is assessed separately.
 If \code{multivariate = TRUE}, exposures are included together.}
 
-\item{outcome}{A character string specifying the outcome variable.}
+\item{outcome}{A character string specifying the outcome variable. Quoted and
+bare names are accepted.}
 
 \item{approach}{A character string specifying the regression approach.
 One of:
@@ -31,9 +33,9 @@ One of:
 checks convergence for a multivariable model;
   otherwise, performs checks for each univariate model.}
 
-\item{format}{Output format. One of \code{"tibble"}, \code{"gt"}, or
-\code{"flextable"}. The default \code{"tibble"} returns the original
-data-frame style output.}
+\item{format}{Output format. One of \code{"flextable"} (default),
+\code{"gt"}, or \code{"tibble"}. Use \code{format = "tibble"} for the
+original data-frame style output.}
 }
 \value{
 A data frame, \code{gt_tbl}, or \code{flextable} summarizing

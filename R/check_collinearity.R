@@ -7,9 +7,9 @@
 #'   \code{stratified_multi_reg()}, or compatible \code{gtregression}
 #'   functions. Univariable model objects are rejected because VIF is not
 #'   applicable.
-#' @param format Output format. One of \code{"tibble"}, \code{"gt"}, or
-#'   \code{"flextable"}. The default \code{"tibble"} preserves the original
-#'   tibble or nested-list output.
+#' @param format Output format. One of \code{"flextable"} (default),
+#'   \code{"gt"}, or \code{"tibble"}. Use \code{format = "tibble"} to preserve
+#'   the original tibble or nested-list output.
 #'
 #' @return For multivariable models, a tibble if a single fitted model is
 #' present, or a named list of tibbles if multiple fitted models are present.
@@ -33,13 +33,13 @@
 #' @importFrom stats complete.cases cor model.matrix terms
 #' @export
 check_collinearity <- function(model,
-                               format = c("tibble", "gt", "flextable")) {
+                               format = c("flextable", "gt", "tibble")) {
   format <- .choice_arg(
     substitute(format),
     env = parent.frame(),
-    choices = c("tibble", "gt", "flextable")
+    choices = c("flextable", "gt", "tibble")
   )
-  format <- match.arg(format, c("tibble", "gt", "flextable"))
+  format <- match.arg(format, c("flextable", "gt", "tibble"))
 
   valid_sources <- c(
     "uni_reg", "multi_reg", "uni_reg_nbin", "multi_reg_nbin",
@@ -281,8 +281,8 @@ check_collinearity <- function(model,
 #' Format VIF output recursively
 #' @keywords internal
 #' @noRd
-.format_vif_output <- function(x, format = c("gt", "flextable")) {
-  format <- match.arg(format, c("gt", "flextable"))
+.format_vif_output <- function(x, format = c("flextable", "gt")) {
+  format <- match.arg(format, c("flextable", "gt"))
 
   if (is.data.frame(x)) {
     return(.build_check_collinearity_table(x, format = format))
@@ -299,8 +299,8 @@ check_collinearity <- function(model,
 #' @keywords internal
 #' @noRd
 .build_check_collinearity_table <- function(result,
-                                            format = c("gt", "flextable")) {
-  format <- match.arg(format, c("gt", "flextable"))
+                                            format = c("flextable", "gt")) {
+  format <- match.arg(format, c("flextable", "gt"))
   note <- paste(
     "Screening aid only; interpret VIF with model purpose, coding choices,",
     "sample size, and subject-matter knowledge."

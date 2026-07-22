@@ -3,6 +3,7 @@
 S3method("$",gtregression)
 S3method(print,gtregression)
 S3method(print,gtregression_forest)
+S3method(print,identify_confounder_result)
 S3method(print,merged_table)
 export(check_collinearity)
 export(check_convergence)

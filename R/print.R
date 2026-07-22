@@ -33,3 +33,21 @@ print.gtregression <- function(x, ...) {
   }
   invisible(x)
 }
+
+#' Print identify_confounder results
+#'
+#' @param x An object returned by \code{identify_confounder()}.
+#' @param ... Ignored. Present for compatibility with the generic.
+#'
+#' @export
+print.identify_confounder_result <- function(x, ...) {
+  if (!is.null(x$summary)) {
+    cat("Confounder and effect-modifier screening\n")
+    print(x$summary)
+    cat("\n")
+    cat("Use `$table` for the formatted publication-ready table.\n")
+  } else {
+    utils::str(x)
+  }
+  invisible(x)
+}

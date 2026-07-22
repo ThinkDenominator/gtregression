@@ -10,15 +10,17 @@ select_models(
   exposures,
   approach = "logit",
   direction = "forward",
-  format = c("tibble", "gt", "flextable")
+  format = c("flextable", "gt", "tibble")
 )
 }
 \arguments{
 \item{data}{A data frame containing the outcome and predictor variables.}
 
-\item{outcome}{A single character string indicating the outcome variable.}
+\item{outcome}{A single character string indicating the outcome variable.
+Quoted and bare names are accepted.}
 
-\item{exposures}{Character vector of predictor variables to consider.}
+\item{exposures}{Character vector of predictor variables to consider. Quoted
+names are recommended in scripts, and bare names are also accepted.}
 
 \item{approach}{Regression method. One of:
 \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
@@ -27,9 +29,9 @@ select_models(
 \item{direction}{Stepwise selection direction. One of:
 \code{"forward"} (default), \code{"backward"}, or \code{"both"}.}
 
-\item{format}{Output format for an optional viewing table. One of
-\code{"tibble"}, \code{"gt"}, or \code{"flextable"}. The default
-\code{"tibble"} keeps the original list structure.}
+\item{format}{Output format for the viewing table. One of
+\code{"flextable"} (default), \code{"gt"}, or \code{"tibble"}. Use
+\code{format = "tibble"} to keep only the original list structure.}
 }
 \value{
 A list with the following components:
@@ -39,6 +41,7 @@ A list with the following components:
   for linear models).
   \item \code{best_model}: The best-fitting model object based on lowest AIC.
   \item \code{all_models}: A named list of the accepted stepwise models.
+  \item \code{direction}: Stepwise selection direction used.
   \item \code{table}: A formatted \code{gt_tbl} or \code{flextable} when
   \code{format} is \code{"gt"} or \code{"flextable"}.
 }

@@ -6,9 +6,9 @@
 #' @param data A data frame.
 #' @param verbose Logical; if \code{TRUE}, print the summary and interpretation
 #'   notes. The tibble is returned invisibly only when printed by the console.
-#' @param format Output format. One of \code{"tibble"}, \code{"gt"}, or
-#'   \code{"flextable"}. The default \code{"tibble"} keeps the output easy to
-#'   use in pipelines.
+#' @param format Output format. One of \code{"flextable"} (default),
+#'   \code{"gt"}, or \code{"tibble"}. Use \code{format = "tibble"} for
+#'   pipeline-friendly raw output.
 #'
 #' @return A tibble, \code{gt_tbl}, or \code{flextable}, depending on
 #'   \code{format}. The tibble has columns: Variable, Type, Missing (%), Unique,
@@ -17,11 +17,11 @@
 #'
 #' @examples
 #' dissect(data_birthwt)
-#' dissect(data_birthwt, format = gt)
+#' dissect(data_birthwt, format = "gt")
 #'
 #' # Print interpretation notes for beginners
 #' dissect(data_birthwt, verbose = TRUE)
-dissect <- function(data, verbose = FALSE, format = c("tibble", "gt", "flextable")) {
+dissect <- function(data, verbose = FALSE, format = c("flextable", "gt", "tibble")) {
   if (!is.data.frame(data)) {
     stop("The input to `dissect()` must be a data frame. ",
          "You provided an object of class: ", class(data)[1], call. = FALSE)
@@ -32,9 +32,9 @@ dissect <- function(data, verbose = FALSE, format = c("tibble", "gt", "flextable
   format <- .choice_arg(
     substitute(format),
     env = parent.frame(),
-    choices = c("tibble", "gt", "flextable")
+    choices = c("flextable", "gt", "tibble")
   )
-  format <- match.arg(format, c("tibble", "gt", "flextable"))
+  format <- match.arg(format, c("flextable", "gt", "tibble"))
 
 
   summarize_column <- function(x, name) {
@@ -131,8 +131,8 @@ dissect <- function(data, verbose = FALSE, format = c("tibble", "gt", "flextable
 #' @keywords internal
 #' @noRd
 .build_dissect_table <- function(result,
-                                 format = c("gt", "flextable")) {
-  format <- match.arg(format, c("gt", "flextable"))
+                                 format = c("flextable", "gt")) {
+  format <- match.arg(format, c("flextable", "gt"))
   note <- paste(
     "Screening aid only; review coding, missingness, sparse levels,",
     "and study context before modeling."

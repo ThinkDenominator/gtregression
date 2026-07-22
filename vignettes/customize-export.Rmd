@@ -37,14 +37,14 @@ birthwt_uni <- uni_reg(
   birthwt_data,
   outcome = "low",
   exposures = c("age", "lwt", "race", "smoke", "ht", "ui"),
-  approach = logit
+  approach = "logit"
 )
 birthwt_multi <- multi_reg(
   birthwt_data,
   outcome = "low",
   exposures = c("smoke", "ht", "ui"),
   adjust_for = c("age", "lwt", "race"),
-  approach = logit
+  approach = "logit"
 )
 ```
 
@@ -83,19 +83,19 @@ birthwt_merged$table
 When no destination is supplied, save helpers use a temporary folder.
 
 ```{r save-examples, eval=FALSE}
-save_table(birthwt_merged, filename = "birthwt-table", format = html)
+save_table(birthwt_merged, filename = "birthwt-table", format = "html")
 
 birthwt_plot <- plot_reg(
   birthwt_multi,
   title = "Adjusted Regression for Low Birth Weight"
 )
 
-save_plot(birthwt_plot, filename = "birthwt-forest", format = png)
+save_plot(birthwt_plot, filename = "birthwt-forest", format = "png")
 ```
 
 ## Word Reports
 
-Use `format = flextable` when the destination is Word.
+Use `format = "flextable"` when the destination is Word.
 
 ```{r word-example, eval=FALSE}
 birthwt_multi_ft <- multi_reg(
@@ -103,8 +103,8 @@ birthwt_multi_ft <- multi_reg(
   outcome = "low",
   exposures = c("smoke", "ht", "ui"),
   adjust_for = c("age", "lwt", "race"),
-  approach = logit,
-  format = flextable
+  approach = "logit",
+  format = "flextable"
 )
 
 save_docx(

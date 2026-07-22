@@ -162,7 +162,7 @@
 #'   data = birthwt_data,
 #'   outcome = "low",
 #'   exposures = c("age", "smoke", "ht"),
-#'   approach = logit
+#'   approach = "logit"
 #' )
 #'
 #' modify_table(

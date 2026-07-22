@@ -15,19 +15,22 @@ identify_confounder(
   emm_threshold = 10,
   emm_test = c("interaction", "both", "estimate"),
   interaction_alpha = 0.05,
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 }
 \arguments{
 \item{data}{A data frame.}
 
-\item{outcome}{Outcome variable name.}
+\item{outcome}{Outcome variable name. Quoted and bare names are accepted.}
 
-\item{exposure}{Exposure variable name(s). Can be a character scalar or vector.}
+\item{exposure}{Exposure variable name(s). Can be a character scalar or
+vector. Quoted names are recommended in scripts, and bare names are also
+accepted.}
 
 \item{potential_confounder}{Candidate confounder/effect-modifier variable
-name(s). Can be a character scalar or vector.}
+name(s). Can be a character scalar or vector. Quoted names are recommended
+in scripts, and bare names are also accepted.}
 
 \item{approach}{Regression approach. One of \code{"logit"},
 \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
@@ -49,8 +52,8 @@ estimates when using estimate-based effect-modification screening.}
 
 \item{interaction_alpha}{Alpha threshold for interaction p-values.}
 
-\item{format}{Output table format. One of \code{"gt"} or
-\code{"flextable"}.}
+\item{format}{Output table format. One of \code{"flextable"} (default) or
+\code{"gt"}.}
 
 \item{theme}{Table theme preset or primitives.}
 }

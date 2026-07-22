@@ -15,16 +15,18 @@ descriptive_table(
   show_overall = c("no", "first", "last"),
   statistic = NULL,
   value = NULL,
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 }
 \arguments{
 \item{data}{data.frame}
 
-\item{exposures}{character; variables to summarise}
+\item{exposures}{Character vector of variables to summarise. Quoted names are
+recommended in scripts, and bare names are also accepted.}
 
-\item{by}{optional single grouping variable}
+\item{by}{Optional single grouping variable. Quoted and bare names are
+accepted.}
 
 \item{percent}{"column" (default) or "row"; aliases like "col"/"rows" accepted}
 
@@ -43,7 +45,7 @@ values in "mean","median","mode","count"
 \item{value}{optional named list for single-row binaries (e.g., list(sex="Female"));
 formula entries like list(sex ~ "Female") are also accepted}
 
-\item{format}{"gt" (default) or "flextable"}
+\item{format}{"flextable" (default) or "gt"}
 
 \item{theme}{preset or primitives}
 }

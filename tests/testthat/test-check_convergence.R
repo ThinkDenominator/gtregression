@@ -18,14 +18,16 @@ test_that("check_convergence runs univariable and multivariable logit models", {
     data = df,
     exposures = exposures,
     outcome = "low",
-    approach = logit
+    approach = logit,
+    format = tibble
   )
   result_multi <- check_convergence(
     data = df,
     exposures = exposures,
     outcome = "low",
     approach = "logit",
-    multivariate = TRUE
+    multivariate = TRUE,
+    format = tibble
   )
 
   expect_s3_class(result_uni, "data.frame")
@@ -48,13 +50,15 @@ test_that("check_convergence supports logbinomial and robpoisson approaches", {
     data = df,
     exposures = c("age", "smoke"),
     outcome = "low",
-    approach = logbinomial
+    approach = logbinomial,
+    format = tibble
   )
   rob <- suppressWarnings(check_convergence(
     data = df,
     exposures = c("age", "smoke"),
     outcome = "low",
-    approach = robpoisson
+    approach = robpoisson,
+    format = tibble
   ))
 
   expect_s3_class(logbin, "data.frame")
@@ -75,14 +79,16 @@ test_that("check_convergence supports poisson and negative binomial count models
     data = quine_data,
     exposures = exposures,
     outcome = "Days",
-    approach = poisson
+    approach = poisson,
+    format = tibble
   )
   nb <- check_convergence(
     data = quine_data,
     exposures = exposures,
     outcome = "Days",
     approach = negbin,
-    multivariate = TRUE
+    multivariate = TRUE,
+    format = tibble
   )
 
   expect_s3_class(pois, "data.frame")
@@ -140,7 +146,8 @@ test_that("check_convergence handles empty data and fitting failures", {
     data = df[0, ],
     exposures = c("age", "smoke"),
     outcome = "low",
-    approach = logit
+    approach = logit,
+    format = tibble
   )
   expect_s3_class(empty, "data.frame")
   expect_equal(nrow(empty), 0L)
@@ -155,7 +162,8 @@ test_that("check_convergence handles empty data and fitting failures", {
     broken_data,
     exposures = "all_one",
     outcome = "diabetes",
-    approach = "logit"
+    approach = "logit",
+    format = tibble
   )
 
   expect_false(result$Converged)
@@ -173,7 +181,8 @@ test_that("check_convergence warns for robpoisson fitted values above one", {
       data = df,
       exposures = "x",
       outcome = "outcome",
-      approach = robpoisson
+      approach = robpoisson,
+      format = tibble
     )),
     "predicted fitted value exceeds 1"
   )

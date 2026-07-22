@@ -5,14 +5,17 @@
 #' \pkg{gt} or \pkg{flextable}.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome Character scalar; name of the outcome variable.
-#' @param exposures Character vector of exposure variables to model.
-#' @param stratifier Character scalar; name of the stratifying variable.
+#' @param outcome Character scalar; name of the outcome variable. Quoted and
+#'   bare names are accepted.
+#' @param exposures Character vector of exposure variables to model. Quoted
+#'   names are recommended in scripts, and bare names are also accepted.
+#' @param stratifier Character scalar; name of the stratifying variable. Quoted
+#'   and bare names are accepted.
 #' @param approach Modeling approach. One of \code{"logit"},
 #'   \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
 #'   \code{"linear"}, or \code{"negbin"}.
-#' @param format Output table format; one of \code{"gt"} or
-#'   \code{"flextable"}.
+#' @param format Output table format; one of \code{"flextable"} (default) or
+#'   \code{"gt"}.
 #' @param theme Table styling preset or theme primitives.
 #'
 #' @return A list of class
@@ -61,7 +64,7 @@
 #'   outcome = "low",
 #'   exposures = c("age", "lwt", "smoke"),
 #'   stratifier = "race",
-#'   approach = logit
+#'   approach = "logit"
 #' )
 #'
 #' stratified_uni$table
@@ -73,18 +76,21 @@
 #' @export
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit",
-                               format   = c("gt","flextable"),
+                               format   = c("flextable","gt"),
                                theme    = c("minimal")) {
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
+  stratifier <- .vars_arg(substitute(stratifier), env = parent.frame())
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
     choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
   )
   approach <- .normalize_approach(approach)
-  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
 
-  format <- match.arg(format)
+  format <- match.arg(format, c("flextable","gt"))
   theme  <- .resolve_theme(theme)
 
   .validate_uni_inputs(data, outcome, exposures, approach)

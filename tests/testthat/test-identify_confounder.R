@@ -55,11 +55,31 @@ test_that("identify_confounder keeps detailed fields for single-pair calls", {
   )
 
   expect_type(result, "list")
+  expect_s3_class(result, "identify_confounder_result")
   expect_true(all(c("crude", "adjusted", "percent_change", "is_confounder",
                     "summary", "table") %in% names(result)))
   expect_true(is.numeric(result$crude))
   expect_s3_class(result$summary, "tbl_df")
   expect_equal(nrow(result$summary), 1)
+})
+
+test_that("identify_confounder prints a console summary for plain calls", {
+  df <- birthwt_confounder_data()
+
+  result <- identify_confounder(
+    data = df,
+    outcome = "low",
+    exposure = "smoke",
+    potential_confounder = "race",
+    approach = "logit"
+  )
+
+  output <- capture.output(print(result))
+
+  expect_match(output[1], "Confounder and effect-modifier screening")
+  expect_true(any(grepl("smoke", output, fixed = TRUE)))
+  expect_true(any(grepl("race", output, fixed = TRUE)))
+  expect_true(any(grepl("Use `$table`", output, fixed = TRUE)))
 })
 
 test_that("identify_confounder supports Mantel-Haenszel method", {
@@ -240,7 +260,8 @@ test_that("identify_confounder display table includes caveat", {
     exposure = "smoke",
     potential_confounder = c("race", "ht"),
     approach = logit,
-    method = both
+    method = both,
+    format = gt
   )
 
   display_cols <- names(result$table$`_data`)

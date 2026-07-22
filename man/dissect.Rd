@@ -4,7 +4,7 @@
 \alias{dissect}
 \title{Dissect a dataset before regression}
 \usage{
-dissect(data, verbose = FALSE, format = c("tibble", "gt", "flextable"))
+dissect(data, verbose = FALSE, format = c("flextable", "gt", "tibble"))
 }
 \arguments{
 \item{data}{A data frame.}
@@ -12,9 +12,9 @@ dissect(data, verbose = FALSE, format = c("tibble", "gt", "flextable"))
 \item{verbose}{Logical; if \code{TRUE}, print the summary and interpretation
 notes. The tibble is returned invisibly only when printed by the console.}
 
-\item{format}{Output format. One of \code{"tibble"}, \code{"gt"}, or
-\code{"flextable"}. The default \code{"tibble"} keeps the output easy to
-use in pipelines.}
+\item{format}{Output format. One of \code{"flextable"} (default),
+\code{"gt"}, or \code{"tibble"}. Use \code{format = "tibble"} for
+pipeline-friendly raw output.}
 }
 \value{
 A tibble, \code{gt_tbl}, or \code{flextable}, depending on
@@ -27,7 +27,7 @@ and suitability for use in regression models.
 }
 \examples{
 dissect(data_birthwt)
-dissect(data_birthwt, format = gt)
+dissect(data_birthwt, format = "gt")
 
 # Print interpretation notes for beginners
 dissect(data_birthwt, verbose = TRUE)

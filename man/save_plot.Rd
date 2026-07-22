@@ -37,5 +37,5 @@ Saves a \code{ggplot2} plot to a file in PNG, PDF, or JPG format.
 p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
   ggplot2::geom_point()
 
-save_plot(p, filename = tempfile("plot"), format = png)
+save_plot(p, filename = tempfile("plot"), format = "png")
 }

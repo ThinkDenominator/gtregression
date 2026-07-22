@@ -185,7 +185,7 @@
 #'   data = birthwt_data,
 #'   outcome = "low",
 #'   exposures = c("age", "lwt", "smoke", "ht"),
-#'   approach = logit
+#'   approach = "logit"
 #' )
 #'
 #' multi_tbl <- multi_reg(
@@ -193,7 +193,7 @@
 #'   outcome = "low",
 #'   exposures = c("smoke", "ht"),
 #'   adjust_for = c("age", "lwt"),
-#'   approach = logit
+#'   approach = "logit"
 #' )
 #'
 #' merge_tables(

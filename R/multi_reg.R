@@ -4,29 +4,32 @@
 #' \pkg{gt} or \pkg{flextable}, without a \pkg{gtsummary} dependency.
 #'
 #' @param data A \code{data.frame} containing the variables of interest.
-#' @param outcome Character scalar; name of the outcome variable.
+#' @param outcome Character scalar; name of the outcome variable. Quoted and
+#'   bare names are accepted.
 #' @param exposures Character vector; exposure variable(s) to report.
+#'   Quoted names are recommended in scripts, and bare names are also accepted.
 #'   If \code{adjust_for = NULL}, all exposures are included in a single
 #'   multivariable model. If \code{adjust_for} is supplied, one adjusted
 #'   model is fitted per exposure and only exposure-specific adjusted
 #'   estimate(s) are displayed.
-#' @param adjust_for Optional character vector of adjustment variables.
-#'   Must not overlap with \code{exposures}.
+#' @param adjust_for Optional character vector of adjustment variables. Quoted
+#'   and bare names are accepted. Must not overlap with \code{exposures}.
 #' @param interaction Optional character scalar specifying one interaction term
 #'   using standard formula syntax, e.g. \code{"bmi*sex"}.
 #'   When used with \code{adjust_for}, only a single exposure should be supplied.
 #' @param approach Character scalar specifying the regression approach.
 #'   One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 #'   \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}.
-#' @param format Output table format; one of \code{"gt"} (default) or \code{"flextable"}.
+#' @param format Output table format; one of \code{"flextable"} (default) or
+#'   \code{"gt"}.
 #' @param theme Table styling preset (e.g. \code{"minimal"}, \code{"striped"},
 #'   \code{"clinical"}, \code{"shaded"}, \code{"jama"}) or a character vector of
 #'   primitives such as \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}.
 #'
 #' @return A list of class \code{c("gtregression","multi_reg", ...)} with elements:
 #' \describe{
-#'   \item{table}{A \code{gt_tbl} (if \code{format="gt"}) or \code{flextable}
-#'   (if \code{format="flextable"}).}
+#'   \item{table}{A \code{flextable} (if \code{format="flextable"}) or
+#'   \code{gt_tbl} (if \code{format="gt"}).}
 #'   \item{table_body}{A data frame of adjusted estimates and confidence intervals
 #'   for each exposure and level.}
 #'   \item{table_display}{A data frame used for rendering the final table,
@@ -60,19 +63,22 @@ multi_reg <- function(data,
                       adjust_for = NULL,
                       interaction = NULL,
                       approach = "logit",
-                      format = c("gt", "flextable"),
+                      format = c("flextable", "gt"),
                       theme = c("minimal")) {
 
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
+  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
     choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
   )
   approach <- .normalize_approach(approach)
-  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
 
-  format <- match.arg(format)
+  format <- match.arg(format, c("flextable","gt"))
   theme <- .resolve_theme(theme)
 
   fmt_class <- if (format == "gt") "gt_multi" else "ft_multi"

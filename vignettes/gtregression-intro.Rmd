@@ -83,8 +83,8 @@ birthwt_summary <- descriptive_table(
   data = birthwt_data,
   exposures = birthwt_exposures,
   by = "low",
-  percent = column,
-  show_overall = last,
+  percent = "column",
+  show_overall = "last",
   theme = clinical
 )
 
@@ -98,7 +98,7 @@ birthwt_uni <- uni_reg(
   data = birthwt_data,
   outcome = "low",
   exposures = birthwt_exposures,
-  approach = logit,
+  approach = "logit",
   theme = clinical
 )
 
@@ -107,7 +107,7 @@ birthwt_multi <- multi_reg(
   outcome = "low",
   exposures = c("smoke", "ht", "ui", "ptl_cat", "ftv_cat"),
   adjust_for = c("age", "lwt", "race"),
-  approach = logit,
+  approach = "logit",
   theme = striped
 )
 

@@ -22,8 +22,10 @@
 #' * continuous rows default to Median (IQR) (footnote reflects summary)
 #'
 #' @param data data.frame
-#' @param exposures character; variables to summarise
-#' @param by optional single grouping variable
+#' @param exposures Character vector of variables to summarise. Quoted names are
+#'   recommended in scripts, and bare names are also accepted.
+#' @param by Optional single grouping variable. Quoted and bare names are
+#'   accepted.
 #' @param percent "column" (default) or "row"; aliases like "col"/"rows" accepted
 #' @param digits integer; decimals for \% and continuous stats (default 1)
 #' @param show_missing "ifany" (default) or "no"
@@ -34,7 +36,7 @@
 #'   (default is "median" = Median (IQR))
 #' @param value optional named list for single-row binaries (e.g., list(sex="Female"));
 #'   formula entries like list(sex ~ "Female") are also accepted
-#' @param format "gt" (default) or "flextable"
+#' @param format "flextable" (default) or "gt"
 #' @param theme preset or primitives
 #'
 #' @return A list with class \code{c("gtregression", "descriptive_table", ...)}
@@ -56,8 +58,11 @@ descriptive_table <- function(data,
                               show_overall = c("no","first","last"),
                               statistic = NULL,
                               value = NULL,
-                              format = c("gt","flextable"),
+                              format = c("flextable","gt"),
                               theme = c("minimal")) {
+
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
+  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE)
 
   # ---- normalize choices (accept aliases) ----
   percent <- .choice_arg(
@@ -70,7 +75,7 @@ descriptive_table <- function(data,
   show_missing <- .choice_arg(substitute(show_missing), env = parent.frame(), choices = c("ifany","no"))
   show_dichotomous <- .choice_arg(substitute(show_dichotomous), env = parent.frame(), choices = c("all_levels","single_row"))
   show_overall <- .choice_arg(substitute(show_overall), env = parent.frame(), choices = c("no","first","last"))
-  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
 
   percent <- percent[1]
@@ -78,7 +83,7 @@ descriptive_table <- function(data,
   show_dichotomous <- match.arg(tolower(show_dichotomous[1]), c("all_levels","single_row"))
   show_overall     <- match.arg(tolower(show_overall[1]),     c("no","first","last"))
   percent          <- match.arg(percent, c("column","row"))
-  format           <- match.arg(tolower(format[1]), c("gt","flextable"))
+  format           <- match.arg(tolower(format[1]), c("flextable","gt"))
   theme            <- .resolve_theme_desc(theme)
 
   # ---- checks ----

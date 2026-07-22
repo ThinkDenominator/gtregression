@@ -68,6 +68,24 @@ utils::globalVariables(c(
   out
 }
 
+#' Normalize quoted or bare variable-name arguments
+#'
+#' @keywords internal
+#' @noRd
+.vars_arg <- function(expr, env = parent.frame(), allow_null = FALSE) {
+  if (identical(expr, quote(NULL))) {
+    if (allow_null) {
+      return(NULL)
+    }
+    stop("Variable names cannot be NULL.", call. = FALSE)
+  }
+  out <- .choice_arg(expr, env = env, lower = FALSE)
+  if (is.null(out) && allow_null) {
+    return(NULL)
+  }
+  out
+}
+
 #' Normalize regression approach spellings
 #'
 #' @keywords internal

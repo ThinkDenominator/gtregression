@@ -21,7 +21,8 @@ test_that("interaction_models returns focused result for logit LRT", {
     effect_modifier = "race",
     covariates = c("age", "lwt"),
     approach = logit,
-    test = LRT
+    test = LRT,
+    format = tibble
   )
 
   expect_s3_class(result, "interaction_models_result")

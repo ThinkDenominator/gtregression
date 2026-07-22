@@ -13,10 +13,13 @@
 #' \code{\link{identify_confounder}()}.
 #'
 #' @param data A data frame containing all required variables.
-#' @param outcome Outcome variable name.
-#' @param exposure Main exposure variable name.
-#' @param covariates Optional character vector of additional covariates.
+#' @param outcome Outcome variable name. Quoted and bare names are accepted.
+#' @param exposure Main exposure variable name. Quoted and bare names are
+#'   accepted.
+#' @param covariates Optional character vector of additional covariates. Quoted
+#'   names are recommended in scripts, and bare names are also accepted.
 #' @param effect_modifier Variable name for the potential effect modifier.
+#'   Quoted and bare names are accepted.
 #' @param approach Regression approach. One of \code{"logit"},
 #'   \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
 #'   \code{"negbin"}, or \code{"linear"}.
@@ -24,9 +27,9 @@
 #'   \code{"Wald"}.
 #' @param alpha Significance threshold used to classify the interaction result.
 #' @param verbose Logical; if \code{TRUE}, prints a short interpretation.
-#' @param format Output format for an optional viewing table. One of
-#'   \code{"tibble"}, \code{"gt"}, or \code{"flextable"}. The default
-#'   \code{"tibble"} keeps the original list structure.
+#' @param format Output format for the viewing table. One of
+#'   \code{"flextable"} (default), \code{"gt"}, or \code{"tibble"}. Use
+#'   \code{format = "tibble"} to keep only the original list structure.
 #'
 #' @return A list with model objects, formulas, p-value, decision, and a
 #'   one-row summary tibble. When \code{format} is \code{"gt"} or
@@ -46,10 +49,14 @@ interaction_models <- function(data,
                                test = c("LRT", "Wald"),
                                alpha = 0.05,
                                verbose = FALSE,
-                               format = c("tibble", "gt", "flextable")) {
+                               format = c("flextable", "gt", "tibble")) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data frame.", call. = FALSE)
   }
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  exposure <- .vars_arg(substitute(exposure), env = parent.frame())
+  covariates <- .vars_arg(substitute(covariates), env = parent.frame(), allow_null = TRUE)
+  effect_modifier <- .vars_arg(substitute(effect_modifier), env = parent.frame())
   if (!is.character(outcome) || length(outcome) != 1L ||
       is.na(outcome) || !nzchar(outcome)) {
     stop("`outcome` must be a single character variable name.", call. = FALSE)
@@ -95,9 +102,9 @@ interaction_models <- function(data,
   format <- .choice_arg(
     substitute(format),
     env = parent.frame(),
-    choices = c("tibble", "gt", "flextable")
+    choices = c("flextable", "gt", "tibble")
   )
-  format <- match.arg(format, c("tibble", "gt", "flextable"))
+  format <- match.arg(format, c("flextable", "gt", "tibble"))
 
   needed <- unique(c(outcome, exposure, effect_modifier, covariates))
   missing_vars <- setdiff(needed, names(data))
@@ -249,8 +256,8 @@ interaction_models <- function(data,
 #' @keywords internal
 #' @noRd
 .build_interaction_models_table <- function(summary_tbl,
-                                            format = c("gt", "flextable")) {
-  format <- match.arg(format, c("gt", "flextable"))
+                                            format = c("flextable", "gt")) {
+  format <- match.arg(format, c("flextable", "gt"))
   note <- paste(
     "Screening aid only; interaction decisions should be interpreted with",
     "subject-matter knowledge, study design, and stratum-specific estimates."

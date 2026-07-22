@@ -17,7 +17,8 @@ test_that("modify_table updates package-native univariable gt tables", {
     data = df,
     outcome = "low",
     exposures = c("age", "smoke", "ht"),
-    approach = logit
+    approach = logit,
+    format = gt
   )
 
   modified <- modify_table(
@@ -44,7 +45,7 @@ test_that("modify_table updates package-native univariable gt tables", {
 
 test_that("modify_table validates header aliases and preserves visible headers", {
   df <- birthwt_modify_data()
-  tbl <- uni_reg(df, outcome = "low", exposures = c("age", "smoke"), approach = logit)
+  tbl <- uni_reg(df, outcome = "low", exposures = c("age", "smoke"), approach = logit, format = gt)
 
   modified <- modify_table(
     tbl,
@@ -67,7 +68,8 @@ test_that("modify_table works for adjusted multivariable tables and footnote opt
     outcome = "low",
     exposures = c("smoke", "ht"),
     adjust_for = c("age", "lwt"),
-    approach = logit
+    approach = logit,
+    format = gt
   )
 
   keep_notes <- modify_table(tbl, caveat = "Adjusted model.")

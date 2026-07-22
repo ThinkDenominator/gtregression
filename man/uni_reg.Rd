@@ -9,20 +9,22 @@ uni_reg(
   outcome,
   exposures,
   approach = "logit",
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 }
 \arguments{
 \item{data}{data.frame}
 
-\item{outcome}{character scalar; outcome column name}
+\item{outcome}{Character scalar; outcome column name. Quoted and bare names
+are accepted.}
 
-\item{exposures}{character vector; exposure column names}
+\item{exposures}{Character vector; exposure column names. Quoted names are
+recommended in scripts, and bare names are also accepted.}
 
 \item{approach}{one of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"}, \code{"linear"}}
 
-\item{format}{one of \code{"gt"} (default) or \code{"flextable"}}
+\item{format}{One of \code{"flextable"} (default) or \code{"gt"}.}
 
 \item{theme}{preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 \code{"shaded"}, \code{"jama"}) or primitives
@@ -31,7 +33,8 @@ uni_reg(
 \value{
 A list of class \code{c("gtregression","uni_reg", ...)} with elements:
 \describe{
-  \item{table}{A \code{gt_tbl} (when \code{format="gt"}) or \code{flextable} (when \code{format="flextable"}).}
+  \item{table}{A \code{flextable} (when \code{format="flextable"}) or
+  \code{gt_tbl} (when \code{format="gt"}).}
   \item{table_body}{Data frame of numeric estimates and CIs.}
   \item{table_display}{Data frame for display (headers + levels).}
   \item{models}{List of fitted univariate models.}

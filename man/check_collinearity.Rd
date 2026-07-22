@@ -4,7 +4,7 @@
 \alias{check_collinearity}
 \title{Check collinearity using VIF for fitted models}
 \usage{
-check_collinearity(model, format = c("tibble", "gt", "flextable"))
+check_collinearity(model, format = c("flextable", "gt", "tibble"))
 }
 \arguments{
 \item{model}{A fitted model object returned by \code{multi_reg()},
@@ -12,9 +12,9 @@ check_collinearity(model, format = c("tibble", "gt", "flextable"))
 functions. Univariable model objects are rejected because VIF is not
 applicable.}
 
-\item{format}{Output format. One of \code{"tibble"}, \code{"gt"}, or
-\code{"flextable"}. The default \code{"tibble"} preserves the original
-tibble or nested-list output.}
+\item{format}{Output format. One of \code{"flextable"} (default),
+\code{"gt"}, or \code{"tibble"}. Use \code{format = "tibble"} to preserve
+the original tibble or nested-list output.}
 }
 \value{
 For multivariable models, a tibble if a single fitted model is

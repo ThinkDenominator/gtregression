@@ -39,9 +39,9 @@ check_convergence(
   data = birthwt_data,
   exposures = exposures,
   outcome = "low",
-  approach = logit,
+  approach = "logit",
   multivariate = TRUE,
-  format = gt
+  format = "gt"
 )
 ```
 
@@ -52,10 +52,10 @@ birthwt_multi <- multi_reg(
   data = birthwt_data,
   outcome = "low",
   exposures = exposures,
-  approach = logit
+  approach = "logit"
 )
 
-check_collinearity(birthwt_multi, format = gt)
+check_collinearity(birthwt_multi, format = "gt")
 ```
 
 ## Stepwise Model Selection
@@ -65,9 +65,9 @@ selected <- select_models(
   data = birthwt_data,
   outcome = "low",
   exposures = exposures,
-  approach = logit,
-  direction = forward,
-  format = gt
+  approach = "logit",
+  direction = "forward",
+  format = "gt"
 )
 
 selected$table
@@ -76,8 +76,8 @@ selected$table
 ## What To Inspect
 
 - `check_convergence()`: convergence status and maximum fitted probabilities.
-  Use `format = gt` or `format = flextable` for viewing tables.
+  Use `format = "gt"` or `format = "flextable"` for viewing tables.
 - `check_collinearity()`: VIF and interpretation. Nested model outputs keep
   their list structure when formatted.
 - `select_models()`: `$results_table`, `$best_model`, `$all_models`, and
-  `$table` when `format = gt` or `format = flextable`.
+  `$table` when `format = "gt"` or `format = "flextable"`.

@@ -22,10 +22,10 @@ test_that("normalize save paths validates input and appends extensions", {
 test_that("resolve_table_object accepts package tables and raw rendered tables", {
   df <- birthwt_save_data()
 
-  tbl <- uni_reg(df, outcome = "low", exposures = "smoke", approach = logit)
+  tbl <- uni_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt)
   merged <- merge_tables(
-    uni_reg(df, outcome = "low", exposures = "smoke", approach = logit),
-    multi_reg(df, outcome = "low", exposures = "smoke", approach = logit)
+    uni_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt),
+    multi_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt)
   )
 
   expect_s3_class(.resolve_table_object(tbl), "gt_tbl")
@@ -38,7 +38,7 @@ test_that("save_table writes gt html files and returns normalized paths", {
   skip_if_not_installed("gt")
 
   df <- birthwt_save_data()
-  tbl <- uni_reg(df, outcome = "low", exposures = c("age", "smoke"), approach = logit)
+  tbl <- uni_reg(df, outcome = "low", exposures = c("age", "smoke"), approach = logit, format = gt)
   filename <- file.path(tempdir(), paste0("gtregression-table-", Sys.getpid()))
 
   out <- suppressWarnings(save_table(tbl, filename = filename, format = html))
@@ -126,7 +126,7 @@ test_that("save_docx validates inputs and rejects gt tables for Word export", {
   skip_if_not_installed("officer")
 
   df <- birthwt_save_data()
-  gt_tbl <- uni_reg(df, outcome = "low", exposures = "smoke", approach = logit)
+  gt_tbl <- uni_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt)
 
   expect_error(save_docx(), "at least one table or plot")
   expect_error(save_docx(tables = data.frame(x = 1)), "`tables` must be")

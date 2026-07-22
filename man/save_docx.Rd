@@ -49,8 +49,8 @@ tbl <- uni_reg(
   data = birthwt_data,
   outcome = "low",
   exposures = c("age", "smoke"),
-  approach = logit,
-  format = flextable
+  approach = "logit",
+  format = "flextable"
 )
 
 save_docx(tables = tbl, filename = tempfile("report"))

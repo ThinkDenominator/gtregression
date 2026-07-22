@@ -39,7 +39,7 @@ strata_uni <- stratified_uni_reg(
   outcome = "low",
   exposures = c("age", "lwt", "smoke", "ht", "ui", "ptl_cat"),
   stratifier = "race",
-  approach = logit,
+  approach = "logit",
   theme = clinical
 )
 
@@ -58,7 +58,7 @@ strata_multi <- stratified_multi_reg(
   exposures = c("smoke", "ht", "ui", "ptl_cat"),
   stratifier = "race",
   adjust_for = c("age", "lwt"),
-  approach = logit,
+  approach = "logit",
   theme = striped
 )
 

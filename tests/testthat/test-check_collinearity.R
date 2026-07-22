@@ -18,7 +18,7 @@ test_that("check_collinearity returns VIF table for numeric predictors", {
     approach = linear
   )
 
-  out <- check_collinearity(fit)
+  out <- check_collinearity(fit, format = tibble)
 
   expect_s3_class(out, "tbl_df")
   expect_named(out, c("Variable", "VIF", "Interpretation"))
@@ -40,7 +40,7 @@ test_that("check_collinearity handles factor predictors with adjusted GVIF value
     approach = linear
   )
 
-  out <- check_collinearity(fit)
+  out <- check_collinearity(fit, format = tibble)
 
   expect_s3_class(out, "tbl_df")
   expect_equal(out$Variable, c("cyl", "gear"))
@@ -59,7 +59,7 @@ test_that("check_collinearity returns list for adjusted multivariable models", {
     approach = logit
   )
 
-  out <- check_collinearity(fit)
+  out <- check_collinearity(fit, format = tibble)
 
   expect_type(out, "list")
   expect_equal(names(out), c("smoke", "ht"))
@@ -78,7 +78,7 @@ test_that("check_collinearity handles stratified multivariable models", {
     approach = linear
   )
 
-  out <- check_collinearity(fit)
+  out <- check_collinearity(fit, format = tibble)
 
   expect_type(out, "list")
   expect_equal(names(out), levels(df$race))
@@ -143,7 +143,7 @@ test_that("check_collinearity returns empty tibble when fewer than two predictor
     approach = linear
   )
 
-  out <- check_collinearity(one)
+  out <- check_collinearity(one, format = tibble)
 
   expect_s3_class(out, "tbl_df")
   expect_equal(nrow(out), 0L)
@@ -159,7 +159,7 @@ test_that("check_collinearity reports when VIF cannot be computed", {
   )
   class(obj) <- c("gtregression", "multi_reg", "list")
 
-  out <- check_collinearity(obj)
+  out <- check_collinearity(obj, format = tibble)
 
   expect_s3_class(out, "tbl_df")
   expect_equal(out$Variable, NA_character_)
@@ -177,7 +177,7 @@ test_that("check_collinearity handles simulated car::vif vector and GVIF matrix 
 
   old <- options(gtregression.vif_fun = function(model) c(hp = 1.5, wt = 6.2))
   on.exit(options(old), add = TRUE)
-  vector_out <- check_collinearity(fit)
+  vector_out <- check_collinearity(fit, format = tibble)
 
   expect_equal(vector_out$Variable, c("hp", "wt"))
   expect_equal(vector_out$VIF, c(1.5, 6.2))
@@ -189,7 +189,7 @@ test_that("check_collinearity handles simulated car::vif vector and GVIF matrix 
     rownames(out) <- c("hp", "wt")
     out
   })
-  gvif_out <- check_collinearity(fit)
+  gvif_out <- check_collinearity(fit, format = tibble)
 
   expect_equal(gvif_out$Variable, c("hp", "wt"))
   expect_equal(gvif_out$VIF, c(2, round(9^(1 / 4), 2)))
@@ -199,7 +199,7 @@ test_that("check_collinearity handles simulated car::vif vector and GVIF matrix 
     rownames(out) <- c("hp", "wt")
     out
   })
-  matrix_out <- check_collinearity(fit)
+  matrix_out <- check_collinearity(fit, format = tibble)
 
   expect_equal(matrix_out$Variable, c("hp", "wt"))
   expect_equal(matrix_out$VIF, c(2, 3))
@@ -214,7 +214,7 @@ test_that("check_collinearity handles legacy multi_reg_nbin source", {
   )
   class(obj) <- c("gtregression", "multi_reg_nbin", "list")
 
-  out <- check_collinearity(obj)
+  out <- check_collinearity(obj, format = tibble)
 
   expect_s3_class(out, "tbl_df")
   expect_true(all(c("Eth", "Sex") %in% out$Variable))
@@ -231,7 +231,7 @@ test_that("check_collinearity preserves nested adjusted stratified output", {
     approach = linear
   )
 
-  out <- check_collinearity(fit)
+  out <- check_collinearity(fit, format = tibble)
 
   expect_type(out, "list")
   expect_true(is.list(out$White))

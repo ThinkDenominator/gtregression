@@ -121,8 +121,8 @@ test_that("merge_tables supports flextable output", {
 test_that("merge_tables validates inputs", {
   df <- birthwt_merge_data()
 
-  uni_gt <- uni_reg(df, outcome = "low", exposures = "smoke", approach = logit)
-  multi_gt <- multi_reg(df, outcome = "low", exposures = "smoke", approach = logit)
+  uni_gt <- uni_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt)
+  multi_gt <- multi_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt)
 
   expect_error(merge_tables(uni_gt), "at least two tables")
   expect_error(merge_tables(data.frame(x = 1), multi_gt), "All inputs must be outputs")

@@ -10,25 +10,28 @@ stratified_uni_reg(
   exposures,
   stratifier,
   approach = "logit",
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{Character scalar; name of the outcome variable.}
+\item{outcome}{Character scalar; name of the outcome variable. Quoted and
+bare names are accepted.}
 
-\item{exposures}{Character vector of exposure variables to model.}
+\item{exposures}{Character vector of exposure variables to model. Quoted
+names are recommended in scripts, and bare names are also accepted.}
 
-\item{stratifier}{Character scalar; name of the stratifying variable.}
+\item{stratifier}{Character scalar; name of the stratifying variable. Quoted
+and bare names are accepted.}
 
 \item{approach}{Modeling approach. One of \code{"logit"},
 \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
 \code{"linear"}, or \code{"negbin"}.}
 
-\item{format}{Output table format; one of \code{"gt"} or
-\code{"flextable"}.}
+\item{format}{Output table format; one of \code{"flextable"} (default) or
+\code{"gt"}.}
 
 \item{theme}{Table styling preset or theme primitives.}
 }
@@ -84,7 +87,7 @@ stratified_uni <- stratified_uni_reg(
   outcome = "low",
   exposures = c("age", "lwt", "smoke"),
   stratifier = "race",
-  approach = logit
+  approach = "logit"
 )
 
 stratified_uni$table

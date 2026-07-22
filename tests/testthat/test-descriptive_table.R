@@ -12,7 +12,7 @@ test_that("descriptive_table works with basic categorical inputs", {
   )
 
   expect_s3_class(tbl, "descriptive_table")
-  expect_s3_class(tbl$table, "gt_tbl")
+  expect_s3_class(tbl$table, "flextable")
   expect_equal(tbl$by, "group")
   expect_equal(tbl$levels, c("A", "B"))
   expect_equal(tbl$table_display$A[tbl$table_display$Characteristic == "  Yes"], "1 (50.0%)")
@@ -148,7 +148,7 @@ test_that("descriptive_table accepts custom theme primitives", {
 
   tbl <- descriptive_table(df, "status", theme = c("HEADER_SHADED", "compact"))
 
-  expect_s3_class(tbl, "gt_desc")
+  expect_s3_class(tbl, "ft_desc")
   expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "  No"], "2 (66.7%)")
 })
 

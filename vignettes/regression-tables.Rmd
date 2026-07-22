@@ -49,7 +49,7 @@ birthwt_uni <- uni_reg(
   data = birthwt_data,
   outcome = "low",
   exposures = birthwt_exposures,
-  approach = logit,
+  approach = "logit",
   theme = clinical
 )
 
@@ -67,7 +67,7 @@ birthwt_multi <- multi_reg(
   outcome = "low",
   exposures = c("smoke", "ht", "ui", "ptl_cat", "ftv_cat"),
   adjust_for = c("age", "lwt", "race"),
-  approach = logit,
+  approach = "logit",
   theme = striped
 )
 
@@ -86,7 +86,7 @@ uni_reg(
   data = birthwt_data,
   outcome = "low",
   exposures = c("smoke", "ht", "ui", "ptl_cat"),
-  approach = logbinomial
+  approach = "logbinomial"
 )$table
 ```
 
@@ -100,7 +100,7 @@ birthwt_linear <- multi_reg(
   data = birthwt_data,
   outcome = "bwt",
   exposures = c("age", "lwt", "race", "smoke", "ht", "ui"),
-  approach = linear
+  approach = "linear"
 )
 
 birthwt_linear$table

@@ -6,10 +6,12 @@
 #' depending on the regression approach used.
 #'
 #' @param data A data frame containing the dataset.
-#' @param exposures A character vector of predictor variable names.
+#' @param exposures A character vector of predictor variable names. Quoted names
+#'   are recommended in scripts, and bare names are also accepted.
 #'   If \code{multivariate = FALSE}, each exposure is assessed separately.
 #'   If \code{multivariate = TRUE}, exposures are included together.
-#' @param outcome A character string specifying the outcome variable.
+#' @param outcome A character string specifying the outcome variable. Quoted and
+#'   bare names are accepted.
 #' @param approach A character string specifying the regression approach.
 #' One of:
 #'   \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
@@ -17,9 +19,9 @@
 #' @param multivariate Logical. If \code{TRUE},
 #' checks convergence for a multivariable model;
 #'   otherwise, performs checks for each univariate model.
-#' @param format Output format. One of \code{"tibble"}, \code{"gt"}, or
-#'   \code{"flextable"}. The default \code{"tibble"} returns the original
-#'   data-frame style output.
+#' @param format Output format. One of \code{"flextable"} (default),
+#'   \code{"gt"}, or \code{"tibble"}. Use \code{format = "tibble"} for the
+#'   original data-frame style output.
 #'
 #' @return A data frame, \code{gt_tbl}, or \code{flextable} summarizing
 #' convergence diagnostics, including:
@@ -67,11 +69,13 @@ check_convergence <- function(data,
                               outcome,
                               approach = "logit",
                               multivariate = FALSE,
-                              format = c("tibble", "gt", "flextable")) {
+                              format = c("flextable", "gt", "tibble")) {
 
   if (!is.data.frame(data)) {
     stop("`data` must be a data frame.", call. = FALSE)
   }
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
   if (!is.character(exposures) || length(exposures) < 1L ||
       anyNA(exposures) || any(!nzchar(exposures))) {
     stop("`exposures` must be a non-empty character vector.", call. = FALSE)
@@ -87,9 +91,9 @@ check_convergence <- function(data,
   format <- .choice_arg(
     substitute(format),
     env = parent.frame(),
-    choices = c("tibble", "gt", "flextable")
+    choices = c("flextable", "gt", "tibble")
   )
-  format <- match.arg(format, c("tibble", "gt", "flextable"))
+  format <- match.arg(format, c("flextable", "gt", "tibble"))
 
   missing_vars <- setdiff(c(outcome, exposures), names(data))
   if (length(missing_vars)) {
@@ -222,8 +226,8 @@ check_convergence <- function(data,
 #' @keywords internal
 #' @noRd
 .build_check_convergence_table <- function(result,
-                                           format = c("gt", "flextable")) {
-  format <- match.arg(format, c("gt", "flextable"))
+                                           format = c("flextable", "gt")) {
+  format <- match.arg(format, c("flextable", "gt"))
   note <- paste(
     "Screening aid only; inspect non-convergence, impossible fitted values,",
     "and model specification before interpreting estimates."

@@ -81,10 +81,10 @@
 #'   data = birthwt_data,
 #'   outcome = "low",
 #'   exposures = c("age", "smoke"),
-#'   approach = logit
+#'   approach = "logit"
 #' )
 #'
-#' save_table(tbl, filename = tempfile("table"), format = html)
+#' save_table(tbl, filename = tempfile("table"), format = "html")
 #' @export
 save_table <- function(tbl,
                        filename = "table",
@@ -147,7 +147,7 @@ save_table <- function(tbl,
 #' p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
 #'   ggplot2::geom_point()
 #'
-#' save_plot(p, filename = tempfile("plot"), format = png)
+#' save_plot(p, filename = tempfile("plot"), format = "png")
 #' @importFrom ggplot2 ggsave
 #' @export
 save_plot <- function(plot,
@@ -221,8 +221,8 @@ save_plot <- function(plot,
 #'   data = birthwt_data,
 #'   outcome = "low",
 #'   exposures = c("age", "smoke"),
-#'   approach = logit,
-#'   format = flextable
+#'   approach = "logit",
+#'   format = "flextable"
 #' )
 #'
 #' save_docx(tables = tbl, filename = tempfile("report"))

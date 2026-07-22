@@ -491,10 +491,13 @@
 #' exposure-by-modifier interaction term, use \code{\link{interaction_models}()}.
 #'
 #' @param data A data frame.
-#' @param outcome Outcome variable name.
-#' @param exposure Exposure variable name(s). Can be a character scalar or vector.
+#' @param outcome Outcome variable name. Quoted and bare names are accepted.
+#' @param exposure Exposure variable name(s). Can be a character scalar or
+#'   vector. Quoted names are recommended in scripts, and bare names are also
+#'   accepted.
 #' @param potential_confounder Candidate confounder/effect-modifier variable
-#'   name(s). Can be a character scalar or vector.
+#'   name(s). Can be a character scalar or vector. Quoted names are recommended
+#'   in scripts, and bare names are also accepted.
 #' @param approach Regression approach. One of \code{"logit"},
 #'   \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
 #'   \code{"linear"}, or \code{"negbin"}.
@@ -509,8 +512,8 @@
 #' @param emm_test One of \code{"interaction"}, \code{"both"}, or
 #'   \code{"estimate"}.
 #' @param interaction_alpha Alpha threshold for interaction p-values.
-#' @param format Output table format. One of \code{"gt"} or
-#'   \code{"flextable"}.
+#' @param format Output table format. One of \code{"flextable"} (default) or
+#'   \code{"gt"}.
 #' @param theme Table theme preset or primitives.
 #'
 #' @return
@@ -536,9 +539,12 @@ identify_confounder <- function(data,
                                 emm_threshold = 10,
                                 emm_test = c("interaction", "both", "estimate"),
                                 interaction_alpha = 0.05,
-                                format = c("gt", "flextable"),
+                                format = c("flextable", "gt"),
                                 theme = c("minimal")) {
 
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  exposure <- .vars_arg(substitute(exposure), env = parent.frame())
+  potential_confounder <- .vars_arg(substitute(potential_confounder), env = parent.frame())
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
@@ -548,12 +554,12 @@ identify_confounder <- function(data,
   .validate_approach(approach, context = "identify_confounder")
   method <- .choice_arg(substitute(method), env = parent.frame(), choices = c("change", "mh", "both"))
   emm_test <- .choice_arg(substitute(emm_test), env = parent.frame(), choices = c("interaction", "both", "estimate"))
-  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt", "flextable"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
 
   method <- match.arg(method, c("change", "mh", "both"))
   emm_test <- match.arg(emm_test, c("interaction", "both", "estimate"))
-  format <- match.arg(format, c("gt", "flextable"))
+  format <- match.arg(format, c("flextable", "gt"))
   theme <- .resolve_theme(theme)
 
   if (!is.data.frame(data)) {
@@ -678,8 +684,11 @@ identify_confounder <- function(data,
     res <- details[[1]]
     res$summary <- summary_tbl
     res$table <- summary_table
+    res$format <- format
+    res$source <- "identify_confounder"
+    class(res) <- c("identify_confounder_result", class(res))
 
-    return(invisible(res))
+    return(res)
   }
 
   out <- list(
@@ -691,19 +700,19 @@ identify_confounder <- function(data,
   )
 
   class(out) <- c("identify_confounder_result", class(out))
-  invisible(out)
+  out
 }
 
 #' Build identify_confounder summary table
 #' @keywords internal
 #' @noRd
 .build_identify_confounder_table <- function(summary_tbl,
-                                             format = c("gt", "flextable"),
+                                             format = c("flextable", "gt"),
                                              theme = c("minimal")) {
-  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt", "flextable"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
 
-  format <- match.arg(format, c("gt", "flextable"))
+  format <- match.arg(format, c("flextable", "gt"))
   theme <- .resolve_theme(theme)
 
   df <- summary_tbl

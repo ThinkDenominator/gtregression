@@ -6,15 +6,17 @@
 #'
 #' @param data A data frame containing the outcome and predictor variables.
 #' @param outcome A single character string indicating the outcome variable.
-#' @param exposures Character vector of predictor variables to consider.
+#'   Quoted and bare names are accepted.
+#' @param exposures Character vector of predictor variables to consider. Quoted
+#'   names are recommended in scripts, and bare names are also accepted.
 #' @param approach Regression method. One of:
 #'   \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 #'   \code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.
 #' @param direction Stepwise selection direction. One of:
 #'   \code{"forward"} (default), \code{"backward"}, or \code{"both"}.
-#' @param format Output format for an optional viewing table. One of
-#'   \code{"tibble"}, \code{"gt"}, or \code{"flextable"}. The default
-#'   \code{"tibble"} keeps the original list structure.
+#' @param format Output format for the viewing table. One of
+#'   \code{"flextable"} (default), \code{"gt"}, or \code{"tibble"}. Use
+#'   \code{format = "tibble"} to keep only the original list structure.
 #'
 #' @return A list with the following components:
 #' \itemize{
@@ -23,6 +25,7 @@
 #'   for linear models).
 #'   \item \code{best_model}: The best-fitting model object based on lowest AIC.
 #'   \item \code{all_models}: A named list of the accepted stepwise models.
+#'   \item \code{direction}: Stepwise selection direction used.
 #'   \item \code{table}: A formatted \code{gt_tbl} or \code{flextable} when
 #'   \code{format} is \code{"gt"} or \code{"flextable"}.
 #' }
@@ -50,10 +53,12 @@
 #' @export
 select_models <- function(data, outcome, exposures, approach = "logit",
                           direction = "forward",
-                          format = c("tibble", "gt", "flextable")) {
+                          format = c("flextable", "gt", "tibble")) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data frame.", call. = FALSE)
   }
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
   if (!is.character(outcome) || length(outcome) != 1L ||
       is.na(outcome) || !nzchar(outcome)) {
     stop("`outcome` must be a single character variable name.", call. = FALSE)
@@ -90,9 +95,9 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   format <- .choice_arg(
     substitute(format),
     env = parent.frame(),
-    choices = c("tibble", "gt", "flextable")
+    choices = c("flextable", "gt", "tibble")
   )
-  format <- match.arg(format, c("tibble", "gt", "flextable"))
+  format <- match.arg(format, c("flextable", "gt", "tibble"))
 
   .validate_outcome_by_approach(data[[outcome]], approach)
   model_data <- data
@@ -206,11 +211,16 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   out <- list(
     results_table = metrics_tbl,
     best_model = final_best_model,
-    all_models = all_models
+    all_models = all_models,
+    direction = direction
   )
 
   if (format != "tibble") {
-    out$table <- .build_select_models_table(metrics_tbl, format = format)
+    out$table <- .build_select_models_table(
+      metrics_tbl,
+      direction = direction,
+      format = format
+    )
   }
 
   out
@@ -220,9 +230,12 @@ select_models <- function(data, outcome, exposures, approach = "logit",
 #' @keywords internal
 #' @noRd
 .build_select_models_table <- function(metrics_tbl,
-                                       format = c("gt", "flextable")) {
-  format <- match.arg(format, c("gt", "flextable"))
-  note <- paste(
+                                       direction = c("forward", "backward", "both"),
+                                       format = c("flextable", "gt")) {
+  direction <- match.arg(direction, c("forward", "backward", "both"))
+  format <- match.arg(format, c("flextable", "gt"))
+  direction_note <- paste0("Selection direction: ", direction, ".")
+  caveat_note <- paste(
     "Screening aid only; compare candidate models with study design,",
     "clinical or subject-matter judgement, and model diagnostics."
   )
@@ -274,7 +287,8 @@ select_models <- function(data, outcome, exposures, approach = "logit",
         style = gt::cell_fill(color = "#e7f5ec"),
         locations = gt::cells_body(rows = .data$best)
       ) |>
-      gt::tab_source_note(gt::md(note))
+      gt::tab_source_note(gt::md(direction_note)) |>
+      gt::tab_source_note(gt::md(caveat_note))
 
     return(tbl)
   }
@@ -292,7 +306,7 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   )
   ft <- flextable::bold(ft, part = "header", bold = TRUE)
   ft <- flextable::bg(ft, i = which(display$best == "Yes"), bg = "#e7f5ec", part = "body")
-  ft <- flextable::add_footer_lines(ft, values = note)
+  ft <- flextable::add_footer_lines(ft, values = c(direction_note, caveat_note))
   ft <- flextable::fontsize(ft, size = 8, part = "footer")
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   flextable::autofit(ft)

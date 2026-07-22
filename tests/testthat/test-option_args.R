@@ -6,16 +6,18 @@ test_that("choice-style arguments accept bare values in descriptive_table", {
 
   tbl <- descriptive_table(
     df,
-    exposures = "status",
-    by = "group",
+    exposures = status,
+    by = group,
     percent = row,
     show_missing = no,
     show_overall = first,
-    format = gt,
+    format = flextable,
     theme = shaded
   )
 
   expect_s3_class(tbl, "descriptive_table")
+  expect_s3_class(tbl$table, "flextable")
+  expect_equal(tbl$format, "flextable")
   expect_named(tbl$table_display, c("Characteristic", "is_header", "Overall", "A", "B"))
   expect_false("(Missing)" %in% trimws(tbl$table_display$Characteristic))
 })
@@ -46,16 +48,16 @@ test_that("regression table options accept bare values", {
 
   tbl <- uni_reg(
     data = df,
-    outcome = "mpg",
-    exposures = "hp",
+    outcome = mpg,
+    exposures = hp,
     approach = linear,
-    format = gt,
     theme = minimal
   )
 
   expect_s3_class(tbl, "uni_reg")
   expect_equal(tbl$approach, "linear")
-  expect_equal(tbl$format, "gt")
+  expect_equal(tbl$format, "flextable")
+  expect_s3_class(tbl$table, "flextable")
 })
 
 test_that("logbinomial is accepted bare and old hyphen spelling remains an alias", {
@@ -101,7 +103,8 @@ test_that("selection and diagnostics options accept bare values", {
     data = data.frame(y = c(0, 1, 0, 1), x = c(1, 2, 3, 4)),
     exposures = "x",
     outcome = "y",
-    approach = logit
+    approach = logit,
+    format = tibble
   )
 
   expect_s3_class(conv, "data.frame")

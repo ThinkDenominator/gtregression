@@ -20,11 +20,13 @@ test_that("select_models works for logit approaches and all directions", {
       outcome = "low",
       exposures = exposures,
       approach = logit,
-      direction = direction
+      direction = direction,
+      format = tibble
     )
 
     expect_type(result, "list")
-    expect_named(result, c("results_table", "best_model", "all_models"))
+    expect_named(result, c("results_table", "best_model", "all_models", "direction"))
+    expect_equal(result$direction, direction)
     expect_s3_class(result$results_table, "tbl_df")
     expect_s3_class(result$best_model, "glm")
     expect_true(all(c("model_id", "formula", "n_predictors", "AIC", "BIC",
@@ -46,14 +48,16 @@ test_that("select_models supports logbinomial and robpoisson binary models", {
     outcome = "low",
     exposures = c("age", "smoke"),
     approach = logbinomial,
-    direction = forward
+    direction = forward,
+    format = tibble
   )
   rob <- select_models(
     data = df,
     outcome = "low",
     exposures = c("age", "smoke"),
     approach = robpoisson,
-    direction = forward
+    direction = forward,
+    format = tibble
   )
 
   expect_s3_class(logbin$best_model, "glm")
@@ -68,7 +72,8 @@ test_that("select_models works for linear regression and returns adjusted R-squa
     outcome = "mpg",
     exposures = c("hp", "wt", "cyl"),
     approach = linear,
-    direction = both
+    direction = both,
+    format = tibble
   )
 
   expect_s3_class(result$best_model, "lm")
@@ -87,14 +92,16 @@ test_that("select_models supports negative binomial regression", {
     outcome = "Days",
     exposures = c("Eth", "Sex", "Age", "Lrn"),
     approach = poisson,
-    direction = forward
+    direction = forward,
+    format = tibble
   )
   result <- select_models(
     data = quine_data,
     outcome = "Days",
     exposures = c("Eth", "Sex", "Age", "Lrn"),
     approach = negbin,
-    direction = backward
+    direction = backward,
+    format = tibble
   )
 
   expect_s3_class(pois$best_model, "glm")
@@ -148,7 +155,8 @@ test_that("select_models keeps best model selected variables consistent", {
     outcome = "mpg",
     exposures = c("hp", "wt", "qsec"),
     approach = linear,
-    direction = forward
+    direction = forward,
+    format = tibble
   )
   best_row <- which.min(result$results_table$AIC)
 
@@ -190,6 +198,10 @@ test_that("select_models can add gt and flextable viewing tables", {
   )
   expect_match(
     as.character(gt_result$table$`_source_notes`[[1]]),
+    "Selection direction: forward"
+  )
+  expect_match(
+    as.character(gt_result$table$`_source_notes`[[2]]),
     "Screening aid only"
   )
 })

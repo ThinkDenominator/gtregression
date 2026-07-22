@@ -4,17 +4,20 @@
 #' \pkg{gt} or \pkg{flextable}
 #'
 #' @param data data.frame
-#' @param outcome character scalar; outcome column name
-#' @param exposures character vector; exposure column names
+#' @param outcome Character scalar; outcome column name. Quoted and bare names
+#'   are accepted.
+#' @param exposures Character vector; exposure column names. Quoted names are
+#'   recommended in scripts, and bare names are also accepted.
 #' @param approach one of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"}, \code{"linear"}
-#' @param format one of \code{"gt"} (default) or \code{"flextable"}
+#' @param format One of \code{"flextable"} (default) or \code{"gt"}.
 #' @param theme preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 #'   \code{"shaded"}, \code{"jama"}) or primitives
 #'   \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}
 #'
 #' @return A list of class \code{c("gtregression","uni_reg", ...)} with elements:
 #' \describe{
-#'   \item{table}{A \code{gt_tbl} (when \code{format="gt"}) or \code{flextable} (when \code{format="flextable"}).}
+#'   \item{table}{A \code{flextable} (when \code{format="flextable"}) or
+#'   \code{gt_tbl} (when \code{format="gt"}).}
 #'   \item{table_body}{Data frame of numeric estimates and CIs.}
 #'   \item{table_display}{Data frame for display (headers + levels).}
 #'   \item{models}{List of fitted univariate models.}
@@ -38,19 +41,21 @@ uni_reg <- function(data,
                     outcome,
                     exposures,
                     approach = "logit",
-                    format = c("gt","flextable"),
+                    format = c("flextable","gt"),
                     theme = c("minimal")) {
 
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
     choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
   )
   approach <- .normalize_approach(approach)
-  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
 
-  format <- match.arg(format)
+  format <- match.arg(format, c("flextable","gt"))
   theme  <- .resolve_theme(theme)
 
   # ---- validate inputs (package helper) -------------------------------------

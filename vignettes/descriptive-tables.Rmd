@@ -49,8 +49,8 @@ desc_column <- descriptive_table(
   data = birthwt_data,
   exposures = birthwt_exposures,
   by = "low",
-  percent = column,
-  show_overall = last,
+  percent = "column",
+  show_overall = "last",
   theme = clinical
 )
 
@@ -67,8 +67,8 @@ descriptive_table(
   data = birthwt_data,
   exposures = birthwt_exposures,
   by = "low",
-  percent = row,
-  show_overall = first,
+  percent = "row",
+  show_overall = "first",
   show_missing = no,
   theme = striped
 )$table
@@ -76,15 +76,15 @@ descriptive_table(
 
 ## Word-Friendly Output
 
-Switch to `format = flextable` when the next stop is a Word report.
+Switch to `format = "flextable"` when the next stop is a Word report.
 
 ```{r desc-flex, message=FALSE, warning=FALSE}
 descriptive_table(
   data = birthwt_data,
   exposures = birthwt_exposures,
   by = "low",
-  percent = column,
-  format = flextable
+  percent = "column",
+  format = "flextable"
 )$table
 ```
 

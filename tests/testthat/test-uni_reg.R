@@ -145,6 +145,7 @@ test_that("uni_reg accessors return current components", {
 
   expect_s3_class(res$models[[1]], "glm")
   expect_s3_class(res$model_summaries[[1]], "summary.glm")
-  expect_s3_class(res$table, "gt_tbl")
+  expect_s3_class(res$table, "flextable")
+  expect_equal(res$format, "flextable")
   expect_identical(res$engine, res$format)
 })

@@ -9,24 +9,28 @@
 #' one adjusted model is fitted per exposure within each stratum.
 #'
 #' @param data A data frame containing the variables.
-#' @param outcome Character scalar; name of the outcome variable.
-#' @param exposures Character vector of exposure variables to report.
-#' @param stratifier Character scalar; name of the stratifying variable.
+#' @param outcome Character scalar; name of the outcome variable. Quoted and
+#'   bare names are accepted.
+#' @param exposures Character vector of exposure variables to report. Quoted
+#'   names are recommended in scripts, and bare names are also accepted.
+#' @param stratifier Character scalar; name of the stratifying variable. Quoted
+#'   and bare names are accepted.
 #' @param adjust_for Optional character vector of adjustment variables.
-#'   This argument works the same way as in \code{multi_reg()}.
+#'   Quoted and bare names are accepted. This argument works the same way as in
+#'   \code{multi_reg()}.
 #' @param interaction Optional character scalar specifying one interaction term
 #'   using standard formula syntax, e.g. \code{"bmi*sex"}
 #' @param approach One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 #'   \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}
-#' @param format One of \code{"gt"} (default) or \code{"flextable"}.
+#' @param format One of \code{"flextable"} (default) or \code{"gt"}.
 #' @param theme Preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 #'   \code{"shaded"}, \code{"jama"}) or primitives
 #'   \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}
 #'
 #' @return A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
 #' \describe{
-#'   \item{\code{table}}{A \code{gt_tbl} (format = \code{"gt"}) or
-#'   \code{flextable} (format = \code{"flextable"}).}
+#'   \item{\code{table}}{A \code{flextable} (format = \code{"flextable"}) or
+#'   \code{gt_tbl} (format = \code{"gt"}).}
 #'   \item{\code{table_display}}{Wide data frame used to build the table.}
 #'   \item{\code{per_stratum}}{Named list of per-stratum regression results.}
 #'   \item{\code{models}}{Named list of fitted models by stratum.}
@@ -52,7 +56,7 @@
 #'   outcome = "low",
 #'   exposures = c("age", "lwt", "smoke", "ht"),
 #'   stratifier = "race",
-#'   approach = logit
+#'   approach = "logit"
 #' )
 #'
 #' stratified_adjusted <- stratified_multi_reg(
@@ -61,7 +65,7 @@
 #'   exposures = c("smoke", "ht", "ui"),
 #'   stratifier = "race",
 #'   adjust_for = c("age", "lwt"),
-#'   approach = logit
+#'   approach = "logit"
 #' )
 #' @importFrom stats nobs
 #' @export
@@ -72,19 +76,23 @@ stratified_multi_reg <- function(data,
                                  adjust_for = NULL,
                                  interaction = NULL,
                                  approach = "logit",
-                                 format = c("gt", "flextable"),
+                                 format = c("flextable", "gt"),
                                  theme = c("minimal")) {
 
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
+  stratifier <- .vars_arg(substitute(stratifier), env = parent.frame())
+  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
     choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
   )
   approach <- .normalize_approach(approach)
-  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("gt","flextable"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
 
-  format <- match.arg(format)
+  format <- match.arg(format, c("flextable","gt"))
   theme <- .resolve_theme(theme)
 
   if (!stratifier %in% names(data)) {

@@ -14,19 +14,22 @@ interaction_models(
   test = c("LRT", "Wald"),
   alpha = 0.05,
   verbose = FALSE,
-  format = c("tibble", "gt", "flextable")
+  format = c("flextable", "gt", "tibble")
 )
 }
 \arguments{
 \item{data}{A data frame containing all required variables.}
 
-\item{outcome}{Outcome variable name.}
+\item{outcome}{Outcome variable name. Quoted and bare names are accepted.}
 
-\item{exposure}{Main exposure variable name.}
+\item{exposure}{Main exposure variable name. Quoted and bare names are
+accepted.}
 
-\item{covariates}{Optional character vector of additional covariates.}
+\item{covariates}{Optional character vector of additional covariates. Quoted
+names are recommended in scripts, and bare names are also accepted.}
 
-\item{effect_modifier}{Variable name for the potential effect modifier.}
+\item{effect_modifier}{Variable name for the potential effect modifier.
+Quoted and bare names are accepted.}
 
 \item{approach}{Regression approach. One of \code{"logit"},
 \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
@@ -39,9 +42,9 @@ interaction_models(
 
 \item{verbose}{Logical; if \code{TRUE}, prints a short interpretation.}
 
-\item{format}{Output format for an optional viewing table. One of
-\code{"tibble"}, \code{"gt"}, or \code{"flextable"}. The default
-\code{"tibble"} keeps the original list structure.}
+\item{format}{Output format for the viewing table. One of
+\code{"flextable"} (default), \code{"gt"}, or \code{"tibble"}. Use
+\code{format = "tibble"} to keep only the original list structure.}
 }
 \value{
 A list with model objects, formulas, p-value, decision, and a

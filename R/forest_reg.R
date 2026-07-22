@@ -52,14 +52,14 @@
 #'   birthwt_data,
 #'   outcome = "low",
 #'   exposures = c("age", "lwt", "smoke", "ht"),
-#'   approach = logit
+#'   approach = "logit"
 #' )
 #' multi_or <- multi_reg(
 #'   birthwt_data,
 #'   outcome = "low",
 #'   exposures = c("smoke", "ht"),
 #'   adjust_for = c("age", "lwt"),
-#'   approach = logit
+#'   approach = "logit"
 #' )
 #'
 #' forest_reg(uni = uni_or, multi = multi_or)

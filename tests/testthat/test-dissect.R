@@ -1,4 +1,4 @@
-test_that("dissect() covers all branches and returns a tibble", {
+test_that("dissect() covers all branches and returns a tibble when requested", {
   # Build a 6-row data frame to exercise all code paths
   df <- data.frame(
     num3   = c(1, 2, 3, NA, 4, 5),                         # numeric >2 uniques  -> compatible
@@ -15,7 +15,7 @@ test_that("dissect() covers all branches and returns a tibble", {
                        "2020-01-04","2020-01-05","2020-01-06"))  # Date -> maybe
   )
 
-  expect_silent(res <- dissect(df))
+  expect_silent(res <- dissect(df, format = tibble))
   expect_s3_class(res, "tbl_df")
   expect_true(all(c("Variable", "Type", "Missing (%)", "Unique", "Levels",
                     "Compatibility", "Hint") %in% names(res)))
@@ -51,7 +51,7 @@ test_that("dissect() can print beginner interpretation notes", {
   df <- data.frame(x = c(1, 2, 3), y = factor(c("a", "b", "a")))
 
   expect_message(
-    printed <- dissect(df, verbose = TRUE),
+    printed <- dissect(df, verbose = TRUE, format = tibble),
     "Interpretation notes"
   )
 

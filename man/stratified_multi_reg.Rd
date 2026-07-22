@@ -12,21 +12,25 @@ stratified_multi_reg(
   adjust_for = NULL,
   interaction = NULL,
   approach = "logit",
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 }
 \arguments{
 \item{data}{A data frame containing the variables.}
 
-\item{outcome}{Character scalar; name of the outcome variable.}
+\item{outcome}{Character scalar; name of the outcome variable. Quoted and
+bare names are accepted.}
 
-\item{exposures}{Character vector of exposure variables to report.}
+\item{exposures}{Character vector of exposure variables to report. Quoted
+names are recommended in scripts, and bare names are also accepted.}
 
-\item{stratifier}{Character scalar; name of the stratifying variable.}
+\item{stratifier}{Character scalar; name of the stratifying variable. Quoted
+and bare names are accepted.}
 
 \item{adjust_for}{Optional character vector of adjustment variables.
-This argument works the same way as in \code{multi_reg()}.}
+Quoted and bare names are accepted. This argument works the same way as in
+\code{multi_reg()}.}
 
 \item{interaction}{Optional character scalar specifying one interaction term
 using standard formula syntax, e.g. \code{"bmi*sex"}}
@@ -34,7 +38,7 @@ using standard formula syntax, e.g. \code{"bmi*sex"}}
 \item{approach}{One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}}
 
-\item{format}{One of \code{"gt"} (default) or \code{"flextable"}.}
+\item{format}{One of \code{"flextable"} (default) or \code{"gt"}.}
 
 \item{theme}{Preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 \code{"shaded"}, \code{"jama"}) or primitives
@@ -43,8 +47,8 @@ using standard formula syntax, e.g. \code{"bmi*sex"}}
 \value{
 A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
 \describe{
-  \item{\code{table}}{A \code{gt_tbl} (format = \code{"gt"}) or
-  \code{flextable} (format = \code{"flextable"}).}
+  \item{\code{table}}{A \code{flextable} (format = \code{"flextable"}) or
+  \code{gt_tbl} (format = \code{"gt"}).}
   \item{\code{table_display}}{Wide data frame used to build the table.}
   \item{\code{per_stratum}}{Named list of per-stratum regression results.}
   \item{\code{models}}{Named list of fitted models by stratum.}
@@ -80,7 +84,7 @@ stratified_multi <- stratified_multi_reg(
   outcome = "low",
   exposures = c("age", "lwt", "smoke", "ht"),
   stratifier = "race",
-  approach = logit
+  approach = "logit"
 )
 
 stratified_adjusted <- stratified_multi_reg(
@@ -89,6 +93,6 @@ stratified_adjusted <- stratified_multi_reg(
   exposures = c("smoke", "ht", "ui"),
   stratifier = "race",
   adjust_for = c("age", "lwt"),
-  approach = logit
+  approach = "logit"
 )
 }
