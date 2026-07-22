@@ -17,7 +17,7 @@ identify_confounder(
   emm_threshold = 10,
   emm_test = c("interaction", "both", "estimate"),
   interaction_alpha = 0.05,
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 ```
@@ -30,16 +30,18 @@ identify_confounder(
 
 - outcome:
 
-  Outcome variable name.
+  Outcome variable name. Quoted and bare names are accepted.
 
 - exposure:
 
-  Exposure variable name(s). Can be a character scalar or vector.
+  Exposure variable name(s). Can be a character scalar or vector. Quoted
+  names are recommended in scripts, and bare names are also accepted.
 
 - potential_confounder:
 
   Candidate confounder/effect-modifier variable name(s). Can be a
-  character scalar or vector.
+  character scalar or vector. Quoted names are recommended in scripts,
+  and bare names are also accepted.
 
 - approach:
 
@@ -73,7 +75,7 @@ identify_confounder(
 
 - format:
 
-  Output table format. One of `"gt"` or `"flextable"`.
+  Output table format. One of `"flextable"` (default) or `"gt"`.
 
 - theme:
 

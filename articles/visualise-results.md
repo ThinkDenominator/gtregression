@@ -41,20 +41,20 @@ birthwt_desc <- descriptive_table(
   birthwt_data,
   exposures = birthwt_exposures,
   by = "low",
-  show_overall = last
+  show_overall = "last"
 )
 birthwt_uni <- uni_reg(
   birthwt_data,
   outcome = "low",
   exposures = birthwt_exposures,
-  approach = logit
+  approach = "logit"
 )
 birthwt_multi <- multi_reg(
   birthwt_data,
   outcome = "low",
   exposures = c("smoke", "ht", "ui", "ptl_cat", "ftv_cat"),
   adjust_for = c("age", "lwt", "race"),
-  approach = logit
+  approach = "logit"
 )
 ```
 

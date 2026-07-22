@@ -14,7 +14,7 @@ select_models(
   exposures,
   approach = "logit",
   direction = "forward",
-  format = c("tibble", "gt", "flextable")
+  format = c("flextable", "gt", "tibble")
 )
 ```
 
@@ -26,11 +26,13 @@ select_models(
 
 - outcome:
 
-  A single character string indicating the outcome variable.
+  A single character string indicating the outcome variable. Quoted and
+  bare names are accepted.
 
 - exposures:
 
-  Character vector of predictor variables to consider.
+  Character vector of predictor variables to consider. Quoted names are
+  recommended in scripts, and bare names are also accepted.
 
 - approach:
 
@@ -44,9 +46,9 @@ select_models(
 
 - format:
 
-  Output format for an optional viewing table. One of `"tibble"`,
-  `"gt"`, or `"flextable"`. The default `"tibble"` keeps the original
-  list structure.
+  Output format for the viewing table. One of `"flextable"` (default),
+  `"gt"`, or `"tibble"`. Use `format = "tibble"` to keep only the
+  original list structure.
 
 ## Value
 
@@ -59,6 +61,8 @@ A list with the following components:
 - `best_model`: The best-fitting model object based on lowest AIC.
 
 - `all_models`: A named list of the accepted stepwise models.
+
+- `direction`: Stepwise selection direction used.
 
 - `table`: A formatted `gt_tbl` or `flextable` when `format` is `"gt"`
   or `"flextable"`.

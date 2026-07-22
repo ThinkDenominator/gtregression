@@ -8,7 +8,7 @@ or related functions.
 ## Usage
 
 ``` r
-check_collinearity(model, format = c("tibble", "gt", "flextable"))
+check_collinearity(model, format = c("flextable", "gt", "tibble"))
 ```
 
 ## Arguments
@@ -23,8 +23,8 @@ check_collinearity(model, format = c("tibble", "gt", "flextable"))
 
 - format:
 
-  Output format. One of `"tibble"`, `"gt"`, or `"flextable"`. The
-  default `"tibble"` preserves the original tibble or nested-list
+  Output format. One of `"flextable"` (default), `"gt"`, or `"tibble"`.
+  Use `format = "tibble"` to preserve the original tibble or nested-list
   output.
 
 ## Value

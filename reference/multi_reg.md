@@ -13,7 +13,7 @@ multi_reg(
   adjust_for = NULL,
   interaction = NULL,
   approach = "logit",
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 ```
@@ -26,11 +26,13 @@ multi_reg(
 
 - outcome:
 
-  Character scalar; name of the outcome variable.
+  Character scalar; name of the outcome variable. Quoted and bare names
+  are accepted.
 
 - exposures:
 
-  Character vector; exposure variable(s) to report. If
+  Character vector; exposure variable(s) to report. Quoted names are
+  recommended in scripts, and bare names are also accepted. If
   `adjust_for = NULL`, all exposures are included in a single
   multivariable model. If `adjust_for` is supplied, one adjusted model
   is fitted per exposure and only exposure-specific adjusted estimate(s)
@@ -38,8 +40,8 @@ multi_reg(
 
 - adjust_for:
 
-  Optional character vector of adjustment variables. Must not overlap
-  with `exposures`.
+  Optional character vector of adjustment variables. Quoted and bare
+  names are accepted. Must not overlap with `exposures`.
 
 - interaction:
 
@@ -55,7 +57,7 @@ multi_reg(
 
 - format:
 
-  Output table format; one of `"gt"` (default) or `"flextable"`.
+  Output table format; one of `"flextable"` (default) or `"gt"`.
 
 - theme:
 
@@ -69,8 +71,8 @@ A list of class `c("gtregression","multi_reg", ...)` with elements:
 
 - table:
 
-  A `gt_tbl` (if `format="gt"`) or `flextable` (if
-  `format="flextable"`).
+  A `flextable` (if `format="flextable"`) or `gt_tbl` (if
+  `format="gt"`).
 
 - table_body:
 

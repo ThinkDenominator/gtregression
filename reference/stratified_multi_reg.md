@@ -16,7 +16,7 @@ stratified_multi_reg(
   adjust_for = NULL,
   interaction = NULL,
   approach = "logit",
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 ```
@@ -29,20 +29,23 @@ stratified_multi_reg(
 
 - outcome:
 
-  Character scalar; name of the outcome variable.
+  Character scalar; name of the outcome variable. Quoted and bare names
+  are accepted.
 
 - exposures:
 
-  Character vector of exposure variables to report.
+  Character vector of exposure variables to report. Quoted names are
+  recommended in scripts, and bare names are also accepted.
 
 - stratifier:
 
-  Character scalar; name of the stratifying variable.
+  Character scalar; name of the stratifying variable. Quoted and bare
+  names are accepted.
 
 - adjust_for:
 
-  Optional character vector of adjustment variables. This argument works
-  the same way as in
+  Optional character vector of adjustment variables. Quoted and bare
+  names are accepted. This argument works the same way as in
   [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md).
 
 - interaction:
@@ -57,7 +60,7 @@ stratified_multi_reg(
 
 - format:
 
-  One of `"gt"` (default) or `"flextable"`.
+  One of `"flextable"` (default) or `"gt"`.
 
 - theme:
 
@@ -71,7 +74,7 @@ A list of class `c("gtregression","stratified_multi_reg", ...)` with:
 
 - `table`:
 
-  A `gt_tbl` (format = `"gt"`) or `flextable` (format = `"flextable"`).
+  A `flextable` (format = `"flextable"`) or `gt_tbl` (format = `"gt"`).
 
 - `table_display`:
 
@@ -122,7 +125,7 @@ stratified_multi <- stratified_multi_reg(
   outcome = "low",
   exposures = c("age", "lwt", "smoke", "ht"),
   stratifier = "race",
-  approach = logit
+  approach = "logit"
 )
 #> Running stratified multivariable regression by: race
 #>   > Stratum: race = White
@@ -135,7 +138,7 @@ stratified_adjusted <- stratified_multi_reg(
   exposures = c("smoke", "ht", "ui"),
   stratifier = "race",
   adjust_for = c("age", "lwt"),
-  approach = logit
+  approach = "logit"
 )
 #> Running stratified multivariable regression by: race
 #>   > Stratum: race = White

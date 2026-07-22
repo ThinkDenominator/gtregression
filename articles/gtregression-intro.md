@@ -80,8 +80,8 @@ birthwt_summary <- descriptive_table(
   data = birthwt_data,
   exposures = birthwt_exposures,
   by = "low",
-  percent = column,
-  show_overall = last,
+  percent = "column",
+  show_overall = "last",
   theme = clinical
 )
 
@@ -92,26 +92,26 @@ birthwt_summary$table
 |----|----|----|----|
 | age | 23.0 (19.0-28.0) | 22.0 (19.5-25.0) | 23.0 (19.0-26.0) |
 | ftv_cat |  |  |  |
-| None | 64 (49.2%) | 36 (61.0%) | 100 (52.9%) |
-| One | 36 (27.7%) | 11 (18.6%) | 47 (24.9%) |
-| Two or more | 30 (23.1%) | 12 (20.3%) | 42 (22.2%) |
+|  None | 64 (49.2%) | 36 (61.0%) | 100 (52.9%) |
+|  One | 36 (27.7%) | 11 (18.6%) | 47 (24.9%) |
+|  Two or more | 30 (23.1%) | 12 (20.3%) | 42 (22.2%) |
 | ht |  |  |  |
-| No | 125 (96.2%) | 52 (88.1%) | 177 (93.7%) |
-| Yes | 5 (3.8%) | 7 (11.9%) | 12 (6.3%) |
+|  No | 125 (96.2%) | 52 (88.1%) | 177 (93.7%) |
+|  Yes | 5 (3.8%) | 7 (11.9%) | 12 (6.3%) |
 | lwt | 123.5 (113.0-147.0) | 120.0 (104.0-130.0) | 121.0 (110.0-140.0) |
 | ptl_cat |  |  |  |
-| No | 118 (90.8%) | 41 (69.5%) | 159 (84.1%) |
-| Yes | 12 (9.2%) | 18 (30.5%) | 30 (15.9%) |
+|  No | 118 (90.8%) | 41 (69.5%) | 159 (84.1%) |
+|  Yes | 12 (9.2%) | 18 (30.5%) | 30 (15.9%) |
 | race |  |  |  |
-| White | 73 (56.2%) | 23 (39.0%) | 96 (50.8%) |
-| Black | 15 (11.5%) | 11 (18.6%) | 26 (13.8%) |
-| Other | 42 (32.3%) | 25 (42.4%) | 67 (35.4%) |
+|  White | 73 (56.2%) | 23 (39.0%) | 96 (50.8%) |
+|  Black | 15 (11.5%) | 11 (18.6%) | 26 (13.8%) |
+|  Other | 42 (32.3%) | 25 (42.4%) | 67 (35.4%) |
 | smoke |  |  |  |
-| No | 86 (66.2%) | 29 (49.2%) | 115 (60.8%) |
-| Yes | 44 (33.8%) | 30 (50.8%) | 74 (39.2%) |
+|  No | 86 (66.2%) | 29 (49.2%) | 115 (60.8%) |
+|  Yes | 44 (33.8%) | 30 (50.8%) | 74 (39.2%) |
 | ui |  |  |  |
-| No | 116 (89.2%) | 45 (76.3%) | 161 (85.2%) |
-| Yes | 14 (10.8%) | 14 (23.7%) | 28 (14.8%) |
+|  No | 116 (89.2%) | 45 (76.3%) | 161 (85.2%) |
+|  Yes | 14 (10.8%) | 14 (23.7%) | 28 (14.8%) |
 | Categorical variables shown as n (%); percentages are by column. |  |  |  |
 | Continuous variables shown as Median (IQR). |  |  |  |
 
@@ -123,7 +123,7 @@ birthwt_uni <- uni_reg(
   data = birthwt_data,
   outcome = "low",
   exposures = birthwt_exposures,
-  approach = logit,
+  approach = "logit",
   theme = clinical
 )
 
@@ -132,7 +132,7 @@ birthwt_multi <- multi_reg(
   outcome = "low",
   exposures = c("smoke", "ht", "ui", "ptl_cat", "ftv_cat"),
   adjust_for = c("age", "lwt", "race"),
-  approach = logit,
+  approach = "logit",
   theme = striped
 )
 
@@ -143,20 +143,20 @@ birthwt_multi$table
 |----|----|----|
 | ftv_cat |  |  |
 | None | — |  |
-| One | 0.60 (0.26–1.38) | 0.230 |
-| Two or more | 0.86 (0.38–1.96) | 0.717 |
+|  One | 0.60 (0.26–1.38) | 0.230 |
+|  Two or more | 0.86 (0.38–1.96) | 0.717 |
 | ht |  |  |
 | No | — |  |
-| Yes | 5.99 (1.51–23.79) | 0.011 |
+|  Yes | 5.99 (1.51–23.79) | 0.011 |
 | ptl_cat |  |  |
 | No | — |  |
-| Yes | 4.49 (1.90–10.58) | \<0.001 |
+|  Yes | 4.49 (1.90–10.58) | \<0.001 |
 | smoke |  |  |
 | No | — |  |
-| Yes | 2.87 (1.36–6.04) | 0.006 |
+|  Yes | 2.87 (1.36–6.04) | 0.006 |
 | ui |  |  |
 | No | — |  |
-| Yes | 2.27 (0.98–5.24) | 0.055 |
+|  Yes | 2.27 (0.98–5.24) | 0.055 |
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
 | Adjusted for age, lwt, and race |  |  |
 | N = 189 complete observations included across outcome, exposure, and adjustment variables |  |  |

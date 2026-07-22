@@ -11,7 +11,7 @@ uni_reg(
   outcome,
   exposures,
   approach = "logit",
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 ```
@@ -24,11 +24,13 @@ uni_reg(
 
 - outcome:
 
-  character scalar; outcome column name
+  Character scalar; outcome column name. Quoted and bare names are
+  accepted.
 
 - exposures:
 
-  character vector; exposure column names
+  Character vector; exposure column names. Quoted names are recommended
+  in scripts, and bare names are also accepted.
 
 - approach:
 
@@ -36,7 +38,7 @@ uni_reg(
 
 - format:
 
-  one of `"gt"` (default) or `"flextable"`
+  One of `"flextable"` (default) or `"gt"`.
 
 - theme:
 
@@ -50,8 +52,8 @@ A list of class `c("gtregression","uni_reg", ...)` with elements:
 
 - table:
 
-  A `gt_tbl` (when `format="gt"`) or `flextable` (when
-  `format="flextable"`).
+  A `flextable` (when `format="flextable"`) or `gt_tbl` (when
+  `format="gt"`).
 
 - table_body:
 

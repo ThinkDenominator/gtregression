@@ -60,7 +60,7 @@ with evaluation metrics and the best model based on the lowest AIC.</p>
 <span>  <span class="va">exposures</span>,</span>
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
 <span>  direction <span class="op">=</span> <span class="st">"forward"</span>,</span>
-<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tibble"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span><span class="op">)</span></span>
+<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span>, <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -73,11 +73,13 @@ with evaluation metrics and the best model based on the lowest AIC.</p>
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
-<dd><p>A single character string indicating the outcome variable.</p></dd>
+<dd><p>A single character string indicating the outcome variable.
+Quoted and bare names are accepted.</p></dd>
 
 
 <dt id="arg-exposures">exposures<a class="anchor" aria-label="anchor" href="#arg-exposures"></a></dt>
-<dd><p>Character vector of predictor variables to consider.</p></dd>
+<dd><p>Character vector of predictor variables to consider. Quoted
+names are recommended in scripts, and bare names are also accepted.</p></dd>
 
 
 <dt id="arg-approach">approach<a class="anchor" aria-label="anchor" href="#arg-approach"></a></dt>
@@ -92,9 +94,9 @@ with evaluation metrics and the best model based on the lowest AIC.</p>
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
-<dd><p>Output format for an optional viewing table. One of
-<code>"tibble"</code>, <code>"gt"</code>, or <code>"flextable"</code>. The default
-<code>"tibble"</code> keeps the original list structure.</p></dd>
+<dd><p>Output format for the viewing table. One of
+<code>"flextable"</code> (default), <code>"gt"</code>, or <code>"tibble"</code>. Use
+<code>format = "tibble"</code> to keep only the original list structure.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -104,6 +106,7 @@ with evaluation metrics and the best model based on the lowest AIC.</p>
   for linear models).</p></li>
 <li><p><code>best_model</code>: The best-fitting model object based on lowest AIC.</p></li>
 <li><p><code>all_models</code>: A named list of the accepted stepwise models.</p></li>
+<li><p><code>direction</code>: Stepwise selection direction used.</p></li>
 <li><p><code>table</code>: A formatted <code>gt_tbl</code> or <code>flextable</code> when
   <code>format</code> is <code>"gt"</code> or <code>"flextable"</code>.</p></li>
 </ul></div>

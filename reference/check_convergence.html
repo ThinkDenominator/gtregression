@@ -5,7 +5,7 @@ for the full model (in multivariable mode),
 depending on the regression approach used."><meta property="og:description" content="Assesses model convergence and provides diagnostics
 for each exposure (in univariate mode) or
 for the full model (in multivariable mode),
-depending on the regression approach used."></head><body>
+depending on the regression approach used."><!-- dependencies from examples --><link href="libs/tabwid-1.1.3/tabwid.css" rel="stylesheet"><script src="libs/tabwid-1.1.3/tabwid.js"></script></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -63,7 +63,7 @@ depending on the regression approach used.</p>
 <span>  <span class="va">outcome</span>,</span>
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
 <span>  multivariate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tibble"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span><span class="op">)</span></span>
+<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span>, <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -76,13 +76,15 @@ depending on the regression approach used.</p>
 
 
 <dt id="arg-exposures">exposures<a class="anchor" aria-label="anchor" href="#arg-exposures"></a></dt>
-<dd><p>A character vector of predictor variable names.
+<dd><p>A character vector of predictor variable names. Quoted names
+are recommended in scripts, and bare names are also accepted.
 If <code>multivariate = FALSE</code>, each exposure is assessed separately.
 If <code>multivariate = TRUE</code>, exposures are included together.</p></dd>
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
-<dd><p>A character string specifying the outcome variable.</p></dd>
+<dd><p>A character string specifying the outcome variable. Quoted and
+bare names are accepted.</p></dd>
 
 
 <dt id="arg-approach">approach<a class="anchor" aria-label="anchor" href="#arg-approach"></a></dt>
@@ -99,9 +101,9 @@ checks convergence for a multivariable model;
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
-<dd><p>Output format. One of <code>"tibble"</code>, <code>"gt"</code>, or
-<code>"flextable"</code>. The default <code>"tibble"</code> returns the original
-data-frame style output.</p></dd>
+<dd><p>Output format. One of <code>"flextable"</code> (default),
+<code>"gt"</code>, or <code>"tibble"</code>. Use <code>format = "tibble"</code> for the
+original data-frame style output.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -156,9 +158,7 @@ as actual probabilities.</p>
 <span class="r-in"><span>    multivariate <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 Exposure Model Converged Max.prob.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> multivariable age + mass logit      TRUE 0.9359905</span>
-</code></pre></div>
+<style></style><div class="tabwid"><style>.cl-db78958c{}.cl-db6fac4c{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-db6fac60{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-db6fac6a{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-db731486{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-db731490{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-db734d84{width:1.197in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734d98{width:0.808in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734d99{width:1.212in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734d9a{width:1.691in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734da2{width:1.197in;background-color:rgba(231, 245, 236, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734da3{width:0.808in;background-color:rgba(231, 245, 236, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734dac{width:1.212in;background-color:rgba(231, 245, 236, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734db6{width:1.691in;background-color:rgba(231, 245, 236, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734db7{width:1.197in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734db8{width:0.808in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734dc0{width:1.212in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-db734dca{width:1.691in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="table cl-db78958c"><caption style="display:table-caption;margin:0pt;text-align:center;border-bottom: 0.00pt solid transparent;border-top: 0.00pt solid transparent;border-left: 0.00pt solid transparent;border-right: 0.00pt solid transparent;padding-top:3pt;padding-bottom:3pt;padding-left:3pt;padding-right:3pt;line-height: 1;background-color:transparent;"><span>Convergence check</span></caption><thead><tr style="overflow-wrap:break-word;"><th class="cl-db734d84"><p class="cl-db731486"><span class="cl-db6fac4c">Exposure</span></p></th><th class="cl-db734d98"><p class="cl-db731486"><span class="cl-db6fac4c">Model</span></p></th><th class="cl-db734d99"><p class="cl-db731490"><span class="cl-db6fac4c">Converged</span></p></th><th class="cl-db734d9a"><p class="cl-db731490"><span class="cl-db6fac4c">Max fitted value</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-db734da2"><p class="cl-db731486"><span class="cl-db6fac60">age + mass</span></p></td><td class="cl-db734da3"><p class="cl-db731486"><span class="cl-db6fac60">logit</span></p></td><td class="cl-db734dac"><p class="cl-db731490"><span class="cl-db6fac60">Yes</span></p></td><td class="cl-db734db6"><p class="cl-db731490"><span class="cl-db6fac60">0.936</span></p></td></tr></tbody><tfoot><tr style="overflow-wrap:break-word;"><td colspan="4" class="cl-db734db7"><p class="cl-db731486"><span class="cl-db6fac6a">Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates.</span></p></td></tr></tfoot></table></div></code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

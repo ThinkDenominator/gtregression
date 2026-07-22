@@ -34,9 +34,9 @@ check_convergence(
   data = birthwt_data,
   exposures = exposures,
   outcome = "low",
-  approach = logit,
+  approach = "logit",
   multivariate = TRUE,
-  format = gt
+  format = "gt"
 )
 ```
 
@@ -54,10 +54,10 @@ birthwt_multi <- multi_reg(
   data = birthwt_data,
   outcome = "low",
   exposures = exposures,
-  approach = logit
+  approach = "logit"
 )
 
-check_collinearity(birthwt_multi, format = gt)
+check_collinearity(birthwt_multi, format = "gt")
 ```
 
 | Collinearity check |  |  |
@@ -80,9 +80,9 @@ selected <- select_models(
   data = birthwt_data,
   outcome = "low",
   exposures = exposures,
-  approach = logit,
-  direction = forward,
-  format = gt
+  approach = "logit",
+  direction = "forward",
+  format = "gt"
 )
 
 selected$table
@@ -97,16 +97,17 @@ selected$table
 | 4 | low ~ ptl_cat + age + ht | 3 | 221.12 | 234.09 | -106.56 | 213.12 | ptl_cat + age + ht | No |
 | 5 | low ~ ptl_cat + age + ht + lwt | 4 | 217.43 | 233.64 | -103.72 | 207.43 | ptl_cat + age + ht + lwt | No |
 | 6 | low ~ ptl_cat + age + ht + lwt + ui | 5 | 217.15 | 236.60 | -102.58 | 205.15 | ptl_cat + age + ht + lwt + ui | Yes |
+| Selection direction: forward. |  |  |  |  |  |  |  |  |
 | Screening aid only; compare candidate models with study design, clinical or subject-matter judgement, and model diagnostics. |  |  |  |  |  |  |  |  |
 
 ### What To Inspect
 
 - [`check_convergence()`](https://thinkdenominator.github.io/gtregression/reference/check_convergence.md):
-  convergence status and maximum fitted probabilities. Use `format = gt`
-  or `format = flextable` for viewing tables.
+  convergence status and maximum fitted probabilities. Use
+  `format = "gt"` or `format = "flextable"` for viewing tables.
 - [`check_collinearity()`](https://thinkdenominator.github.io/gtregression/reference/check_collinearity.md):
   VIF and interpretation. Nested model outputs keep their list structure
   when formatted.
 - [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md):
   `$results_table`, `$best_model`, `$all_models`, and `$table` when
-  `format = gt` or `format = flextable`.
+  `format = "gt"` or `format = "flextable"`.

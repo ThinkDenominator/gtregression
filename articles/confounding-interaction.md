@@ -18,7 +18,7 @@ basis for model adjustment.
 |----|----|----|
 | Could these candidate variables be confounders or effect modifiers? | [`identify_confounder()`](https://thinkdenominator.github.io/gtregression/reference/identify_confounder.md) | Screens crude, adjusted, Mantel-Haenszel, and interaction signals together. |
 | Does this planned interaction term improve the model? | [`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md) | Compares models with and without `exposure:effect_modifier` using LRT or Wald tests. |
-| Do I need a Mantel-Haenszel estimate? | `identify_confounder(method = mh)` or `identify_confounder(method = both)` | MH is a stratified pooled estimate for eligible binary/categorical settings, not a formal interaction-term test. |
+| Do I need a Mantel-Haenszel estimate? | `identify_confounder(method = "mh")` or `identify_confounder(method = "both")` | MH is a stratified pooled estimate for eligible binary/categorical settings, not a formal interaction-term test. |
 
 A practical workflow is:
 
@@ -55,9 +55,10 @@ birthwt_data <- data_birthwt |>
 
 ### Identify Confounders
 
-Use `method = change` for the model-based change-in-estimate method. Use
-`method = mh` or `method = both` when Mantel-Haenszel is appropriate.
-The output is intentionally tidy rather than publication-first.
+Use `method = "change"` for the model-based change-in-estimate method.
+Use `method = "mh"` or `method = "both"` when Mantel-Haenszel is
+appropriate. The output is intentionally tidy rather than
+publication-first.
 
 ``` r
 
@@ -66,8 +67,8 @@ confounder_check <- identify_confounder(
   outcome = "low",
   exposure = "smoke",
   potential_confounder = c("race", "ht"),
-  approach = logit,
-  method = both
+  approach = "logit",
+  method = "both"
 )
 
 confounder_check$summary
@@ -98,9 +99,9 @@ interaction_check <- interaction_models(
   exposure = "smoke",
   effect_modifier = "race",
   covariates = c("age", "lwt"),
-  approach = logit,
-  test = LRT,
-  format = gt
+  approach = "logit",
+  test = "LRT",
+  format = "gt"
 )
 
 interaction_check$table

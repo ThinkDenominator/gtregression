@@ -53,6 +53,6 @@ Saves the file to disk. Invisibly returns the normalized file path.
 p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
   ggplot2::geom_point()
 
-save_plot(p, filename = tempfile("plot"), format = png)
-#> Plot saved at: /tmp/RtmpS4lYYk/plot1af13e31235b.png
+save_plot(p, filename = tempfile("plot"), format = "png")
+#> Plot saved at: /tmp/RtmpQEDMyA/plot1a1437ff7e00.png
 ```

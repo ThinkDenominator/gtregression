@@ -62,7 +62,7 @@ spanners for each stratum, two columns: "Adjusted &lt;effect&gt;" and "p-value".
 <span>  adjust_for <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interaction <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
-<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gt"</span>, <span class="st">"flextable"</span><span class="op">)</span>,</span>
+<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span><span class="op">)</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minimal"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -76,20 +76,24 @@ spanners for each stratum, two columns: "Adjusted &lt;effect&gt;" and "p-value".
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
-<dd><p>Character scalar; name of the outcome variable.</p></dd>
+<dd><p>Character scalar; name of the outcome variable. Quoted and
+bare names are accepted.</p></dd>
 
 
 <dt id="arg-exposures">exposures<a class="anchor" aria-label="anchor" href="#arg-exposures"></a></dt>
-<dd><p>Character vector of exposure variables to report.</p></dd>
+<dd><p>Character vector of exposure variables to report. Quoted
+names are recommended in scripts, and bare names are also accepted.</p></dd>
 
 
 <dt id="arg-stratifier">stratifier<a class="anchor" aria-label="anchor" href="#arg-stratifier"></a></dt>
-<dd><p>Character scalar; name of the stratifying variable.</p></dd>
+<dd><p>Character scalar; name of the stratifying variable. Quoted
+and bare names are accepted.</p></dd>
 
 
 <dt id="arg-adjust-for">adjust_for<a class="anchor" aria-label="anchor" href="#arg-adjust-for"></a></dt>
 <dd><p>Optional character vector of adjustment variables.
-This argument works the same way as in <code><a href="multi_reg.html">multi_reg()</a></code>.</p></dd>
+Quoted and bare names are accepted. This argument works the same way as in
+<code><a href="multi_reg.html">multi_reg()</a></code>.</p></dd>
 
 
 <dt id="arg-interaction">interaction<a class="anchor" aria-label="anchor" href="#arg-interaction"></a></dt>
@@ -103,7 +107,7 @@ using standard formula syntax, e.g. <code>"bmi*sex"</code></p></dd>
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
-<dd><p>One of <code>"gt"</code> (default) or <code>"flextable"</code>.</p></dd>
+<dd><p>One of <code>"flextable"</code> (default) or <code>"gt"</code>.</p></dd>
 
 
 <dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>
@@ -115,8 +119,8 @@ using standard formula syntax, e.g. <code>"bmi*sex"</code></p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list of class <code>c("gtregression","stratified_multi_reg", ...)</code> with:</p><dl><dt><code>table</code></dt>
-<dd><p>A <code>gt_tbl</code> (format = <code>"gt"</code>) or
-  <code>flextable</code> (format = <code>"flextable"</code>).</p></dd>
+<dd><p>A <code>flextable</code> (format = <code>"flextable"</code>) or
+  <code>gt_tbl</code> (format = <code>"gt"</code>).</p></dd>
 
   <dt><code>table_display</code></dt>
 <dd><p>Wide data frame used to build the table.</p></dd>
@@ -163,7 +167,7 @@ one adjusted model is fitted per exposure within each stratum.</p>
 <span class="r-in"><span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span></span>
 <span class="r-in"><span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"smoke"</span>, <span class="st">"ht"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  stratifier <span class="op">=</span> <span class="st">"race"</span>,</span></span>
-<span class="r-in"><span>  approach <span class="op">=</span> <span class="va">logit</span></span></span>
+<span class="r-in"><span>  approach <span class="op">=</span> <span class="st">"logit"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Running stratified multivariable regression by: race</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   &gt; Stratum: race = White</span>
@@ -176,7 +180,7 @@ one adjusted model is fitted per exposure within each stratum.</p>
 <span class="r-in"><span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  stratifier <span class="op">=</span> <span class="st">"race"</span>,</span></span>
 <span class="r-in"><span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  approach <span class="op">=</span> <span class="va">logit</span></span></span>
+<span class="r-in"><span>  approach <span class="op">=</span> <span class="st">"logit"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Running stratified multivariable regression by: race</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   &gt; Stratum: race = White</span>

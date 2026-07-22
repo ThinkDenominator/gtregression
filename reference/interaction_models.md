@@ -18,7 +18,7 @@ interaction_models(
   test = c("LRT", "Wald"),
   alpha = 0.05,
   verbose = FALSE,
-  format = c("tibble", "gt", "flextable")
+  format = c("flextable", "gt", "tibble")
 )
 ```
 
@@ -30,19 +30,21 @@ interaction_models(
 
 - outcome:
 
-  Outcome variable name.
+  Outcome variable name. Quoted and bare names are accepted.
 
 - exposure:
 
-  Main exposure variable name.
+  Main exposure variable name. Quoted and bare names are accepted.
 
 - covariates:
 
-  Optional character vector of additional covariates.
+  Optional character vector of additional covariates. Quoted names are
+  recommended in scripts, and bare names are also accepted.
 
 - effect_modifier:
 
-  Variable name for the potential effect modifier.
+  Variable name for the potential effect modifier. Quoted and bare names
+  are accepted.
 
 - approach:
 
@@ -63,9 +65,9 @@ interaction_models(
 
 - format:
 
-  Output format for an optional viewing table. One of `"tibble"`,
-  `"gt"`, or `"flextable"`. The default `"tibble"` keeps the original
-  list structure.
+  Output format for the viewing table. One of `"flextable"` (default),
+  `"gt"`, or `"tibble"`. Use `format = "tibble"` to keep only the
+  original list structure.
 
 ## Value
 

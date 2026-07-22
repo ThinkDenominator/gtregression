@@ -60,14 +60,14 @@ uni_or <- uni_reg(
   birthwt_data,
   outcome = "low",
   exposures = c("age", "lwt", "smoke", "ht"),
-  approach = logit
+  approach = "logit"
 )
 multi_or <- multi_reg(
   birthwt_data,
   outcome = "low",
   exposures = c("smoke", "ht"),
   adjust_for = c("age", "lwt"),
-  approach = logit
+  approach = "logit"
 )
 
 forest_data <- forest_df(uni_or, multi_or)

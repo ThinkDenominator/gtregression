@@ -67,7 +67,7 @@ interaction.</p>
 <span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"LRT"</span>, <span class="st">"Wald"</span><span class="op">)</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tibble"</span>, <span class="st">"gt"</span>, <span class="st">"flextable"</span><span class="op">)</span></span>
+<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span>, <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -80,19 +80,22 @@ interaction.</p>
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
-<dd><p>Outcome variable name.</p></dd>
+<dd><p>Outcome variable name. Quoted and bare names are accepted.</p></dd>
 
 
 <dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
-<dd><p>Main exposure variable name.</p></dd>
+<dd><p>Main exposure variable name. Quoted and bare names are
+accepted.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
-<dd><p>Optional character vector of additional covariates.</p></dd>
+<dd><p>Optional character vector of additional covariates. Quoted
+names are recommended in scripts, and bare names are also accepted.</p></dd>
 
 
 <dt id="arg-effect-modifier">effect_modifier<a class="anchor" aria-label="anchor" href="#arg-effect-modifier"></a></dt>
-<dd><p>Variable name for the potential effect modifier.</p></dd>
+<dd><p>Variable name for the potential effect modifier.
+Quoted and bare names are accepted.</p></dd>
 
 
 <dt id="arg-approach">approach<a class="anchor" aria-label="anchor" href="#arg-approach"></a></dt>
@@ -115,9 +118,9 @@ interaction.</p>
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
-<dd><p>Output format for an optional viewing table. One of
-<code>"tibble"</code>, <code>"gt"</code>, or <code>"flextable"</code>. The default
-<code>"tibble"</code> keeps the original list structure.</p></dd>
+<dd><p>Output format for the viewing table. One of
+<code>"flextable"</code> (default), <code>"gt"</code>, or <code>"tibble"</code>. Use
+<code>format = "tibble"</code> to keep only the original list structure.</p></dd>
 
 </dl></div>
     <div class="section level2">

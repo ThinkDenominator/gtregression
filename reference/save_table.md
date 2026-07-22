@@ -43,9 +43,9 @@ tbl <- uni_reg(
   data = birthwt_data,
   outcome = "low",
   exposures = c("age", "smoke"),
-  approach = logit
+  approach = "logit"
 )
 
-save_table(tbl, filename = tempfile("table"), format = html)
-#> Table saved at: /tmp/RtmpS4lYYk/table1af144c3d3e2.html
+save_table(tbl, filename = tempfile("table"), format = "html")
+#> Table saved at: /tmp/RtmpQEDMyA/table1a141604830c.html
 ```

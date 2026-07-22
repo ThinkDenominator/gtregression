@@ -78,15 +78,15 @@ desc <- descriptive_table(
   birthwt_data,
   exposures = exposures,
   by = "low",
-  percent = column,
-  show_overall = last
+  percent = "column",
+  show_overall = "last"
 )
 
 uni <- uni_reg(
   birthwt_data,
   outcome = "low",
   exposures = exposures,
-  approach = logit
+  approach = "logit"
 )
 
 multi <- multi_reg(
@@ -94,7 +94,7 @@ multi <- multi_reg(
   outcome = "low",
   exposures = c("smoke", "ht", "ui"),
   adjust_for = c("age", "lwt", "race"),
-  approach = logit
+  approach = "logit"
 )
 
 plot_reg(multi, title = "Adjusted Regression for Low Birth Weight")

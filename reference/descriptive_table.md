@@ -20,7 +20,7 @@ descriptive_table(
   show_overall = c("no", "first", "last"),
   statistic = NULL,
   value = NULL,
-  format = c("gt", "flextable"),
+  format = c("flextable", "gt"),
   theme = c("minimal")
 )
 ```
@@ -33,11 +33,12 @@ descriptive_table(
 
 - exposures:
 
-  character; variables to summarise
+  Character vector of variables to summarise. Quoted names are
+  recommended in scripts, and bare names are also accepted.
 
 - by:
 
-  optional single grouping variable
+  Optional single grouping variable. Quoted and bare names are accepted.
 
 - percent:
 
@@ -72,7 +73,7 @@ descriptive_table(
 
 - format:
 
-  "gt" (default) or "flextable"
+  "flextable" (default) or "gt"
 
 - theme:
 

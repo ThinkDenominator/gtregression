@@ -58,7 +58,7 @@ gt or flextable, without a gtsummary dependency."></head><body>
 <span>  adjust_for <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interaction <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
-<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gt"</span>, <span class="st">"flextable"</span><span class="op">)</span>,</span>
+<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span><span class="op">)</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minimal"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -72,11 +72,13 @@ gt or flextable, without a gtsummary dependency."></head><body>
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
-<dd><p>Character scalar; name of the outcome variable.</p></dd>
+<dd><p>Character scalar; name of the outcome variable. Quoted and
+bare names are accepted.</p></dd>
 
 
 <dt id="arg-exposures">exposures<a class="anchor" aria-label="anchor" href="#arg-exposures"></a></dt>
 <dd><p>Character vector; exposure variable(s) to report.
+Quoted names are recommended in scripts, and bare names are also accepted.
 If <code>adjust_for = NULL</code>, all exposures are included in a single
 multivariable model. If <code>adjust_for</code> is supplied, one adjusted
 model is fitted per exposure and only exposure-specific adjusted
@@ -84,8 +86,8 @@ estimate(s) are displayed.</p></dd>
 
 
 <dt id="arg-adjust-for">adjust_for<a class="anchor" aria-label="anchor" href="#arg-adjust-for"></a></dt>
-<dd><p>Optional character vector of adjustment variables.
-Must not overlap with <code>exposures</code>.</p></dd>
+<dd><p>Optional character vector of adjustment variables. Quoted
+and bare names are accepted. Must not overlap with <code>exposures</code>.</p></dd>
 
 
 <dt id="arg-interaction">interaction<a class="anchor" aria-label="anchor" href="#arg-interaction"></a></dt>
@@ -101,7 +103,8 @@ One of <code>"logit"</code>, <code>"logbinomial"</code>, <code>"poisson"</code>,
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
-<dd><p>Output table format; one of <code>"gt"</code> (default) or <code>"flextable"</code>.</p></dd>
+<dd><p>Output table format; one of <code>"flextable"</code> (default) or
+<code>"gt"</code>.</p></dd>
 
 
 <dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>
@@ -113,8 +116,8 @@ primitives such as <code>c("plain","zebra","lines","labels_bold","compact","head
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list of class <code>c("gtregression","multi_reg", ...)</code> with elements:</p><dl><dt>table</dt>
-<dd><p>A <code>gt_tbl</code> (if <code>format="gt"</code>) or <code>flextable</code>
-  (if <code>format="flextable"</code>).</p></dd>
+<dd><p>A <code>flextable</code> (if <code>format="flextable"</code>) or
+  <code>gt_tbl</code> (if <code>format="gt"</code>).</p></dd>
 
   <dt>table_body</dt>
 <dd><p>A data frame of adjusted estimates and confidence intervals

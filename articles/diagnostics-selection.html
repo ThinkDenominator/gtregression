@@ -101,9 +101,9 @@ helpers keep diagnostics close to the regression workflow.</p>
 <span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
-<span>  approach <span class="op">=</span> <span class="va">logit</span>,</span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
 <span>  multivariate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  format <span class="op">=</span> <span class="va">gt</span></span>
+<span>  format <span class="op">=</span> <span class="st">"gt"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#mwlefoodfi table {
@@ -586,10 +586,10 @@ helpers keep diagnostics close to the regression workflow.</p>
 <span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
-<span>  approach <span class="op">=</span> <span class="va">logit</span></span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/check_collinearity.html">check_collinearity</a></span><span class="op">(</span><span class="va">birthwt_multi</span>, format <span class="op">=</span> <span class="va">gt</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/check_collinearity.html">check_collinearity</a></span><span class="op">(</span><span class="va">birthwt_multi</span>, format <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
 <div id="wkkeulbfdp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#wkkeulbfdp table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -1101,9 +1101,9 @@ helpers keep diagnostics close to the regression workflow.</p>
 <span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
-<span>  approach <span class="op">=</span> <span class="va">logit</span>,</span>
-<span>  direction <span class="op">=</span> <span class="va">forward</span>,</span>
-<span>  format <span class="op">=</span> <span class="va">gt</span></span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
+<span>  direction <span class="op">=</span> <span class="st">"forward"</span>,</span>
+<span>  format <span class="op">=</span> <span class="st">"gt"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">selected</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
@@ -1641,9 +1641,14 @@ helpers keep diagnostics close to the regression workflow.</p>
 <td headers="best" class="gt_row gt_center" style="background-color: #E7F5EC;">Yes</td>
 </tr>
 </tbody>
-<tfoot><tr class="gt_sourcenotes">
+<tfoot>
+<tr class="gt_sourcenotes">
+<td class="gt_sourcenote" colspan="9"><span class="gt_from_md">Selection direction: forward.</span></td>
+    </tr>
+<tr class="gt_sourcenotes">
 <td class="gt_sourcenote" colspan="9"><span class="gt_from_md">Screening aid only; compare candidate models with study design, clinical or subject-matter judgement, and model diagnostics.</span></td>
-    </tr></tfoot>
+    </tr>
+</tfoot>
 </table>
 </div>
 </div>
@@ -1653,16 +1658,16 @@ helpers keep diagnostics close to the regression workflow.</p>
 <ul>
 <li>
 <code><a href="../reference/check_convergence.html">check_convergence()</a></code>: convergence status and maximum
-fitted probabilities. Use <code>format = gt</code> or
-<code>format = flextable</code> for viewing tables.</li>
+fitted probabilities. Use <code>format = "gt"</code> or
+<code>format = "flextable"</code> for viewing tables.</li>
 <li>
 <code><a href="../reference/check_collinearity.html">check_collinearity()</a></code>: VIF and interpretation. Nested
 model outputs keep their list structure when formatted.</li>
 <li>
 <code><a href="../reference/select_models.html">select_models()</a></code>: <code>$results_table</code>,
 <code>$best_model</code>, <code>$all_models</code>, and
-<code>$table</code> when <code>format = gt</code> or
-<code>format = flextable</code>.</li>
+<code>$table</code> when <code>format = "gt"</code> or
+<code>format = "flextable"</code>.</li>
 </ul>
 </div>
 </div>

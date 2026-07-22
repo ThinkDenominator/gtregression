@@ -65,10 +65,10 @@ tbl <- uni_reg(
   data = birthwt_data,
   outcome = "low",
   exposures = c("age", "smoke"),
-  approach = logit,
-  format = flextable
+  approach = "logit",
+  format = "flextable"
 )
 
 save_docx(tables = tbl, filename = tempfile("report"))
-#> Word document saved at: /tmp/RtmpS4lYYk/report1af14f509ac5.docx
+#> Word document saved at: /tmp/RtmpQEDMyA/report1a147b2d60c7.docx
 ```
