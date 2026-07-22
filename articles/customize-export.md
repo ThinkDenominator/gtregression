@@ -73,7 +73,7 @@ birthwt_custom$table
 |  Yes | 2.27 (0.98–5.24) | 0.055 |
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
 
-Adjusted regression for low birth weight {.table .cl-b4a9c478
+Adjusted regression for low birth weight {.table .cl-aea055c2
 quarto-disable-processing="true"}
 
 ### Merge Tables

@@ -42,23 +42,45 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.0" id="gtregression-100">gtregression 1.0.0<a class="anchor" aria-label="anchor" href="#gtregression-100"></a></h2><p class="text-muted">CRAN release: 2025-08-18</p>
-<ul><li>Initial release of gtregression.</li>
-<li>Added support for logit, logbinomial, linear, Poisson, roboisson, and negative binomial models.</li>
-<li>Added functions for confounder identification, model selection, diagnostics, plotting, and saving output.</li>
-<li>Added forest plot functions (<code>plot_reg</code>, <code>plot_reg_combine</code>)</li>
-<li>Improved documentation and homepage</li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.1.0" id="gtregression-110--2025-09-07">gtregression 1.1.0 — 2025-09-07<a class="anchor" aria-label="anchor" href="#gtregression-110--2025-09-07"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.1.0" id="gtregression-110">gtregression 1.1.0<a class="anchor" aria-label="anchor" href="#gtregression-110"></a></h2>
 <div class="section level3">
 <h3 id="added-1-1-0">Added<a class="anchor" aria-label="anchor" href="#added-1-1-0"></a></h3>
-<ul><li>Shiny GUI modularized (import, descriptive, regression, advanced).</li>
-<li>Reproducible-code panes for tables/models. ## Changed</li>
-<li>Improved validation helpers; clearer error messages. ## Fixed</li>
-<li>Stratified combine UI; PDF/PNG export reliability.</li>
+<ul><li>Added publication-ready <code>flextable</code> output as the default table format across package table functions, while retaining <code>gt</code> and tibble-style outputs where appropriate.</li>
+<li>Added support for unquoted option values in common arguments, including model approaches and output formats, so users can write calls such as <code>approach = logit</code> and <code>format = flextable</code>.</li>
+<li>Added <code>adjust_for</code> support for adjusted multivariable workflows, including downstream regression plots and combined regression plots.</li>
+<li>Added adjusted-variable notes to regression plots and combined regression plots.</li>
+<li>Added publication-style display outputs for diagnostic and helper functions including <code><a href="../reference/dissect.html">dissect()</a></code>, <code><a href="../reference/select_models.html">select_models()</a></code>, <code><a href="../reference/interaction_models.html">interaction_models()</a></code>, and <code><a href="../reference/identify_confounder.html">identify_confounder()</a></code>.</li>
+<li>Added Mantel-Haenszel comparison support to <code><a href="../reference/identify_confounder.html">identify_confounder()</a></code> to support confounding assessment alongside crude and adjusted model comparisons.</li>
+<li>Added manual case-study scripts under <code>dev/manual-tests/</code> for real-time testing of logistic, linear, log-binomial, robust Poisson, Poisson, and negative binomial workflows.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changed-1-1-0">Changed<a class="anchor" aria-label="anchor" href="#changed-1-1-0"></a></h3>
+<ul><li>Improved <code><a href="../reference/descriptive_table.html">descriptive_table()</a></code>, <code><a href="../reference/uni_reg.html">uni_reg()</a></code>, <code><a href="../reference/multi_reg.html">multi_reg()</a></code>, <code><a href="../reference/stratified_uni_reg.html">stratified_uni_reg()</a></code>, and <code><a href="../reference/stratified_multi_reg.html">stratified_multi_reg()</a></code> documentation with clearer beginner-friendly examples using package datasets.</li>
+<li>Improved pkgdown organization, homepage content, reference grouping, and rendered examples to better show publication-ready tables and plots.</li>
+<li>Improved <code><a href="../reference/merge_tables.html">merge_tables()</a></code> so descriptive, crude, and adjusted tables can be combined more reliably, including when visible variable labels differ between input tables.</li>
+<li>Improved <code><a href="../reference/modify_table.html">modify_table()</a></code> so merged tables retain clean headers, spanners, and footnotes after relabelling.</li>
+<li>Improved <code><a href="../reference/forest_df.html">forest_df()</a></code> and <code><a href="../reference/forest_reg.html">forest_reg()</a></code> support for descriptive summaries combined with univariable and multivariable regression outputs.</li>
+<li>Improved <code><a href="../reference/select_models.html">select_models()</a></code> output so formatted tables clearly report the model selection direction used.</li>
+<li>Improved repository organization for CRAN readiness, including excluding development-only manual scripts from package builds.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="fixed-1-1-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-1-1-0"></a></h3>
+<ul><li>Fixed <code><a href="../reference/merge_tables.html">merge_tables()</a></code> flextable headers so internal merge suffixes such as <code>_p1</code>, <code>_p2</code>, and <code>_p3</code> are not shown in rendered tables.</li>
+<li>Fixed <code><a href="../reference/merge_tables.html">merge_tables()</a></code> row alignment when descriptive and regression tables contain the same variables but different visible labels.</li>
+<li>Fixed <code><a href="../reference/modify_table.html">modify_table()</a></code> handling of merged flextable outputs so clean subheaders and group spanners are preserved.</li>
+<li>Fixed <code><a href="../reference/check_convergence.html">check_convergence()</a></code> so failed multivariable model fits return a clear non-converged table rather than failing during table formatting.</li>
+<li>Fixed pkgdown reference metadata for internal print methods.</li>
+<li>Fixed save helpers so files are written to a temporary directory when users do not provide an explicit destination, supporting CRAN-safe examples and tests.</li>
 </ul></div>
 </div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="gtregression-100">gtregression 1.0.0<a class="anchor" aria-label="anchor" href="#gtregression-100"></a></h2><p class="text-muted">CRAN release: 2025-08-18</p>
+<ul><li>Initial release of gtregression.</li>
+<li>Added support for logit, log-binomial, linear, Poisson, robust Poisson, and negative binomial models.</li>
+<li>Added functions for confounder identification, model selection, diagnostics, plotting, and saving output.</li>
+<li>Added forest plot functions (<code><a href="../reference/plot_reg.html">plot_reg()</a></code>, <code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code>).</li>
+<li>Added initial documentation and pkgdown homepage.</li>
+</ul></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
