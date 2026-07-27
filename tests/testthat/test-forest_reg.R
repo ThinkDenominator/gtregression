@@ -36,6 +36,8 @@ test_that("forest_df builds univariate and adjusted forest data", {
   expect_true(all(c("est", "lo", "hi", "est2", "lo2", "hi2") %in% names(attributes(out))))
   expect_equal(meta$x_trans, "log")
   expect_equal(meta$ref_line, 1)
+  expect_true("Ref." %in% out[["OR (95% CI)"]])
+  expect_true("Ref." %in% out[["Adjusted OR (95% CI)"]])
 })
 
 test_that("forest_df handles linear metadata and descriptive table merge", {
@@ -201,7 +203,14 @@ test_that("forest_reg builds forest objects from data frames and regression obje
   expect_equal(res_df$meta$ref_line, 1)
   expect_equal(res_df$meta$x_trans, "log")
   expect_s3_class(res_df$data, "data.frame")
+  expect_equal(res_df$meta$ci_col_width, c(20L, 20L))
+  expect_identical(formals(print.gtregression_forest)$autofit, FALSE)
   expect_invisible(suppressWarnings(print(res_df)))
+  expect_warning(
+    expect_invisible(print(res_df, autofit = TRUE)),
+    "`autofit = TRUE` is ignored"
+  )
+  expect_error(print(res_df, autofit = NA), "`autofit` must be")
 })
 
 test_that("forest_reg preserves forest_df effect headers in plotted data", {
@@ -273,14 +282,19 @@ test_that("forest_reg leaves default axis ticks to forestploter and respects ove
   custom <- forest_reg(
     uni = uni,
     multi = multi,
+    ci_col_width = c(12, 16),
     ticks_at = list(c(1, 2, 4), c(1, 3, 9)),
     ticks_digits = 1,
+    xlim = list(c(0.25, 8), c(0.25, 12)),
     quiet = TRUE
   )
 
   expect_null(auto$meta$ticks_at)
+  expect_null(auto$meta$xlim)
   expect_equal(custom$meta$ticks_at, list(c(1, 2, 4), c(1, 3, 9)))
   expect_equal(custom$meta$ticks_digits, 1L)
+  expect_equal(custom$meta$xlim, list(c(0.25, 8), c(0.25, 12)))
+  expect_equal(custom$meta$ci_col_width, c(12L, 16L))
 })
 
 test_that("forest_reg validates missing inputs", {
@@ -292,16 +306,16 @@ test_that("forest_reg validates missing inputs", {
   expect_error(forest_reg(df = "not data"), "`df` must be a data frame")
   expect_error(forest_reg(df = data.frame(Characteristic = "x"), quiet = NA), "`quiet` must be")
   expect_error(
-    forest_reg(df = data.frame(Characteristic = "x"), ci_col_width = c(0.1, 0.2, 0.3)),
-    "`ci_col_width` must be"
+    forest_reg(df = data.frame(Characteristic = "x"), effects = 1),
+    "`effects` must be"
   )
   expect_error(
     forest_reg(df = data.frame(Characteristic = "x"), ci_col_width = 0),
     "`ci_col_width` must be"
   )
   expect_error(
-    forest_reg(df = data.frame(Characteristic = "x"), effects = 1),
-    "`effects` must be"
+    forest_reg(df = data.frame(Characteristic = "x"), xlim = c(1, 1)),
+    "`xlim` must be"
   )
 })
 

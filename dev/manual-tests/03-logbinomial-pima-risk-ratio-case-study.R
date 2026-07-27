@@ -107,6 +107,19 @@ risk_factors <- c(
 
 core_risk_factors <- c("age_cat", "npreg_cat", "dpf_cat")
 
+## 1.1-friendly labels:
+## Label once, then all gtregression tables and plots use these display names.
+attr(pima_data$glucose, "label") <- "Plasma glucose"
+attr(pima_data$mass, "label") <- "Body mass index"
+attr(pima_data$bmi, "label") <- "BMI category"
+attr(pima_data$age_cat, "label") <- "Age group"
+attr(pima_data$npreg_cat, "label") <- "Parity"
+attr(pima_data$glucose_cat, "label") <- "Glucose category"
+attr(pima_data$bp_cat, "label") <- "Blood pressure category"
+attr(pima_data$triceps_cat, "label") <- "Triceps skinfold category"
+attr(pima_data$insulin_cat, "label") <- "Serum insulin category"
+attr(pima_data$dpf_cat, "label") <- "Diabetes pedigree risk"
+
 
 ## 2. Inspect data before modelling ------------------------------------------
 
@@ -162,6 +175,18 @@ descriptive_table(
   percent = "column",
   show_overall = "last",
   format = "gt"
+)
+
+## Mixed summaries:
+## A numeric variable can be treated as categorical when clinical reporting
+## needs counts and percentages.
+descriptive_table(
+  data = pima_data,
+  exposures = c("age_cat", "npreg_cat", "glucose", "mass"),
+  by = diabetes_cat,
+  statistic = c(glucose = mean, mass = median),
+  percent = column,
+  show_missing = no
 )
 
 
@@ -247,6 +272,17 @@ uni_rr$table_body
 uni_rr$model_summaries
 uni_rr$table
 
+## Optional model statistics are stored outside the publication table.
+uni_rr_stats <- uni_reg(
+  data = pima_data,
+  outcome = diabetes,
+  exposures = risk_factors,
+  approach = logbinomial,
+  model_stats = TRUE
+)
+
+uni_rr_stats$model_stats
+
 ## Useful option: gt output for HTML/pkgdown viewing.
 uni_reg(
   data = pima_data,
@@ -295,6 +331,17 @@ multi_reg(
   adjust_for = c(age_cat, bmi),
   approach = logbinomial
 )
+
+multi_adj_rr_stats <- multi_reg(
+  data = pima_data,
+  outcome = diabetes,
+  exposures = c(npreg_cat, dpf_cat),
+  adjust_for = c(age_cat, bmi),
+  approach = logbinomial,
+  model_stats = TRUE
+)
+
+multi_adj_rr_stats$model_stats
 
 
 ## 8. Modify tables for publication ------------------------------------------
@@ -474,6 +521,21 @@ forest_reg(df_uni_desc_rr)
 forest_reg(df_multi_desc_rr)
 forest_reg(df_both_desc_rr)
 
+## Layout check:
+## If x-axis tick labels overlap, control the axis with xlim and ticks_at.
+## Use a list when the forest table has crude and adjusted plot columns.
+forest_reg(
+  df_both_desc_rr,
+  xlim = list(c(0.5, 8), c(0.8, 12)),
+  ticks_at = list(
+    c(0.5, 1, 2, 4, 8),
+    c(1, 2, 4, 8, 12)
+  )
+)
+
+## If the CI plot panel is too narrow or too wide, tune ci_col_width.
+forest_reg(df_both_desc_rr, ci_col_width = c(18, 22))
+
 ## Useful option: put the plot on the left.
 forest_reg(df_both_desc_rr, side = "left")
 
@@ -584,6 +646,18 @@ interaction_models(
 ## This is exploratory. Use planned interaction models when a formal
 ## effect-modification test is needed.
 
+## First profile the age strata. Risk ratios are easier to interpret when the
+## reader can see how glucose, BMI, parity, and pedigree risk are distributed.
+age_profile_rr <- descriptive_table(
+  data = pima_data,
+  exposures = c("glucose_cat", "bmi", "npreg_cat", "dpf_cat"),
+  by = age_cat,
+  percent = column,
+  show_overall = last
+)
+
+age_profile_rr
+
 str_uni_rr <- stratified_uni_reg(
   data = pima_data,
   outcome = outcome,
@@ -637,7 +711,8 @@ save_docx(
     "Forest plot - adjusted",
     "Crude versus adjusted risk-ratio plot"
   ),
-  filename = "pima-logbinomial-report"
+  filename = "pima-logbinomial-report",
+  table_width = 6.5
 )
 
 
@@ -652,6 +727,8 @@ save_docx(
 ## - plot_reg() highlights significant associations when colours are supplied.
 ## - plot_reg_combine() makes crude versus adjusted changes easy to see.
 ## - forest_reg() displays risk ratios with a sensible no-effect reference line.
+## - model_stats = TRUE stores fit statistics in $model_stats.
+## - save_docx(table_width = 6.5) keeps wide flextables fitted to a Word page.
 ## - select_models() output mentions the selection direction.
 ## - identify_confounder() prints a console summary and has a formatted $table.
 ## - interaction_models() returns a readable screening table and model objects.

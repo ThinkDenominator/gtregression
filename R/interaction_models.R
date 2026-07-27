@@ -315,7 +315,8 @@ interaction_models <- function(data,
           style = gt::cell_text(weight = "bold"),
           locations = gt::cells_column_labels()
         ) |>
-        gt::tab_source_note(gt::md(note))
+        gt::tab_source_note(gt::md(note)) |>
+        .compact_gt_source_notes()
     )
   }
 
@@ -336,7 +337,7 @@ interaction_models <- function(data,
   )
   ft <- flextable::bold(ft, part = "header", bold = TRUE)
   ft <- flextable::add_footer_lines(ft, values = note)
-  ft <- flextable::fontsize(ft, size = 8, part = "footer")
+  ft <- .compact_flex_footer(ft)
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   flextable::autofit(ft)
 }

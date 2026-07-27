@@ -14,10 +14,10 @@
 \item{exposures}{A string or character vector of predictor(s).}
 
 \item{approach}{A string specifying the regression approach. One of
-`"logit"`, `"logbinomial"`, `"poisson"`, `"linear"`, `"robpoisson"`, or `"negbin"`.}
+`"logit"`, `"firth"`, `"logbinomial"`, `"poisson"`, `"linear"`, `"robpoisson"`, or `"negbin"`.}
 }
 \value{
-A fitted model object (`glm`, `lm`, `riskratio`, or `negbin`) or `NULL` if fitting fails.
+A fitted model object (`glm`, `logistf`, `lm`, `riskratio`, or `negbin`) or `NULL` if fitting fails.
 }
 \description{
 Fits a regression model based on the selected approach. Can handle a single exposure or a vector of exposures.

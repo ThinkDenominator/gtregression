@@ -28,9 +28,9 @@ plot_reg(
 
 \item{title}{Optional plot title.}
 
-\item{caption}{Optional plot caption. If \code{NULL}, an adjustment note is
-added automatically for adjusted \code{multi_reg()} objects when
-\code{show_adjustment_note = TRUE}.}
+\item{caption}{Optional plot caption. If \code{NULL}, notes are added
+automatically for adjusted \code{multi_reg()} objects and displayed
+reference categories.}
 
 \item{ref_line}{Optional numeric value for the reference line.
 Defaults to 0 for linear models and 1 otherwise.}
@@ -49,7 +49,10 @@ Defaults to 0 for linear models and 1 otherwise.}
 
 \item{base_size}{Base font size.}
 
-\item{show_ref}{Logical; if \code{TRUE}, reference rows are shown.}
+\item{show_ref}{Logical; if \code{TRUE}, reference rows are shown. If
+\code{FALSE}, binary exposures are shown as compact rows for the estimated
+non-reference category; affirmative levels such as \code{Yes} or \code{1}
+are displayed using the variable name.}
 
 \item{sig_color}{Optional fill color for significant points.}
 

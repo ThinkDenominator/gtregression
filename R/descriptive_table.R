@@ -12,6 +12,71 @@
   unique(tolower(theme))
 }
 
+.statistic_arg_desc <- function(expr, env = parent.frame()) {
+  allowed <- c("mean", "median", "mode", "count", "categorical")
+  aliases <- c(
+    category = "categorical",
+    catagory = "categorical",
+    catagorical = "categorical",
+    factor = "categorical"
+  )
+
+  normalize_one <- function(x) {
+    if (is.character(x)) {
+      out <- tolower(x)
+    } else if (is.symbol(x)) {
+      out <- tolower(as.character(x))
+    } else {
+      out <- eval(x, envir = env)
+      if (!is.character(out)) {
+        stop(
+          "`statistic` must use values such as mean, median, count, or categorical.",
+          call. = FALSE
+        )
+      }
+      out <- tolower(out)
+    }
+
+    idx <- match(out, names(aliases))
+    out[!is.na(idx)] <- unname(aliases[idx[!is.na(idx)]])
+    out
+  }
+
+  if (identical(expr, quote(NULL))) {
+    return(NULL)
+  }
+
+  if (is.call(expr) && identical(expr[[1L]], as.name("c"))) {
+    parts <- as.list(expr)[-1L]
+    out <- unlist(lapply(parts, normalize_one), use.names = FALSE)
+    names(out) <- names(parts)
+  } else {
+    out <- normalize_one(expr)
+  }
+
+  if (!is.character(out) || anyNA(out) || any(!nzchar(out))) {
+    stop(
+      "`statistic` must use values such as mean, median, count, or categorical.",
+      call. = FALSE
+    )
+  }
+
+  bad_stats <- setdiff(out, allowed)
+  if (length(bad_stats)) {
+    stop("Unsupported statistic: ", paste(bad_stats, collapse = ", "), call. = FALSE)
+  }
+
+  named <- names(out)
+  if (length(out) > 1L && (is.null(named) || any(!nzchar(named)))) {
+    stop(
+      "`statistic` must be a single summary type or a named vector such as c(age = mean, ftv = categorical).",
+      call. = FALSE
+    )
+  }
+
+  out
+}
+
 # ---------- descriptive_table ----------
 #' Descriptive Summary Table (no gtsummary) using gt/flextable
 #'
@@ -31,13 +96,21 @@
 #' @param show_missing "ifany" (default) or "no"
 #' @param show_dichotomous "all_levels" (default) or "single_row"
 #' @param show_overall "no" (default), "first", or "last"
-#' @param statistic optional named vector per continuous var:
-#'   values in "mean","median","mode","count"
-#'   (default is "median" = Median (IQR))
+#' @param statistic Optional summary type for numeric variables. Use a single
+#'   value such as \code{"mean"} or \code{mean} for all numeric variables, or a
+#'   named vector such as \code{c(age = mean, ftv = categorical)}. Supported
+#'   values are \code{"mean"}, \code{"median"}, \code{"mode"},
+#'   \code{"count"}, and \code{"categorical"}. Use \code{"categorical"} for
+#'   numeric ordinal variables that should be shown as n (\%).
 #' @param value optional named list for single-row binaries (e.g., list(sex="Female"));
 #'   formula entries like list(sex ~ "Female") are also accepted
 #' @param format "flextable" (default) or "gt"
 #' @param theme preset or primitives
+#'
+#' @details
+#' If variables have a \code{"label"} attribute, for example from
+#' \code{labelled::var_label()}, those labels are used automatically in the
+#' displayed table. Internal matching still uses the original column names.
 #'
 #' @return A list with class \code{c("gtregression", "descriptive_table", ...)}
 #'   containing:
@@ -45,6 +118,8 @@
 #'     \item{\code{table}}{A \code{gt_tbl} or \code{flextable}.}
 #'     \item{\code{table_display}}{Display-ready data.}
 #'     \item{\code{table_body}}{Long audit data with variable, level, and type.}
+#'     \item{\code{variable_labels}}{Named character vector of display labels
+#'     used for variables.}
 #'     \item{metadata}{Additional metadata fields.}
 #'   }
 #' @export
@@ -63,6 +138,7 @@ descriptive_table <- function(data,
 
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
   by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE)
+  statistic <- .statistic_arg_desc(substitute(statistic), env = parent.frame())
 
   # ---- normalize choices (accept aliases) ----
   percent <- .choice_arg(
@@ -97,22 +173,41 @@ descriptive_table <- function(data,
     stop("`digits` must be a single non-negative number.", call. = FALSE)
   }
   digits <- as.integer(digits)
-  if (!is.null(statistic)) {
-    if (is.null(names(statistic)) || any(!nzchar(names(statistic)))) {
-      stop("`statistic` must be a named vector.", call. = FALSE)
-    }
-    bad_stats <- setdiff(as.character(statistic), c("mean","median","mode","count"))
-    if (length(bad_stats)) {
-      stop("Unsupported statistic: ", paste(bad_stats, collapse = ", "), call. = FALSE)
-    }
-  }
   data <- as.data.frame(data)
   missing_vars <- setdiff(c(exposures, by), names(data))
   if (length(missing_vars)) stop("Variables not found: ", paste(missing_vars, collapse=", "), call.=FALSE)
+  if (!is.null(statistic) && length(statistic) > 1L) {
+    unused_stats <- setdiff(names(statistic), exposures)
+    if (length(unused_stats)) {
+      stop(
+        "`statistic` names must also be included in `exposures`: ",
+        paste(unused_stats, collapse = ", "),
+        call. = FALSE
+      )
+    }
+  } else if (!is.null(statistic) && !is.null(names(statistic)) &&
+             any(nzchar(names(statistic)))) {
+    unused_stats <- setdiff(names(statistic), exposures)
+    if (length(unused_stats)) {
+      stop(
+        "`statistic` names must also be included in `exposures`: ",
+        paste(unused_stats, collapse = ", "),
+        call. = FALSE
+      )
+    }
+  }
+  if (!is.null(statistic) && length(statistic) > 1L &&
+      (is.null(names(statistic)) || any(!nzchar(names(statistic))))) {
+    stop(
+      "`statistic` must be a single summary type or a named vector such as c(age = mean, ftv = categorical).",
+      call. = FALSE
+    )
+  }
   if (percent == "row" && is.null(by)) {
     warning("`percent = \"row\"` requires `by`; using column-wise % instead.")
     percent <- "column"
   }
+  variable_labels <- .var_label_map(data, exposures)
 
   # ---- helpers ----
   fmt_num <- function(x, d = digits) formatC(x, digits = d, format="f", big.mark=",")
@@ -148,11 +243,19 @@ descriptive_table <- function(data,
                                    median = "Median (IQR)",
                                    mode   = "Mode",
                                    count  = "N",
+                                   categorical = "n (%)",
                                    "Median (IQR)"
   )
   get_user_stat <- function(v) {
-    if (is.null(statistic) || is.null(names(statistic))) return(NA_character_)
-    idx <- match(v, names(statistic)); if (is.na(idx)) NA_character_ else statistic[[idx]]
+    if (is.null(statistic)) return(NA_character_)
+    if (is.null(names(statistic)) || all(!nzchar(names(statistic)))) {
+      return(statistic[[1]])
+    }
+    idx <- match(v, names(statistic))
+    if (is.na(idx)) NA_character_ else statistic[[idx]]
+  }
+  is_forced_categorical <- function(v) {
+    identical(get_user_stat(v), "categorical")
   }
   get_single_level <- function(vname) {
     if (is.null(value)) return(NA_character_)
@@ -185,12 +288,26 @@ descriptive_table <- function(data,
   body_rows <- list()
   for (v in exposures) {
     x <- data[[v]]
+    is_cat <- is.factor(x) || is.character(x) || is_forced_categorical(v)
+    is_bin <- is_binary(x)
+
+    if (is_bin && show_dichotomous == "single_row") {
+      pick <- get_single_level(v); if (is.na(pick) || !nzchar(pick)) pick <- pick_single_level(x)
+      body_rows[[length(body_rows)+1]] <- data.frame(
+        var=v, level=pick, type="dichotomous", stringsAsFactors=FALSE
+      )
+      if ((show_missing == "ifany") && any(is.na(x))) {
+        body_rows[[length(body_rows)+1]] <- data.frame(
+          var=v, level="(Missing)", type="categorical_missing", stringsAsFactors=FALSE
+        )
+      }
+      next
+    }
+
     # header row
     body_rows[[length(body_rows)+1]] <- data.frame(
       var=v, level=NA_character_, type="header", stringsAsFactors=FALSE
     )
-    is_cat <- is.factor(x) || is.character(x)
-    is_bin <- is_binary(x)
 
     if (!is_cat && !is_bin) {
       body_rows[[length(body_rows)+1]] <- data.frame(
@@ -199,10 +316,6 @@ descriptive_table <- function(data,
     }
     levels_here <- if (is.factor(x)) levels(x) else sort(unique(as.character(x)))
     add_missing <- (show_missing == "ifany") && any(is.na(x))
-    if (is_bin && show_dichotomous == "single_row") {
-      pick <- get_single_level(v); if (is.na(pick) || !nzchar(pick)) pick <- pick_single_level(x)
-      levels_here <- intersect(levels_here, pick)
-    }
     for (lv in levels_here) {
       body_rows[[length(body_rows)+1]] <- data.frame(
         var=v, level=lv, type="categorical", stringsAsFactors=FALSE
@@ -217,9 +330,13 @@ descriptive_table <- function(data,
   table_body <- do.call(rbind, body_rows)
 
   # ---- display skeleton ----
-  display <- do.call(rbind, lapply(split(table_body, table_body$var), function(df) {
+  display <- do.call(rbind, lapply(
+    split(table_body, factor(table_body$var, levels = exposures)),
+    function(df) {
+    var_nm <- unique(df$var)
+    var_lab <- .label_var(var_nm, variable_labels)
     hdr <- data.frame(
-      Characteristic = unique(df$var),
+      Characteristic = var_lab,
       is_header = TRUE, var = unique(df$var), level = NA_character_,
       type = "header", stringsAsFactors = FALSE
     )
@@ -228,23 +345,38 @@ descriptive_table <- function(data,
 
     # --- NEW: continuous-only variables -> single row, no duplicate header ---
     if (all(levs$type == "continuous")) {
-      levs$Characteristic <- unique(df$var)     # no indent
+      levs$Characteristic <- var_lab            # no indent
       levs$is_header      <- TRUE               # bold like a header
       # keep type == "continuous" so add_group_col() will compute summaries
       levs <- levs[, c("Characteristic","is_header","var","level","type"), drop = FALSE]
       return(levs)                              # <- do NOT prepend hdr
     }
 
+    if (any(levs$type == "dichotomous")) {
+      levs$Characteristic <- ifelse(levs$type == "dichotomous",
+                                    var_lab,
+                                    paste0("  ", levs$level))
+      levs$is_header <- levs$type == "dichotomous"
+      levs <- levs[, c("Characteristic","is_header","var","level","type"), drop = FALSE]
+      return(levs)
+    }
+
     # categorical (and mixed) path unchanged
     levs$Characteristic <- ifelse(levs$type == "continuous",
-                                  unique(df$var),
+                                  var_lab,
                                   paste0("  ", levs$level))
     levs$is_header <- FALSE
     levs <- levs[, c("Characteristic","is_header","var","level","type"), drop = FALSE]
-    rbind(hdr, levs)
-  }))
+      rbind(hdr, levs)
+    }
+  ))
 
   rownames(display) <- NULL
+  display <- .attach_display_metadata(
+    display,
+    row_exposure = display$var,
+    variable_labels = variable_labels
+  )
 
   # ---- fill cells (no header cells content) ----
   add_group_col <- function(df, grp_idx) {
@@ -285,7 +417,8 @@ descriptive_table <- function(data,
   if (!is.null(by) && percent == "row") {
     grp_cols <- setdiff(group_names, "Overall")
     for (i in seq_len(nrow(display))) {
-      if (display$type[i] %in% c("categorical","categorical_missing") && !display$is_header[i]) {
+      if (display$type[i] %in% c("categorical","categorical_missing","dichotomous") &&
+          (!display$is_header[i] || display$type[i] == "dichotomous")) {
         v <- display$var[i]; lv <- display$level[i]
         counts <- integer(length(grp_cols))
         for (j in seq_along(grp_cols)) {
@@ -314,7 +447,10 @@ descriptive_table <- function(data,
 
   # ---- footnotes ----
   # build continuous stat note
-  cont_vars <- exposures[!vapply(data[exposures], function(x) is.factor(x) || is.character(x) || is_binary(x), logical(1))]
+  cont_vars <- exposures[!vapply(names(data[exposures]), function(v) {
+    x <- data[[v]]
+    is.factor(x) || is.character(x) || is_binary(x) || is_forced_categorical(v)
+  }, logical(1))]
   stat_used <- if (length(cont_vars)) {
     lbls <- vapply(cont_vars, function(v) stat_label(ifelse(is.na(get_user_stat(v)),"median", get_user_stat(v))), character(1))
     if (length(unique(lbls)) == 1L) {
@@ -365,7 +501,10 @@ descriptive_table <- function(data,
                             table.border.bottom.style="solid", table.border.bottom.color="#DADADA")
     }
     if ("compact" %in% theme) tb <- gt::tab_options(tb, data_row.padding = gt::px(2))
-    if (length(footnote_lines)) tb <- gt::tab_source_note(tb, source_note = footnote_lines)
+    if (length(footnote_lines)) {
+      tb <- gt::tab_source_note(tb, source_note = footnote_lines)
+      tb <- gt::tab_options(tb, source_notes.padding = gt::px(2))
+    }
     tb
   }
 
@@ -388,7 +527,6 @@ descriptive_table <- function(data,
     }
     if ("lines" %in% theme) {
       n_body <- nrow(out); if (!is.null(n_body) && n_body>0) {
-        ft <- flextable::hline(ft, i=1, part="body")
         ft <- flextable::hline(ft, i=n_body, part="body")
       }
     }
@@ -396,6 +534,9 @@ descriptive_table <- function(data,
     ft <- flextable::autofit(ft)
     if (length(footnote_lines)) {
       ft <- flextable::add_footer_lines(ft, values=footnote_lines)
+      ft <- flextable::fontsize(ft, size=8, part="footer")
+      ft <- flextable::padding(ft, part="footer", padding.top=0, padding.bottom=0)
+      ft <- flextable::line_spacing(ft, part="footer", space=0.9)
       ft <- flextable::align(ft, part="footer", align="left")
     }
     ft
@@ -403,10 +544,18 @@ descriptive_table <- function(data,
   tbl <- if (format == "gt") build_gt(display, header_labels, foot, theme)
   else                build_flex(display, header_labels, foot, theme)
 
+  table_display <- display[, c("Characteristic","is_header", names(header_labels)), drop=FALSE]
+  table_display <- .attach_display_metadata(
+    table_display,
+    row_exposure = display$var,
+    variable_labels = variable_labels
+  )
+
   res <- list(
     table         = tbl,
-    table_display = display[, c("Characteristic","is_header", names(header_labels)), drop=FALSE],
+    table_display = table_display,
     table_body    = table_body,
+    variable_labels = variable_labels,
     by            = by,
     levels        = by_levels,
     format        = format,

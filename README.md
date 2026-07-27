@@ -10,10 +10,10 @@ gtregression
 
 <p>
 
-Publication-ready regression tables and forest plots for real-world
-health data. Fit models, compare estimates, visualise results, and
-export manuscript-ready outputs without hand-formatting every
-coefficient.
+Publication-ready regression and survival analysis tables, plots, and
+forest plots for real-world health data. Fit models, compare estimates,
+visualise results, and export manuscript-ready outputs without
+hand-formatting every coefficient.
 </p>
 
 <div class="gtreg-actions">
@@ -44,8 +44,7 @@ status](https://www.r-pkg.org/badges/version/gtregression)](https://CRAN.R-proje
 checks](https://badges.cranchecks.info/worst/gtregression.svg)](https://cran.r-project.org/web/checks/check_results_gtregression.html)
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/last-month/gtregression)](https://cranlogs.r-pkg.org/downloads/total/last-month/gtregression)
-[![CRAN
-downloads
+[![CRAN downloads
 total](https://cranlogs.r-pkg.org/badges/grand-total/gtregression)](https://cranlogs.r-pkg.org/downloads/total/grand-total/gtregression)
 [![Lifecycle:
 stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
@@ -56,21 +55,23 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 
 <!-- badges: end -->
 
-## Publication-Ready Regression Tables and Plots
+## Publication-Ready Regression and Survival Outputs
 
 `gtregression` helps you move from model to manuscript: fit regression
 models, produce clean tables, visualise estimates, merge outputs, and
 export results without hand-formatting every coefficient.
 
 It supports logistic, log-binomial, Poisson, robust Poisson, negative
-binomial, linear, adjusted, and stratified regression workflows.
+binomial, linear, Cox, and parametric survival workflows, including
+adjusted and stratified models.
 
 | Build | What you get |
 |----|----|
 | Descriptive tables | Grouped summaries with row or column percentages |
-| Regression tables | Crude, adjusted, stratified, and linear model outputs |
-| Visualisations | Forest plots and publication-style forest tables |
-| Interpretation helpers | Confounding, interaction, convergence, and collinearity checks |
+| Regression tables | Crude, adjusted, stratified, linear, Cox, and parametric survival outputs |
+| Survival analysis | Kaplan-Meier curves, survival summaries, RMST, log-rank tests, Cox PH checks, and survival predictions |
+| Visualisations | Regression plots, survival curves, fitted survival curves, and forest tables |
+| Interpretation helpers | Confounding, interaction, convergence, collinearity, model selection, and survival diagnostics |
 | Exports | HTML, PDF, PNG, and Word-ready outputs |
 
 <div class="gtreg-workflow">
@@ -137,6 +138,10 @@ birthwt_data <- data_birthwt |>
 
 exposures <- c("age", "lwt", "race", "smoke", "ht", "ui")
 
+attr(birthwt_data$age, "label") <- "Maternal age"
+attr(birthwt_data$lwt, "label") <- "Maternal weight"
+attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
+
 desc <- descriptive_table(
   birthwt_data,
   exposures = exposures,
@@ -163,6 +168,11 @@ multi <- multi_reg(
 plot_reg(multi, title = "Adjusted Regression for Low Birth Weight")
 ```
 
+Variable labels set with `attr(x, "label")` or `labelled::var_label()`
+are used automatically in display tables and plots, while original
+column names remain available internally for merging, modification, and
+testing.
+
 Objects stay inspectable:
 
 ``` r
@@ -172,6 +182,21 @@ multi$table
 multi$models
 ```
 
+Optional model-fit statistics can be requested without changing the
+publication table:
+
+``` r
+uni_stats <- uni_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = exposures,
+  approach = "logit",
+  model_stats = TRUE
+)
+
+uni_stats$model_stats
+```
+
 ## Browse by Task
 
 | Task | Start here |
@@ -179,6 +204,7 @@ multi$models
 | First workflow | [Start Here](https://thinkdenominator.github.io/gtregression/articles/gtregression-intro.html) |
 | Descriptive summaries | [Descriptive Tables](https://thinkdenominator.github.io/gtregression/articles/descriptive-tables.html) |
 | Regression tables | [Regression Tables](https://thinkdenominator.github.io/gtregression/articles/regression-tables.html) |
+| Survival analysis | [Survival Analysis](https://thinkdenominator.github.io/gtregression/articles/survival-analysis.html) |
 | Visualise estimates | [Visualise Results](https://thinkdenominator.github.io/gtregression/articles/visualise-results.html) |
 | Stratified models | [Stratified Analysis](https://thinkdenominator.github.io/gtregression/articles/stratified-analysis.html) |
 | Diagnostics and selection | [Diagnostics](https://thinkdenominator.github.io/gtregression/articles/diagnostics-selection.html) |
@@ -190,10 +216,11 @@ multi$models
 | Workflow | Functions |
 |----|----|
 | Describe | `descriptive_table()`, `dissect()` |
-| Model | `uni_reg()`, `multi_reg()` |
+| Model | `uni_reg()`, `multi_reg()`, `cox_reg()`, `surv_reg()` |
+| Survival | `km_plot()`, `km_risk_table()`, `survival_summary()`, `survival_quantiles()`, `survival_prob()`, `rmst_table()`, `logrank_test()`, `check_ph()`, `surv_model_compare()`, `plot_surv_fit()`, `surv_predict()` |
 | Stratify | `stratified_uni_reg()`, `stratified_multi_reg()` |
 | Visualise | `plot_reg()`, `plot_reg_combine()`, `forest_df()`, `forest_reg()` |
-| Diagnose | `check_convergence()`, `check_collinearity()`, `select_models()` |
+| Diagnose | `check_convergence()`, `check_collinearity()`, `check_ph()`, `select_models()` |
 | Interpret | `identify_confounder()`, `interaction_models()` |
 | Polish and export | `modify_table()`, `merge_tables()`, `save_table()`, `save_plot()`, `save_docx()` |
 

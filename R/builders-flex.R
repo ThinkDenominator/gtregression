@@ -1,5 +1,15 @@
 #' @keywords internal
 #' @noRd
+.compact_flex_footer <- function(ft) {
+  ft <- flextable::fontsize(ft, size = 8, part = "footer")
+  ft <- flextable::padding(ft, part = "footer", padding.top = 0, padding.bottom = 0)
+  ft <- flextable::line_spacing(ft, part = "footer", space = 0.9)
+  ft <- flextable::align(ft, part = "footer", align = "left")
+  ft
+}
+
+#' @keywords internal
+#' @noRd
 .apply_theme_flex <- function(ft, df, theme) {
   ft <- flextable::theme_vanilla(ft)
   hdr_idx <- which(df$is_header %in% TRUE)
@@ -50,8 +60,7 @@
   ft <- flextable::autofit(ft)
 
   ft <- flextable::add_footer_lines(ft, values = source_note)
-  ft <- flextable::align(ft, part = "footer", align = "left")
-  ft
+  .compact_flex_footer(ft)
 }
 #' @keywords internal
 #' @noRd
@@ -75,8 +84,7 @@
 
   # two separate lines in the footer
   ft <- flextable::add_footer_lines(ft, values = footnotes)
-  ft <- flextable::align(ft, part = "footer", align = "left")
-  ft
+  .compact_flex_footer(ft)
 }
 #' Flextable builder for stratified wide tables (3 cols per stratum)
 #' @keywords internal
@@ -125,8 +133,7 @@
 
   ft <- flextable::autofit(ft)
   ft <- flextable::add_footer_lines(ft, values = footnotes)
-  ft <- flextable::align(ft, part = "footer", align = "left")
-  ft
+  .compact_flex_footer(ft)
 }
 
 #' Flextable builder for stratified MULTIVARIABLE wide tables (2 cols/stratum)
@@ -171,6 +178,5 @@
 
   ft <- flextable::autofit(ft)
   ft <- flextable::add_footer_lines(ft, values = footnotes)
-  ft <- flextable::align(ft, part = "footer", align = "left")
-  ft
+  .compact_flex_footer(ft)
 }

@@ -20,18 +20,23 @@
   }
 
   # carry variable name down so we can match levels
-  var_id <- character(nrow(df))
-  cur <- NA_character_
-  for (i in seq_len(nrow(df))) {
-    if (isTRUE(df$is_header[i])) cur <- trimws(df$Characteristic[i])
-    var_id[i] <- cur
+  raw_exposure <- attr(display_df, "row_exposure", exact = TRUE)
+  if (!is.null(raw_exposure) && length(raw_exposure) == nrow(df)) {
+    var_id <- as.character(raw_exposure)
+  } else {
+    var_id <- character(nrow(df))
+    cur <- NA_character_
+    for (i in seq_len(nrow(df))) {
+      if (isTRUE(df$is_header[i])) cur <- trimws(df$Characteristic[i])
+      var_id[i] <- cur
+    }
   }
 
   # variable (header) relabel
   if (!is.null(variable_labels)) {
     hdr_idx <- which(df$is_header %in% TRUE)
     if (length(hdr_idx)) {
-      old_hdr <- trimws(df$Characteristic[hdr_idx])
+      old_hdr <- var_id[hdr_idx]
       idx <- match(old_hdr, names(variable_labels))
       repl <- variable_labels[idx]
       df$Characteristic[hdr_idx] <- ifelse(is.na(idx), df$Characteristic[hdr_idx], unname(repl))
@@ -57,7 +62,11 @@
     }
   }
 
-  df
+  .attach_display_metadata(
+    df,
+    row_exposure = var_id,
+    variable_labels = attr(display_df, "variable_labels", exact = TRUE)
+  )
 }
 
 #' Validate named character vector inputs

@@ -35,7 +35,7 @@ Quoted and bare names are accepted. This argument works the same way as in
 \item{interaction}{Optional character scalar specifying one interaction term
 using standard formula syntax, e.g. \code{"bmi*sex"}}
 
-\item{approach}{One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
+\item{approach}{One of \code{"logit"}, \code{"firth"}, \code{"logbinomial"}, \code{"poisson"},
 \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}}
 
 \item{format}{One of \code{"flextable"} (default) or \code{"gt"}.}
@@ -53,6 +53,8 @@ A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
   \item{\code{per_stratum}}{Named list of per-stratum regression results.}
   \item{\code{models}}{Named list of fitted models by stratum.}
   \item{\code{model_summaries}}{Named list of model summaries by stratum.}
+  \item{\code{variable_labels}}{Named character vector of display labels used
+  for exposure variables.}
   \item{\code{reg_check}}{Named list of diagnostics by stratum.}
   \item{\code{by}, \code{levels}, \code{approach}, \code{format}, \code{source}}{Metadata fields.}
 }
@@ -66,6 +68,11 @@ spanners for each stratum, two columns: "Adjusted <effect>" and "p-value".
 If \code{adjust_for = NULL}, all \code{exposures} are included in one
 multivariable model within each stratum. If \code{adjust_for} is supplied,
 one adjusted model is fitted per exposure within each stratum.
+
+
+If exposure variables have a \code{"label"} attribute, for example from
+\code{labelled::var_label()}, those labels are used automatically in the
+displayed table. Internal matching still uses the original column names.
 }
 \examples{
 birthwt_data <- data_birthwt |>

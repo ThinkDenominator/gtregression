@@ -41,9 +41,11 @@ test_that("multi_reg returns a gtregression object for default logit models", {
   expect_named(
     res,
     c("table", "table_body", "table_display", "models",
-      "model_summaries", "reg_check", "approach", "format", "source",
+      "model_summaries", "model_stats", "variable_labels", "reg_check",
+      "approach", "format", "source",
       "adjusted_mode", "adjust_for", "exposures", "interaction")
   )
+  expect_null(res$model_stats)
   expect_false(res$adjusted_mode)
   expect_null(res$adjust_for)
   expect_equal(res$exposures, c("age", "lwt", "race", "smoke"))
@@ -56,7 +58,46 @@ test_that("multi_reg returns a gtregression object for default logit models", {
   expect_true(all(c("Characteristic", "Adjusted OR (95% CI)", "p-value",
                     "is_header") %in% names(res$table_display)))
   expect_true(any(res$table_body$ref))
+  expect_true("Ref." %in% res$table_display[["Adjusted OR (95% CI)"]])
+  expect_true(any(grepl("Ref. = reference category", res$table$`_source_notes`,
+                        fixed = TRUE)))
   expect_true("Regression diagnostics available only for 'linear' models." %in% res$reg_check)
+})
+
+test_that("multi_reg optionally returns model-fit statistics", {
+  df <- birthwt_multi_data()
+
+  res <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "lwt", "race", "smoke"),
+    approach = logit,
+    model_stats = TRUE
+  )
+
+  expect_s3_class(res$model_stats, "data.frame")
+  expect_equal(res$model_stats$model, "multivariable_model")
+  expect_true(all(c("AIC", "BIC", "logLik", "deviance", "null_deviance",
+                    "pseudo_r2", "r_squared", "adj_r_squared", "n") %in%
+                    names(res$model_stats)))
+  expect_true(is.finite(res$model_stats$AIC))
+  expect_true(is.finite(res$model_stats$BIC))
+  expect_true(is.finite(res$model_stats$pseudo_r2))
+
+  adjusted <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht", "ui"),
+    adjust_for = c("age", "lwt", "race"),
+    approach = logit,
+    model_stats = TRUE
+  )
+  expect_equal(adjusted$model_stats$model, c("smoke", "ht", "ui"))
+  expect_true(all(is.finite(adjusted$model_stats$AIC)))
+  expect_error(
+    multi_reg(df, outcome = "low", exposures = "age", model_stats = NA),
+    "`model_stats` must be TRUE or FALSE"
+  )
 })
 
 test_that("multi_reg adjusted mode fits one model per exposure", {
@@ -125,6 +166,26 @@ test_that("multi_reg supports flextable output", {
   expect_equal(res$format, "flextable")
 })
 
+test_that("multi_reg supports Firth logistic regression", {
+  skip_if_not_installed("logistf")
+
+  df <- data_endometrial
+  df$HG <- factor(df$HG, levels = c(0, 1),
+                  labels = c("Low grade", "High grade"))
+  df$NV <- factor(df$NV, levels = c(0, 1),
+                  labels = c("Absent", "Present"))
+
+  res <- multi_reg(df, outcome = HG, exposures = c(NV, PI, EH), approach = firth)
+
+  expect_s3_class(res, "multi_reg")
+  expect_equal(res$approach, "firth")
+  expect_s3_class(res$models$multivariable_model, "logistf")
+  expect_true("Adjusted OR (95% CI)" %in% names(res$table_display))
+  expect_true(any(res$table_body$ref))
+  expect_true(any(is.finite(res$table_body$estimate[!res$table_body$ref])))
+  expect_equal(unname(table(df$HG, df$NV)["Low grade", "Present"]), 0)
+})
+
 test_that("multi_reg supports interaction terms in logit models", {
   df <- birthwt_multi_data()
 
@@ -162,6 +223,17 @@ test_that("multi_reg returns diagnostics for linear models", {
   expect_type(res$reg_check, "list")
   expect_named(res$reg_check, "multivariable_model")
   expect_true("Test" %in% names(res$reg_check$multivariable_model))
+
+  stats_res <- multi_reg(
+    data = df,
+    outcome = "bwt",
+    exposures = c("age", "lwt", "race"),
+    approach = linear,
+    model_stats = TRUE
+  )
+  expect_true(is.na(stats_res$model_stats$pseudo_r2))
+  expect_true(is.finite(stats_res$model_stats$r_squared))
+  expect_true(is.finite(stats_res$model_stats$adj_r_squared))
 })
 
 test_that("multi_reg validates required variables and outcome types", {

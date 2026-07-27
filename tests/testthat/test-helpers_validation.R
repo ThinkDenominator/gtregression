@@ -1,5 +1,7 @@
 test_that(".validate_approach accepts valid inputs for each context", {
   expect_invisible(.validate_approach("logit",         "uni_reg"))
+  expect_invisible(.validate_approach("firth",         "uni_reg"))
+  expect_invisible(.validate_approach("firth",         "multi_reg"))
   expect_invisible(.validate_approach("negbin",        "multi_reg"))
   expect_invisible(.validate_approach("robpoisson",    "interaction_models"))
   expect_invisible(.validate_approach("logbinomial",  "check_convergence"))
@@ -55,6 +57,7 @@ test_that(".validate_outcome_by_approach: success cases", {
   continuous <- c(1.2, 2.4, 3.1, 4.0, 5.6)
 
   expect_silent(.validate_outcome_by_approach(bin_01, "logit"))
+  expect_silent(.validate_outcome_by_approach(bin_01, "firth"))
   expect_silent(.validate_outcome_by_approach(bin_12, "logit"))
   expect_silent(.validate_outcome_by_approach(bin_01, "robpoisson"))
   expect_silent(.validate_outcome_by_approach(bin_12, "logbinomial"))
@@ -73,6 +76,9 @@ test_that(".validate_outcome_by_approach: failure cases", {
                "All values in the outcome variable are missing", fixed = TRUE)
 
   expect_error(.validate_outcome_by_approach(nonbin, "logit"),
+               regexp = "requires either a factor variable|numeric variable coded as 0 and 1",
+               ignore.case = TRUE)
+  expect_error(.validate_outcome_by_approach(nonbin, "firth"),
                regexp = "requires either a factor variable|numeric variable coded as 0 and 1",
                ignore.case = TRUE)
 

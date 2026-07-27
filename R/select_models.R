@@ -6,12 +6,21 @@
 #'
 #' @param data A data frame containing the outcome and predictor variables.
 #' @param outcome A single character string indicating the outcome variable.
-#'   Quoted and bare names are accepted.
+#'   Quoted and bare names are accepted. Not used for survival approaches when
+#'   \code{time} and \code{event} are supplied.
 #' @param exposures Character vector of predictor variables to consider. Quoted
 #'   names are recommended in scripts, and bare names are also accepted.
 #' @param approach Regression method. One of:
 #'   \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
-#'   \code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.
+#'   \code{"robpoisson"}, \code{"negbin"}, \code{"linear"}, \code{"cox"}, or
+#'   \code{"survreg"}.
+#' @param time,event Survival time and event indicator for \code{approach = "cox"}
+#'   or \code{approach = "survreg"}. Quoted and bare names are accepted.
+#' @param distribution Parametric survival distribution for
+#'   \code{approach = "survreg"}. One of \code{"weibull"},
+#'   \code{"exponential"}, \code{"lognormal"}, or \code{"loglogistic"}.
+#'   Common spellings such as \code{"log-normal"} and \code{"log-logistic"} are
+#'   also accepted.
 #' @param direction Stepwise selection direction. One of:
 #'   \code{"forward"} (default), \code{"backward"}, or \code{"both"}.
 #' @param format Output format for the viewing table. One of
@@ -52,34 +61,65 @@
 #'
 #' @export
 select_models <- function(data, outcome, exposures, approach = "logit",
+                          time = NULL,
+                          event = NULL,
+                          distribution = "weibull",
                           direction = "forward",
                           format = c("flextable", "gt", "tibble")) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data frame.", call. = FALSE)
   }
-  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
-  if (!is.character(outcome) || length(outcome) != 1L ||
-      is.na(outcome) || !nzchar(outcome)) {
-    stop("`outcome` must be a single character variable name.", call. = FALSE)
-  }
   if (!is.character(exposures) || length(exposures) < 1L ||
       anyNA(exposures) || any(!nzchar(exposures))) {
     stop("`exposures` must be a non-empty character vector.", call. = FALSE)
-  }
-  missing_vars <- setdiff(c(outcome, exposures), names(data))
-  if (length(missing_vars)) {
-    stop("Variables not found: ", paste(missing_vars, collapse = ", "),
-         call. = FALSE)
   }
 
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
-    choices = c("logit", "logbinomial", "poisson", "robpoisson", "negbin", "linear")
+    choices = c("logit", "logbinomial", "poisson", "robpoisson",
+                "negbin", "linear", "cox", "survreg")
   )
   approach <- .normalize_approach(approach)
   .validate_approach(approach, context = "select_models")
+  is_survival <- approach %in% c("cox", "survreg")
+
+  if (is_survival) {
+    time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
+    event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
+    outcome <- NULL
+  } else {
+    if (missing(outcome)) {
+      stop("`outcome` must be supplied for non-survival model selection.", call. = FALSE)
+    }
+    outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+    if (!is.character(outcome) || length(outcome) != 1L ||
+        is.na(outcome) || !nzchar(outcome)) {
+      stop("`outcome` must be a single character variable name.", call. = FALSE)
+    }
+  }
+
+  distribution <- if (approach == "survreg") {
+    .surv_distribution_arg(
+      substitute(distribution),
+      env = parent.frame(),
+      multiple = FALSE,
+      arg = "distribution"
+    )
+  } else {
+    .choice_arg(substitute(distribution), env = parent.frame())
+  }
+
+  missing_vars <- if (is_survival) {
+    setdiff(c(time, event, exposures), names(data))
+  } else {
+    setdiff(c(outcome, exposures), names(data))
+  }
+  if (length(missing_vars)) {
+    stop("Variables not found: ", paste(missing_vars, collapse = ", "),
+         call. = FALSE)
+  }
   direction <- .choice_arg(
     substitute(direction),
     env = parent.frame(),
@@ -99,17 +139,36 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   )
   format <- match.arg(format, c("flextable", "gt", "tibble"))
 
-  .validate_outcome_by_approach(data[[outcome]], approach)
-  model_data <- data
+  if (is_survival) {
+    model_data <- .validate_cox_inputs(data, time, event, exposures, adjust_for = NULL)
+  } else {
+    .validate_outcome_by_approach(data[[outcome]], approach)
+    model_data <- data
+  }
   if (approach == "robpoisson" && is.factor(model_data[[outcome]])) {
     model_data[[outcome]] <- as.integer(model_data[[outcome]]) - 1L
   }
 
   fit_model <- function(vars) {
-    fmla <- stats::reformulate(vars, response = outcome)
+    if (is_survival) {
+      bt <- function(x) paste0("`", gsub("`", "", x, fixed = TRUE), "`")
+      rhs <- if (length(vars)) paste(bt(vars), collapse = " + ") else "1"
+      fmla <- stats::as.formula(
+        paste0("survival::Surv(", bt(time), ", ", bt(event), ") ~ ", rhs)
+      )
+    } else {
+      fmla <- stats::reformulate(vars, response = outcome)
+    }
     fmla_str <- paste(deparse(fmla), collapse = "")
 
-    model <- if (approach == "negbin") {
+    model <- if (approach == "cox") {
+      survival::coxph(fmla, data = model_data, model = TRUE)
+    } else if (approach == "survreg") {
+      fit <- survival::survreg(fmla, data = model_data, dist = distribution, model = TRUE)
+      attr(fit, "gtregression_events") <- sum(model_data[[event]] == 1, na.rm = TRUE)
+      attr(fit, "gtregression_distribution") <- distribution
+      fit
+    } else if (approach == "negbin") {
       MASS::glm.nb(fmla, data = model_data)
     } else if (approach == "linear") {
       stats::lm(fmla, data = model_data)
@@ -137,11 +196,32 @@ select_models <- function(data, outcome, exposures, approach = "logit",
       AIC = stats::AIC(model),
       BIC = stats::BIC(model),
       logLik = as.numeric(stats::logLik(model)),
-      deviance = stats::deviance(model)
+      deviance = .safe_numeric(stats::deviance(model))
     )
 
     if (approach == "linear") {
       dplyr::mutate(out, adj_r2 = summary(model)$adj.r.squared)
+    } else if (approach == "cox") {
+      smry <- tryCatch(summary(model), error = function(e) NULL)
+      concordance <- if (!is.null(smry) && !is.null(smry$concordance)) {
+        suppressWarnings(as.numeric(smry$concordance[1]))
+      } else {
+        NA_real_
+      }
+      dplyr::mutate(
+        out,
+        concordance = concordance,
+        events = .safe_numeric(model$nevent),
+        selected_vars = paste(vars, collapse = " + ")
+      )
+    } else if (approach == "survreg") {
+      dplyr::mutate(
+        out,
+        distribution = distribution,
+        scale = .safe_numeric(model$scale),
+        events = .safe_numeric(attr(model, "gtregression_events", exact = TRUE)),
+        selected_vars = paste(vars, collapse = " + ")
+      )
     } else {
       dplyr::mutate(out, selected_vars = paste(vars, collapse = " + "))
     }
@@ -288,7 +368,8 @@ select_models <- function(data, outcome, exposures, approach = "logit",
         locations = gt::cells_body(rows = .data$best)
       ) |>
       gt::tab_source_note(gt::md(direction_note)) |>
-      gt::tab_source_note(gt::md(caveat_note))
+      gt::tab_source_note(gt::md(caveat_note)) |>
+      .compact_gt_source_notes()
 
     return(tbl)
   }
@@ -307,7 +388,7 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   ft <- flextable::bold(ft, part = "header", bold = TRUE)
   ft <- flextable::bg(ft, i = which(display$best == "Yes"), bg = "#e7f5ec", part = "body")
   ft <- flextable::add_footer_lines(ft, values = c(direction_note, caveat_note))
-  ft <- flextable::fontsize(ft, size = 8, part = "footer")
+  ft <- .compact_flex_footer(ft)
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   flextable::autofit(ft)
 }

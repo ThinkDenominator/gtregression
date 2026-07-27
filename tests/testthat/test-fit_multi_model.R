@@ -69,3 +69,16 @@ test_that(".fit_multi_model returns NULL and warns on failure", {
     expect_null(model)
   }, regexp = "Model fitting failed")
 })
+
+test_that(".fit_multi_model supports Firth logistic regression when logistf is available", {
+  skip_if_not_installed("logistf")
+
+  df <- data_endometrial
+  df$HG <- factor(df$HG, levels = c(0, 1))
+  df$NV <- factor(df$NV, levels = c(0, 1))
+
+  model <- .fit_multi_model(df, outcome = "HG", exposures = c("NV", "PI", "EH"), approach = "firth")
+
+  expect_s3_class(model, "logistf")
+  expect_true("gtregression_model_frame" %in% names(attributes(model)))
+})

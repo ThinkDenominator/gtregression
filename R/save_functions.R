@@ -52,6 +52,24 @@
   filename
 }
 
+#' Fit flextable output to a Word page width
+#' @keywords internal
+#' @noRd
+.fit_flextable_docx_width <- function(ft, table_width = 6.5) {
+  if (is.null(table_width)) {
+    return(ft)
+  }
+  if (!is.numeric(table_width) || length(table_width) != 1L ||
+      is.na(table_width) || table_width <= 0) {
+    stop("`table_width` must be NULL or a single positive number.", call. = FALSE)
+  }
+
+  tryCatch(
+    flextable::fit_to_width(ft, max_width = table_width),
+    error = function(e) ft
+  )
+}
+
 # -------------------------------------------------------------------
 # save_table
 # -------------------------------------------------------------------
@@ -107,6 +125,7 @@ save_table <- function(tbl,
     }
 
     if (identical(format, "docx")) {
+      obj <- .fit_flextable_docx_width(obj, table_width = 6.5)
       flextable::save_as_docx(obj, path = filename)
     } else if (identical(format, "html")) {
       flextable::save_as_html(obj, path = filename)
@@ -204,6 +223,9 @@ save_plot <- function(plot,
 #'   directory is supplied, the file is saved in \code{tempdir()}.
 #' @param titles Optional character vector of titles for tables and plots in
 #'   the order they are added.
+#' @param table_width Maximum table width in inches for Word export. The default
+#'   \code{6.5} fits a standard portrait Word page with common margins. Use
+#'   \code{NULL} to keep the original flextable widths.
 #' @param plot_width Width of inserted plots in inches.
 #' @param plot_height Height of inserted plots in inches.
 #'
@@ -233,6 +255,7 @@ save_docx <- function(tables = NULL,
                       plots = NULL,
                       filename = "report.docx",
                       titles = NULL,
+                      table_width = 6.5,
                       plot_width = 6,
                       plot_height = 5) {
   if (!requireNamespace("officer", quietly = TRUE)) {
@@ -256,6 +279,11 @@ save_docx <- function(tables = NULL,
   if (!is.numeric(plot_width) || length(plot_width) != 1L ||
       is.na(plot_width) || plot_width <= 0) {
     stop("`plot_width` must be a single positive number.", call. = FALSE)
+  }
+  if (!is.null(table_width) &&
+      (!is.numeric(table_width) || length(table_width) != 1L ||
+       is.na(table_width) || table_width <= 0)) {
+    stop("`table_width` must be NULL or a single positive number.", call. = FALSE)
   }
   if (!is.numeric(plot_height) || length(plot_height) != 1L ||
       is.na(plot_height) || plot_height <= 0) {
@@ -295,7 +323,7 @@ save_docx <- function(tables = NULL,
       }
 
       if (inherits(obj, "flextable")) {
-        ft <- obj
+        ft <- .fit_flextable_docx_width(obj, table_width = table_width)
       } else if (inherits(obj, "gt_tbl")) {
         stop(
           "DOCX export currently supports flextable-based tables directly. For gt tables, save as HTML/PDF with save_table(), or create the table with format = 'flextable'.",

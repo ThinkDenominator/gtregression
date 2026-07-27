@@ -805,7 +805,8 @@ identify_confounder <- function(data,
         style = gt::cell_text(weight = "bold"),
         locations = gt::cells_column_labels()
       ) |>
-      gt::tab_source_note(gt::md(caveat))
+      gt::tab_source_note(gt::md(caveat)) |>
+      .compact_gt_source_notes()
 
     if ("zebra" %in% theme) {
       tbl <- gt::opt_row_striping(tbl)
@@ -862,7 +863,7 @@ identify_confounder <- function(data,
   }
 
   ft <- flextable::add_footer_lines(ft, values = caveat)
-  ft <- flextable::fontsize(ft, size = 8, part = "footer")
+  ft <- .compact_flex_footer(ft)
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   ft <- flextable::autofit(ft)
   ft

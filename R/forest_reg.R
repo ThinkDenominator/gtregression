@@ -9,12 +9,14 @@
 #'   \code{uni}, \code{multi}, and \code{desc}.
 #' @param uni,multi,desc Optional \code{gtregression} objects to pass through to
 #'   \code{forest_df()}.
-#' @param theme Optional \code{forestploter::forest_theme()}. If \code{NULL}, a
-#'   sensible default is used. You may pass colors and styling either here or
-#'   through \code{...}.
-#' @param ci_col_width Numeric or length-2 numeric. Relative width of the CI column(s).
-#'   A vector like \code{c(0.22, 0.26)} lets you tune unadjusted and adjusted
-#'   columns separately.
+#' @param theme Optional \code{forestploter::forest_theme()}. If \code{NULL},
+#'   \code{forestploter} defaults are used. You may pass colors and styling
+#'   either here or through \code{...}.
+#' @param ci_col_width Numeric value, or length-2 numeric for two effect columns,
+#'   controlling the blank spacer width used by \code{forestploter} for the
+#'   confidence-interval plot column(s). Values greater than 1 are interpreted
+#'   as approximate character counts. Values between 0 and 1 are accepted for
+#'   backward compatibility and converted to character counts.
 #' @param side Character. For each effect, position of the plot relative to the effect-size text:
 #'   \code{"left"} = plot first then text; \code{"right"} = text first then plot.
 #'   The \code{Characteristic} column and descriptive columns remain on the left.
@@ -24,6 +26,9 @@
 #'   columns, specifying x-axis tick positions. If \code{NULL},
 #'   \code{forestploter::forest()} chooses the default ticks.
 #' @param ticks_digits Optional number of digits for x-axis tick labels.
+#' @param xlim Optional numeric vector of length 2, or length-2 list for two
+#'   effect columns, specifying x-axis limits. If \code{NULL},
+#'   \code{forestploter::forest()} chooses the default limits.
 #' @param ... Passed to \code{forestploter::forest()}. Common options include
 #'   \code{title} and \code{footnote}.
 #'
@@ -36,9 +41,7 @@
 #'   \item{\code{meta}}{Model metadata, including reference line and x-axis
 #'   transformation.}
 #' }
-#' @importFrom forestploter forest forest_theme
-#' @importFrom grid gpar
-#' @importFrom scales rescale
+#' @importFrom forestploter forest
 #' @examples
 #' birthwt_data <- data_birthwt |>
 #'   transform(
@@ -63,16 +66,32 @@
 #' )
 #'
 #' forest_reg(uni = uni_or, multi = multi_or)
+#'
+#' # If axis labels overlap, set x-axis limits and tick marks.
+#' forest_reg(
+#'   uni = uni_or,
+#'   multi = multi_or,
+#'   xlim = list(c(0.25, 8), c(0.25, 12)),
+#'   ticks_at = list(c(0.5, 1, 2, 4, 8), c(0.5, 1, 2, 4, 8))
+#' )
+#'
+#' # If the forest plot panel is too narrow or too wide, tune ci_col_width.
+#' forest_reg(
+#'   uni = uni_or,
+#'   multi = multi_or,
+#'   ci_col_width = c(18, 22)
+#' )
 
 #' @export
 forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
                        theme = NULL,
-                       ci_col_width = 0.25,
+                       ci_col_width = 20,
                        side = c("right", "left"),
                        quiet = TRUE,
                        effects = NULL,
                        ticks_at = NULL,
                        ticks_digits = NULL,
+                       xlim = NULL,
                        ...) {
 
   side <- .choice_arg(substitute(side), env = parent.frame(), choices = c("right", "left"))
@@ -80,15 +99,18 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
   if (!is.logical(quiet) || length(quiet) != 1L || is.na(quiet)) {
     stop("`quiet` must be TRUE or FALSE.", call. = FALSE)
   }
+  if (!is.null(effects) && !is.character(effects)) {
+    stop("`effects` must be NULL or a character vector.", call. = FALSE)
+  }
   if (!is.numeric(ci_col_width) || anyNA(ci_col_width) ||
       !length(ci_col_width) || !length(ci_col_width) %in% c(1L, 2L) ||
       any(ci_col_width <= 0)) {
     stop("`ci_col_width` must be a positive numeric value or length-2 numeric vector.",
          call. = FALSE)
   }
-  if (!is.null(effects) && !is.character(effects)) {
-    stop("`effects` must be NULL or a character vector.", call. = FALSE)
-  }
+  ci_col_width <- ifelse(ci_col_width <= 1, ci_col_width * 80, ci_col_width)
+  ci_col_width <- pmax(4L, as.integer(round(ci_col_width)))
+  if (length(ci_col_width) == 1L) ci_col_width <- rep(ci_col_width, 2L)
   validate_ticks <- function(x, name) {
     if (is.null(x)) return(invisible(NULL))
     ok <- is.numeric(x) && length(x) > 0L && !anyNA(x)
@@ -105,6 +127,24 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
     lapply(ticks_at, validate_ticks, name = "ticks_at")
   } else {
     validate_ticks(ticks_at, "ticks_at")
+  }
+  validate_xlim <- function(x) {
+    if (is.null(x)) return(invisible(NULL))
+    ok <- is.numeric(x) && length(x) == 2L && !anyNA(x) && x[1] < x[2]
+    if (!ok) {
+      stop("`xlim` must be NULL, a numeric vector of length 2, or a non-empty list of numeric length-2 vectors.",
+           call. = FALSE)
+    }
+    invisible(NULL)
+  }
+  if (is.list(xlim)) {
+    if (!length(xlim)) {
+      stop("`xlim` must be NULL, a numeric vector of length 2, or a non-empty list of numeric length-2 vectors.",
+           call. = FALSE)
+    }
+    lapply(xlim, validate_xlim)
+  } else {
+    validate_xlim(xlim)
   }
   if (!is.null(ticks_digits) &&
       (!is.numeric(ticks_digits) || length(ticks_digits) != 1L ||
@@ -144,9 +184,9 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
       !is.numeric(df$se_uni)) {
     stop(
       "`df` does not contain forest plot estimates. ",
-      "Use `forest_df()` with a `uni_reg()` or `multi_reg()` object; ",
-      "a descriptive-only `forest_df()` cannot be drawn by `forest_reg()`.",
-      call. = FALSE
+        "Use `forest_df()` with a compatible regression object; ",
+        "a descriptive-only `forest_df()` cannot be drawn by `forest_reg()`.",
+        call. = FALSE
     )
   }
 
@@ -156,50 +196,20 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
     meta <- list(x_trans = "none", ref_line = 0)
   }
 
-  # default theme
-  if (is.null(theme)) {
-    theme <- forestploter::forest_theme(
-      base_size   = 11,
-      refline_gp  = grid::gpar(lty = 2, col = "grey60"),
-      ci_lwd      = 2,
-      ci_col      = "black",
-      header_fill = "#f6f8fa"
-    )
-  }
-
   # choose columns
   has_multi <- !is.null(attr(df, "est2"))
   if (has_multi) {
     est <- list(attr(df, "est"),  attr(df, "est2"))
     lo  <- list(attr(df, "lo"),   attr(df, "lo2"))
     hi  <- list(attr(df, "hi"),   attr(df, "hi2"))
-    se  <- list(df$se_uni, df$se_adj)
     ci_col <- c(which(names(df) == " "), which(names(df) == "  "))
   } else {
     est <- attr(df, "est")
     lo  <- attr(df, "lo")
     hi  <- attr(df, "hi")
-    se  <- df$se_uni
     ci_col <- which(names(df) == " ")
   }
 
-
-
-  xlim <- NULL
-
-
-  # weights based on SE (smaller SE → bigger boxes)
-  weights <- if (is.list(se)) {
-    lapply(se, function(s) {
-      ifelse(is.finite(s) & s > 0,
-             scales::rescale(1/s, to = c(0.6, 1.6), na.rm = TRUE),
-             NA_real_)
-    })
-  } else {
-    ifelse(is.finite(se) & se > 0,
-           scales::rescale(1/se, to = c(0.6, 1.6), na.rm = TRUE),
-           NA_real_)
-  }
   df_plot <- df[, setdiff(names(df), c("se_uni","se_adj")), drop = FALSE]
 
   # --- position the plot columns per `side` and recompute ci_col ---
@@ -210,6 +220,9 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
   # 1) Identify CI text columns and anchor (plot) columns
   ci_cols_all <- grep("\\(95% CI\\)$", nm, value = TRUE)        # e.g., "Odds Ratio (95% CI)", "Adjusted Odds Ratio (95% CI)"
   anchor_cols <- intersect(c(" ", "  "), nm)                    # " " = uni plot, "  " = adj plot if present
+  for (i in seq_along(anchor_cols)) {
+    df_plot[[anchor_cols[i]]] <- paste(rep(" ", ci_col_width[i]), collapse = "")
+  }
 
   # Split CI text into unadjusted vs adjusted (if present)
   ci_uni <- setdiff(ci_cols_all, ci_cols_all[grepl("^Adjusted\\s+", ci_cols_all)])
@@ -247,22 +260,18 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
   anchor_in_blocks <- blocks[blocks %in% c(" ", "  ")]
   ci_col <- match(anchor_in_blocks, names(df_plot))
 
-
   draw <- function() forestploter::forest(
     data       = df_plot,
     est        = est,
     lower      = lo,
     upper      = hi,
-    sizes      = weights,
     ci_column  = ci_col,
     x_trans    = meta$x_trans,
     ref_line   = meta$ref_line,
     xlim       = xlim,
     ticks_at   = ticks_at,
     ticks_digits = ticks_digits,
-    ci_col_width = ci_col_width,
     theme      = theme,
-    side       = side,
     effects    = effects,
     ...
   )
@@ -271,13 +280,27 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
 
   meta$ticks_at <- ticks_at
   meta$ticks_digits <- ticks_digits
+  meta$xlim <- xlim
+  meta$ci_col_width <- ci_col_width
 
   structure(list(plot = plt, data = df_plot, input_data = df, meta = meta),
             class = c("gtregression_forest", "list"))
 }
 
 #' @export
-print.gtregression_forest <- function(x, ..., autofit = TRUE) {
+print.gtregression_forest <- function(x, ..., autofit = FALSE) {
+  if (!is.logical(autofit) || length(autofit) != 1L || is.na(autofit)) {
+    stop("`autofit` must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (isTRUE(autofit)) {
+    warning(
+      "`autofit = TRUE` is ignored for `forest_reg()` because it can compress ",
+      "forest plot columns and cause overlap. Printing with `autofit = FALSE`. ",
+      "Use a wider graphics device or export canvas for more side space.",
+      call. = FALSE
+    )
+    autofit <- FALSE
+  }
   print(x$plot, autofit = autofit)
   invisible(x)
 }

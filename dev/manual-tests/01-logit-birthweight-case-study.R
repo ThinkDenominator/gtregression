@@ -19,7 +19,7 @@
 ##
 ## After installing from GitHub or CRAN, use:
 ## library(gtregression)
-pak::pak("ThinkDenominator/gtregression")
+## pak::pak("ThinkDenominator/gtregression")
 library(gtregression)
 library(dplyr)
 
@@ -57,6 +57,18 @@ birthwt_data <- data_birthwt |>
 exposures <- c(
   "age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat", "ftv_cat"
 )
+
+## 1.1-friendly labels:
+## Set variable labels once, then descriptive tables, regression tables, plots,
+## merged tables, and forest outputs use them automatically.
+attr(birthwt_data$age, "label") <- "Maternal age"
+attr(birthwt_data$lwt, "label") <- "Maternal weight"
+attr(birthwt_data$race, "label") <- "Maternal race"
+attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
+attr(birthwt_data$ht, "label") <- "Hypertension"
+attr(birthwt_data$ui, "label") <- "Uterine irritability"
+attr(birthwt_data$ptl_cat, "label") <- "Previous premature labour"
+attr(birthwt_data$ftv_cat, "label") <- "First trimester visits"
 
 
 ## 2. Inspect data before modelling ------------------------------------------
@@ -137,6 +149,19 @@ descriptive_table(
   show_overall = last
 )
 
+## Mixed summaries:
+## - age as mean
+## - lwt as median
+## - ftv kept categorical even though it is numeric in the raw data
+descriptive_table(
+  data = birthwt_data,
+  exposures = c("age", "lwt", "ftv", "smoke"),
+  by = low,
+  statistic = c(age = mean, lwt = median, ftv = categorical),
+  percent = column,
+  show_missing = no
+)
+
 
 ## 4. Univariable logistic regression ----------------------------------------
 
@@ -154,6 +179,17 @@ uni_or
 uni_or$table_body
 uni_or$models
 uni_or$model_summaries
+
+## Optional model statistics are stored outside the publication table.
+uni_or_stats <- uni_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = exposures,
+  approach = logit,
+  model_stats = TRUE
+)
+
+uni_or_stats$model_stats
 
 ## Useful option: gt output for HTML viewing.
 uni_reg(
@@ -203,6 +239,17 @@ multi_reg(
   adjust_for = c(age, lwt, race),
   approach = logit
 )
+
+multi_adj_stats <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c(smoke, ht, ui),
+  adjust_for = c(age, lwt, race),
+  approach = logit,
+  model_stats = TRUE
+)
+
+multi_adj_stats$model_stats
 
 
 ## 6. Modify tables for publication ------------------------------------------
@@ -263,7 +310,40 @@ modify_table(
   caption = "Compact adjusted regression table"
 )
 
+## 6b. Model fit checks --------------------------------------------------------
 
+## Logistic regression diagnostics are for model checking, not publication
+## tables. For a single binary exposure such as smoking, residual and influence
+## plots are usually more helpful than calibration because the model has only
+## two fitted probabilities.
+
+plot_model_fit(
+  uni_or,
+  model_name = smoke,
+  type = residual
+)
+
+plot_model_fit(
+  uni_or,
+  model_name = smoke,
+  type = all,
+  bins = 6
+)
+
+## Calibration is more informative for a multivariable model because predicted
+## probabilities vary across many covariate profiles. Points closer to the
+## dashed line indicate better agreement between predicted and observed risk.
+
+plot_model_fit(
+  multi_or,
+  type = calibration,
+  bins = 6
+)
+
+plot_model_fit(
+  multi_or,
+  type = all
+)
 ## 7. Regression plots ---------------------------------------------------------
 
 ## Plot univariable and multivariable estimates.
@@ -352,6 +432,22 @@ forest_reg(df_uni_desc)
 forest_reg(df_multi_desc)
 forest_reg(df_both_desc)
 
+## Layout check:
+## If x-axis tick labels overlap, control the axis with xlim and ticks_at.
+## Use a list when the forest table has crude and adjusted plot columns.
+forest_reg(
+  df_both_desc,
+  xlim = list(c(0.25, 8), c(0.8, 25)),
+  ticks_at = list(
+    c(0.5, 1, 2, 4, 8),
+    c(1, 2, 4, 8, 16)
+  )
+)
+
+## If the CI plot panel is too narrow or too wide, tune ci_col_width.
+## Larger values give more room to the CI panel; smaller values compact it.
+forest_reg(df_both_desc, ci_col_width = c(18, 22))
+
 ## Useful option: put the plot on the left.
 forest_reg(df_both_desc, side = "left")
 
@@ -369,6 +465,18 @@ forest_reg(
 ## Do the observed associations look different across race groups?
 ## Read this section as a visual check for consistency across strata, not as a
 ## replacement for a planned interaction analysis.
+
+## First profile the strata. This tells the reader whether the race groups have
+## enough observations and whether their baseline clinical profiles differ.
+race_profile <- descriptive_table(
+  data = birthwt_data,
+  exposures = c("age", "lwt", "smoke", "ht", "ui", "ptl_cat", "ftv_cat"),
+  by = race,
+  percent = column,
+  show_overall = last
+)
+
+race_profile
 
 strat_uni <- stratified_uni_reg(
   data = birthwt_data,
@@ -530,7 +638,8 @@ save_docx(
     "Forest plot - adjusted",
     "Crude versus adjusted forest plot"
   ),
-  filename = "birthwt-logit-report"
+  filename = "birthwt-logit-report",
+  table_width = 6.5
 )
 
 
@@ -543,7 +652,9 @@ save_docx(
 ## - plot_reg() and plot_reg_combine() include adjusted-variable footnotes.
 ## - select_models() output mentions the selection direction.
 ## - identify_confounder() prints a console summary and has a formatted $table.
+## - model_stats = TRUE stores fit statistics in $model_stats without cluttering
+##   the publication table.
+## - save_docx(table_width = 6.5) keeps wide flextables fitted to a Word page.
 ## - save_table(), save_plot(), and save_docx() write files to tempdir when the
 ##   filename has no directory.
-
 ## End of manual logit case study --------------------------------------------

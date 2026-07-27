@@ -38,9 +38,12 @@ accepted.}
 
 \item{show_overall}{"no" (default), "first", or "last"}
 
-\item{statistic}{optional named vector per continuous var:
-values in "mean","median","mode","count"
-(default is "median" = Median (IQR))}
+\item{statistic}{Optional summary type for numeric variables. Use a single
+value such as \code{"mean"} or \code{mean} for all numeric variables, or a
+named vector such as \code{c(age = mean, ftv = categorical)}. Supported
+values are \code{"mean"}, \code{"median"}, \code{"mode"},
+\code{"count"}, and \code{"categorical"}. Use \code{"categorical"} for
+numeric ordinal variables that should be shown as n (\%).}
 
 \item{value}{optional named list for single-row binaries (e.g., list(sex="Female"));
 formula entries like list(sex ~ "Female") are also accepted}
@@ -56,6 +59,8 @@ A list with class \code{c("gtregression", "descriptive_table", ...)}
     \item{\code{table}}{A \code{gt_tbl} or \code{flextable}.}
     \item{\code{table_display}}{Display-ready data.}
     \item{\code{table_body}}{Long audit data with variable, level, and type.}
+    \item{\code{variable_labels}}{Named character vector of display labels
+    used for variables.}
     \item{metadata}{Additional metadata fields.}
   }
 }
@@ -65,4 +70,9 @@ Publication-ready summary of categorical and continuous variables
 * column headers include N, e.g. "Overall, N=200"
 * categorical rows shown as n (\%)
 * continuous rows default to Median (IQR) (footnote reflects summary)
+}
+\details{
+If variables have a \code{"label"} attribute, for example from
+\code{labelled::var_label()}, those labels are used automatically in the
+displayed table. Internal matching still uses the original column names.
 }

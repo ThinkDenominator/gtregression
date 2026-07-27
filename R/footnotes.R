@@ -20,6 +20,11 @@
 }
 #' @keywords internal
 #' @noRd
+.ref_note <- function() {
+  "Ref. = reference category."
+}
+#' @keywords internal
+#' @noRd
 .adjustment_note <- function(adjust_for) {
   adjust_for <- unname(adjust_for)
 

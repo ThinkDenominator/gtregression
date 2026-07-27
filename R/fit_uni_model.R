@@ -6,9 +6,9 @@
 #' @param outcome A string. Name of the outcome variable.
 #' @param exposures A string or character vector of predictor(s).
 #' @param approach A string specifying the regression approach. One of
-#' `"logit"`, `"logbinomial"`, `"poisson"`, `"linear"`, `"robpoisson"`, or `"negbin"`.
+#' `"logit"`, `"firth"`, `"logbinomial"`, `"poisson"`, `"linear"`, `"robpoisson"`, or `"negbin"`.
 #'
-#' @return A fitted model object (`glm`, `lm`, `riskratio`, or `negbin`) or `NULL` if fitting fails.
+#' @return A fitted model object (`glm`, `logistf`, `lm`, `riskratio`, or `negbin`) or `NULL` if fitting fails.
 #' @keywords internal
 .fit_uni_model <- function(data, outcome, exposures, approach) {
   approach <- .normalize_approach(approach)
@@ -20,6 +20,8 @@
                   "logit" = glm(formula,
                                 data = data,
                                 family = binomial("logit")),
+                  "firth" = logistf::logistf(formula = formula,
+                                             data = data),
                   "logbinomial" = glm(formula,
                                        data = data,
                                        family = binomial("log")),
@@ -36,11 +38,12 @@
                                           control = glm.control(maxit = 200)),
                   stop(
                     paste0("Invalid approach: '", approach,
-                           "'. Choose from: logit, logbinomial, poisson, ",
+                           "'. Choose from: logit, firth, logbinomial, poisson, ",
                            "robpoisson, linear, negbin."),
                     call. = FALSE
                   )
     )
+    attr(fit, "gtregression_model_frame") <- stats::model.frame(formula, data = data)
     return(fit)
   }, error = function(e) {
     warning("Model failed for exposure(s) '", paste(exposures, collapse = ", "),

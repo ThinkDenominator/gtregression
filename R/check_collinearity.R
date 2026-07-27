@@ -337,7 +337,8 @@ check_collinearity <- function(model,
           style = gt::cell_fill(color = "#fde2e2"),
           locations = gt::cells_body(rows = .data$Interpretation == "High")
         ) |>
-        gt::tab_source_note(gt::md(note))
+        gt::tab_source_note(gt::md(note)) |>
+        .compact_gt_source_notes()
     )
   }
 
@@ -365,7 +366,7 @@ check_collinearity <- function(model,
     part = "body"
   )
   ft <- flextable::add_footer_lines(ft, values = note)
-  ft <- flextable::fontsize(ft, size = 8, part = "footer")
+  ft <- .compact_flex_footer(ft)
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   flextable::autofit(ft)
 }

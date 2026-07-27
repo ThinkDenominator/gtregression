@@ -6,12 +6,14 @@ template:
 
 home:
   title: gtregression
-  description: Publication-ready regression tables and plots for logistic, log-binomial, Poisson, robust Poisson, negative binomial, and linear models
+  description: Publication-ready regression and survival analysis tables, plots, diagnostics, and Word-friendly outputs
   links:
     - text: Start Here
       href: articles/gtregression-intro.html
     - text: Visualise Regression Results
       href: articles/visualise-results.html
+    - text: Survival Analysis
+      href: articles/survival-analysis.html
     - text: Function Overview
       href: reference/index.html
 
@@ -35,6 +37,8 @@ navbar:
         href: articles/descriptive-tables.html
       - text: Regression
         href: articles/regression-tables.html
+      - text: Survival
+        href: articles/survival-analysis.html
       - text: Visualise
         href: articles/visualise-results.html
       - text: Stratify
@@ -57,6 +61,7 @@ articles:
     contents:
       - descriptive-tables
       - regression-tables
+      - survival-analysis
 
   - title: "Visualise"
     navbar: "Visualise"
@@ -95,6 +100,8 @@ reference:
     contents:
       - uni_reg
       - multi_reg
+      - cox_reg
+      - surv_reg
 
   - title: "Stratified Regression Tables"
     desc: "Repeat univariable or adjusted models within levels of a stratifier."
@@ -103,18 +110,30 @@ reference:
       - stratified_multi_reg
 
   - title: "Visualise Regression Results"
-    desc: "Turn regression tables into forest plots and publication-style forest tables."
+    desc: "Turn regression and survival outputs into curves, forest plots, and publication-style forest tables."
     contents:
+      - km_plot
+      - km_risk_table
+      - rmst_table
+      - survival_summary
+      - survival_quantiles
+      - survival_prob
+      - logrank_test
+      - surv_model_compare
+      - plot_surv_fit
+      - surv_predict
       - plot_reg
       - plot_reg_combine
       - forest_df
       - forest_reg
 
   - title: "Diagnostics and Model Selection"
-    desc: "Check convergence, collinearity, and candidate model paths."
+    desc: "Check convergence, collinearity, model fit, and candidate model paths."
     contents:
       - check_convergence
       - check_collinearity
+      - check_ph
+      - plot_model_fit
       - select_models
 
   - title: "Confounding and Interaction"
@@ -145,5 +164,6 @@ reference:
       - data_PimaIndiansDiabetes
       - data_gt_quin
       - data_epilepsy
+      - data_endometrial
       - data_infertility
       - data_lungcancer

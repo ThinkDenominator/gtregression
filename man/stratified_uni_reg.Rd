@@ -26,7 +26,7 @@ names are recommended in scripts, and bare names are also accepted.}
 \item{stratifier}{Character scalar; name of the stratifying variable. Quoted
 and bare names are accepted.}
 
-\item{approach}{Modeling approach. One of \code{"logit"},
+\item{approach}{Modeling approach. One of \code{"logit"}, \code{"firth"},
 \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
 \code{"linear"}, or \code{"negbin"}.}
 
@@ -45,6 +45,8 @@ A list of class
   stratum.}
   \item{\code{models}}{List of fitted model objects by stratum.}
   \item{\code{model_summaries}}{List of model summaries by stratum.}
+  \item{\code{variable_labels}}{Named character vector of display labels used
+  for exposure variables.}
   \item{\code{reg_check}}{Regression diagnostics by stratum.}
   \item{\code{by}}{The stratifier variable.}
   \item{\code{levels}}{Strata included in the analysis.}
@@ -58,6 +60,11 @@ A list of class
 Fit univariable regression models within each level of a stratifier and
 combine the results into a publication-ready stratified table rendered with
 \pkg{gt} or \pkg{flextable}.
+}
+\details{
+If exposure variables have a \code{"label"} attribute, for example from
+\code{labelled::var_label()}, those labels are used automatically in the
+displayed table. Internal matching still uses the original column names.
 }
 \section{Accessors}{
 

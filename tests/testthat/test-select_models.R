@@ -111,6 +111,92 @@ test_that("select_models supports negative binomial regression", {
   expect_true(all(is.finite(result$results_table$AIC)))
 })
 
+test_that("select_models supports Cox and parametric survival approaches", {
+  skip_if_not_installed("survival")
+
+  lung_data <- data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+    )
+
+  cox_sel <- select_models(
+    data = lung_data,
+    time = time,
+    event = status,
+    exposures = c("trt", "celltype", "karno", "age", "prior"),
+    approach = cox,
+    direction = forward,
+    format = tibble
+  )
+
+  expect_s3_class(cox_sel$best_model, "coxph")
+  expect_true(all(c("concordance", "events", "selected_vars") %in%
+                    names(cox_sel$results_table)))
+  expect_true(all(is.finite(cox_sel$results_table$AIC)))
+  expect_true(all(cox_sel$results_table$events > 0))
+
+  surv_sel <- select_models(
+    data = lung_data,
+    time = "time",
+    event = "status",
+    exposures = c("trt", "celltype", "karno", "age", "prior"),
+    approach = survreg,
+    distribution = lognormal,
+    direction = forward,
+    format = gt
+  )
+
+  expect_s3_class(surv_sel$best_model, "survreg")
+  expect_s3_class(surv_sel$table, "gt_tbl")
+  expect_true(all(c("distribution", "scale", "events", "selected_vars") %in%
+                    names(surv_sel$results_table)))
+  expect_true(all(surv_sel$results_table$distribution == "lognormal"))
+  expect_true(all(is.finite(surv_sel$results_table$AIC)))
+
+  surv_sel_alias <- select_models(
+    data = lung_data,
+    time = "time",
+    event = "status",
+    exposures = c("trt", "prior"),
+    approach = survreg,
+    distribution = "log-logistic",
+    direction = forward,
+    format = tibble
+  )
+
+  expect_true(all(surv_sel_alias$results_table$distribution == "loglogistic"))
+})
+
+test_that("select_models validates survival-specific inputs", {
+  skip_if_not_installed("survival")
+
+  lung_data <- data_lungcancer
+
+  expect_error(
+    select_models(
+      data = lung_data,
+      time = "time",
+      event = "status",
+      exposures = "missing",
+      approach = cox
+    ),
+    "Variables not found: missing"
+  )
+  expect_error(
+    select_models(
+      data = lung_data,
+      time = "time",
+      event = "status",
+      exposures = "age",
+      approach = survreg,
+      distribution = gaussian
+    ),
+    "Invalid distribution"
+  )
+})
+
 test_that("select_models validates inputs clearly", {
   df <- select_birthwt_data()
 

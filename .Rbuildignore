@@ -12,7 +12,9 @@
 
 # Development-only project files
 ^dev$
+^data-raw$
 ^README\.Rmd$
+^README\.html$
 ^README - Rubes\.md$
 ^LICENSE\.md$
 ^renv$

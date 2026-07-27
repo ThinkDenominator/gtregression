@@ -175,7 +175,8 @@ dissect <- function(data, verbose = FALSE, format = c("flextable", "gt", "tibble
             rows = .data$Compatibility == "incompatible"
           )
         ) |>
-        gt::tab_source_note(gt::md(note))
+        gt::tab_source_note(gt::md(note)) |>
+        .compact_gt_source_notes()
     )
   }
 
@@ -217,7 +218,7 @@ dissect <- function(data, verbose = FALSE, format = c("flextable", "gt", "tibble
     part = "body"
   )
   ft <- flextable::add_footer_lines(ft, values = note)
-  ft <- flextable::fontsize(ft, size = 8, part = "footer")
+  ft <- .compact_flex_footer(ft)
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   flextable::autofit(ft)
 }

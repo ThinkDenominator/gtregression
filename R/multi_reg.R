@@ -18,13 +18,26 @@
 #'   using standard formula syntax, e.g. \code{"bmi*sex"}.
 #'   When used with \code{adjust_for}, only a single exposure should be supplied.
 #' @param approach Character scalar specifying the regression approach.
-#'   One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
+#'   One of \code{"logit"}, \code{"firth"}, \code{"logbinomial"}, \code{"poisson"},
 #'   \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}.
+#'   Use \code{"firth"} for Firth penalized logistic regression, especially
+#'   with sparse cells or separation.
 #' @param format Output table format; one of \code{"flextable"} (default) or
 #'   \code{"gt"}.
 #' @param theme Table styling preset (e.g. \code{"minimal"}, \code{"striped"},
 #'   \code{"clinical"}, \code{"shaded"}, \code{"jama"}) or a character vector of
 #'   primitives such as \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}.
+#' @param model_stats Logical; if \code{TRUE}, extract model-fit statistics
+#'   such as AIC, BIC, log-likelihood, deviance, pseudo R-squared for
+#'   non-linear models, and R-squared for linear models. Statistics are stored
+#'   in the returned object's \code{model_stats} element and are not added to
+#'   the publication table.
+#'
+#' @details
+#' If exposure variables have a \code{"label"} attribute, for example from
+#' \code{labelled::var_label()}, those labels are used automatically in the
+#' displayed table and plots. Internal matching still uses the original column
+#' names.
 #'
 #' @return A list of class \code{c("gtregression","multi_reg", ...)} with elements:
 #' \describe{
@@ -36,6 +49,10 @@
 #'   including header and level rows.}
 #'   \item{models}{A list of fitted model(s).}
 #'   \item{model_summaries}{\code{summary()} output for the fitted model(s).}
+#'   \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
+#'   otherwise \code{NULL}.}
+#'   \item{variable_labels}{Named character vector of display labels used for
+#'   exposure variables.}
 #'   \item{reg_check}{Regression diagnostics for linear models; otherwise a message.}
 #'   \item{approach}{The regression approach used.}
 #'   \item{format}{The output format used.}
@@ -55,6 +72,12 @@
 #' using standard formula expansion (e.g. \code{bmi*sex}). Interaction effects are
 #' displayed as additional rows beneath the corresponding exposure.
 #'
+#' @examples
+#' endometrial_data <- data_endometrial
+#' endometrial_data$HG <- factor(endometrial_data$HG, levels = c(0, 1))
+#' endometrial_data$NV <- factor(endometrial_data$NV, levels = c(0, 1))
+#' multi_reg(endometrial_data, HG, c(NV, PI, EH), approach = firth)$table
+#'
 #' @importFrom stats qnorm residuals nobs
 #' @export
 multi_reg <- function(data,
@@ -64,7 +87,8 @@ multi_reg <- function(data,
                       interaction = NULL,
                       approach = "logit",
                       format = c("flextable", "gt"),
-                      theme = c("minimal")) {
+                      theme = c("minimal"),
+                      model_stats = FALSE) {
 
   outcome <- .vars_arg(substitute(outcome), env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
@@ -72,17 +96,21 @@ multi_reg <- function(data,
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
-    choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
+    choices = c("logit","firth","logbinomial","poisson","robpoisson","linear","negbin")
   )
   approach <- .normalize_approach(approach)
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
+  if (!is.logical(model_stats) || length(model_stats) != 1L || is.na(model_stats)) {
+    stop("`model_stats` must be TRUE or FALSE.", call. = FALSE)
+  }
 
   format <- match.arg(format, c("flextable","gt"))
   theme <- .resolve_theme(theme)
 
   fmt_class <- if (format == "gt") "gt_multi" else "ft_multi"
   effect_label_adj <- paste("Adjusted", .get_effect_label(approach))
+  variable_labels <- .var_label_map(data, unique(exposures))
 
   core <- .run_multi_core(
     data = data,
@@ -96,6 +124,7 @@ multi_reg <- function(data,
   footnotes <- if (!core$adjusted_mode) {
     c(
       .abbrev_note(approach),
+      if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
       if (!is.null(interaction)) .interaction_note(interaction) else NULL,
       if (!is.na(core$n_used)) {
         paste0(
@@ -109,6 +138,7 @@ multi_reg <- function(data,
   } else {
     c(
       .abbrev_note(approach),
+      if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
       .adjustment_note(adjust_for),
       if (!is.null(interaction)) .interaction_note(interaction) else NULL,
       paste0(
@@ -122,7 +152,8 @@ multi_reg <- function(data,
     core$table_body,
     core$data_clean,
     outcome,
-    effect_label_adj
+    effect_label_adj,
+    variable_labels = variable_labels
   )
   .must_be_display_df_multi(display_df)
 
@@ -138,6 +169,8 @@ multi_reg <- function(data,
     table_display = display_df,
     models = core$models,
     model_summaries = core$model_summaries,
+    model_stats = if (isTRUE(model_stats)) .model_stats_table(core$models, approach) else NULL,
+    variable_labels = variable_labels,
     reg_check = core$reg_check,
     approach = approach,
     format = format,

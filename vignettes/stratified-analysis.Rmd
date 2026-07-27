@@ -29,45 +29,100 @@ birthwt_data <- data_birthwt |>
     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
     ptl_cat = factor(ifelse(ptl > 0, "Yes", "No"), levels = c("No", "Yes"))
   )
+
+attr(birthwt_data$age, "label") <- "Maternal age"
+attr(birthwt_data$lwt, "label") <- "Maternal weight"
+attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
+attr(birthwt_data$ht, "label") <- "Hypertension"
+attr(birthwt_data$ui, "label") <- "Uterine irritability"
+attr(birthwt_data$ptl_cat, "label") <- "Previous preterm labour"
+```
+
+## Describe by Stratum
+
+Start with a descriptive table by the stratifying variable. This is the companion
+table for the stratified regression: it helps users see the size and clinical
+profile of each subgroup before fitting stratum-specific models.
+
+```{r strata-desc, message=FALSE, warning=FALSE}
+strata_desc <- descriptive_table(
+  data = birthwt_data,
+  exposures = c("age", "lwt", "smoke", "ht", "ui", "ptl_cat"),
+  by = race,
+  percent = column,
+  show_overall = last,
+  theme = clinical
+)
+
+strata_desc$table
 ```
 
 ## Univariable by Stratum
 
+`stratified_uni_reg()` fits one model per exposure inside each stratum. The
+result is a single wide table, with one spanner per stratum.
+
 ```{r strata-uni, message=FALSE, warning=FALSE}
 strata_uni <- stratified_uni_reg(
   data = birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = c("age", "lwt", "smoke", "ht", "ui", "ptl_cat"),
-  stratifier = "race",
-  approach = "logit",
+  stratifier = race,
+  approach = logit,
   theme = clinical
 )
 
 strata_uni$table
 ```
 
-## Adjusted by Stratum
+## Full Multivariable Model by Stratum
+
+With `adjust_for = NULL`, `stratified_multi_reg()` fits one multivariable model
+inside each stratum using all supplied exposures.
+
+```{r strata-multi-full, message=FALSE, warning=FALSE}
+strata_full <- stratified_multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c("age", "lwt", "smoke", "ht", "ui", "ptl_cat"),
+  stratifier = race,
+  approach = logit,
+  theme = clinical
+)
+
+strata_full$table
+```
+
+## Exposure-Specific Adjusted Models by Stratum
 
 Use `adjust_for` when each exposure should be adjusted for the same variables
-within each stratum.
+within each stratum. This mirrors `multi_reg(adjust_for = ...)`, but repeats the
+same workflow separately inside each stratum.
 
 ```{r strata-multi, message=FALSE, warning=FALSE}
 strata_multi <- stratified_multi_reg(
   data = birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = c("smoke", "ht", "ui", "ptl_cat"),
-  stratifier = "race",
+  stratifier = race,
   adjust_for = c("age", "lwt"),
-  approach = "logit",
+  approach = logit,
   theme = striped
 )
 
 strata_multi$table
 ```
 
+If a stratum cannot fit a model, the function skips that stratum with a warning
+and continues. This is intentional: sparse strata are common in real data, and
+one small subgroup should not erase the whole analysis.
+
 ## What To Inspect
 
 - `$table`: rendered side-by-side table.
 - `$table_display`: wide data used to build the table.
+- `$per_stratum`: full per-stratum result objects.
 - `$models`: fitted models by stratum.
+- `$model_summaries`: summaries for the fitted models.
+- `$variable_labels`: display labels used in the wide table.
 - `$reg_check`: diagnostics for linear models.

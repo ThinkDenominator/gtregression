@@ -1,0 +1,429 @@
+#' Cox proportional hazards regression
+#'
+#' Create a publication-ready Cox regression table with hazard ratios.
+#'
+#' @param data A \code{data.frame} containing survival time, event status, and
+#'   exposure variables.
+#' @param time Survival follow-up time. Quoted and bare names are accepted.
+#' @param event Event indicator. Quoted and bare names are accepted. Numeric
+#'   \code{0/1}, numeric \code{1/2}, logical, character, and factor variables
+#'   are accepted. For two-level character or factor variables, the second level
+#'   is treated as the event.
+#' @param exposures Character vector of exposure variable names. Quoted names
+#'   are recommended in scripts, and bare names are also accepted.
+#' @param adjust_for Optional character vector of adjustment variables. When
+#'   supplied, one adjusted Cox model is fitted per exposure.
+#' @param format Output table format; one of \code{"flextable"} (default) or
+#'   \code{"gt"}.
+#' @param theme Table styling preset.
+#' @param model_stats Logical; if \code{TRUE}, extract model-fit statistics
+#'   including AIC, BIC, log-likelihood, concordance, number of events, and N.
+#'
+#' @details
+#' Without \code{adjust_for}, \code{cox_reg()} fits one crude Cox model per
+#' exposure and reports \code{HR (95\% CI)}. With \code{adjust_for}, it fits one
+#' adjusted Cox model per exposure and reports \code{Adjusted HR (95\% CI)}.
+#'
+#' If exposure variables have a \code{"label"} attribute, for example from
+#' \code{labelled::var_label()}, those labels are used automatically in the
+#' displayed table.
+#'
+#' @return A list of class \code{c("gtregression","cox_reg", ...)} with elements:
+#' \describe{
+#'   \item{table}{A \code{flextable} or \code{gt_tbl}.}
+#'   \item{table_body}{Data frame of hazard ratios and confidence intervals.}
+#'   \item{table_display}{Data frame used to render the publication table.}
+#'   \item{models}{List of fitted \code{coxph} models.}
+#'   \item{model_summaries}{Summary output for the fitted models.}
+#'   \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
+#'   otherwise \code{NULL}.}
+#'   \item{variable_labels}{Named character vector of display labels.}
+#'   \item{time,event,approach,format,source,adjust_for,exposures}{Metadata fields.}
+#' }
+#'
+#' @examples
+#' lung_data <- data_lungcancer
+#' lung_data$trt <- factor(lung_data$trt, levels = c(1, 2),
+#'                         labels = c("Standard", "Test"))
+#' lung_data$prior <- factor(lung_data$prior, levels = c(0, 10),
+#'                           labels = c("No", "Yes"))
+#'
+#' cox_reg(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposures = c("trt", "celltype", "karno", "age")
+#' )
+#'
+#' cox_reg(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposures = c(trt, celltype, prior),
+#'   adjust_for = c(age, karno)
+#' )
+#'
+#' @importFrom survival Surv coxph
+#' @export
+cox_reg <- function(data,
+                    time,
+                    event,
+                    exposures,
+                    adjust_for = NULL,
+                    format = c("flextable", "gt"),
+                    theme = c("minimal"),
+                    model_stats = FALSE) {
+
+  time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
+  event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
+  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
+  theme <- .choice_arg(substitute(theme), env = parent.frame())
+
+  if (!is.logical(model_stats) || length(model_stats) != 1L || is.na(model_stats)) {
+    stop("`model_stats` must be TRUE or FALSE.", call. = FALSE)
+  }
+
+  format <- match.arg(format, c("flextable", "gt"))
+  theme <- .resolve_theme(theme)
+  adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
+  fmt_class <- if (format == "gt") "gt_cox" else "ft_cox"
+
+  core <- .run_cox_core(
+    data = data,
+    time = time,
+    event = event,
+    exposures = exposures,
+    adjust_for = adjust_for
+  )
+
+  effect_label <- if (adjusted_mode) "Adjusted HR (95% CI)" else "HR (95% CI)"
+  variable_labels <- .var_label_map(data, unique(exposures))
+  display_df <- .make_display_multi(
+    core$table_body,
+    core$data_clean,
+    outcome = event,
+    effect_label = effect_label,
+    variable_labels = variable_labels
+  )
+  .must_be_display_df_multi(display_df)
+
+  footnotes <- c(
+    .abbrev_note("cox"),
+    if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
+    if (adjusted_mode) .adjustment_note(adjust_for) else NULL,
+    paste0(
+      "Event variable: ", event,
+      " (1 = event, 0 = censored after internal coding)."
+    )
+  )
+
+  tbl <- if (format == "gt") {
+    .build_gt_multi(display_df, effect_label, footnotes, theme)
+  } else {
+    .build_flextable_multi(display_df, effect_label, footnotes, theme)
+  }
+
+  res <- list(
+    table = tbl,
+    table_body = core$table_body,
+    table_display = display_df,
+    models = core$models,
+    model_summaries = core$model_summaries,
+    model_stats = if (isTRUE(model_stats)) .cox_model_stats_table(core$models) else NULL,
+    variable_labels = variable_labels,
+    time = time,
+    event = event,
+    approach = "cox",
+    format = format,
+    source = "cox_reg",
+    adjusted_mode = adjusted_mode,
+    adjust_for = if (adjusted_mode) unique(adjust_for) else NULL,
+    exposures = unique(exposures)
+  )
+
+  class(res) <- c("gtregression", "cox_reg", fmt_class, class(res))
+  res
+}
+
+#' @keywords internal
+#' @noRd
+.run_cox_core <- function(data, time, event, exposures, adjust_for = NULL) {
+  data_clean <- .validate_cox_inputs(data, time, event, exposures, adjust_for)
+  adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
+
+  fits <- vector("list", length(exposures))
+  names(fits) <- exposures
+  tds <- vector("list", length(exposures))
+  names(tds) <- exposures
+
+  for (i in seq_along(exposures)) {
+    exposure <- exposures[i]
+    predictors <- if (adjusted_mode) c(exposure, adjust_for) else exposure
+    fit <- .fit_cox_model(data_clean, time, event, predictors)
+
+    if (is.null(fit)) {
+      stop("Cox model fitting failed for exposure '", exposure, "'.", call. = FALSE)
+    }
+
+    td <- .tidy_cox(fit, exposure)
+    if (is.null(td) || !nrow(td)) {
+      stop("No estimable Cox coefficients for exposure '", exposure, "'.", call. = FALSE)
+    }
+
+    fits[[i]] <- fit
+    tds[[i]] <- td
+  }
+
+  list(
+    data_clean = data_clean,
+    table_body = do.call(rbind, tds),
+    models = fits,
+    model_summaries = lapply(fits, summary)
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.cox_single_var_arg <- function(expr, data, env = parent.frame()) {
+  if (is.symbol(expr)) {
+    nm <- as.character(expr)
+    if (nm %in% names(data)) {
+      return(nm)
+    }
+    if (exists(nm, envir = env, inherits = TRUE)) {
+      val <- get(nm, envir = env, inherits = TRUE)
+      if (is.character(val) && length(val) == 1L) {
+        return(val)
+      }
+    }
+    return(nm)
+  }
+
+  out <- eval(expr, envir = env)
+  if (!is.character(out) || length(out) != 1L) {
+    stop("Survival variable arguments must be single column names.", call. = FALSE)
+  }
+  out
+}
+
+#' @keywords internal
+#' @noRd
+.validate_cox_inputs <- function(data, time, event, exposures, adjust_for = NULL) {
+  if (!is.data.frame(data)) {
+    stop("`data` must be a data.frame.", call. = FALSE)
+  }
+
+  if (!is.character(time) || length(time) != 1L || !time %in% names(data)) {
+    stop("`time` must be a single survival time variable in `data`.", call. = FALSE)
+  }
+
+  if (!is.character(event) || length(event) != 1L || !event %in% names(data)) {
+    stop("`event` must be a single event indicator variable in `data`.", call. = FALSE)
+  }
+
+  exposures <- unique(exposures)
+  if (!is.character(exposures) || length(exposures) < 1L) {
+    stop("`exposures` must contain at least one variable.", call. = FALSE)
+  }
+
+  if (!all(exposures %in% names(data))) {
+    stop("One or more exposure variables were not found in the dataset.", call. = FALSE)
+  }
+
+  adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
+  if (adjusted_mode) {
+    adjust_for <- unique(adjust_for)
+    if (!is.character(adjust_for) || !all(adjust_for %in% names(data))) {
+      stop("One or more adjustment variables were not found in the dataset.", call. = FALSE)
+    }
+    if (any(exposures %in% adjust_for)) {
+      stop("In adjusted mode, `exposures` and `adjust_for` must not overlap.", call. = FALSE)
+    }
+  } else {
+    adjust_for <- NULL
+  }
+
+  if (!is.numeric(data[[time]])) {
+    stop("`time` must be numeric.", call. = FALSE)
+  }
+
+  if (any(data[[time]] <= 0, na.rm = TRUE)) {
+    stop("`time` must contain positive follow-up times.", call. = FALSE)
+  }
+
+  vars_needed <- unique(c(time, event, exposures, adjust_for))
+  cc_idx <- stats::complete.cases(data[, vars_needed, drop = FALSE])
+  data_clean <- data[cc_idx, , drop = FALSE]
+  if (nrow(data_clean) == 0) {
+    stop("No complete cases available for Cox regression.", call. = FALSE)
+  }
+
+  data_clean[[event]] <- .cox_event01(data_clean[[event]])
+  if (sum(data_clean[[event]] == 1) == 0) {
+    stop("`event` must include at least one event.", call. = FALSE)
+  }
+  if (sum(data_clean[[event]] == 0) == 0) {
+    stop("`event` must include at least one censored observation.", call. = FALSE)
+  }
+
+  .validate_exposures(data_clean, unique(c(exposures, adjust_for)))
+  data_clean
+}
+
+#' @keywords internal
+#' @noRd
+.cox_event01 <- function(x) {
+  if (is.logical(x)) {
+    return(as.integer(x))
+  }
+
+  if (is.factor(x) || is.character(x)) {
+    xf <- factor(x)
+    if (nlevels(xf) != 2L) {
+      stop("`event` must have exactly two levels.", call. = FALSE)
+    }
+    return(as.integer(xf == levels(xf)[2L]))
+  }
+
+  if (is.numeric(x)) {
+    vals <- sort(unique(stats::na.omit(x)))
+    if (length(vals) > 0 && all(vals %in% c(0, 1))) {
+      return(as.integer(x))
+    }
+    if (length(vals) > 0 && all(vals %in% c(1, 2))) {
+      return(as.integer(x == 2))
+    }
+  }
+
+  stop("`event` must be coded as 0/1, 1/2, logical, or a two-level factor/character variable.", call. = FALSE)
+}
+
+#' @keywords internal
+#' @noRd
+.fit_cox_model <- function(data, time, event, predictors) {
+  bt <- function(x) paste0("`", gsub("`", "", x, fixed = TRUE), "`")
+  rhs <- paste(bt(predictors), collapse = " + ")
+  fml <- stats::as.formula(paste0("survival::Surv(", bt(time), ", ", bt(event), ") ~ ", rhs))
+
+  tryCatch(
+    survival::coxph(fml, data = data, model = TRUE),
+    error = function(e) {
+      warning("Cox model failed: ", e$message, call. = FALSE)
+      NULL
+    }
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.tidy_cox <- function(fit, exposure) {
+  smry <- summary(fit)
+  coefs <- smry$coefficients
+  if (is.null(coefs) || nrow(coefs) == 0) {
+    return(NULL)
+  }
+
+  rn <- rownames(coefs)
+
+  is_exposure_term <- function(term, exposure) {
+    term_clean <- gsub("`", "", term, fixed = TRUE)
+    exp_clean <- gsub("`", "", exposure, fixed = TRUE)
+    identical(term_clean, exp_clean) ||
+      (startsWith(term_clean, exp_clean) && !grepl(":", term_clean, fixed = TRUE))
+  }
+
+  clean_level <- function(term, exposure) {
+    term_clean <- gsub("`", "", term, fixed = TRUE)
+    exp_clean <- gsub("`", "", exposure, fixed = TRUE)
+    if (identical(term_clean, exp_clean)) {
+      return(exp_clean)
+    }
+    lvl <- sub(paste0("^", exp_clean), "", term_clean)
+    if (identical(lvl, "")) exp_clean else lvl
+  }
+
+  idx <- which(vapply(rn, is_exposure_term, logical(1), exposure = exposure))
+  df_nonref <- NULL
+
+  if (length(idx)) {
+    est_log <- coefs[idx, "coef"]
+    se_col <- if ("robust se" %in% colnames(coefs)) "robust se" else "se(coef)"
+    se <- coefs[idx, se_col]
+    p_col <- grep("^Pr\\(", colnames(coefs), value = TRUE)
+    p <- coefs[idx, p_col[1]]
+    z <- stats::qnorm(0.975)
+
+    df_nonref <- data.frame(
+      exposure = exposure,
+      level = vapply(rn[idx], clean_level, character(1), exposure = exposure),
+      estimate = exp(est_log),
+      conf.low = exp(est_log - z * se),
+      conf.high = exp(est_log + z * se),
+      p.value = p,
+      ref = FALSE,
+      stringsAsFactors = FALSE
+    )
+  }
+
+  ref_row <- NULL
+  if (!is.null(fit$model[[exposure]]) && is.factor(fit$model[[exposure]])) {
+    levs <- levels(fit$model[[exposure]])
+    ref_row <- data.frame(
+      exposure = exposure,
+      level = levs[1],
+      estimate = 1,
+      conf.low = NA_real_,
+      conf.high = NA_real_,
+      p.value = NA_real_,
+      ref = TRUE,
+      stringsAsFactors = FALSE
+    )
+
+    if (!is.null(df_nonref)) {
+      df_nonref$..ord <- match(df_nonref$level, levs)
+      df_nonref <- df_nonref[order(df_nonref$..ord), , drop = FALSE]
+      df_nonref$..ord <- NULL
+    }
+  }
+
+  if (is.null(ref_row) && is.null(df_nonref)) {
+    return(NULL)
+  }
+  if (!is.null(ref_row) && !is.null(df_nonref)) {
+    return(rbind(ref_row, df_nonref))
+  }
+  if (!is.null(ref_row)) ref_row else df_nonref
+}
+
+#' @keywords internal
+#' @noRd
+.cox_model_stats_table <- function(models) {
+  out <- lapply(names(models), function(model_name) {
+    fit <- models[[model_name]]
+    smry <- tryCatch(summary(fit), error = function(e) NULL)
+    concordance <- if (!is.null(smry) && !is.null(smry$concordance)) {
+      suppressWarnings(as.numeric(smry$concordance[1]))
+    } else {
+      NA_real_
+    }
+
+    data.frame(
+      model = model_name,
+      AIC = .safe_numeric(stats::AIC(fit)),
+      BIC = .safe_numeric(stats::BIC(fit)),
+      logLik = .safe_numeric(as.numeric(stats::logLik(fit))),
+      concordance = .safe_numeric(concordance),
+      events = .safe_numeric(fit$nevent),
+      n = .safe_numeric(stats::nobs(fit)),
+      stringsAsFactors = FALSE
+    )
+  })
+
+  out <- Filter(Negate(is.null), out)
+  if (!length(out)) {
+    return(NULL)
+  }
+  do.call(rbind, out)
+}

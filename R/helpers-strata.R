@@ -11,8 +11,12 @@
 #' Build canonical row skeleton (exposure headers + factor levels)
 #' @keywords internal
 #' @noRd
-.strata_build_skeleton <- function(data, exposures) {
+.strata_build_skeleton <- function(data, exposures, variable_labels = NULL) {
   is_factor <- vapply(exposures, function(x) is.factor(data[[x]]), logical(1))
+  label_map <- variable_labels
+  if (is.null(label_map)) {
+    label_map <- .var_label_map(data, exposures)
+  }
 
   levels_map <- lapply(
     exposures,
@@ -26,7 +30,7 @@
     rows[[length(rows) + 1]] <- data.frame(
       exposure = x,
       level = NA_character_,
-      Characteristic = x,
+      Characteristic = .label_var(x, label_map),
       is_header = TRUE,
       stringsAsFactors = FALSE
     )
@@ -44,8 +48,15 @@
     }
   }
 
+  skeleton <- do.call(rbind, rows)
+  skeleton <- .attach_display_metadata(
+    skeleton,
+    row_exposure = skeleton$exposure,
+    variable_labels = label_map
+  )
+
   list(
-    skeleton = do.call(rbind, rows),
+    skeleton = skeleton,
     is_factor = is_factor
   )
 }
@@ -56,14 +67,14 @@
 #'
 #' @keywords internal
 #' @noRd
-.strata_build_skeleton_multi <- function(exposures, td_by_stratum) {
+.strata_build_skeleton_multi <- function(exposures, td_by_stratum, variable_labels = NULL) {
   rows <- list()
 
   for (x in exposures) {
     rows[[length(rows) + 1]] <- data.frame(
       exposure = x,
       level = NA_character_,
-      Characteristic = x,
+      Characteristic = .label_var(x, variable_labels),
       is_header = TRUE,
       stringsAsFactors = FALSE
     )
@@ -121,7 +132,12 @@
     }
   }
 
-  do.call(rbind, rows)
+  skeleton <- do.call(rbind, rows)
+  .attach_display_metadata(
+    skeleton,
+    row_exposure = skeleton$exposure,
+    variable_labels = variable_labels
+  )
 }
 # ----- UNIVARIATE: pull N/effect/p per stratum aligned to skeleton -----------
 
@@ -163,7 +179,7 @@
       row <- td[td$exposure == ex & td$level == lv, , drop = FALSE]
       if (nrow(row)) {
         if (isTRUE(row$ref[1])) {
-          eff_vec[i] <- "\u2014"; p_vec[i] <- ""
+          eff_vec[i] <- "Ref."; p_vec[i] <- ""
         } else {
           eff_vec[i] <- fmt_est_ci(row$estimate, row$conf.low, row$conf.high)
           p_vec[i]   <- .fmt_p(row$p.value)
@@ -177,12 +193,17 @@
 
 #' Assemble wide display DF for all strata (univariate)
 #' @keywords internal
-.strata_build_wide_uni <- function(data, outcome, exposures, stratifier, per_stratum) {
-  sk <- .strata_build_skeleton(data, exposures)
+.strata_build_wide_uni <- function(data, outcome, exposures, stratifier, per_stratum, variable_labels = NULL) {
+  sk <- .strata_build_skeleton(data, exposures, variable_labels = variable_labels)
   skeleton  <- sk$skeleton
   is_factor <- sk$is_factor
 
   wide <- skeleton[, c("Characteristic","is_header"), drop = FALSE]
+  wide <- .attach_display_metadata(
+    wide,
+    row_exposure = skeleton$exposure,
+    variable_labels = attr(skeleton, "variable_labels", exact = TRUE)
+  )
 
   for (lev in names(per_stratum)) {
     dlev <- data[data[[stratifier]] == lev, , drop = FALSE]
@@ -230,7 +251,7 @@
 
       if (nrow(row)) {
         if (isTRUE(row$ref[1])) {
-          eff[i] <- "\u2014"
+          eff[i] <- "Ref."
           pv[i]  <- ""
         } else {
           eff[i] <- fmt_est_ci(row$estimate[1], row$conf.low[1], row$conf.high[1])
@@ -245,13 +266,22 @@
 #' Assemble wide display DF for all strata (multivariable)
 #' @keywords internal
 #' @noRd
-.strata_build_wide_multi <- function(data, exposures, stratifier, td_by_stratum) {
+.strata_build_wide_multi <- function(data, exposures, stratifier, td_by_stratum, variable_labels = NULL) {
+  if (is.null(variable_labels)) {
+    variable_labels <- .var_label_map(data, exposures)
+  }
   skeleton <- .strata_build_skeleton_multi(
     exposures = exposures,
-    td_by_stratum = td_by_stratum
+    td_by_stratum = td_by_stratum,
+    variable_labels = variable_labels
   )
 
   wide <- skeleton[, c("Characteristic", "is_header"), drop = FALSE]
+  wide <- .attach_display_metadata(
+    wide,
+    row_exposure = skeleton$exposure,
+    variable_labels = variable_labels
+  )
   strata_names <- names(td_by_stratum)
 
   for (lev in strata_names) {

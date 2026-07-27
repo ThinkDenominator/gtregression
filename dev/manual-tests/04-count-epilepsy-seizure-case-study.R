@@ -69,6 +69,17 @@ outcome <- "seizures"
 count_predictors <- c("treatment", "age_cat", "sex", "baseline_cat", "period_cat")
 core_predictors <- c("treatment", "age_cat", "baseline_cat")
 
+## 1.1-friendly labels:
+## Label once, then all gtregression tables and plots use these display names.
+attr(epilepsy_data$seizures, "label") <- "Seizure count"
+attr(epilepsy_data$base, "label") <- "Baseline seizure count"
+attr(epilepsy_data$age, "label") <- "Age"
+attr(epilepsy_data$treatment, "label") <- "Treatment group"
+attr(epilepsy_data$age_cat, "label") <- "Age group"
+attr(epilepsy_data$sex, "label") <- "Sex"
+attr(epilepsy_data$baseline_cat, "label") <- "Baseline seizure burden"
+attr(epilepsy_data$period_cat, "label") <- "Follow-up period"
+
 
 ## 2. Inspect data before count modelling ------------------------------------
 
@@ -123,6 +134,17 @@ descriptive_table(
   format = "gt"
 )
 
+## Mixed summaries:
+## Show seizure counts as mean, baseline counts as median, and period as n (%).
+descriptive_table(
+  data = epilepsy_data,
+  exposures = c("seizures", "base", "period", "baseline_cat"),
+  by = treatment,
+  statistic = c(seizures = mean, base = median, period = categorical),
+  percent = column,
+  show_missing = no
+)
+
 
 ## 4. Minimal Poisson regression ---------------------------------------------
 
@@ -162,6 +184,17 @@ uni_pois <- uni_reg(
 uni_pois
 uni_pois$table_body
 uni_pois$model_summaries
+
+## Optional model statistics are stored outside the publication table.
+uni_pois_stats <- uni_reg(
+  data = epilepsy_data,
+  outcome = seizures,
+  exposures = count_predictors,
+  approach = poisson,
+  model_stats = TRUE
+)
+
+uni_pois_stats$model_stats
 
 ## Useful option: gt output for HTML viewing.
 uni_reg(
@@ -211,6 +244,17 @@ multi_reg(
   adjust_for = c(age_cat, sex, period_cat),
   approach = poisson
 )
+
+multi_adj_pois_stats <- multi_reg(
+  data = epilepsy_data,
+  outcome = seizures,
+  exposures = c(treatment, baseline_cat),
+  adjust_for = c(age_cat, sex, period_cat),
+  approach = poisson,
+  model_stats = TRUE
+)
+
+multi_adj_pois_stats$model_stats
 
 
 ## 7. Check convergence and overdispersion -----------------------------------
@@ -283,6 +327,17 @@ multi_adj_nb <- multi_reg(
 
 multi_adj_nb
 
+multi_adj_nb_stats <- multi_reg(
+  data = epilepsy_data,
+  outcome = seizures,
+  exposures = c(treatment, baseline_cat),
+  adjust_for = c(age_cat, sex, period_cat),
+  approach = negbin,
+  model_stats = TRUE
+)
+
+multi_adj_nb_stats$model_stats
+
 
 ## 9. Modify tables for publication ------------------------------------------
 
@@ -334,6 +389,22 @@ modify_table(
   remove_N_obs = TRUE,
   remove_abbreviations = TRUE,
   caption = "Compact negative binomial model"
+)
+
+## 9b. Model fit checks --------------------------------------------------------
+
+## For count models, observed-versus-predicted plots help users see whether the
+## fitted mean follows the observed seizure counts. Residual and Cook's distance
+## plots are included with type = all.
+
+plot_model_fit(
+  multi_pois,
+  type = observed_predicted
+)
+
+plot_model_fit(
+  multi_nb,
+  type = all
 )
 
 
@@ -436,6 +507,18 @@ forest_reg(df_multi_pois)
 forest_reg(df_pois_both)
 forest_reg(df_nb_both)
 forest_reg(df_count_desc_nb)
+
+## Layout check:
+## If x-axis tick labels overlap, control the axis with xlim and ticks_at.
+## Count models report IRRs, so the no-effect line is 1.
+forest_reg(
+  df_count_desc_nb,
+  xlim = list(c(0.25, 4), c(0.25, 4)),
+  ticks_at = list(c(0.25, 0.5, 1, 2, 4), c(0.25, 0.5, 1, 2, 4))
+)
+
+## If the CI plot panel is too narrow or too wide, tune ci_col_width.
+forest_reg(df_count_desc_nb, ci_col_width = c(18, 22))
 
 ## Useful option: put the plot on the left.
 forest_reg(df_count_desc_nb, side = "left")
@@ -549,6 +632,18 @@ interaction_models(
 ## This is exploratory. Use planned interaction models when a formal
 ## effect-modification test is needed.
 
+## First profile the seizure-burden strata. This shows whether treatment,
+## follow-up period, age, and sex are balanced before comparing IRRs.
+baseline_profile_count <- descriptive_table(
+  data = epilepsy_data,
+  exposures = c("treatment", "age_cat", "sex", "period_cat"),
+  by = baseline_cat,
+  percent = column,
+  show_overall = last
+)
+
+baseline_profile_count
+
 strat_uni_pois <- stratified_uni_reg(
   data = epilepsy_data,
   outcome = outcome,
@@ -602,7 +697,8 @@ save_docx(
     "Forest plot - negative binomial",
     "Crude versus adjusted negative binomial plot"
   ),
-  filename = "epilepsy-count-report"
+  filename = "epilepsy-count-report",
+  table_width = 6.5
 )
 
 
@@ -617,6 +713,9 @@ save_docx(
 ## - plot_reg() highlights significant associations when colours are supplied.
 ## - plot_reg_combine() makes crude versus adjusted changes easy to see.
 ## - forest_reg() displays IRRs with a no-effect reference line at 1.
+## - model_stats = TRUE stores AIC, BIC, deviance, and related statistics in
+##   $model_stats.
+## - save_docx(table_width = 6.5) keeps wide flextables fitted to a Word page.
 ## - select_models() output mentions the selection direction.
 ## - identify_confounder() prints a console summary and has a formatted $table.
 ## - interaction_models() returns a readable screening table and model objects.

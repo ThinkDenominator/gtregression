@@ -5,7 +5,7 @@
 #' @param data A data.frame containing the analysis variables.
 #' @param outcome A character scalar giving the outcome variable name.
 #' @param exposures A character vector of exposure variable(s).
-#' @param approach A regression approach. One of "logit", "logbinomial",
+#' @param approach A regression approach. One of "logit", "firth", "logbinomial",
 #'   "poisson", "linear", "robpoisson", or "negbin".
 #' @param adjust_for Optional character vector of adjustment variables.
 #' @param interaction Optional character scalar specifying an interaction term,
@@ -33,12 +33,16 @@
 
   tryCatch(
     {
-      switch(
+      fit <- switch(
         approach,
         "logit" = stats::glm(
           formula = formula,
           data = data,
           family = stats::binomial("logit")
+        ),
+        "firth" = logistf::logistf(
+          formula = formula,
+          data = data
         ),
         "logbinomial" = stats::glm(
           formula = formula,
@@ -67,12 +71,14 @@
         stop(
           paste0(
             "Invalid approach: '", approach,
-            "'. Choose from: logit, logbinomial, poisson, ",
+            "'. Choose from: logit, firth, logbinomial, poisson, ",
             "robpoisson, linear, negbin."
           ),
           call. = FALSE
         )
       )
+      attr(fit, "gtregression_model_frame") <- stats::model.frame(formula, data = data)
+      fit
     },
     error = function(e) {
       warning(

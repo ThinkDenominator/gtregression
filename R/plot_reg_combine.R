@@ -1,14 +1,15 @@
 #' Side-by-side forest plots: univariate vs multivariable
 #'
-#' Creates two aligned forest plots from \code{gtregression} objects returned by
-#' \code{uni_reg()} and \code{multi_reg()}.
+#' Creates two aligned forest plots from compatible \code{gtregression}
+#' regression objects such as crude and adjusted outputs from \code{uni_reg()},
+#' \code{multi_reg()}, \code{cox_reg()}, or \code{surv_reg()}.
 #'
 #' @param tbl_uni A univariate \code{gtregression} object.
 #' @param tbl_multi A multivariable \code{gtregression} object.
 #' @param title_uni,title_multi Optional panel titles.
-#' @param caption Optional combined plot caption. If \code{NULL}, an adjustment
-#'   note is added automatically from \code{tbl_multi} when
-#'   \code{show_adjustment_note = TRUE}.
+#' @param caption Optional combined plot caption. If \code{NULL}, notes are
+#'   added automatically for adjusted \code{multi_reg()} objects and displayed
+#'   reference categories.
 #' @param ref_line Optional numeric reference line. If \code{NULL}, uses 0 for
 #'   linear models and 1 otherwise.
 #' @param order_y Optional character vector to customize exposure ordering.
@@ -16,7 +17,9 @@
 #' @param point_color,errorbar_color Base colors for non-significant rows.
 #' @param base_size Base font size for \code{theme_minimal()}.
 #' @param show_ref Logical; if \code{TRUE}, include reference levels as
-#'   \code{(ref)}.
+#'   \code{(Ref.)}. If \code{FALSE}, binary exposures are shown as compact rows
+#'   for the estimated non-reference category; affirmative levels such as
+#'   \code{Yes} or \code{1} are displayed using the variable name.
 #' @param sig_color,sig_errorbar_color Optional colors for significant rows.
 #'   If \code{NULL}, base colors are reused.
 #' @param xlim_uni,breaks_uni Optional x-axis limits and breaks for the
@@ -60,11 +63,27 @@ plot_reg_combine <- function(tbl_uni,
     stop("`tbl_multi` must be a gtregression object.", call. = FALSE)
   }
 
-  if (!identical(tbl_uni$source, "uni_reg")) {
-    stop("`tbl_uni` must come from uni_reg().", call. = FALSE)
-  }
-  if (!identical(tbl_multi$source, "multi_reg")) {
-    stop("`tbl_multi` must come from multi_reg().", call. = FALSE)
+  valid_standard_pair <- identical(tbl_uni$source, "uni_reg") &&
+    identical(tbl_multi$source, "multi_reg")
+  valid_survival_pair <- tbl_uni$source %in% c("cox_reg", "surv_reg") &&
+    identical(tbl_uni$source, tbl_multi$source) &&
+    !isTRUE(tbl_uni$adjusted_mode) &&
+    isTRUE(tbl_multi$adjusted_mode)
+
+  if (!valid_standard_pair && !valid_survival_pair) {
+    if (!identical(tbl_uni$source, "uni_reg") &&
+        !tbl_uni$source %in% c("cox_reg", "surv_reg")) {
+      stop("`tbl_uni` must come from uni_reg() or a crude cox_reg()/surv_reg() object.", call. = FALSE)
+    }
+    if (!identical(tbl_multi$source, "multi_reg") &&
+        !tbl_multi$source %in% c("cox_reg", "surv_reg")) {
+      stop("`tbl_multi` must come from multi_reg() or an adjusted cox_reg()/surv_reg() object.", call. = FALSE)
+    }
+    if (tbl_uni$source %in% c("cox_reg", "surv_reg") ||
+        tbl_multi$source %in% c("cox_reg", "surv_reg")) {
+      stop("For survival objects, use a crude cox_reg()/surv_reg() object first and its adjusted counterpart second.", call. = FALSE)
+    }
+    stop("`tbl_uni` must come from uni_reg() and `tbl_multi` must come from multi_reg().", call. = FALSE)
   }
 
   req_body <- c("exposure", "level", "estimate", "conf.low", "conf.high", "p.value", "ref")
@@ -86,10 +105,12 @@ plot_reg_combine <- function(tbl_uni,
   get_axis_label <- function(approach, adjusted = FALSE) {
     approach <- .normalize_approach(approach)
     base <- dplyr::case_when(
-      approach == "logit" ~ "Odds Ratio",
+      approach %in% c("logit", "firth") ~ "Odds Ratio",
       approach == "logbinomial" ~ "Risk Ratio",
       approach %in% c("poisson", "negbin") ~ "Incidence Rate Ratio",
       approach == "robpoisson" ~ "Risk Ratio",
+      approach == "cox" ~ "Hazard Ratio",
+      approach == "survreg" ~ "Time Ratio",
       approach == "linear" ~ "Beta Coefficient",
       TRUE ~ "Effect Size"
     )
@@ -105,8 +126,7 @@ plot_reg_combine <- function(tbl_uni,
     df_body$conf.high <- suppressWarnings(as.numeric(df_body$conf.high))
     df_body$p.value <- suppressWarnings(as.numeric(df_body$p.value))
 
-    header_rows <- df_disp[df_disp$is_header, , drop = FALSE]
-    exposure_order <- trimws(header_rows$Characteristic)
+    exposure_order <- unique(df_body$exposure)
 
     if (!is.null(order_y)) {
       exposure_order <- c(
@@ -121,9 +141,11 @@ plot_reg_combine <- function(tbl_uni,
       dfx <- df_body[df_body$exposure == ex, , drop = FALSE]
       if (!nrow(dfx)) next
 
+      ex_label <- .label_var(ex, tbl$variable_labels)
       is_factor_exp <- any(dfx$ref)
+      is_binary_exp <- is_factor_exp && nrow(dfx) == 2L && sum(dfx$ref %in% TRUE) == 1L
 
-      disp_idx <- which(df_disp$is_header & trimws(df_disp$Characteristic) == ex)
+      disp_idx <- which(df_disp$is_header & trimws(df_disp$Characteristic) == ex_label)
       if (!length(disp_idx)) next
 
       start_i <- disp_idx[1]
@@ -140,7 +162,7 @@ plot_reg_combine <- function(tbl_uni,
 
       header_plot <- data.frame(
         exposure = ex,
-        label = ex,
+        label = ex_label,
         estimate = NA_real_,
         conf.low = NA_real_,
         conf.high = NA_real_,
@@ -157,6 +179,22 @@ plot_reg_combine <- function(tbl_uni,
         header_plot$conf.high <- main_row$conf.high[1]
         header_plot$p.value <- main_row$p.value[1]
         header_plot$is_data <- TRUE
+      }
+
+      compact_binary <- is_binary_exp && !isTRUE(show_ref)
+      if (compact_binary) {
+        binary_row <- dfx[!dfx$ref, , drop = FALSE]
+        if (nrow(binary_row)) {
+          header_plot$label <- .plot_binary_label(ex_label, binary_row$level[1])
+          header_plot$estimate <- binary_row$estimate[1]
+          header_plot$conf.low <- binary_row$conf.low[1]
+          header_plot$conf.high <- binary_row$conf.high[1]
+          header_plot$p.value <- binary_row$p.value[1]
+          header_plot$is_header <- TRUE
+          header_plot$is_data <- TRUE
+          plot_rows[[length(plot_rows) + 1]] <- header_plot
+          next
+        }
       }
 
       plot_rows[[length(plot_rows) + 1]] <- header_plot
@@ -216,7 +254,7 @@ plot_reg_combine <- function(tbl_uni,
       out$ref & show_ref ~ paste0(
         indent_html,
         out$label,
-        " <span style='color:gray;'>(ref)</span>"
+        " <span style='color:gray;'>(Ref.)</span>"
       ),
       !out$is_header ~ paste0(indent_html, out$label),
       TRUE ~ NA_character_
@@ -270,6 +308,8 @@ plot_reg_combine <- function(tbl_uni,
   df_uni$is_data[is.na(df_uni$is_data)] <- FALSE
   df_multi$is_header[is.na(df_multi$is_header)] <- FALSE
   df_multi$is_data[is.na(df_multi$is_data)] <- FALSE
+  df_uni$ref[is.na(df_uni$ref)] <- FALSE
+  df_multi$ref[is.na(df_multi$ref)] <- FALSE
 
   # preserve label markdown from uni panel
   label_map_raw <- df_uni$label_clean
@@ -370,11 +410,13 @@ plot_reg_combine <- function(tbl_uni,
         plot.margin = ggplot2::margin(10, 40, 10, 10)
       )
 
-    if (!is.null(breaks) && !use_log) {
-      p <- p + ggplot2::scale_x_continuous(breaks = breaks)
-    }
     if (use_log) {
-      p <- p + ggplot2::scale_x_log10()
+      if (is.null(breaks)) {
+        breaks <- .plot_log_breaks(xlim)
+      }
+      p <- p + ggplot2::scale_x_log10(breaks = breaks)
+    } else if (!is.null(breaks)) {
+      p <- p + ggplot2::scale_x_continuous(breaks = breaks)
     }
     if (!is.null(xlim)) {
       p <- p + ggplot2::coord_cartesian(xlim = xlim)
@@ -407,7 +449,13 @@ plot_reg_combine <- function(tbl_uni,
 
   out <- patchwork::wrap_plots(p1, p2, ncol = 2, widths = c(1.2, 1))
 
-  caption <- .plot_adjustment_caption(tbl_multi, caption, show_adjustment_note)
+  caption <- .plot_caption(
+    tbl = tbl_multi,
+    caption = caption,
+    show_adjustment_note = show_adjustment_note,
+    show_ref = show_ref,
+    has_ref = any(df_uni$ref %in% TRUE) || any(df_multi$ref %in% TRUE)
+  )
   if (!is.null(caption)) {
     out <- out + patchwork::plot_annotation(caption = caption)
   }

@@ -5,9 +5,9 @@
 #'
 #' @param tbl A fitted \code{gtregression} object.
 #' @param title Optional plot title.
-#' @param caption Optional plot caption. If \code{NULL}, an adjustment note is
-#'   added automatically for adjusted \code{multi_reg()} objects when
-#'   \code{show_adjustment_note = TRUE}.
+#' @param caption Optional plot caption. If \code{NULL}, notes are added
+#'   automatically for adjusted \code{multi_reg()} objects and displayed
+#'   reference categories.
 #' @param ref_line Optional numeric value for the reference line.
 #'   Defaults to 0 for linear models and 1 otherwise.
 #' @param order_y Optional character vector specifying exposure order.
@@ -17,7 +17,10 @@
 #' @param point_color Fill color for points.
 #' @param errorbar_color Color for error bars.
 #' @param base_size Base font size.
-#' @param show_ref Logical; if \code{TRUE}, reference rows are shown.
+#' @param show_ref Logical; if \code{TRUE}, reference rows are shown. If
+#'   \code{FALSE}, binary exposures are shown as compact rows for the estimated
+#'   non-reference category; affirmative levels such as \code{Yes} or \code{1}
+#'   are displayed using the variable name.
 #' @param sig_color Optional fill color for significant points.
 #' @param sig_errorbar_color Optional color for significant error bars.
 #' @param alpha Significance level for linear models when \code{p.value} is available.
@@ -100,10 +103,12 @@ plot_reg <- function(tbl,
   is_multi <- source_type %in% c("multi_reg", "multi_reg_nbin")
 
   base_label <- dplyr::case_when(
-    approach == "logit" ~ "Odds Ratio",
+    approach %in% c("logit", "firth") ~ "Odds Ratio",
     approach == "logbinomial" ~ "Risk Ratio",
     approach %in% c("poisson", "negbin") ~ "Incidence Rate Ratio",
     approach == "robpoisson" ~ "Risk Ratio",
+    approach == "cox" ~ "Hazard Ratio",
+    approach == "survreg" ~ "Time Ratio",
     approach == "linear" ~ "Beta Coefficient",
     TRUE ~ "Effect Size"
   )
@@ -117,11 +122,8 @@ plot_reg <- function(tbl,
     x_axis_label <- paste0(x_axis_label, " (log scale)")
   }
 
-  caption <- .plot_adjustment_caption(tbl, caption, show_adjustment_note)
-
-  # ---- build header order from table_display ----
-  header_rows <- df_disp[df_disp$is_header, , drop = FALSE]
-  exposure_order <- trimws(header_rows$Characteristic)
+  # ---- build header order from raw table_body names ----
+  exposure_order <- unique(df_body$exposure)
 
   if (!is.null(order_y)) {
     exposure_order <- c(
@@ -137,10 +139,12 @@ plot_reg <- function(tbl,
     dfx <- df_body[df_body$exposure == ex, , drop = FALSE]
     if (!nrow(dfx)) next
 
+    ex_label <- .label_var(ex, tbl$variable_labels)
     is_factor_exp <- any(dfx$ref)
+    is_binary_exp <- is_factor_exp && nrow(dfx) == 2L && sum(dfx$ref %in% TRUE) == 1L
 
     # display rows for this exposure
-    disp_idx <- which(df_disp$is_header & trimws(df_disp$Characteristic) == ex)
+    disp_idx <- which(df_disp$is_header & trimws(df_disp$Characteristic) == ex_label)
     if (!length(disp_idx)) next
 
     start_i <- disp_idx[1]
@@ -158,7 +162,7 @@ plot_reg <- function(tbl,
 
     header_plot <- data.frame(
       exposure = ex,
-      label = ex,
+      label = ex_label,
       estimate = NA_real_,
       conf.low = NA_real_,
       conf.high = NA_real_,
@@ -176,6 +180,22 @@ plot_reg <- function(tbl,
       header_plot$conf.high <- main_row$conf.high[1]
       header_plot$p.value <- main_row$p.value[1]
       header_plot$is_data <- TRUE
+    }
+
+    compact_binary <- is_binary_exp && !isTRUE(show_ref)
+    if (compact_binary) {
+      binary_row <- dfx[!dfx$ref, , drop = FALSE]
+      if (nrow(binary_row)) {
+        header_plot$label <- .plot_binary_label(ex_label, binary_row$level[1])
+        header_plot$estimate <- binary_row$estimate[1]
+        header_plot$conf.low <- binary_row$conf.low[1]
+        header_plot$conf.high <- binary_row$conf.high[1]
+        header_plot$p.value <- binary_row$p.value[1]
+        header_plot$is_header <- TRUE
+        header_plot$is_data <- TRUE
+        plot_rows[[length(plot_rows) + 1]] <- header_plot
+        next
+      }
     }
 
     plot_rows[[length(plot_rows) + 1]] <- header_plot
@@ -239,7 +259,7 @@ plot_reg <- function(tbl,
     plot_df$ref & show_ref ~ paste0(
       indent_html,
       plot_df$label,
-      " <span style='color:gray;'>(ref)</span>"
+      " <span style='color:gray;'>(Ref.)</span>"
     ),
     !plot_df$is_header ~ paste0(indent_html, plot_df$label),
     TRUE ~ NA_character_
@@ -271,6 +291,14 @@ plot_reg <- function(tbl,
   line_vals <- c(
     "FALSE" = errorbar_color,
     "TRUE" = if (!is.null(sig_errorbar_color)) sig_errorbar_color else errorbar_color
+  )
+
+  caption <- .plot_caption(
+    tbl = tbl,
+    caption = caption,
+    show_adjustment_note = show_adjustment_note,
+    show_ref = show_ref,
+    has_ref = any(plot_df$ref %in% TRUE)
   )
 
   if (is.null(xlim)) {
@@ -329,11 +357,13 @@ plot_reg <- function(tbl,
       plot.margin = ggplot2::margin(10, 40, 10, 10)
     )
 
-  if (!is.null(breaks) && !log_x) {
-    p <- p + ggplot2::scale_x_continuous(breaks = breaks)
-  }
   if (log_x) {
-    p <- p + ggplot2::scale_x_log10()
+    if (is.null(breaks)) {
+      breaks <- .plot_log_breaks(xlim)
+    }
+    p <- p + ggplot2::scale_x_log10(breaks = breaks)
+  } else if (!is.null(breaks)) {
+    p <- p + ggplot2::scale_x_continuous(breaks = breaks)
   }
   if (!is.null(xlim)) {
     p <- p + ggplot2::coord_cartesian(xlim = xlim)
@@ -359,6 +389,66 @@ plot_reg <- function(tbl,
   }
 
   .adjustment_note(adjust_for)
+}
+
+#' Plot caption helper (internal)
+#' @keywords internal
+#' @noRd
+.plot_caption <- function(tbl,
+                          caption = NULL,
+                          show_adjustment_note = TRUE,
+                          show_ref = TRUE,
+                          has_ref = FALSE) {
+  if (!is.null(caption)) {
+    return(caption)
+  }
+
+  notes <- character(0)
+  adjustment_note <- .plot_adjustment_caption(
+    tbl,
+    caption = NULL,
+    show_adjustment_note = show_adjustment_note
+  )
+  if (!is.null(adjustment_note)) {
+    notes <- c(notes, adjustment_note)
+  }
+  if (isTRUE(show_ref) && isTRUE(has_ref)) {
+    notes <- c(notes, .ref_note())
+  }
+
+  if (!length(notes)) {
+    return(NULL)
+  }
+  paste(notes, collapse = ". ")
+}
+
+#' Compact binary label helper (internal)
+#' @keywords internal
+#' @noRd
+.plot_binary_label <- function(exposure, level) {
+  level_chr <- tolower(trimws(as.character(level)))
+  affirmative <- level_chr %in% c(
+    "yes", "y", "1", "true", "t", "positive", "pos", "present", "exposed"
+  )
+  if (isTRUE(affirmative)) {
+    return(exposure)
+  }
+  paste0(exposure, ": ", as.character(level))
+}
+
+#' Log-scale breaks helper (internal)
+#' @keywords internal
+#' @noRd
+.plot_log_breaks <- function(xlim = NULL) {
+  if (is.null(xlim) || length(xlim) != 2L || any(!is.finite(xlim))) {
+    return(c(0.25, 0.5, 1, 2, 4, 8, 16))
+  }
+  candidates <- c(0.1, 0.2, 0.25, 0.5, 1, 2, 4, 8, 10, 16, 20, 32, 50, 100)
+  out <- candidates[candidates >= min(xlim) & candidates <= max(xlim)]
+  if (!length(out)) {
+    out <- signif(exp(seq(log(min(xlim)), log(max(xlim)), length.out = 5)), 2)
+  }
+  out
 }
 
 #' Horizontal CI helper (internal)

@@ -21,6 +21,7 @@ test_that("plot_reg_combine returns patchwork for current regression objects", {
   p <- plot_reg_combine(tbl_uni, tbl_multi)
 
   expect_s3_class(p, "patchwork")
+  expect_equal(p$patches$annotation$caption, "Ref. = reference category.")
 })
 
 test_that("plot_reg_combine supports multi_reg adjust_for mode", {
@@ -58,13 +59,24 @@ test_that("plot_reg_combine supports multi_reg adjust_for mode", {
 
   expect_s3_class(p, "patchwork")
   expect_equal(p$patches$annotation$caption, "Adjusted for age and lwt")
-  expect_null(
-    plot_reg_combine(tbl_uni, tbl_multi, show_adjustment_note = FALSE)$patches$annotation$caption
+  expect_true("smoke" %in% p[[1]]$data$label)
+  expect_true("ht" %in% p[[1]]$data$label)
+  expect_true(any(p[[1]]$data$label == "smoke" & p[[1]]$data$is_header))
+  expect_true(any(grepl("<b>smoke</b>", p[[1]]$data$label_clean, fixed = TRUE)))
+  expect_equal(p[[1]]$coordinates$limits$x, c(0.2, 20))
+  expect_equal(p[[1]]$scales$get_scales("x")$breaks, c(0.5, 1, 2, 4, 8))
+  expect_equal(
+    plot_reg_combine(tbl_uni, tbl_multi, show_adjustment_note = FALSE)$patches$annotation$caption,
+    "Ref. = reference category."
   )
   expect_equal(
     plot_reg_combine(tbl_uni, tbl_multi, caption = "Custom note")$patches$annotation$caption,
     "Custom note"
   )
+
+  p_default_breaks <- plot_reg_combine(tbl_uni, tbl_multi, log_x = TRUE)
+  expect_true(length(p_default_breaks[[1]]$scales$get_scales("x")$breaks) > 1L)
+  expect_true(1 %in% p_default_breaks[[1]]$scales$get_scales("x")$breaks)
 })
 
 test_that("plot_reg_combine supports mismatched exposures and linear models", {

@@ -12,14 +12,58 @@
   downstream regression plots and combined regression plots.
 * Added adjusted-variable notes to regression plots and combined regression
   plots.
+* Added optional model-fit statistics for `uni_reg()` and `multi_reg()` via
+  `model_stats = TRUE`, with AIC, BIC, log-likelihood, deviance, pseudo
+  R-squared, linear-model R-squared, and model N stored in `$model_stats`.
+* Added `approach = "firth"` / `approach = firth` for Firth penalized logistic
+  regression in `uni_reg()`, `multi_reg()`, `stratified_uni_reg()`, and
+  `stratified_multi_reg()`, with OR tables and compatibility with regression
+  plots and forest plot helpers.
+* Added `data_endometrial`, a classic endometrial cancer dataset with a
+  separation pattern, for teaching and testing Firth logistic regression.
+* Added `cox_reg()` for beginner-friendly Cox proportional hazards regression
+  using `time`, `event`, `exposures`, and optional `adjust_for`, returning
+  publication-ready HR and adjusted HR tables.
+* Added `surv_reg()` for beginner-friendly parametric survival regression using
+  `time`, `event`, `exposures`, optional `adjust_for`, and a selectable survival
+  distribution, returning publication-ready time-ratio tables.
+* Added `km_plot()` for Kaplan-Meier survival curves with optional confidence
+  intervals, censoring marks, log-rank p-values, and number-at-risk tables.
+* Added `km_risk_table()` for standalone Kaplan-Meier risk tables at requested
+  follow-up times, with at-risk, event, and censored counts.
+* Added `rmst_table()` for restricted mean survival time summaries up to a
+  chosen follow-up time, with optional two-group RMST difference.
+* Added `surv_model_compare()` for comparing candidate parametric survival
+  distributions by AIC, BIC, log-likelihood, scale, events, and N.
+* Added `plot_surv_fit()` for visually comparing observed Kaplan-Meier curves
+  with fitted parametric survival curves.
+* Added `surv_predict()` for model-based survival probability predictions from
+  fitted parametric survival regression models.
+* Added `survival_summary()` for Kaplan-Meier median survival summaries with
+  total N, events, censored counts, and publication-style table outputs.
+* Added `survival_quantiles()` for Kaplan-Meier survival time quantiles,
+  including event percentiles, corresponding survival probabilities, and
+  confidence intervals.
+* Added `survival_prob()` for Kaplan-Meier survival probabilities at fixed
+  follow-up times, with at-risk, event, censored, and confidence interval
+  columns.
+* Added `logrank_test()` for formal comparison of Kaplan-Meier survival curves,
+  with observed and expected events plus formatted p-value output.
+* Added `check_ph()` for proportional hazards screening of Cox models using
+  Schoenfeld residual tests, with flextable, gt, and tibble outputs.
+* Added `plot_model_fit()` for visual model diagnostics from fitted `lm`/`glm`
+  models and from models stored in `uni_reg()` and `multi_reg()` outputs.
+* Added automatic support for variable label attributes, including labels set
+  with `labelled::var_label()`, across descriptive, regression, stratified,
+  merged, plotted, and forest-style outputs.
 * Added publication-style display outputs for diagnostic and helper functions
   including `dissect()`, `select_models()`, `interaction_models()`, and
   `identify_confounder()`.
 * Added Mantel-Haenszel comparison support to `identify_confounder()` to support
   confounding assessment alongside crude and adjusted model comparisons.
 * Added manual case-study scripts under `dev/manual-tests/` for real-time testing
-  of logistic, linear, log-binomial, robust Poisson, Poisson, and negative
-  binomial workflows.
+  of logistic, linear, log-binomial, robust Poisson, Poisson, negative binomial,
+  Cox, and parametric survival workflows.
 
 ## Changed
 
@@ -35,6 +79,15 @@
   footnotes after relabelling.
 * Improved `forest_df()` and `forest_reg()` support for descriptive summaries
   combined with univariable and multivariable regression outputs.
+* Improved downstream survival support so `cox_reg()` and `surv_reg()` outputs
+  work with `plot_reg()`, `plot_reg_combine()`, `forest_df()`, `forest_reg()`,
+  `merge_tables()`, `modify_table()`, and `select_models()`.
+* Improved table footer and source-note spacing across publication and helper
+  tables so abbreviations, adjustment notes, and caveats render more compactly
+  in flextable, gt, Word, and pkgdown outputs.
+* Improved Word export so flextable outputs are fitted to a standard Word page
+  width by default, with `save_docx(table_width = ...)` available for custom
+  document layouts.
 * Improved `select_models()` output so formatted tables clearly report the model
   selection direction used.
 * Improved repository organization for CRAN readiness, including excluding

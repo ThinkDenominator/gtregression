@@ -265,7 +265,8 @@ check_convergence <- function(data,
           style = gt::cell_fill(color = "#fde2e2"),
           locations = gt::cells_body(rows = .data$Converged == "No")
         ) |>
-        gt::tab_source_note(gt::md(note))
+        gt::tab_source_note(gt::md(note)) |>
+        .compact_gt_source_notes()
     )
   }
 
@@ -278,7 +279,7 @@ check_convergence <- function(data,
   ft <- flextable::bg(ft, i = which(display$Converged == "Yes"), bg = "#e7f5ec", part = "body")
   ft <- flextable::bg(ft, i = which(display$Converged == "No"), bg = "#fde2e2", part = "body")
   ft <- flextable::add_footer_lines(ft, values = note)
-  ft <- flextable::fontsize(ft, size = 8, part = "footer")
+  ft <- .compact_flex_footer(ft)
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   flextable::autofit(ft)
 }

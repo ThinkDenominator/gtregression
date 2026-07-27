@@ -11,12 +11,17 @@
 #'   names are recommended in scripts, and bare names are also accepted.
 #' @param stratifier Character scalar; name of the stratifying variable. Quoted
 #'   and bare names are accepted.
-#' @param approach Modeling approach. One of \code{"logit"},
+#' @param approach Modeling approach. One of \code{"logit"}, \code{"firth"},
 #'   \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
 #'   \code{"linear"}, or \code{"negbin"}.
 #' @param format Output table format; one of \code{"flextable"} (default) or
 #'   \code{"gt"}.
 #' @param theme Table styling preset or theme primitives.
+#'
+#' @details
+#' If exposure variables have a \code{"label"} attribute, for example from
+#' \code{labelled::var_label()}, those labels are used automatically in the
+#' displayed table. Internal matching still uses the original column names.
 #'
 #' @return A list of class
 #'   \code{c("gtregression", "stratified_uni_reg", ...)} with elements:
@@ -27,6 +32,8 @@
 #'   stratum.}
 #'   \item{\code{models}}{List of fitted model objects by stratum.}
 #'   \item{\code{model_summaries}}{List of model summaries by stratum.}
+#'   \item{\code{variable_labels}}{Named character vector of display labels used
+#'   for exposure variables.}
 #'   \item{\code{reg_check}}{Regression diagnostics by stratum.}
 #'   \item{\code{by}}{The stratifier variable.}
 #'   \item{\code{levels}}{Strata included in the analysis.}
@@ -84,7 +91,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
-    choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
+    choices = c("logit","firth","logbinomial","poisson","robpoisson","linear","negbin")
   )
   approach <- .normalize_approach(approach)
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
@@ -92,6 +99,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
 
   format <- match.arg(format, c("flextable","gt"))
   theme  <- .resolve_theme(theme)
+  variable_labels <- .var_label_map(data, unique(exposures))
 
   .validate_uni_inputs(data, outcome, exposures, approach)
   if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.", call. = FALSE)
@@ -113,10 +121,21 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   }
   if (!length(per_stratum)) stop("No valid models across strata.", call. = FALSE)
 
-  built <- .strata_build_wide_uni(data, outcome, exposures, stratifier, per_stratum)
+  built <- .strata_build_wide_uni(
+    data,
+    outcome,
+    exposures,
+    stratifier,
+    per_stratum,
+    variable_labels = variable_labels
+  )
   wide      <- built$wide
   spanners  <- built$spanners
-  footnotes <- .footnotes_uni_strata(approach)
+  has_ref <- any(unlist(
+    lapply(per_stratum, function(x) x$table_body$ref %in% TRUE),
+    use.names = FALSE
+  ))
+  footnotes <- c(.abbrev_note(approach), if (has_ref) .ref_note() else NULL)
   eff_lab   <- .get_effect_label(approach)
 
   tbl <- if (format == "gt") {
@@ -137,6 +156,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     per_stratum   = per_stratum,
     models        = models_list,
     model_summaries = summaries,
+    variable_labels = variable_labels,
     reg_check     = diags,
     by            = stratifier,
     levels        = levs,

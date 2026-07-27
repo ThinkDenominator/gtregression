@@ -1,5 +1,11 @@
 #' @keywords internal
 #' @noRd
+.compact_gt_source_notes <- function(tb) {
+  gt::tab_options(tb, source_notes.padding = gt::px(2))
+}
+
+#' @keywords internal
+#' @noRd
 .apply_theme_gt <- function(tb, df, theme) {
   if ("header_shaded" %in% theme) {
     tb <- gt::tab_options(tb, column_labels.background.color = "#f6f8fa")
@@ -56,7 +62,7 @@
 
   tb <- .apply_theme_gt(tb, df, theme)
   tb <- gt::tab_source_note(tb, source_note = source_note)
-  tb
+  .compact_gt_source_notes(tb)
 }
 #' @keywords internal
 #' @noRd
@@ -90,7 +96,7 @@
 
   # two separate lines in the footer
   tb <- gt::tab_source_note(tb, source_note = footnotes)
-  tb
+  .compact_gt_source_notes(tb)
 }
 #' GT builder for stratified wide tables (3 cols per stratum)
 #' @keywords internal
@@ -157,7 +163,7 @@
   if ("compact" %in% theme) tb <- gt::tab_options(tb, data_row.padding = gt::px(2))
 
   tb <- gt::tab_source_note(tb, source_note = footnotes)
-  tb
+  .compact_gt_source_notes(tb)
 }
 #' @keywords internal
 .build_gt_strata_wide_multi <- function(df, spanners, effect_label_adj, theme, footnotes) {
@@ -216,5 +222,6 @@
   }
   if ("compact" %in% theme) tb <- gt::tab_options(tb, data_row.padding = gt::px(2))
 
-  gt::tab_source_note(tb, source_note = footnotes)
+  tb <- gt::tab_source_note(tb, source_note = footnotes)
+  .compact_gt_source_notes(tb)
 }

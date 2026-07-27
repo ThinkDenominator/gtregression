@@ -66,3 +66,16 @@ test_that(".fit_uni_model handles model fitting failure gracefully", {
   )
   expect_null(model)
 })
+
+test_that(".fit_uni_model supports Firth logistic regression when logistf is available", {
+  skip_if_not_installed("logistf")
+
+  df <- data_endometrial
+  df$HG <- factor(df$HG, levels = c(0, 1))
+  df$NV <- factor(df$NV, levels = c(0, 1))
+
+  model <- .fit_uni_model(df, outcome = "HG", exposures = "NV", approach = "firth")
+
+  expect_s3_class(model, "logistf")
+  expect_true("gtregression_model_frame" %in% names(attributes(model)))
+})

@@ -1,0 +1,280 @@
+---
+title: "Survival Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Survival Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Survival Analysis
+
+`gtregression` supports a complete beginner-friendly survival workflow: describe
+the cohort, draw Kaplan-Meier curves, summarise observed survival, compare
+groups, fit Cox or parametric survival models, check assumptions, predict
+survival probabilities, visualise estimates, and export publication-ready
+tables.
+
+```{r surv-setup, message=FALSE, warning=FALSE}
+library(gtregression)
+library(dplyr)
+
+data("data_lungcancer", package = "gtregression")
+
+lung_data <- data_lungcancer |>
+  mutate(
+    trt = factor(trt, levels = c(1, 2),
+                 labels = c("Standard treatment", "Test treatment")),
+    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes")),
+    celltype = factor(
+      celltype,
+      levels = c("squamous", "smallcell", "adeno", "large"),
+      labels = c("Squamous", "Small cell", "Adenocarcinoma", "Large cell")
+    )
+  )
+
+attr(lung_data$time, "label") <- "Survival time"
+attr(lung_data$status, "label") <- "Death status"
+attr(lung_data$trt, "label") <- "Treatment group"
+attr(lung_data$celltype, "label") <- "Cancer cell type"
+attr(lung_data$karno, "label") <- "Karnofsky performance score"
+attr(lung_data$age, "label") <- "Age"
+attr(lung_data$prior, "label") <- "Prior therapy"
+
+surv_exposures <- c("trt", "celltype", "karno", "age", "prior")
+```
+
+## 1. Describe The Cohort
+
+Start with a baseline table. This helps readers understand the treatment groups
+before looking at survival curves or models.
+
+```{r surv-describe, message=FALSE, warning=FALSE}
+lung_summary <- descriptive_table(
+  data = lung_data,
+  exposures = c("time", "status", "celltype", "karno", "age", "prior"),
+  by = trt,
+  statistic = c(time = "median", karno = "mean", age = "mean"),
+  percent = column,
+  show_overall = last
+)
+
+lung_summary$table
+```
+
+## 2. Show Observed Survival
+
+Use `km_plot()` for the Kaplan-Meier curve. Add `risk_table = TRUE` when the
+number at risk should appear under the curve.
+
+```{r surv-km-plot, message=FALSE, warning=FALSE}
+km_curve <- km_plot(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = trt,
+  break_time_by = 200,
+  title = "Kaplan-Meier Survival by Treatment"
+)
+
+km_curve
+```
+
+Use table summaries when readers need exact survival values.
+
+```{r surv-observed-tables, message=FALSE, warning=FALSE}
+survival_summary(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = trt
+)$table
+
+survival_prob(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = trt,
+  times = c(90, 180, 365)
+)$table
+```
+
+`rmst_table()` reports restricted mean survival time up to a chosen follow-up
+time. This is useful when an absolute survival-time summary is easier to explain
+than a ratio measure.
+
+```{r surv-rmst, message=FALSE, warning=FALSE}
+rmst_table(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = trt,
+  tau = 365
+)$table
+```
+
+## 3. Compare Survival Curves
+
+`logrank_test()` compares Kaplan-Meier curves. It is a group comparison test,
+not an effect-size model.
+
+```{r surv-logrank, message=FALSE, warning=FALSE}
+logrank_test(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = trt
+)$table
+```
+
+## 4. Fit Cox Regression
+
+`cox_reg()` reports hazard ratios. Use `adjust_for` to produce adjusted hazard
+ratios while keeping the syntax aligned with `multi_reg()`.
+
+```{r surv-cox, message=FALSE, warning=FALSE}
+cox_crude <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = surv_exposures
+)
+
+cox_adjusted <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior),
+  adjust_for = c(age, karno)
+)
+
+cox_adjusted$table
+```
+
+Check the proportional hazards assumption before treating Cox hazard ratios as
+final.
+
+```{r surv-check-ph, message=FALSE, warning=FALSE}
+check_ph(cox_adjusted)$table
+```
+
+## 5. Fit Parametric Survival Regression
+
+`surv_reg()` fits accelerated failure time style parametric survival models and
+reports time ratios. A time ratio above 1 suggests longer survival time; below 1
+suggests shorter survival time, conditional on the selected distribution.
+
+Before choosing the final distribution, compare candidate parametric models
+numerically and visually. Lower AIC/BIC is useful for screening; the fitted
+curve should also look reasonable against the Kaplan-Meier curve.
+
+```{r surv-parametric-checks, message=FALSE, warning=FALSE}
+surv_model_compare(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior),
+  adjust_for = c(age, karno),
+  distributions = c(weibull, exponential, "log-normal", "log-logistic")
+)$table
+
+plot_surv_fit(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = trt,
+  adjust_for = c(age, karno),
+  distributions = c(weibull, "log-logistic"),
+  break_time_by = 200
+)
+```
+
+After selecting a distribution, fit crude and adjusted publication-ready tables.
+
+```{r surv-parametric, message=FALSE, warning=FALSE}
+surv_crude <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = surv_exposures,
+  distribution = loglogistic
+)
+
+surv_adjusted <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior),
+  adjust_for = c(age, karno),
+  distribution = loglogistic,
+  model_stats = TRUE
+)
+
+surv_adjusted$table
+surv_adjusted$model_stats
+```
+
+## 6. Predict Survival Probabilities
+
+`surv_predict()` turns a fitted parametric survival model into predicted
+survival probabilities at selected follow-up times for a profile.
+
+```{r surv-predict, message=FALSE, warning=FALSE}
+surv_predict(
+  model = surv_adjusted$models$trt,
+  newdata = data.frame(
+    trt = factor("Test treatment", levels = levels(lung_data$trt)),
+    age = 60,
+    karno = 70
+  ),
+  times = c(90, 180, 365)
+)$table
+```
+
+## 7. Visualise And Export Model Results
+
+The survival model outputs work with the same downstream tools used for other
+regression tables.
+
+```{r surv-visualise-export, message=FALSE, warning=FALSE}
+plot_reg_combine(
+  cox_crude,
+  cox_adjusted,
+  show_ref = FALSE,
+  title_uni = "Crude HR",
+  title_multi = "Adjusted HR"
+)
+
+surv_forest_data <- forest_df(cox_crude, cox_adjusted, desc = lung_summary)
+
+forest_reg(
+  surv_forest_data,
+  xlim = list(c(0.25, 8), c(0.25, 8)),
+  ticks_at = list(c(0.5, 1, 2, 4, 8), c(0.5, 1, 2, 4, 8)),
+  quiet = TRUE
+)
+```
+
+If forest plot x-axis labels overlap, set `xlim` and `ticks_at`. If the
+confidence-interval plot panel is too narrow or too wide, tune `ci_col_width`.
+For very wide descriptive-plus-crude-plus-adjusted tables, export using a wider
+graphics device or Word canvas.
+
+## Survival Workflow Map
+
+| Task | Function |
+|---|---|
+| Kaplan-Meier curve | `km_plot()` |
+| Number at risk | `km_risk_table()` |
+| Median survival | `survival_summary()` |
+| Survival quantiles | `survival_quantiles()` |
+| Fixed-time survival probability | `survival_prob()` |
+| Restricted mean survival time | `rmst_table()` |
+| Compare KM curves | `logrank_test()` |
+| Cox hazard ratios | `cox_reg()` |
+| Cox PH check | `check_ph()` |
+| Parametric time ratios | `surv_reg()` |
+| Compare parametric distributions | `surv_model_compare()` |
+| Plot fitted parametric curves | `plot_surv_fit()` |
+| Predict survival probabilities | `surv_predict()` |
+| Model plots and forest tables | `plot_reg()`, `plot_reg_combine()`, `forest_df()`, `forest_reg()` |

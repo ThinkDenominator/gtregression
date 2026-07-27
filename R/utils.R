@@ -95,3 +95,49 @@ utils::globalVariables(c(
   approach[approach == "log-binomial"] <- "logbinomial"
   approach
 }
+
+#' Normalize parametric survival distribution arguments
+#'
+#' @keywords internal
+#' @noRd
+.surv_distribution_arg <- function(expr,
+                                   env = parent.frame(),
+                                   multiple = FALSE,
+                                   arg = "distribution") {
+  choices <- c("weibull", "exponential", "lognormal", "loglogistic")
+  aliases <- c(
+    "exp" = "exponential",
+    "log-normal" = "lognormal",
+    "log normal" = "lognormal",
+    "log_normal" = "lognormal",
+    "log-logistic" = "loglogistic",
+    "log logistic" = "loglogistic",
+    "log_logistic" = "loglogistic"
+  )
+
+  out <- .choice_arg(
+    expr,
+    env = env,
+    choices = choices,
+    aliases = aliases
+  )
+
+  if (!is.character(out) || anyNA(out) || any(!out %in% choices) ||
+      length(out) < 1L || (!multiple && length(out) != 1L)) {
+    if (identical(arg, "distributions")) {
+      stop(
+        "`distributions` must contain one or more of: ",
+        paste(choices, collapse = ", "),
+        call. = FALSE
+      )
+    }
+
+    stop(
+      "Invalid distribution. Choose one of: ",
+      paste(choices, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  out
+}

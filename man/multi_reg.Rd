@@ -12,7 +12,8 @@ multi_reg(
   interaction = NULL,
   approach = "logit",
   format = c("flextable", "gt"),
-  theme = c("minimal")
+  theme = c("minimal"),
+  model_stats = FALSE
 )
 }
 \arguments{
@@ -36,8 +37,10 @@ using standard formula syntax, e.g. \code{"bmi*sex"}.
 When used with \code{adjust_for}, only a single exposure should be supplied.}
 
 \item{approach}{Character scalar specifying the regression approach.
-One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
-\code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}.}
+One of \code{"logit"}, \code{"firth"}, \code{"logbinomial"}, \code{"poisson"},
+\code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}.
+Use \code{"firth"} for Firth penalized logistic regression, especially
+with sparse cells or separation.}
 
 \item{format}{Output table format; one of \code{"flextable"} (default) or
 \code{"gt"}.}
@@ -45,6 +48,12 @@ One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
 \item{theme}{Table styling preset (e.g. \code{"minimal"}, \code{"striped"},
 \code{"clinical"}, \code{"shaded"}, \code{"jama"}) or a character vector of
 primitives such as \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}.}
+
+\item{model_stats}{Logical; if \code{TRUE}, extract model-fit statistics
+such as AIC, BIC, log-likelihood, deviance, pseudo R-squared for
+non-linear models, and R-squared for linear models. Statistics are stored
+in the returned object's \code{model_stats} element and are not added to
+the publication table.}
 }
 \value{
 A list of class \code{c("gtregression","multi_reg", ...)} with elements:
@@ -57,6 +66,10 @@ A list of class \code{c("gtregression","multi_reg", ...)} with elements:
   including header and level rows.}
   \item{models}{A list of fitted model(s).}
   \item{model_summaries}{\code{summary()} output for the fitted model(s).}
+  \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
+  otherwise \code{NULL}.}
+  \item{variable_labels}{Named character vector of display labels used for
+  exposure variables.}
   \item{reg_check}{Regression diagnostics for linear models; otherwise a message.}
   \item{approach}{The regression approach used.}
   \item{format}{The output format used.}
@@ -72,6 +85,11 @@ Create a publication-ready multivariable regression table using either
 \pkg{gt} or \pkg{flextable}, without a \pkg{gtsummary} dependency.
 }
 \details{
+If exposure variables have a \code{"label"} attribute, for example from
+\code{labelled::var_label()}, those labels are used automatically in the
+displayed table and plots. Internal matching still uses the original column
+names.
+
 In default mode (\code{adjust_for = NULL}), all exposures are included in a
 single multivariable model. In adjusted mode, one model is fitted per exposure,
 adjusting for the variables specified in \code{adjust_for}.
@@ -79,4 +97,11 @@ adjusting for the variables specified in \code{adjust_for}.
 Interaction terms specified via \code{interaction} are included in the model
 using standard formula expansion (e.g. \code{bmi*sex}). Interaction effects are
 displayed as additional rows beneath the corresponding exposure.
+}
+\examples{
+endometrial_data <- data_endometrial
+endometrial_data$HG <- factor(endometrial_data$HG, levels = c(0, 1))
+endometrial_data$NV <- factor(endometrial_data$NV, levels = c(0, 1))
+multi_reg(endometrial_data, HG, c(NV, PI, EH), approach = firth)$table
+
 }

@@ -9,6 +9,7 @@ save_docx(
   plots = NULL,
   filename = "report.docx",
   titles = NULL,
+  table_width = 6.5,
   plot_width = 6,
   plot_height = 5
 )
@@ -24,6 +25,10 @@ directory is supplied, the file is saved in \code{tempdir()}.}
 
 \item{titles}{Optional character vector of titles for tables and plots in
 the order they are added.}
+
+\item{table_width}{Maximum table width in inches for Word export. The default
+\code{6.5} fits a standard portrait Word page with common margins. Use
+\code{NULL} to keep the original flextable widths.}
 
 \item{plot_width}{Width of inserted plots in inches.}
 

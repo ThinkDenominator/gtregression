@@ -73,8 +73,10 @@ test_that("descriptive_table handles dichotomous single-row values", {
     value = list(formula ~ "High")
   )
 
-  expect_equal(tbl_named$table_display$Characteristic, c("named", "  Yes"))
-  expect_equal(tbl_formula$table_display$Characteristic, c("formula", "  High"))
+  expect_equal(tbl_named$table_display$Characteristic, "named")
+  expect_equal(tbl_named$table_display$Overall, "2 (50.0%)")
+  expect_equal(tbl_formula$table_display$Characteristic, "formula")
+  expect_equal(tbl_formula$table_display$Overall, "2 (50.0%)")
 })
 
 test_that("descriptive_table chooses sensible default single-row levels", {
@@ -88,9 +90,107 @@ test_that("descriptive_table chooses sensible default single-row levels", {
   tbl_numeric <- descriptive_table(df, "numeric_var", show_dichotomous = "single_row")
   tbl_char <- descriptive_table(df, "char_var", show_dichotomous = "single_row")
 
-  expect_equal(tbl_logical$table_display$Characteristic, c("logical_var", "  TRUE"))
-  expect_equal(tbl_numeric$table_display$Characteristic, c("numeric_var", "  1"))
-  expect_equal(tbl_char$table_display$Characteristic, c("char_var", "  b"))
+  expect_equal(tbl_logical$table_display$Characteristic, "logical_var")
+  expect_equal(tbl_numeric$table_display$Characteristic, "numeric_var")
+  expect_equal(tbl_char$table_display$Characteristic, "char_var")
+  expect_equal(tbl_logical$table_display$Overall, "2 (66.7%)")
+  expect_equal(tbl_numeric$table_display$Overall, "2 (66.7%)")
+  expect_equal(tbl_char$table_display$Overall, "1 (33.3%)")
+})
+
+test_that("descriptive_table single-row dichotomous variables are compact and ordered", {
+  df <- data.frame(
+    group = factor(c("A", "A", "B", "B")),
+    smoke = factor(c("No", "Yes", "No", "Yes"), levels = c("No", "Yes")),
+    ht = factor(c("No", "No", "Yes", "Yes"), levels = c("No", "Yes"))
+  )
+
+  tbl <- descriptive_table(
+    df,
+    exposures = c("smoke", "ht"),
+    by = "group",
+    show_dichotomous = "single_row",
+    value = list(smoke = "Yes", ht = "Yes"),
+    show_overall = "last",
+    percent = "row"
+  )
+
+  expect_equal(tbl$table_display$Characteristic, c("smoke", "ht"))
+  expect_true(all(tbl$table_display$is_header))
+  expect_false(any(grepl("^\\s", tbl$table_display$Characteristic)))
+  expect_equal(tbl$table_display$A, c("1 (50.0%)", "0 (0.0%)"))
+  expect_equal(tbl$table_display$B, c("1 (50.0%)", "2 (100.0%)"))
+  expect_equal(tbl$table_display$Overall, c("2", "2"))
+})
+
+test_that("descriptive_table can treat numeric ordinal variables as categorical", {
+  df <- data.frame(
+    group = factor(c("A", "A", "B", "B", "B")),
+    ordinal_score = c(0, 1, 0, 2, 2),
+    continuous_score = c(10, 12, 15, 18, 21)
+  )
+
+  default_tbl <- descriptive_table(
+    df,
+    exposures = c("ordinal_score", "continuous_score"),
+    by = "group",
+    show_overall = "last"
+  )
+  ordinal_tbl <- descriptive_table(
+    df,
+    exposures = c("ordinal_score", "continuous_score"),
+    by = "group",
+    statistic = c(ordinal_score = categorical),
+    show_overall = "last"
+  )
+  ordinal_tbl_quoted <- descriptive_table(
+    df,
+    exposures = c("ordinal_score", "continuous_score"),
+    by = "group",
+    statistic = c(ordinal_score = "categorical", continuous_score = "mean"),
+    show_overall = "last"
+  )
+  ordinal_tbl_typo <- descriptive_table(
+    df,
+    exposures = c("ordinal_score", "continuous_score"),
+    by = "group",
+    statistic = c(ordinal_score = catagorical),
+    show_overall = "last"
+  )
+
+  expect_equal(
+    default_tbl$table_display$Overall[
+      default_tbl$table_display$Characteristic == "ordinal_score"
+    ],
+    "1.0 (0.0-2.0)"
+  )
+  expect_true("ordinal_score" %in% ordinal_tbl$table_display$Characteristic)
+  expect_true(all(c("  0", "  1", "  2") %in% ordinal_tbl$table_display$Characteristic))
+  expect_equal(
+    ordinal_tbl$table_display$Overall[
+      ordinal_tbl$table_display$Characteristic == "  2"
+    ],
+    "2 (40.0%)"
+  )
+  expect_equal(
+    ordinal_tbl_quoted$table_display$Overall[
+      ordinal_tbl_quoted$table_display$Characteristic == "  2"
+    ],
+    "2 (40.0%)"
+  )
+  expect_equal(
+    ordinal_tbl_typo$table_display$Overall[
+      ordinal_tbl_typo$table_display$Characteristic == "  2"
+    ],
+    "2 (40.0%)"
+  )
+  expect_equal(
+    ordinal_tbl_quoted$table_display$Overall[
+      ordinal_tbl_quoted$table_display$Characteristic == "continuous_score"
+    ],
+    "15.2 (4.4)"
+  )
+  expect_match(ordinal_tbl$footnotes[2], "Continuous variables shown as Median")
 })
 
 test_that("descriptive_table handles continuous summaries", {
@@ -119,6 +219,14 @@ test_that("descriptive_table handles continuous summaries", {
   expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "count_var"], "N = 3")
   expect_equal(tbl$table_display$Overall[tbl$table_display$Characteristic == "empty_var"], "")
   expect_match(tbl$footnotes[2], "Continuous summaries")
+
+  mean_all <- descriptive_table(
+    df,
+    c("mean_var", "median_var"),
+    statistic = mean
+  )
+  expect_equal(mean_all$table_display$Overall[mean_all$table_display$Characteristic == "mean_var"], "2.5 (1.3)")
+  expect_match(mean_all$footnotes[2], "Continuous variables shown as Mean")
 })
 
 test_that("descriptive_table supports flextable and theme options", {
@@ -141,6 +249,10 @@ test_that("descriptive_table supports flextable and theme options", {
   expect_s3_class(tbl, "ft_desc")
   expect_s3_class(tbl$table, "flextable")
   expect_named(tbl$table_display, c("Characteristic", "is_header", "Overall", "A", "B"))
+
+  body_bottom_borders <- tbl$table$body$styles$cells$border.width.bottom$data
+  expect_true(all(body_bottom_borders[1, ] == 0))
+  expect_true(all(body_bottom_borders[nrow(body_bottom_borders), ] > 0))
 })
 
 test_that("descriptive_table accepts custom theme primitives", {
@@ -169,5 +281,6 @@ test_that("descriptive_table gives clear errors for invalid inputs", {
   expect_error(descriptive_table(df, "not_in_data"), "Variables not found")
   expect_error(descriptive_table(df, "x", digits = -1), "`digits` must be")
   expect_error(descriptive_table(df, "x", statistic = c(x = "range")), "Unsupported statistic")
-  expect_error(descriptive_table(df, "x", statistic = c("mean")), "`statistic` must be")
+  expect_error(descriptive_table(df, "x", statistic = c("mean", "median")), "`statistic` must be")
+  expect_error(descriptive_table(df, "x", statistic = c(y = categorical)), "must also be included")
 })

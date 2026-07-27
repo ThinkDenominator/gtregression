@@ -9,6 +9,9 @@ select_models(
   outcome,
   exposures,
   approach = "logit",
+  time = NULL,
+  event = NULL,
+  distribution = "weibull",
   direction = "forward",
   format = c("flextable", "gt", "tibble")
 )
@@ -17,14 +20,25 @@ select_models(
 \item{data}{A data frame containing the outcome and predictor variables.}
 
 \item{outcome}{A single character string indicating the outcome variable.
-Quoted and bare names are accepted.}
+Quoted and bare names are accepted. Not used for survival approaches when
+\code{time} and \code{event} are supplied.}
 
 \item{exposures}{Character vector of predictor variables to consider. Quoted
 names are recommended in scripts, and bare names are also accepted.}
 
 \item{approach}{Regression method. One of:
 \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
-\code{"robpoisson"}, \code{"negbin"}, or \code{"linear"}.}
+\code{"robpoisson"}, \code{"negbin"}, \code{"linear"}, \code{"cox"}, or
+\code{"survreg"}.}
+
+\item{time, event}{Survival time and event indicator for \code{approach = "cox"}
+or \code{approach = "survreg"}. Quoted and bare names are accepted.}
+
+\item{distribution}{Parametric survival distribution for
+\code{approach = "survreg"}. One of \code{"weibull"},
+\code{"exponential"}, \code{"lognormal"}, or \code{"loglogistic"}.
+Common spellings such as \code{"log-normal"} and \code{"log-logistic"} are
+also accepted.}
 
 \item{direction}{Stepwise selection direction. One of:
 \code{"forward"} (default), \code{"backward"}, or \code{"both"}.}

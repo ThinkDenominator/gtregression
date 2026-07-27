@@ -46,6 +46,8 @@
         ids <- c(ids, paste0(v, "||", v))
       } else if (all(data_rows$type == "continuous")) {
         ids <- c(ids, paste0(v, "||", v))
+      } else if (any(data_rows$type == "dichotomous")) {
+        ids <- c(ids, paste0(v, "||", data_rows$level))
       } else {
         ids <- c(
           ids,

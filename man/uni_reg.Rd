@@ -10,7 +10,8 @@ uni_reg(
   exposures,
   approach = "logit",
   format = c("flextable", "gt"),
-  theme = c("minimal")
+  theme = c("minimal"),
+  model_stats = FALSE
 )
 }
 \arguments{
@@ -22,13 +23,22 @@ are accepted.}
 \item{exposures}{Character vector; exposure column names. Quoted names are
 recommended in scripts, and bare names are also accepted.}
 
-\item{approach}{one of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"}, \code{"linear"}}
+\item{approach}{Regression approach. One of \code{"logit"}, \code{"firth"},
+\code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
+\code{"linear"}, or \code{"negbin"}. Use \code{"firth"} for Firth
+penalized logistic regression, especially with sparse cells or separation.}
 
 \item{format}{One of \code{"flextable"} (default) or \code{"gt"}.}
 
 \item{theme}{preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 \code{"shaded"}, \code{"jama"}) or primitives
 \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}}
+
+\item{model_stats}{Logical; if \code{TRUE}, extract model-fit statistics
+such as AIC, BIC, log-likelihood, deviance, pseudo R-squared for
+non-linear models, and R-squared for linear models. Statistics are stored
+in the returned object's \code{model_stats} element and are not added to
+the publication table.}
 }
 \value{
 A list of class \code{c("gtregression","uni_reg", ...)} with elements:
@@ -39,6 +49,10 @@ A list of class \code{c("gtregression","uni_reg", ...)} with elements:
   \item{table_display}{Data frame for display (headers + levels).}
   \item{models}{List of fitted univariate models.}
   \item{model_summaries}{Per-model \code{summary()} results.}
+  \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
+  otherwise \code{NULL}.}
+  \item{variable_labels}{Named character vector of display labels used for
+  exposure variables.}
   \item{reg_check}{Diagnostics for linear models; message otherwise.}
   \item{approach, format, source}{Metadata fields.}
 }
@@ -46,6 +60,12 @@ A list of class \code{c("gtregression","uni_reg", ...)} with elements:
 \description{
 Create a publication-ready univariate regression table using either
 \pkg{gt} or \pkg{flextable}
+}
+\details{
+If exposure variables have a \code{"label"} attribute, for example from
+\code{labelled::var_label()}, those labels are used automatically in the
+displayed table and plots. Internal matching still uses the original column
+names.
 }
 \examples{
 d <- mtcars
@@ -55,5 +75,10 @@ if (requireNamespace("gt", quietly = TRUE)) {
 if (requireNamespace("flextable", quietly = TRUE)) {
   uni_reg(d, "am", c("mpg","cyl"), approach = "logit", format = "flextable")$table
 }
+
+endometrial_data <- data_endometrial
+endometrial_data$HG <- factor(endometrial_data$HG, levels = c(0, 1))
+endometrial_data$NV <- factor(endometrial_data$NV, levels = c(0, 1))
+uni_reg(endometrial_data, HG, c(NV, PI, EH), approach = firth)$table
 
 }

@@ -10,12 +10,13 @@ forest_reg(
   multi = NULL,
   desc = NULL,
   theme = NULL,
-  ci_col_width = 0.25,
+  ci_col_width = 20,
   side = c("right", "left"),
   quiet = TRUE,
   effects = NULL,
   ticks_at = NULL,
   ticks_digits = NULL,
+  xlim = NULL,
   ...
 )
 }
@@ -26,13 +27,15 @@ forest_reg(
 \item{uni, multi, desc}{Optional \code{gtregression} objects to pass through to
 \code{forest_df()}.}
 
-\item{theme}{Optional \code{forestploter::forest_theme()}. If \code{NULL}, a
-sensible default is used. You may pass colors and styling either here or
-through \code{...}.}
+\item{theme}{Optional \code{forestploter::forest_theme()}. If \code{NULL},
+\code{forestploter} defaults are used. You may pass colors and styling
+either here or through \code{...}.}
 
-\item{ci_col_width}{Numeric or length-2 numeric. Relative width of the CI column(s).
-A vector like \code{c(0.22, 0.26)} lets you tune unadjusted and adjusted
-columns separately.}
+\item{ci_col_width}{Numeric value, or length-2 numeric for two effect columns,
+controlling the blank spacer width used by \code{forestploter} for the
+confidence-interval plot column(s). Values greater than 1 are interpreted
+as approximate character counts. Values between 0 and 1 are accepted for
+backward compatibility and converted to character counts.}
 
 \item{side}{Character. For each effect, position of the plot relative to the effect-size text:
 \code{"left"} = plot first then text; \code{"right"} = text first then plot.
@@ -47,6 +50,10 @@ columns, specifying x-axis tick positions. If \code{NULL},
 \code{forestploter::forest()} chooses the default ticks.}
 
 \item{ticks_digits}{Optional number of digits for x-axis tick labels.}
+
+\item{xlim}{Optional numeric vector of length 2, or length-2 list for two
+effect columns, specifying x-axis limits. If \code{NULL},
+\code{forestploter::forest()} chooses the default limits.}
 
 \item{...}{Passed to \code{forestploter::forest()}. Common options include
 \code{title} and \code{footnote}.}
@@ -92,4 +99,19 @@ multi_or <- multi_reg(
 )
 
 forest_reg(uni = uni_or, multi = multi_or)
+
+# If axis labels overlap, set x-axis limits and tick marks.
+forest_reg(
+  uni = uni_or,
+  multi = multi_or,
+  xlim = list(c(0.25, 8), c(0.25, 12)),
+  ticks_at = list(c(0.5, 1, 2, 4, 8), c(0.5, 1, 2, 4, 8))
+)
+
+# If the forest plot panel is too narrow or too wide, tune ci_col_width.
+forest_reg(
+  uni = uni_or,
+  multi = multi_or,
+  ci_col_width = c(18, 22)
+)
 }

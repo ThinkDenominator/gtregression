@@ -10,7 +10,9 @@ vignette: >
 # Diagnostics and Model Selection
 
 Before the final table goes into a manuscript, check the model. These helpers
-keep diagnostics close to the regression workflow.
+keep diagnostics close to the regression workflow. They are screening aids:
+interpret them with the study design, clinical or subject-matter judgement, and
+the diagnostics from the fitted model.
 
 ```{r diag-setup, message=FALSE, warning=FALSE}
 library(gtregression)
@@ -32,52 +34,211 @@ birthwt_data <- data_birthwt |>
 exposures <- c("age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat")
 ```
 
-## Convergence
+## Convergence Screening
+
+Use `check_convergence()` before interpreting model estimates, especially for
+log-binomial and small or sparse binary-outcome models. A non-converged model is
+a fitting warning, not a finding.
 
 ```{r diag-convergence, message=FALSE, warning=FALSE}
 check_convergence(
   data = birthwt_data,
   exposures = exposures,
-  outcome = "low",
-  approach = "logit",
+  outcome = low,
+  approach = logit,
   multivariate = TRUE,
-  format = "gt"
+  format = gt
 )
 ```
 
-## Collinearity
+For risk-ratio workflows, this same check helps users decide whether a
+log-binomial model fitted cleanly or whether a robust Poisson approach may be a
+more practical sensitivity analysis.
+
+```{r diag-convergence-logbin, message=FALSE, warning=FALSE}
+check_convergence(
+  data = birthwt_data,
+  exposures = c("smoke", "ht", "ui", "ptl_cat"),
+  outcome = low,
+  approach = logbinomial,
+  multivariate = TRUE,
+  format = flextable
+)
+```
+
+## Collinearity Screening
+
+`check_collinearity()` reports VIF-style diagnostics for multivariable models.
+High VIF values are prompts to inspect coding, overlap between predictors, and
+the scientific purpose of the model.
 
 ```{r diag-collinearity, message=FALSE, warning=FALSE}
 birthwt_multi <- multi_reg(
   data = birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = exposures,
-  approach = "logit"
+  approach = logit
 )
 
-check_collinearity(birthwt_multi, format = "gt")
+check_collinearity(birthwt_multi, format = gt)
+```
+
+Adjusted-mode `multi_reg()` objects contain one model per exposure. The
+collinearity output keeps that list structure so each model can be inspected
+separately.
+
+```{r diag-collinearity-adjusted, message=FALSE, warning=FALSE}
+birthwt_adjusted <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c("smoke", "ht", "ui", "ptl_cat"),
+  adjust_for = c("age", "lwt", "race"),
+  approach = logit
+)
+
+check_collinearity(birthwt_adjusted, format = tibble)
+```
+
+## Model Fit Plots
+
+`plot_model_fit()` turns fitted models into quick diagnostic plots. It accepts
+raw `lm()` and `glm()` objects, and it also works with models saved inside
+`uni_reg()` and `multi_reg()` results.
+
+For logistic regression, the calibration plot compares predicted probabilities
+with observed event proportions. Points close to the diagonal line suggest that
+the model predictions are reasonably aligned with the observed data. Calibration
+is usually most useful for multivariable models because predicted probabilities
+vary across many people.
+
+```{r diag-fit-logistic, message=FALSE, warning=FALSE}
+plot_model_fit(
+  birthwt_multi,
+  type = calibration,
+  bins = 6
+)
+```
+
+When a `uni_reg()` object contains several models, use `model_name` to choose
+the exposure you want to inspect. For a simple binary exposure, calibration may
+only show two points because the model has only two fitted probabilities; in
+that situation, residual and influence plots are usually more useful.
+
+```{r diag-fit-uni, message=FALSE, warning=FALSE}
+birthwt_uni <- uni_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c("age", "lwt", "smoke"),
+  approach = logit
+)
+
+plot_model_fit(
+  birthwt_uni,
+  model_name = smoke,
+  type = residual
+)
+```
+
+For logistic models, residual plots often form two visible bands. That is a
+normal consequence of a 0/1 outcome and should be interpreted as a screening
+plot rather than a linear-model residual plot.
+
+For linear regression, `type = all` shows the classic residual, Q-Q,
+scale-location, and Cook's distance views.
+
+```{r diag-fit-linear, message=FALSE, warning=FALSE}
+fit_lm <- lm(bwt ~ age + lwt, data = birthwt_data)
+plot_model_fit(fit_lm)
+```
+
+## Proportional Hazards Screening
+
+For Cox models, use `check_ph()` before treating hazard ratios as final. It
+reports Schoenfeld residual tests from `survival::cox.zph()`, including a global
+test. Small p-values suggest possible non-proportional hazards and should be
+reviewed with plots, follow-up pattern, and clinical judgement.
+
+```{r diag-ph-setup, message=FALSE, warning=FALSE}
+data("data_lungcancer", package = "gtregression")
+
+lung_data <- data_lungcancer |>
+  mutate(
+    trt = factor(trt, levels = c(1, 2),
+                 labels = c("Standard treatment", "Test treatment")),
+    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+  )
+
+cox_fit <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior),
+  adjust_for = c(age, karno)
+)
+```
+
+```{r diag-ph-table, message=FALSE, warning=FALSE}
+check_ph(cox_fit, format = gt)
+```
+
+Use `format = tibble` when you want to inspect or filter the diagnostic results.
+
+```{r diag-ph-tibble, message=FALSE, warning=FALSE}
+check_ph(cox_fit, transform = rank, format = tibble)
 ```
 
 ## Stepwise Model Selection
 
+`select_models()` compares candidate models step by step. It is useful for
+exploration, teaching, and sensitivity checks. It should not replace a planned
+model based on study design or a causal framework.
+
 ```{r diag-select, message=FALSE, warning=FALSE}
 selected <- select_models(
   data = birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = exposures,
-  approach = "logit",
-  direction = "forward",
-  format = "gt"
+  approach = logit,
+  direction = forward,
+  format = gt
 )
 
 selected$table
 ```
 
+The selected direction is recorded in the formatted table footer. Backward and
+both-direction searches are available using the same interface.
+
+```{r diag-select-other-directions, message=FALSE, warning=FALSE}
+select_models(
+  data = birthwt_data,
+  outcome = low,
+  exposures = exposures,
+  approach = logit,
+  direction = backward,
+  format = tibble
+)$results_table
+
+select_models(
+  data = birthwt_data,
+  outcome = low,
+  exposures = exposures,
+  approach = logit,
+  direction = both,
+  format = tibble
+)$results_table
+```
+
 ## What To Inspect
 
 - `check_convergence()`: convergence status and maximum fitted probabilities.
-  Use `format = "gt"` or `format = "flextable"` for viewing tables.
+  Use `format = gt` or `format = flextable` for viewing tables.
 - `check_collinearity()`: VIF and interpretation. Nested model outputs keep
   their list structure when formatted.
+- `plot_model_fit()`: residual, calibration, observed-versus-predicted, and
+  influence plots for `lm`/`glm` models and stored `uni_reg()` / `multi_reg()`
+  fitted models.
+- `check_ph()`: Schoenfeld residual proportional hazards tests for Cox models,
+  including term-level and global tests.
 - `select_models()`: `$results_table`, `$best_model`, `$all_models`, and
-  `$table` when `format = "gt"` or `format = "flextable"`.
+  `$direction`; `$table` is added when `format = gt` or `format = flextable`.

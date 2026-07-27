@@ -2,6 +2,14 @@
 #'
 #' @keywords internal
 #' @noRd
+.model_summary <- function(model) {
+  out <- NULL
+  utils::capture.output(out <- summary(model))
+  out
+}
+
+#' @keywords internal
+#' @noRd
 .run_multi_core <- function(data,
                             outcome,
                             exposures,
@@ -41,7 +49,7 @@
     }
 
     model_list <- list(multivariable_model = fit)
-    model_summaries <- list(multivariable_model = summary(fit))
+    model_summaries <- list(multivariable_model = .model_summary(fit))
     reg_diagnostics <- list(
       multivariable_model = if (approach == "linear") {
         .reg_check_linear(fit, exposure = "multivariable_model")
@@ -94,7 +102,7 @@
     td <- do.call(rbind, tds)
 
     model_list <- fits
-    model_summaries <- lapply(fits, summary)
+    model_summaries <- lapply(fits, .model_summary)
     reg_diagnostics <- lapply(
       seq_along(fits),
       function(i) {

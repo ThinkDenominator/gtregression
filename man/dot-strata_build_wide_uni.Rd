@@ -4,7 +4,14 @@
 \alias{.strata_build_wide_uni}
 \title{Assemble wide display DF for all strata (univariate)}
 \usage{
-.strata_build_wide_uni(data, outcome, exposures, stratifier, per_stratum)
+.strata_build_wide_uni(
+  data,
+  outcome,
+  exposures,
+  stratifier,
+  per_stratum,
+  variable_labels = NULL
+)
 }
 \description{
 Assemble wide display DF for all strata (univariate)

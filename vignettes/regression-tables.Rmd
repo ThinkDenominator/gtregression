@@ -11,7 +11,8 @@ vignette: >
 
 Go from fitted models to publication-ready tables without hand-formatting
 effect estimates. `gtregression` supports logistic, log-binomial, Poisson,
-robust Poisson, negative binomial, and linear regression.
+robust Poisson, negative binomial, Cox survival, parametric survival, and
+linear regression.
 
 ```{r reg-setup, message=FALSE, warning=FALSE}
 library(gtregression)
@@ -38,11 +39,23 @@ birthwt_data <- data_birthwt |>
 birthwt_exposures <- c(
   "age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat", "ftv_cat"
 )
+
+attr(birthwt_data$age, "label") <- "Maternal age"
+attr(birthwt_data$lwt, "label") <- "Maternal weight"
+attr(birthwt_data$race, "label") <- "Maternal race"
+attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
+attr(birthwt_data$ht, "label") <- "Hypertension"
+attr(birthwt_data$ui, "label") <- "Uterine irritability"
+attr(birthwt_data$ptl_cat, "label") <- "Previous preterm labour"
+attr(birthwt_data$ftv_cat, "label") <- "First trimester visits"
 ```
 
 ## Univariable Models
 
 `uni_reg()` fits one model per exposure and returns a table ready for reports.
+Variable labels set with `attr(x, "label")` or `labelled::var_label()` are used
+automatically in the displayed table, while raw column names remain in
+`$table_body`.
 
 ```{r uni-logit, message=FALSE, warning=FALSE}
 birthwt_uni <- uni_reg(
@@ -56,26 +69,82 @@ birthwt_uni <- uni_reg(
 birthwt_uni$table
 ```
 
-## Adjusted Models
+## Multivariable Models
 
-`multi_reg()` can fit all exposures in one model, or fit one adjusted model per
-exposure using the same adjustment set.
+With `adjust_for = NULL`, `multi_reg()` fits all supplied exposures in one
+multivariable model. This is the usual fully adjusted model when every exposure
+listed should appear in the same formula.
+
+```{r multi-full, message=FALSE, warning=FALSE}
+birthwt_full <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c("age", "lwt", "race", "smoke", "ht", "ui"),
+  approach = logit,
+  theme = clinical
+)
+
+birthwt_full$table
+```
+
+## Exposure-Specific Adjusted Models
+
+Use `adjust_for` when you want one adjusted model per exposure, each adjusted for
+the same core covariate set. This is useful for screening several clinically
+important exposures while keeping the adjustment strategy explicit.
 
 ```{r multi-adjusted, message=FALSE, warning=FALSE}
 birthwt_multi <- multi_reg(
   data = birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = c("smoke", "ht", "ui", "ptl_cat", "ftv_cat"),
   adjust_for = c("age", "lwt", "race"),
-  approach = "logit",
+  approach = logit,
   theme = striped
 )
 
 birthwt_multi$table
 ```
 
-The adjustment variables are recorded in the table footnote so the result is
-ready for manuscript-style reporting.
+The adjustment variables are recorded in a compact table footnote, so the result
+is ready for manuscript-style reporting without making the table unnecessarily
+tall.
+
+## Optional Model Statistics
+
+Publication tables should stay readable. When you need model-fit information,
+set `model_stats = TRUE` and inspect the returned object's `$model_stats`
+element. This keeps AIC, BIC, log-likelihood, deviance, pseudo R-squared, and
+linear-model R-squared values available without adding clutter to the main
+table.
+
+```{r model-stats, message=FALSE, warning=FALSE}
+birthwt_uni_stats <- uni_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = birthwt_exposures,
+  approach = logit,
+  model_stats = TRUE
+)
+
+birthwt_uni_stats$model_stats
+```
+
+For adjusted mode, `multi_reg()` returns one row of statistics per adjusted
+exposure-specific model.
+
+```{r adjusted-model-stats, message=FALSE, warning=FALSE}
+birthwt_multi_stats <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c("smoke", "ht", "ui", "ptl_cat"),
+  adjust_for = c("age", "lwt", "race"),
+  approach = logit,
+  model_stats = TRUE
+)
+
+birthwt_multi_stats$model_stats
+```
 
 ## Other Effect Measures
 
@@ -84,10 +153,123 @@ Switch the `approach` to change the estimand.
 ```{r reg-risk-ratio, message=FALSE, warning=FALSE}
 uni_reg(
   data = birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = c("smoke", "ht", "ui", "ptl_cat"),
-  approach = "logbinomial"
+  approach = logbinomial
 )$table
+```
+
+Use `approach = firth` when a binary-outcome logistic model has sparse cells,
+very wide intervals, or separation concerns. The output remains an odds-ratio
+table, but the model is fitted with Firth penalized logistic regression.
+
+The built-in `data_endometrial` dataset is a useful teaching example because
+neovascularization is completely absent among low-grade cases, a pattern that
+can make ordinary logistic regression unstable.
+
+```{r reg-firth, message=FALSE, warning=FALSE}
+data("data_endometrial", package = "gtregression")
+
+endometrial_data <- data_endometrial |>
+  mutate(
+    HG = factor(HG, levels = c(0, 1),
+                labels = c("Low grade", "High grade")),
+    NV = factor(NV, levels = c(0, 1), labels = c("Absent", "Present"))
+  )
+
+multi_reg(
+  data = endometrial_data,
+  outcome = HG,
+  exposures = c(NV, PI, EH),
+  approach = firth
+)$table
+```
+
+## Cox Survival Models
+
+`cox_reg()` uses beginner-friendly `time` and `event` arguments and returns
+hazard ratios. Without `adjust_for`, the table shows crude HRs. With
+`adjust_for`, the table shows adjusted HRs.
+
+```{r cox-setup, message=FALSE, warning=FALSE}
+data("data_lungcancer", package = "gtregression")
+
+lung_data <- data_lungcancer |>
+  mutate(
+    trt = factor(trt, levels = c(1, 2),
+                 labels = c("Standard treatment", "Test treatment")),
+    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+  )
+
+attr(lung_data$trt, "label") <- "Treatment group"
+attr(lung_data$celltype, "label") <- "Cancer cell type"
+attr(lung_data$karno, "label") <- "Karnofsky performance score"
+attr(lung_data$age, "label") <- "Age"
+attr(lung_data$prior, "label") <- "Prior therapy"
+```
+
+```{r cox-crude, message=FALSE, warning=FALSE}
+lung_hr <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c("trt", "celltype", "karno", "age"),
+  theme = clinical
+)
+
+lung_hr$table
+```
+
+```{r cox-adjusted, message=FALSE, warning=FALSE}
+lung_adj_hr <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior),
+  adjust_for = c(age, karno),
+  model_stats = TRUE,
+  theme = striped
+)
+
+lung_adj_hr$table
+lung_adj_hr$model_stats
+```
+
+## Parametric Survival Models
+
+`surv_reg()` uses the same `time`, `event`, `exposures`, and `adjust_for`
+grammar as `cox_reg()`, but fits parametric survival models with
+`survival::survreg()`. The table reports time ratios rather than hazard ratios.
+A time ratio above 1 suggests longer survival time; below 1 suggests shorter
+survival time, conditional on the chosen distribution.
+
+```{r surv-crude, message=FALSE, warning=FALSE}
+lung_time_ratio <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c("trt", "celltype", "karno", "age"),
+  distribution = weibull,
+  theme = clinical
+)
+
+lung_time_ratio$table
+```
+
+```{r surv-adjusted, message=FALSE, warning=FALSE}
+lung_adj_time_ratio <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior),
+  adjust_for = c(age, karno),
+  distribution = lognormal,
+  model_stats = TRUE,
+  theme = striped
+)
+
+lung_adj_time_ratio$table
+lung_adj_time_ratio$model_stats
 ```
 
 ## Continuous Outcomes
@@ -98,9 +280,9 @@ Linear regression outputs beta coefficients and keeps diagnostics under
 ```{r reg-linear, message=FALSE, warning=FALSE}
 birthwt_linear <- multi_reg(
   data = birthwt_data,
-  outcome = "bwt",
+  outcome = bwt,
   exposures = c("age", "lwt", "race", "smoke", "ht", "ui"),
-  approach = "linear"
+  approach = linear
 )
 
 birthwt_linear$table
@@ -112,4 +294,6 @@ birthwt_linear$table
 - `$table_body`: numeric estimates behind the display.
 - `$models`: fitted model objects.
 - `$model_summaries`: model-level summaries.
+- `$model_stats`: optional model-fit statistics when `model_stats = TRUE`.
+- `$variable_labels`: labels used in publication output.
 - `$reg_check`: diagnostics for linear models.

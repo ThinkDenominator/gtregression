@@ -17,7 +17,10 @@ knitr::include_graphics("../man/figures/gtregression_hex.png")
 
 `gtregression` helps you fit, adjust, stratify, visualise, and export
 regression results with beginner-friendly R syntax. It supports logistic,
-log-binomial, Poisson, robust Poisson, negative binomial, and linear regression.
+log-binomial, Poisson, robust Poisson, negative binomial, Cox survival,
+parametric survival, and linear regression. `flextable` is the default table
+engine, so outputs are Word-friendly from the start; `format = gt` remains
+available for HTML-first workflows.
 
 ## What You Can Make
 
@@ -25,6 +28,8 @@ log-binomial, Poisson, robust Poisson, negative binomial, and linear regression.
 - Univariable and multivariable regression tables.
 - Adjusted models with clear footnotes.
 - Stratified regression outputs.
+- Kaplan-Meier curves, survival summaries, Cox models, and parametric survival
+  models.
 - Forest plots and publication-style forest tables.
 - Model diagnostics, model selection, confounding, and interaction checks.
 - HTML, PDF, PNG, and Word outputs.
@@ -72,6 +77,15 @@ birthwt_data <- data_birthwt |>
 birthwt_exposures <- c(
   "age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat", "ftv_cat"
 )
+
+attr(birthwt_data$age, "label") <- "Maternal age"
+attr(birthwt_data$lwt, "label") <- "Maternal weight"
+attr(birthwt_data$race, "label") <- "Maternal race"
+attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
+attr(birthwt_data$ht, "label") <- "Hypertension"
+attr(birthwt_data$ui, "label") <- "Uterine irritability"
+attr(birthwt_data$ptl_cat, "label") <- "Previous preterm labour"
+attr(birthwt_data$ftv_cat, "label") <- "First trimester visits"
 ```
 
 ## Five-Minute Workflow
@@ -82,9 +96,9 @@ birthwt_exposures <- c(
 birthwt_summary <- descriptive_table(
   data = birthwt_data,
   exposures = birthwt_exposures,
-  by = "low",
-  percent = "column",
-  show_overall = "last",
+  by = low,
+  percent = column,
+  show_overall = last,
   theme = clinical
 )
 
@@ -96,18 +110,18 @@ birthwt_summary$table
 ```{r quick-model, message=FALSE, warning=FALSE}
 birthwt_uni <- uni_reg(
   data = birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = birthwt_exposures,
-  approach = "logit",
+  approach = logit,
   theme = clinical
 )
 
 birthwt_multi <- multi_reg(
   data = birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = c("smoke", "ht", "ui", "ptl_cat", "ftv_cat"),
   adjust_for = c("age", "lwt", "race"),
-  approach = "logit",
+  approach = logit,
   theme = striped
 )
 
@@ -123,12 +137,49 @@ plot_reg(
 )
 ```
 
+### Merge and Polish
+
+```{r quick-merge, message=FALSE, warning=FALSE}
+birthwt_final <- merge_tables(
+  birthwt_summary,
+  birthwt_uni,
+  birthwt_multi,
+  spanners = c("Clinical profile", "Crude OR", "Adjusted OR")
+)
+
+birthwt_final <- modify_table(
+  birthwt_final,
+  caption = "Clinical profile and regression estimates for low birth weight",
+  caveat = "Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race."
+)
+
+birthwt_final$table
+```
+
+Save helpers return file paths and use `tempdir()` when no directory is supplied,
+which keeps examples CRAN-safe.
+
+```{r quick-save, eval=FALSE}
+save_table(birthwt_final, filename = "birthwt-table", format = html)
+save_docx(tables = birthwt_final, filename = "birthwt-report")
+```
+
 ## Where To Go Next
 
-- **Descriptive Tables**: build baseline tables users can read.
-- **Regression Tables**: create crude and adjusted publication-ready outputs.
-- **Visualise Results**: plot regression estimates and forest tables.
-- **Stratified Analysis**: repeat models across subgroups.
-- **Diagnostics**: check convergence, collinearity, and model selection.
-- **Confounding & Interaction**: support interpretation and model decisions.
-- **Customize & Export**: polish and save tables, plots, and reports.
+- [**Descriptive Tables**](descriptive-tables.html): build baseline tables users
+  can read.
+- [**Regression Tables**](regression-tables.html): create crude and adjusted
+  publication-ready outputs.
+- [**Survival Analysis**](survival-analysis.html): Kaplan-Meier curves, survival
+  summaries, Cox regression, parametric survival models, and survival
+  predictions.
+- [**Visualise Results**](visualise-results.html): plot regression estimates and
+  forest tables.
+- [**Stratified Analysis**](stratified-analysis.html): repeat models across
+  subgroups.
+- [**Diagnostics**](diagnostics-selection.html): check convergence,
+  collinearity, and model selection.
+- [**Confounding & Interaction**](confounding-interaction.html): support
+  interpretation and model decisions.
+- [**Customize & Export**](customize-export.html): polish and save tables,
+  plots, and reports.

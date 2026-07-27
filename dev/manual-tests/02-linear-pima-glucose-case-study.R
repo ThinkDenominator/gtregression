@@ -97,6 +97,23 @@ categorical_predictors <- c(
   "bmi", "age_cat", "npreg_cat", "bp_cat", "insulin_cat", "dpf_cat"
 )
 
+## 1.1-friendly labels:
+## Label once, then all gtregression tables and plots use these display names.
+attr(pima_data$glucose, "label") <- "Plasma glucose"
+attr(pima_data$age, "label") <- "Age"
+attr(pima_data$pregnant, "label") <- "Number of pregnancies"
+attr(pima_data$pressure, "label") <- "Blood pressure"
+attr(pima_data$triceps, "label") <- "Triceps skinfold"
+attr(pima_data$mass, "label") <- "Body mass index"
+attr(pima_data$insulin, "label") <- "Serum insulin"
+attr(pima_data$pedigree, "label") <- "Diabetes pedigree function"
+attr(pima_data$bmi, "label") <- "BMI category"
+attr(pima_data$age_cat, "label") <- "Age group"
+attr(pima_data$npreg_cat, "label") <- "Parity"
+attr(pima_data$bp_cat, "label") <- "Blood pressure category"
+attr(pima_data$insulin_cat, "label") <- "Serum insulin category"
+attr(pima_data$dpf_cat, "label") <- "Diabetes pedigree risk"
+
 
 ## 2. Inspect data before modelling ------------------------------------------
 
@@ -142,6 +159,18 @@ descriptive_table(
   show_overall = "first"
 )
 
+## Mixed summaries in one descriptive table.
+## Treat pregnant as categorical when the number of pregnancies is easier to
+## read as counts and percentages than as a continuous summary.
+descriptive_table(
+  data = pima_data,
+  exposures = c("age", "mass", "pregnant", "bmi", "age_cat"),
+  by = diabetes_cat,
+  statistic = c(age = mean, mass = median, pregnant = categorical),
+  percent = column,
+  show_missing = no
+)
+
 
 ## 4. Minimal linear regression ----------------------------------------------
 
@@ -164,6 +193,10 @@ uni_bmi_lm$model_summaries
 ## Look at heteroscedasticity, normality, and influential-observation checks.
 uni_bmi_lm$reg_check
 
+## Visual fit diagnostics show the familiar residual, Q-Q, scale-location, and
+## Cook's distance views for the fitted model.
+plot_model_fit(uni_bmi_lm, model_name = bmi)
+
 
 ## 5. Univariable linear regression ------------------------------------------
 
@@ -181,6 +214,17 @@ uni_lm
 uni_lm$table_body
 uni_lm$model_summaries
 uni_lm$reg_check
+
+## Optional model statistics are stored outside the publication table.
+uni_lm_stats <- uni_reg(
+  data = pima_data,
+  outcome = glucose,
+  exposures = clinical_predictors,
+  approach = linear,
+  model_stats = TRUE
+)
+
+uni_lm_stats$model_stats
 
 ## Useful option: add categorical predictors in a separate table.
 uni_cat_lm <- uni_reg(
@@ -211,6 +255,10 @@ multi_lm$table_body
 multi_lm$model_summaries
 multi_lm$reg_check
 
+## For multivariable linear regression, the first stored model is the full
+## multivariable model.
+plot_model_fit(multi_lm)
+
 ## Adjusted mode:
 ## Estimate selected predictors separately while adjusting for a common clinical
 ## core. This is useful for focused manuscript tables.
@@ -233,6 +281,17 @@ multi_reg(
   adjust_for = c(age, pregnant, pressure),
   approach = linear
 )
+
+multi_adj_lm_stats <- multi_reg(
+  data = pima_data,
+  outcome = glucose,
+  exposures = c(mass, insulin, pedigree),
+  adjust_for = c(age, pregnant, pressure),
+  approach = linear,
+  model_stats = TRUE
+)
+
+multi_adj_lm_stats$model_stats
 
 
 ## 7. Modify tables for publication ------------------------------------------
@@ -371,6 +430,18 @@ forest_reg(df_multi_lm)
 forest_reg(df_both_lm)
 forest_reg(df_lm_desc)
 
+## Layout check:
+## If x-axis tick labels overlap, control the axis with xlim and ticks_at.
+## Linear regression uses beta coefficients, so the no-effect line is 0.
+forest_reg(
+  df_lm_desc,
+  xlim = list(c(-40, 40), c(-40, 40)),
+  ticks_at = list(c(-40, -20, 0, 20, 40), c(-40, -20, 0, 20, 40))
+)
+
+## If the CI plot panel is too narrow or too wide, tune ci_col_width.
+forest_reg(df_lm_desc, ci_col_width = c(18, 22))
+
 ## Useful option: put labels on the right and plot on the left.
 forest_reg(df_lm_desc, side = "left")
 
@@ -478,6 +549,19 @@ interaction_models(
 ## This is descriptive and exploratory. Use planned interaction models when a
 ## formal effect-modification test is needed.
 
+## First profile the age strata. This helps the reader understand whether each
+## age group has a different metabolic profile before comparing coefficients.
+age_profile_lm <- descriptive_table(
+  data = pima_data,
+  exposures = c("glucose", "mass", "pregnant", "pressure", "insulin", "pedigree"),
+  by = age_cat,
+  statistic = c(glucose = mean, mass = median),
+  percent = column,
+  show_overall = last
+)
+
+age_profile_lm
+
 stratified_uni_lm <- stratified_uni_reg(
   data = pima_data,
   outcome = outcome,
@@ -528,7 +612,8 @@ save_docx(
     "Forest plot - adjusted",
     "Crude versus adjusted beta plot"
   ),
-  filename = "pima-linear-report"
+  filename = "pima-linear-report",
+  table_width = 6.5
 )
 
 
@@ -540,6 +625,8 @@ save_docx(
 ## - reg_check output appears for linear models.
 ## - plot_reg() highlights significant associations when colours are supplied.
 ## - plot_reg_combine() makes crude versus adjusted changes easy to see.
+## - model_stats = TRUE stores R-squared and fit statistics in $model_stats.
+## - save_docx(table_width = 6.5) keeps wide flextables fitted to a Word page.
 ## - select_models() output mentions the selection direction.
 ## - identify_confounder() prints a console summary and has a formatted $table.
 ## - interaction_models() returns a readable screening table and model objects.

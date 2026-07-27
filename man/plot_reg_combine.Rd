@@ -34,9 +34,9 @@ plot_reg_combine(
 
 \item{title_uni, title_multi}{Optional panel titles.}
 
-\item{caption}{Optional combined plot caption. If \code{NULL}, an adjustment
-note is added automatically from \code{tbl_multi} when
-\code{show_adjustment_note = TRUE}.}
+\item{caption}{Optional combined plot caption. If \code{NULL}, notes are
+added automatically for adjusted \code{multi_reg()} objects and displayed
+reference categories.}
 
 \item{ref_line}{Optional numeric reference line. If \code{NULL}, uses 0 for
 linear models and 1 otherwise.}
@@ -50,7 +50,9 @@ linear models and 1 otherwise.}
 \item{base_size}{Base font size for \code{theme_minimal()}.}
 
 \item{show_ref}{Logical; if \code{TRUE}, include reference levels as
-\code{(ref)}.}
+\code{(Ref.)}. If \code{FALSE}, binary exposures are shown as compact rows
+for the estimated non-reference category; affirmative levels such as
+\code{Yes} or \code{1} are displayed using the variable name.}
 
 \item{sig_color, sig_errorbar_color}{Optional colors for significant rows.
 If \code{NULL}, base colors are reused.}
@@ -71,6 +73,7 @@ describing \code{adjust_for} variables from \code{tbl_multi} when available.}
 A \code{patchwork} object with two \code{ggplot2} panels.
 }
 \description{
-Creates two aligned forest plots from \code{gtregression} objects returned by
-\code{uni_reg()} and \code{multi_reg()}.
+Creates two aligned forest plots from compatible \code{gtregression}
+regression objects such as crude and adjusted outputs from \code{uni_reg()},
+\code{multi_reg()}, \code{cox_reg()}, or \code{surv_reg()}.
 }

@@ -1,11 +1,94 @@
 #' @keywords internal
 #' @noRd
-.tidy_uni <- function(fit, exposure, approach) {
+.model_data_col <- function(fit, variable) {
+  mf <- fit$model
+  if (is.null(mf)) {
+    mf <- attr(fit, "gtregression_model_frame", exact = TRUE)
+  }
+  if (is.null(mf) || !variable %in% names(mf)) {
+    return(NULL)
+  }
+  mf[[variable]]
+}
+
+#' @keywords internal
+#' @noRd
+.tidy_coefficients <- function(fit, approach) {
+  approach <- .normalize_approach(approach)
+
+  if (identical(approach, "firth")) {
+    est <- tryCatch(stats::coef(fit), error = function(e) fit$coefficients)
+    if (is.null(est)) return(NULL)
+    term <- names(est)
+    if (is.null(term)) term <- names(fit$coefficients)
+    if (is.null(term)) return(NULL)
+
+    lo <- fit$ci.lower
+    hi <- fit$ci.upper
+    p  <- fit$prob
+
+    if (is.null(lo) || is.null(hi)) {
+      se <- tryCatch(sqrt(diag(fit$var)), error = function(e) rep(NA_real_, length(est)))
+      z <- stats::qnorm(0.975)
+      lo <- est - z * se
+      hi <- est + z * se
+    }
+
+    if (is.null(p)) {
+      se <- tryCatch(sqrt(diag(fit$var)), error = function(e) rep(NA_real_, length(est)))
+      p <- 2 * stats::pnorm(abs(est / se), lower.tail = FALSE)
+    }
+
+    out <- data.frame(
+      term = term,
+      estimate = as.numeric(est),
+      conf.low = as.numeric(lo[term]),
+      conf.high = as.numeric(hi[term]),
+      p.value = as.numeric(p[term]),
+      stringsAsFactors = FALSE
+    )
+
+    missing_ci <- is.na(out$conf.low) | is.na(out$conf.high)
+    if (any(missing_ci)) {
+      out$conf.low[missing_ci] <- as.numeric(lo)[missing_ci]
+      out$conf.high[missing_ci] <- as.numeric(hi)[missing_ci]
+    }
+
+    missing_p <- is.na(out$p.value)
+    if (any(missing_p)) {
+      out$p.value[missing_p] <- as.numeric(p)[missing_p]
+    }
+
+    return(out)
+  }
+
   smry  <- summary(fit)
   coefs <- smry$coefficients
   if (is.null(coefs) || nrow(coefs) == 0) return(NULL)
 
   rn <- rownames(coefs)
+  est <- coefs[, 1]
+  se <- coefs[, 2]
+  p <- coefs[, 4]
+  z <- stats::qnorm(0.975)
+
+  data.frame(
+    term = rn,
+    estimate = as.numeric(est),
+    conf.low = as.numeric(est - z * se),
+    conf.high = as.numeric(est + z * se),
+    p.value = as.numeric(p),
+    stringsAsFactors = FALSE
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.tidy_uni <- function(fit, exposure, approach) {
+  coefs <- .tidy_coefficients(fit, approach)
+  if (is.null(coefs) || nrow(coefs) == 0) return(NULL)
+
+  rn <- coefs$term
   keep <- grepl(paste0("^", exposure), rn) |
     grepl(paste0("^`", exposure, "`"), rn) |
     rn %in% exposure | rn %in% paste0("`", exposure, "`")
@@ -13,9 +96,10 @@
 
   df_nonref <- NULL
   if (length(idx)) {
-    est <- coefs[idx, 1]; se <- coefs[idx, 2]; p <- coefs[idx, 4]
-    z   <- stats::qnorm(0.975)
-    lo  <- est - z * se; hi <- est + z * se
+    est <- coefs$estimate[idx]
+    lo  <- coefs$conf.low[idx]
+    hi  <- coefs$conf.high[idx]
+    p   <- coefs$p.value[idx]
     if (.is_ratio(approach)) { est <- exp(est); lo <- exp(lo); hi <- exp(hi) }
     term <- rn[idx]
     lvl  <- sub(paste0("^`?", exposure, "`?"), "", term)
@@ -35,8 +119,9 @@
   }
 
   ref_row <- NULL
-  if (!is.null(fit$model[[exposure]]) && is.factor(fit$model[[exposure]])) {
-    levs <- levels(fit$model[[exposure]])
+  x <- .model_data_col(fit, exposure)
+  if (!is.null(x) && is.factor(x)) {
+    levs <- levels(x)
     ref_level <- levs[1]
     ref_row <- data.frame(
       exposure  = exposure,
@@ -63,14 +148,13 @@
 #' @keywords internal
 #' @noRd
 .tidy_multi <- function(fit, exposures, approach) {
-  smry <- summary(fit)
-  coefs <- smry$coefficients
+  coefs <- .tidy_coefficients(fit, approach)
 
   if (is.null(coefs) || nrow(coefs) == 0) {
     return(NULL)
   }
 
-  rn <- rownames(coefs)
+  rn <- coefs$term
 
   .is_exposure_term <- function(term, exposure) {
     term_clean <- gsub("`", "", term, fixed = TRUE)
@@ -132,13 +216,10 @@
     df_nonref <- NULL
 
     if (length(idx) > 0) {
-      est <- coefs[idx, 1]
-      se  <- coefs[idx, 2]
-      p   <- coefs[idx, 4]
-
-      z  <- stats::qnorm(0.975)
-      lo <- est - z * se
-      hi <- est + z * se
+      est <- coefs$estimate[idx]
+      lo  <- coefs$conf.low[idx]
+      hi  <- coefs$conf.high[idx]
+      p   <- coefs$p.value[idx]
 
       if (.is_ratio(approach)) {
         est <- exp(est)
@@ -165,8 +246,9 @@
 
     ref_row <- NULL
 
-    if (!is.null(fit$model[[exposure]]) && is.factor(fit$model[[exposure]])) {
-      levs <- levels(fit$model[[exposure]])
+    x <- .model_data_col(fit, exposure)
+    if (!is.null(x) && is.factor(x)) {
+      levs <- levels(x)
       ref_level <- levs[1]
 
       ref_row <- data.frame(

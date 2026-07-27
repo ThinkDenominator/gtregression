@@ -38,11 +38,22 @@ birthwt_data <- data_birthwt |>
 birthwt_exposures <- c(
   "age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat", "ftv_cat"
 )
+
+attr(birthwt_data$age, "label") <- "Maternal age"
+attr(birthwt_data$lwt, "label") <- "Maternal weight"
+attr(birthwt_data$race, "label") <- "Maternal race"
+attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
+attr(birthwt_data$ht, "label") <- "Hypertension"
+attr(birthwt_data$ui, "label") <- "Uterine irritability"
+attr(birthwt_data$ptl_cat, "label") <- "Previous preterm labour"
+attr(birthwt_data$ftv_cat, "label") <- "First trimester visits"
 ```
 
 ## Column Percentages
 
 Use column percentages when the table is grouped by outcome or another column.
+Continuous variables are shown as median (IQR) by default, and variable labels
+are picked up automatically when variables have a `"label"` attribute.
 
 ```{r desc-column, message=FALSE, warning=FALSE}
 desc_column <- descriptive_table(
@@ -60,7 +71,7 @@ desc_column$table
 ## Row Percentages
 
 Use row percentages when the question is how each exposure level is distributed
-across groups.
+across groups. Common option values can be written with or without quotes.
 
 ```{r desc-row, message=FALSE, warning=FALSE}
 descriptive_table(
@@ -74,9 +85,46 @@ descriptive_table(
 )$table
 ```
 
-## Word-Friendly Output
+## Summary Choices
 
-Switch to `format = "flextable"` when the next stop is a Word report.
+Use `statistic` when continuous variables need a different summary. A single
+value applies to all numeric variables. A named vector lets you mix summaries,
+including treating numeric ordinal variables as categorical.
+
+```{r desc-statistic, message=FALSE, warning=FALSE}
+descriptive_table(
+  data = birthwt_data,
+  exposures = c("age", "lwt", "ftv", "smoke"),
+  by = low,
+  statistic = c(
+    age = mean,
+    lwt = median,
+    ftv = categorical
+  ),
+  percent = column,
+  show_missing = no
+)$table
+```
+
+The quoted form is equivalent and often clearer in saved scripts:
+
+```{r desc-statistic-quoted, eval=FALSE}
+descriptive_table(
+  data = birthwt_data,
+  exposures = c("age", "lwt", "ftv", "smoke"),
+  by = "low",
+  statistic = c(
+    age = "mean",
+    lwt = "median",
+    ftv = "categorical"
+  )
+)
+```
+
+## Output Format
+
+`flextable` is the default because it behaves well in Word workflows. Use
+`format = gt` when the output is mainly for HTML or pkgdown.
 
 ```{r desc-flex, message=FALSE, warning=FALSE}
 descriptive_table(
@@ -84,7 +132,7 @@ descriptive_table(
   exposures = birthwt_exposures,
   by = "low",
   percent = "column",
-  format = "flextable"
+  format = gt
 )$table
 ```
 
@@ -92,4 +140,6 @@ descriptive_table(
 
 - `$table`: rendered `gt` or `flextable` output.
 - `$table_body`: clean data behind the table.
+- `$variable_labels`: labels used for display; raw variable names remain in
+  `$table_body` for reliable merging and modification.
 - `$format`: output format used by the table builder.

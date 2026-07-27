@@ -46,13 +46,17 @@ test_that("stratified_multi_reg returns a gtregression object for full logit mod
   expect_named(
     res,
     c("table", "table_display", "per_stratum", "models",
-      "model_summaries", "reg_check", "by", "levels", "approach",
+      "model_summaries", "variable_labels", "reg_check", "by", "levels", "approach",
       "format", "source")
   )
   expect_named(res$models, c("White", "Black", "Other"))
   expect_named(res$models$White, "multivariable_model")
   expect_true(all(c("Characteristic", "is_header", "..eff__White",
                     "..p__White") %in% names(res$table_display)))
+  eff_cols <- startsWith(names(res$table_display), "..eff__")
+  expect_true("Ref." %in% unlist(res$table_display[eff_cols]))
+  expect_true(any(grepl("Ref. = reference category", res$table$`_source_notes`,
+                        fixed = TRUE)))
 })
 
 test_that("stratified_multi_reg adjust_for fits one adjusted model per exposure", {

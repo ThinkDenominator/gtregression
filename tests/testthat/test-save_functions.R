@@ -74,6 +74,18 @@ test_that("save_table writes flextable docx and html files", {
   unlink(c(out_docx, out_html))
 })
 
+test_that("docx flextables are constrained to requested page width", {
+  skip_if_not_installed("flextable")
+
+  wide_df <- as.data.frame(matrix(seq_len(100), nrow = 5))
+  ft <- flextable::autofit(flextable::flextable(wide_df))
+  fitted <- .fit_flextable_docx_width(ft, table_width = 6.5)
+
+  expect_lte(sum(flextable::flextable_dim(fitted)$widths), 6.5)
+  expect_identical(.fit_flextable_docx_width(ft, table_width = NULL), ft)
+  expect_error(.fit_flextable_docx_width(ft, table_width = 0), "`table_width`")
+})
+
 test_that("save_plot writes files and validates inputs", {
   p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
     ggplot2::geom_point()
@@ -132,6 +144,7 @@ test_that("save_docx validates inputs and rejects gt tables for Word export", {
   expect_error(save_docx(tables = data.frame(x = 1)), "`tables` must be")
   expect_error(save_docx(plots = data.frame(x = 1)), "`plots` must be")
   expect_error(save_docx(plots = list(data.frame(x = 1))), "must be ggplot2 objects")
+  expect_error(save_docx(plots = ggplot2::ggplot(), table_width = 0), "`table_width`")
   expect_error(save_docx(plots = ggplot2::ggplot(), plot_width = 0), "`plot_width` must be")
   expect_error(save_docx(plots = ggplot2::ggplot(), plot_height = NA_real_), "`plot_height` must be")
   expect_error(save_docx(tables = gt_tbl), "gt tables")

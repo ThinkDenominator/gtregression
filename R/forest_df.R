@@ -13,7 +13,8 @@
 
   expo <- NULL
   if (is.data.frame(tb) && all(c("var", "type") %in% names(tb))) {
-    skeleton <- do.call(rbind, lapply(split(tb, tb$var), function(x) {
+    skeleton <- do.call(rbind, lapply(unique(tb$var), function(var) {
+      x <- tb[tb$var == var, , drop = FALSE]
       levs <- x[x$type != "header", , drop = FALSE]
       if (!nrow(levs)) {
         return(data.frame(exposure = unique(x$var), stringsAsFactors = FALSE))
@@ -66,7 +67,8 @@
     needs_value <- is.na(joined[[col]]) | !nzchar(as.character(joined[[col]]))
     fallback_value <- fallback[[col]]
     has_fallback <- !is.na(fallback_value) & nzchar(as.character(fallback_value))
-    idx <- needs_value & has_fallback
+    continuous_or_header_row <- joined$Characteristic == joined$exposure
+    idx <- needs_value & has_fallback & continuous_or_header_row
     joined[[col]][idx] <- fallback_value[idx]
   }
 
@@ -79,8 +81,13 @@
 .pick_inputs <- function(uni, multi = NULL, desc = NULL) {
   inputs <- Filter(Negate(is.null), list(uni = uni, multi = multi, desc = desc))
 
-  is_uni   <- function(x) inherits(x, "gtregression") && any(c("uni_reg","gt_uni") %in% class(x))
-  is_multi <- function(x) inherits(x, "gtregression") && any(c("multi_reg","gt_multi") %in% class(x))
+  is_uni   <- function(x) inherits(x, "gtregression") &&
+    any(c("uni_reg", "gt_uni", "cox_reg", "gt_cox", "surv_reg", "gt_surv") %in% class(x)) &&
+    !isTRUE(x$adjusted_mode)
+  is_multi <- function(x) inherits(x, "gtregression") &&
+    (any(c("multi_reg", "gt_multi") %in% class(x)) ||
+       (any(c("cox_reg", "gt_cox", "surv_reg", "gt_surv") %in% class(x)) &&
+          isTRUE(x$adjusted_mode)))
   is_desc  <- function(x) any(c("descriptive_table","gt_desc") %in% class(x)) ||
     (is.list(x) && !is.null(x$table_display) && !is.null(x$table_body)) ||
     (is.data.frame(x) && "Characteristic" %in% names(x))
@@ -149,11 +156,13 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
 
   `%||%`   <- function(a,b) if (!is.null(a)) a else b
   approach <- function(o) .normalize_approach(o$approach %||% "logit")
-  is_ratio <- function(a) .normalize_approach(a) %in% c("logit","logbinomial","poisson","robpoisson","negbin",
-                                   "margstd_boot","margstd_delta")
+  is_ratio <- function(a) .normalize_approach(a) %in% c("logit","firth","logbinomial","poisson","robpoisson","negbin",
+                                   "cox", "survreg", "margstd_boot","margstd_delta")
   effname  <- function(a) {
     a <- .normalize_approach(a)
     if (a == "linear") return("Beta")
+    if (a == "cox") return("HR")
+    if (a == "survreg") return("Time Ratio")
     if (a %in% c("poisson","negbin")) return("IRR")
     if (a %in% c("logbinomial","robpoisson","margstd_boot","margstd_delta")) return("RR")
     "OR"
@@ -231,7 +240,7 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
   }
   lay <- dplyr::bind_rows(blocks)
 
-  # Reference rows lie on ref_line (text "--" added later)
+  # Reference rows lie on ref_line (text "Ref." added later)
   is_ref <- lay$ref & lay$..row_type == "level"
   lay$estimate [is_ref] <- ref_line
   lay$conf.low [is_ref] <- ref_line
@@ -253,6 +262,11 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
   }
 
   # Left table + optional desc merge
+  forest_blank <- paste(rep(" ", 20), collapse = " ")
+  label_map <- uni$variable_labels
+  if ((is.null(label_map) || !length(label_map)) && has_multi) {
+    label_map <- multi$variable_labels
+  }
   left <- data.frame(
     Characteristic   = lay$..label,
     exposure         = lay$exposure,
@@ -261,25 +275,32 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
   if (!is.null(desc)) {
     left <- .merge_forest_desc(left, desc)
   }
+  label_idx <- lay$..row_type == "header" | (lay$exposure == lay$level)
+  left$Characteristic[label_idx] <- vapply(
+    lay$exposure[label_idx],
+    .label_var,
+    character(1),
+    label_map = label_map
+  )
   is_header <- lay$..row_type == "header"
   # CI text cols + BLANK anchor headers
   if (has_multi) {
-    left[[" "]] <- ""   # uni anchor
+    left[[" "]] <- forest_blank   # uni anchor
     ci1 <- fmt_ci(lay$estimate, lay$conf.low, lay$conf.high, digits)
     ci1[is_header | is_ref] <- ""              # <-- make headers & refs blank
-    ci1[is_ref] <- "--"
+    ci1[is_ref] <- "Ref."
     left[[paste0(eff1, " (95% CI)")]] <- ci1
 
-    left[["  "]] <- ""  # adj anchor
+    left[["  "]] <- forest_blank  # adj anchor
     ci2 <- fmt_ci(est2, lo2, hi2, digits)
     ci2[is_header | is_ref] <- ""              # <-- same here
-    ci2[is_ref] <- "--"
+    ci2[is_ref] <- "Ref."
     left[[paste0("Adjusted ", eff2, " (95% CI)")]] <- ci2
   } else {
-    left[[" "]] <- ""
+    left[[" "]] <- forest_blank
     ci1 <- fmt_ci(lay$estimate, lay$conf.low, lay$conf.high, digits)
     ci1[is_header | is_ref] <- ""              # <-- and here
-    ci1[is_ref] <- "--"
+    ci1[is_ref] <- "Ref."
     left[[paste0(eff1, " (95% CI)")]] <- ci1
   }
 
@@ -297,6 +318,12 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
     se_adj <- .se_from_ci(est2, lo2, hi2, ratio = is_ratio(app2))
     se_adj[is_header | is_ref] <- NA_real_
     left$se_adj <- se_adj
+  }
+
+  display_cols <- setdiff(names(left), c("se_uni", "se_adj"))
+  for (col in display_cols) {
+    left[[col]] <- as.character(left[[col]])
+    left[[col]][is.na(left[[col]])] <- ""
   }
 
   # Keep only minimal, plotting-relevant attributes (optional).

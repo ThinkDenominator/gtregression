@@ -16,9 +16,9 @@
   # Define valid approaches per context
   valid <- switch(context,
                   "uni_reg" = c("logit", "logbinomial", "poisson",
-                                "robpoisson", "linear", "negbin"),
+                                "robpoisson", "linear", "negbin", "firth"),
                   "multi_reg" = c("logit", "logbinomial", "poisson",
-                                  "robpoisson", "linear", "negbin"),
+                                  "robpoisson", "linear", "negbin", "firth"),
                   "interaction_models" = c("logit", "logbinomial", "poisson",
                                            "robpoisson", "negbin", "linear"),
                   "check_convergence" = c("logit", "logbinomial", "poisson",
@@ -26,7 +26,8 @@
                   "identify_confounder" = c("logit", "logbinomial", "poisson",
                                             "robpoisson", "negbin", "linear"),
                   "select_models" = c("logit", "logbinomial", "poisson",
-                                      "robpoisson", "negbin", "linear"),
+                                      "robpoisson", "negbin", "linear",
+                                      "cox", "survreg"),
                   stop("The function '", context, "' is not recognized.\n",
                        "Please use a valid function")
   )
@@ -174,7 +175,7 @@
   }
 
   # apply logic
-  if (approach %in% c("logit", "logbinomial", "robpoisson") &&
+  if (approach %in% c("logit", "firth", "logbinomial", "robpoisson") &&
       !is_binary(outcome)) {
     stop("This approach requires either a factor variable ",
          "or numeric variable coded as 0 and 1 (or 1 and 2).", call. = FALSE)

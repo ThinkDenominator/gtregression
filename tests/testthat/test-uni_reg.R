@@ -21,13 +21,46 @@ test_that("uni_reg returns a gtregression object for binary logistic models", {
   expect_named(
     res,
     c("table", "table_body", "table_display", "models",
-      "model_summaries", "reg_check", "approach", "format", "source")
+      "model_summaries", "model_stats", "variable_labels", "reg_check",
+      "approach", "format", "source")
   )
+  expect_null(res$model_stats)
   expect_true(all(c("exposure", "level", "estimate", "conf.low",
                     "conf.high", "p.value", "ref") %in% names(res$table_body)))
   expect_true(any(res$table_body$ref))
   expect_true(all(c("Characteristic", "OR (95% CI)", "p-value", "N",
                     "is_header") %in% names(res$table_display)))
+  expect_true("Ref." %in% res$table_display[["OR (95% CI)"]])
+  expect_true(any(grepl("Ref. = reference category", res$table$`_source_notes`,
+                        fixed = TRUE)))
+})
+
+test_that("uni_reg optionally returns model-fit statistics", {
+  df <- mtcars
+  df$am <- as.integer(df$am)
+  df$cyl <- factor(df$cyl)
+
+  res <- uni_reg(
+    data = df,
+    outcome = "am",
+    exposures = c("mpg", "cyl"),
+    approach = logit,
+    model_stats = TRUE
+  )
+
+  expect_s3_class(res, "uni_reg")
+  expect_s3_class(res$model_stats, "data.frame")
+  expect_equal(res$model_stats$model, c("mpg", "cyl"))
+  expect_true(all(c("AIC", "BIC", "logLik", "deviance", "null_deviance",
+                    "pseudo_r2", "r_squared", "adj_r_squared", "n") %in%
+                    names(res$model_stats)))
+  expect_true(all(is.finite(res$model_stats$AIC)))
+  expect_true(all(is.finite(res$model_stats$BIC)))
+  expect_true(all(is.na(res$model_stats$r_squared)))
+  expect_error(
+    uni_reg(df, outcome = "am", exposures = "mpg", model_stats = NA),
+    "`model_stats` must be TRUE or FALSE"
+  )
 })
 
 test_that("uni_reg supports logbinomial and old hyphenated alias", {
@@ -73,6 +106,26 @@ test_that("uni_reg supports robust poisson when risks is available", {
   expect_true("RR (95% CI)" %in% names(res$table_display))
 })
 
+test_that("uni_reg supports Firth logistic regression", {
+  skip_if_not_installed("logistf")
+
+  df <- data_endometrial
+  df$HG <- factor(df$HG, levels = c(0, 1),
+                  labels = c("Low grade", "High grade"))
+  df$NV <- factor(df$NV, levels = c(0, 1),
+                  labels = c("Absent", "Present"))
+
+  res <- uni_reg(df, outcome = HG, exposures = c(NV, PI, EH), approach = firth)
+
+  expect_s3_class(res, "uni_reg")
+  expect_equal(res$approach, "firth")
+  expect_s3_class(res$models$NV, "logistf")
+  expect_true("OR (95% CI)" %in% names(res$table_display))
+  expect_true(any(res$table_body$ref))
+  expect_true(any(is.finite(res$table_body$estimate[!res$table_body$ref])))
+  expect_equal(unname(table(df$HG, df$NV)["Low grade", "Present"]), 0)
+})
+
 test_that("uni_reg returns diagnostics for linear model", {
   df <- mtcars
   df$cyl <- factor(df$cyl)
@@ -89,6 +142,17 @@ test_that("uni_reg returns diagnostics for linear model", {
   expect_named(res$reg_check, c("hp", "cyl"))
   expect_match(res$reg_check$hp$Test[1], "Breusch-Pagan")
   expect_true("Beta (95% CI)" %in% names(res$table_display))
+
+  stats_res <- uni_reg(
+    data = df,
+    outcome = "mpg",
+    exposures = c("hp", "cyl"),
+    approach = linear,
+    model_stats = TRUE
+  )
+  expect_true(all(is.na(stats_res$model_stats$pseudo_r2)))
+  expect_true(all(is.finite(stats_res$model_stats$r_squared)))
+  expect_true(all(is.finite(stats_res$model_stats$adj_r_squared)))
 })
 
 test_that("uni_reg supports flextable output", {

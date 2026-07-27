@@ -48,25 +48,56 @@ birthwt_data <- data_birthwt |>
     ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
   )
+
+attr(birthwt_data$race, "label") <- "Maternal race"
+attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
+attr(birthwt_data$ht, "label") <- "Hypertension"
 ```
 
 ## Identify Confounders
 
 Use `method = "change"` for the model-based change-in-estimate method. Use
 `method = "mh"` or `method = "both"` when Mantel-Haenszel is appropriate.
-The output is intentionally tidy rather than publication-first.
+The output is intentionally tidy and intended for viewing, not as a final
+publication table.
 
 ```{r confounder, message=FALSE, warning=FALSE}
 confounder_check <- identify_confounder(
   data = birthwt_data,
-  outcome = "low",
-  exposure = "smoke",
+  outcome = low,
+  exposure = smoke,
   potential_confounder = c("race", "ht"),
-  approach = "logit",
-  method = "both"
+  approach = logit,
+  method = both,
+  format = gt
 )
 
+confounder_check$table
+```
+
+The underlying summary remains available for inspection or further filtering.
+
+```{r confounder-summary, message=FALSE, warning=FALSE}
 confounder_check$summary
+```
+
+## Mantel-Haenszel Estimate
+
+Mantel-Haenszel is useful when the question is whether a stratified pooled
+estimate differs meaningfully from the crude estimate. It is available for
+eligible binary/categorical settings. It is not the same as fitting an
+interaction term.
+
+```{r confounder-mh, message=FALSE, warning=FALSE}
+identify_confounder(
+  data = birthwt_data,
+  outcome = low,
+  exposure = smoke,
+  potential_confounder = race,
+  approach = logit,
+  method = mh,
+  format = flextable
+)$table
 ```
 
 ## Test Interaction
@@ -79,21 +110,33 @@ clinical, causal, or subject-matter reasoning.
 ```{r interaction, message=FALSE, warning=FALSE}
 interaction_check <- interaction_models(
   data = birthwt_data,
-  outcome = "low",
-  exposure = "smoke",
-  effect_modifier = "race",
+  outcome = low,
+  exposure = smoke,
+  effect_modifier = race,
   covariates = c("age", "lwt"),
-  approach = "logit",
-  test = "LRT",
-  format = "gt"
+  approach = logit,
+  test = LRT,
+  format = gt
 )
 
 interaction_check$table
 ```
 
+## Overlap and Difference
+
+| Topic | `identify_confounder()` | `interaction_models()` |
+|---|---|---|
+| Main purpose | Organises candidate confounder and effect-modifier screening signals. | Tests a planned exposure-by-modifier term. |
+| Typical input | Exposure plus one or more candidate variables. | One exposure and one effect modifier. |
+| Confounding | Crude vs adjusted change-in-estimate; optional Mantel-Haenszel comparison. | Not designed for confounder selection. |
+| Effect modification | Screening signal from stratum-specific estimates and interaction p-value. | Model comparison using LRT or Wald test. |
+| Best use | Early review of candidate variables, with DAGs and judgement. | Focused test of a clinically or biologically plausible interaction. |
+| Output status | Viewing aid, not publication-ready evidence by itself. | Viewing aid; report with stratum-specific estimates when relevant. |
+
 ## What To Inspect
 
-- `identify_confounder()`: `$summary`, `$table`, and `$details`.
+- `identify_confounder()`: `$summary`, `$table`, `$details`, `$mh_estimate`,
+  `$mh_status`, `$decision`, and `$recommendation`.
 - `interaction_models()`: `$summary`, `$table`, `$p_value`, `$decision`, and
   fitted model objects.
 - Use subject-matter knowledge with these outputs. The functions support

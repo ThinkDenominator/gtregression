@@ -60,8 +60,11 @@ test_that("plot_reg supports multi_reg adjusted mode", {
 
   expect_s3_class(p, "ggplot")
   expect_match(p$labels$x, "Adjusted Odds Ratio", fixed = TRUE)
-  expect_equal(p$labels$caption, "Adjusted for age and lwt")
-  expect_null(plot_reg(tbl, show_adjustment_note = FALSE)$labels$caption)
+  expect_equal(p$labels$caption, "Adjusted for age and lwt. Ref. = reference category.")
+  expect_equal(
+    plot_reg(tbl, show_adjustment_note = FALSE)$labels$caption,
+    "Ref. = reference category."
+  )
   expect_equal(plot_reg(tbl, caption = "Custom note")$labels$caption, "Custom note")
   expect_true(all(c("smoke", "ht", "ui") %in% p$data$exposure))
 })
@@ -79,14 +82,34 @@ test_that("plot_reg handles reference rows, ordering, significance, and x limits
   p_ref <- plot_reg(tbl, show_ref = TRUE)
   p_no_ref <- plot_reg(tbl, show_ref = FALSE)
 
-  expect_true(any(grepl("(ref)", p_ref$data$label_clean, fixed = TRUE)))
-  expect_false(any(grepl("(ref)", p_no_ref$data$label_clean, fixed = TRUE)))
+  expect_true(any(grepl("(Ref.)", p_ref$data$label_clean, fixed = TRUE)))
+  expect_false(any(grepl("(Ref.)", p_no_ref$data$label_clean, fixed = TRUE)))
+  expect_equal(p_ref$labels$caption, "Ref. = reference category.")
+  expect_null(p_no_ref$labels$caption)
+  expect_true("smoke" %in% p_no_ref$data$label)
+  expect_true("ht" %in% p_no_ref$data$label)
+  expect_true(any(p_no_ref$data$label == "smoke" & p_no_ref$data$is_header))
+  expect_true(any(grepl("<b>smoke</b>", p_no_ref$data$label_clean, fixed = TRUE)))
 
   p_ordered <- plot_reg(tbl, order_y = c("age", "smoke", "ht"))
   expect_equal(p_ordered$data$exposure[p_ordered$data$is_header], c("age", "smoke", "ht"))
 
   p_breaks <- plot_reg(tbl, breaks = c(0.5, 1, 2, 4), xlim = c(0.25, 6))
   expect_s3_class(p_breaks, "ggplot")
+  expect_equal(p_breaks$coordinates$limits$x, c(0.25, 6))
+
+  p_log_breaks <- plot_reg(
+    tbl,
+    log_x = TRUE,
+    breaks = c(0.5, 1, 2, 4),
+    xlim = c(0.25, 6)
+  )
+  expect_equal(p_log_breaks$coordinates$limits$x, c(0.25, 6))
+  expect_equal(p_log_breaks$scales$get_scales("x")$breaks, c(0.5, 1, 2, 4))
+
+  p_log_default <- plot_reg(tbl, log_x = TRUE)
+  expect_true(length(p_log_default$scales$get_scales("x")$breaks) > 1L)
+  expect_true(1 %in% p_log_default$scales$get_scales("x")$breaks)
 
   expect_true(all(!p_ref$data$is_header[p_ref$data$is_sig]))
   expect_true(all(!p_ref$data$ref[p_ref$data$is_sig]))

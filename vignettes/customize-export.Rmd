@@ -28,44 +28,72 @@ birthwt_data <- data_birthwt |>
     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
   )
 
+birthwt_exposures <- c("age", "lwt", "race", "smoke", "ht", "ui")
+
+attr(birthwt_data$age, "label") <- "Maternal age"
+attr(birthwt_data$lwt, "label") <- "Maternal weight"
+attr(birthwt_data$race, "label") <- "Maternal race"
+attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
+attr(birthwt_data$ht, "label") <- "Hypertension"
+attr(birthwt_data$ui, "label") <- "Uterine irritability"
+
 birthwt_desc <- descriptive_table(
   birthwt_data,
-  exposures = c("age", "lwt", "race", "smoke", "ht", "ui"),
-  by = "low"
+  exposures = birthwt_exposures,
+  by = low
 )
 birthwt_uni <- uni_reg(
   birthwt_data,
-  outcome = "low",
-  exposures = c("age", "lwt", "race", "smoke", "ht", "ui"),
-  approach = "logit"
+  outcome = low,
+  exposures = birthwt_exposures,
+  approach = logit
 )
 birthwt_multi <- multi_reg(
   birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = c("smoke", "ht", "ui"),
   adjust_for = c("age", "lwt", "race"),
-  approach = "logit"
+  approach = logit
 )
 ```
 
 ## Customize Labels
 
+If labels already live on the data, `gtregression` uses them automatically.
+`modify_table()` is still useful for journal-specific wording, compact headers,
+captions, and caveats. Use raw variable names on the left side of
+`variable_labels` and `level_labels`; this keeps customisation stable even when
+the visible table already shows prettier labels.
+
+Footnotes and caveats are styled compactly by default across flextable and gt
+outputs, which keeps abbreviation notes and adjustment notes readable without
+making final tables unnecessarily tall.
+
 ```{r modify-table, message=FALSE, warning=FALSE}
 birthwt_custom <- modify_table(
   birthwt_multi,
   variable_labels = c(
-    smoke = "Smoking during pregnancy",
-    ht = "Hypertension",
+    smoke = "Smoked during pregnancy",
+    ht = "History of hypertension",
     ui = "Uterine irritability"
   ),
+  level_labels = list(
+    smoke = c(Yes = "Smoker"),
+    ht = c(Yes = "Hypertensive")
+  ),
   header_labels = c(estimate = "Adjusted OR", p.value = "P"),
-  caption = "Adjusted regression for low birth weight"
+  caption = "Adjusted regression for low birth weight",
+  caveat = "Adjusted for maternal age, maternal weight, and maternal race."
 )
 
 birthwt_custom$table
 ```
 
 ## Merge Tables
+
+`merge_tables()` combines descriptive, crude, and adjusted results. Matching is
+based on the original variable names, so merged tables remain aligned even when
+the visible labels differ across input tables.
 
 ```{r merge-tables, message=FALSE, warning=FALSE}
 birthwt_merged <- merge_tables(
@@ -78,39 +106,73 @@ birthwt_merged <- merge_tables(
 birthwt_merged$table
 ```
 
+The merged table can be polished after merging too.
+
+```{r merged-polish, message=FALSE, warning=FALSE}
+birthwt_merged_paper <- modify_table(
+  birthwt_merged,
+  variable_labels = c(
+    age = "Maternal age",
+    lwt = "Maternal weight",
+    race = "Maternal race",
+    smoke = "Smoking during pregnancy",
+    ht = "Hypertension",
+    ui = "Uterine irritability"
+  ),
+  caption = "Clinical profile and regression estimates for low birth weight",
+  caveat = "Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race."
+)
+
+birthwt_merged_paper$table
+```
+
 ## Save Outputs
 
-When no destination is supplied, save helpers use a temporary folder.
+When no directory is supplied, save helpers use `tempdir()`. This keeps examples
+and tests CRAN-safe while still returning the file path invisibly.
 
 ```{r save-examples, eval=FALSE}
-save_table(birthwt_merged, filename = "birthwt-table", format = "html")
+table_path <- save_table(
+  birthwt_merged_paper,
+  filename = "birthwt-table",
+  format = html
+)
 
 birthwt_plot <- plot_reg(
   birthwt_multi,
   title = "Adjusted Regression for Low Birth Weight"
 )
 
-save_plot(birthwt_plot, filename = "birthwt-forest", format = "png")
+plot_path <- save_plot(
+  birthwt_plot,
+  filename = "birthwt-forest",
+  format = png
+)
 ```
 
 ## Word Reports
 
-Use `format = "flextable"` when the destination is Word.
+`flextable` is the default table engine, so Word export works naturally. If a
+table was created as `format = gt`, save it as HTML/PDF or recreate it with
+`format = flextable` before sending it to `save_docx()`. Wide tables are fitted
+to a standard Word page by default; use `table_width` when your document has
+different margins or landscape orientation.
 
 ```{r word-example, eval=FALSE}
 birthwt_multi_ft <- multi_reg(
   birthwt_data,
-  outcome = "low",
+  outcome = low,
   exposures = c("smoke", "ht", "ui"),
   adjust_for = c("age", "lwt", "race"),
-  approach = "logit",
-  format = "flextable"
+  approach = logit,
+  format = flextable
 )
 
-save_docx(
+docx_path <- save_docx(
   tables = list(birthwt_multi_ft),
   filename = "birthwt-report",
-  titles = "Adjusted Regression"
+  titles = "Adjusted Regression",
+  table_width = 6.5
 )
 ```
 
@@ -118,4 +180,6 @@ save_docx(
 
 - `modify_table()`: changed labels, caption, and caveat.
 - `merge_tables()`: `$table`, `$table_display`, and `$footnotes`.
-- `save_table()`, `save_plot()`, `save_docx()`: returned file paths.
+- `save_table()`, `save_plot()`, `save_docx()`: invisibly returned file paths.
+- Raw variable names remain available for relabelling, merging, and testing even
+  when display labels are used.

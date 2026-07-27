@@ -20,12 +20,17 @@
 #'   \code{multi_reg()}.
 #' @param interaction Optional character scalar specifying one interaction term
 #'   using standard formula syntax, e.g. \code{"bmi*sex"}
-#' @param approach One of \code{"logit"}, \code{"logbinomial"}, \code{"poisson"},
+#' @param approach One of \code{"logit"}, \code{"firth"}, \code{"logbinomial"}, \code{"poisson"},
 #'   \code{"linear"}, \code{"robpoisson"}, or \code{"negbin"}
 #' @param format One of \code{"flextable"} (default) or \code{"gt"}.
 #' @param theme Preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 #'   \code{"shaded"}, \code{"jama"}) or primitives
 #'   \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}
+#'
+#' @details
+#' If exposure variables have a \code{"label"} attribute, for example from
+#' \code{labelled::var_label()}, those labels are used automatically in the
+#' displayed table. Internal matching still uses the original column names.
 #'
 #' @return A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
 #' \describe{
@@ -35,6 +40,8 @@
 #'   \item{\code{per_stratum}}{Named list of per-stratum regression results.}
 #'   \item{\code{models}}{Named list of fitted models by stratum.}
 #'   \item{\code{model_summaries}}{Named list of model summaries by stratum.}
+#'   \item{\code{variable_labels}}{Named character vector of display labels used
+#'   for exposure variables.}
 #'   \item{\code{reg_check}}{Named list of diagnostics by stratum.}
 #'   \item{\code{by}, \code{levels}, \code{approach}, \code{format}, \code{source}}{Metadata fields.}
 #' }
@@ -86,7 +93,7 @@ stratified_multi_reg <- function(data,
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
-    choices = c("logit","logbinomial","poisson","robpoisson","linear","negbin")
+    choices = c("logit","firth","logbinomial","poisson","robpoisson","linear","negbin")
   )
   approach <- .normalize_approach(approach)
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
@@ -94,6 +101,7 @@ stratified_multi_reg <- function(data,
 
   format <- match.arg(format, c("flextable","gt"))
   theme <- .resolve_theme(theme)
+  variable_labels <- .var_label_map(data, unique(exposures))
 
   if (!stratifier %in% names(data)) {
     stop("Stratifier not found in dataset.", call. = FALSE)
@@ -156,13 +164,20 @@ stratified_multi_reg <- function(data,
     stop("No valid models across strata.", call. = FALSE)
   }
 
-  built <- .strata_build_wide_multi(data, exposures, stratifier, tds)
+  built <- .strata_build_wide_multi(
+    data,
+    exposures,
+    stratifier,
+    tds,
+    variable_labels = variable_labels
+  )
   wide <- built$wide
   spanners <- built$spanners
   eff_lab <- paste("Adjusted", .get_effect_label(approach))
 
   footnotes <- c(
     .abbrev_note(approach),
+    if (any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))) .ref_note() else NULL,
     if (!is.null(adjust_for) && length(adjust_for) > 0) .adjustment_note(adjust_for) else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
     .n_note_multi_strata(stratifier, n_by_stratum)
@@ -182,6 +197,7 @@ stratified_multi_reg <- function(data,
     per_stratum = per_stratum,
     models = models,
     model_summaries = sums,
+    variable_labels = variable_labels,
     reg_check = diags,
     by = stratifier,
     levels = levs,
