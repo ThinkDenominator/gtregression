@@ -38,6 +38,7 @@
 <li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -57,8 +58,8 @@
 
 
 
-
-<div class="row">
+<link href="diagnostics-selection_files/tabwid-1.1.3/tabwid.css" rel="stylesheet">
+<script src="diagnostics-selection_files/tabwid-1.1.3/tabwid.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Diagnostics and Model Selection</h1>
@@ -74,7 +75,9 @@
 <h2 id="diagnostics-and-model-selection">Diagnostics and Model Selection<a class="anchor" aria-label="anchor" href="#diagnostics-and-model-selection"></a>
 </h2>
 <p>Before the final table goes into a manuscript, check the model. These
-helpers keep diagnostics close to the regression workflow.</p>
+helpers keep diagnostics close to the regression workflow. They are
+screening aids: interpret them with the study design, clinical or
+subject-matter judgement, and the diagnostics from the fitted model.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thinkdenominator.github.io/gtregression/">gtregression</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
@@ -94,16 +97,20 @@ helpers keep diagnostics close to the regression workflow.</p>
 <span></span>
 <span><span class="va">exposures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"race"</span>, <span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span>, <span class="st">"ptl_cat"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="convergence">Convergence<a class="anchor" aria-label="anchor" href="#convergence"></a>
+<h3 id="convergence-screening">Convergence Screening<a class="anchor" aria-label="anchor" href="#convergence-screening"></a>
 </h3>
+<p>Use <code><a href="../reference/check_convergence.html">check_convergence()</a></code> before interpreting model
+estimates, especially for log-binomial and small or sparse
+binary-outcome models. A non-converged model is a fitting warning, not a
+finding.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span>,</span>
 <span>  multivariate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  format <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  format <span class="op">=</span> <span class="va">gt</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#mwlefoodfi table {
@@ -479,8 +486,8 @@ helpers keep diagnostics close to the regression workflow.</p>
 
 #mwlefoodfi .gt_sourcenote {
   font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -577,19 +584,53 @@ helpers keep diagnostics close to the regression workflow.</p>
     </tr></tfoot>
 </table>
 </div>
+<p>For risk-ratio workflows, this same check helps users decide whether
+a log-binomial model fitted cleanly or whether a robust Poisson approach
+may be a more practical sensitivity analysis.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/check_convergence.html">check_convergence</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span>, <span class="st">"ptl_cat"</span><span class="op">)</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  approach <span class="op">=</span> <span class="va">logbinomial</span>,</span>
+<span>  multivariate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  format <span class="op">=</span> <span class="va">flextable</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="tabwid">
+<style>.cl-fb2b240e{}.cl-fb213200{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-fb213214{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-fb21321e{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-fb2560f0{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-fb2560fa{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-fb256104{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-fb25a222{width:2.274in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a22c{width:1.175in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a22d{width:1.212in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a236{width:1.691in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a237{width:2.274in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a240{width:1.175in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a241{width:1.212in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a24a{width:1.691in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a24b{width:2.274in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a254{width:1.175in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a255{width:1.212in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-fb25a256{width:1.691in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
+<table data-quarto-disable-processing="true" class="table cl-fb2b240e">
+<caption style="display:table-caption;margin:0pt;text-align:center;border-bottom: 0.00pt solid transparent;border-top: 0.00pt solid transparent;border-left: 0.00pt solid transparent;border-right: 0.00pt solid transparent;padding-top:3pt;padding-bottom:3pt;padding-left:3pt;padding-right:3pt;line-height: 1;background-color:transparent;"><span>Convergence check</span></caption>
+<thead><tr style="overflow-wrap:break-word;">
+<th class="cl-fb25a222"><p class="cl-fb2560f0"><span class="cl-fb213200">Exposure</span></p></th>
+<th class="cl-fb25a22c"><p class="cl-fb2560f0"><span class="cl-fb213200">Model</span></p></th>
+<th class="cl-fb25a22d"><p class="cl-fb2560fa"><span class="cl-fb213200">Converged</span></p></th>
+<th class="cl-fb25a236"><p class="cl-fb2560fa"><span class="cl-fb213200">Max fitted value</span></p></th>
+</tr></thead>
+<tbody><tr style="overflow-wrap:break-word;">
+<td class="cl-fb25a237"><p class="cl-fb2560f0"><span class="cl-fb213214">smoke + ht + ui + ptl_cat</span></p></td>
+<td class="cl-fb25a240"><p class="cl-fb2560f0"><span class="cl-fb213214">logbinomial</span></p></td>
+<td class="cl-fb25a241"><p class="cl-fb2560fa"><span class="cl-fb213214">No</span></p></td>
+<td class="cl-fb25a24a"><p class="cl-fb2560fa"><span class="cl-fb213214"></span></p></td>
+</tr></tbody>
+<tfoot><tr style="overflow-wrap:break-word;"><td colspan="4" class="cl-fb25a24b"><p class="cl-fb256104"><span class="cl-fb21321e">Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates.</span></p></td></tr></tfoot>
+</table>
+</div>
 </div>
 <div class="section level3">
-<h3 id="collinearity">Collinearity<a class="anchor" aria-label="anchor" href="#collinearity"></a>
+<h3 id="collinearity-screening">Collinearity Screening<a class="anchor" aria-label="anchor" href="#collinearity-screening"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/check_collinearity.html">check_collinearity()</a></code> reports VIF-style diagnostics for
+multivariable models. High VIF values are prompts to inspect coding,
+overlap between predictors, and the scientific purpose of the model.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">birthwt_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_reg.html">multi_reg</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/check_collinearity.html">check_collinearity</a></span><span class="op">(</span><span class="va">birthwt_multi</span>, format <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/check_collinearity.html">check_collinearity</a></span><span class="op">(</span><span class="va">birthwt_multi</span>, format <span class="op">=</span> <span class="va">gt</span><span class="op">)</span></span></code></pre></div>
 <div id="wkkeulbfdp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#wkkeulbfdp table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -964,8 +1005,8 @@ helpers keep diagnostics close to the regression workflow.</p>
 
 #wkkeulbfdp .gt_sourcenote {
   font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -1092,21 +1133,131 @@ helpers keep diagnostics close to the regression workflow.</p>
     </tr></tfoot>
 </table>
 </div>
-</div>
-<div class="section level3">
-<h3 id="stepwise-model-selection">Stepwise Model Selection<a class="anchor" aria-label="anchor" href="#stepwise-model-selection"></a>
-</h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">selected</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_models.html">select_models</a></span><span class="op">(</span></span>
+<p>Adjusted-mode <code><a href="../reference/multi_reg.html">multi_reg()</a></code> objects contain one model per
+exposure. The collinearity output keeps that list structure so each
+model can be inspected separately.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">birthwt_adjusted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_reg.html">multi_reg</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
-<span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
-<span>  direction <span class="op">=</span> <span class="st">"forward"</span>,</span>
-<span>  format <span class="op">=</span> <span class="st">"gt"</span></span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span>, <span class="st">"ptl_cat"</span><span class="op">)</span>,</span>
+<span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"race"</span><span class="op">)</span>,</span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">selected</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/check_collinearity.html">check_collinearity</a></span><span class="op">(</span><span class="va">birthwt_adjusted</span>, format <span class="op">=</span> <span class="va">tibble</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## $smoke</span></span>
+<span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">##   Variable   VIF Interpretation </span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> smoke     1.14 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> age       1.03 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> lwt       1.06 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> race      1.1  No collinearity</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $ht</span></span>
+<span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">##   Variable   VIF Interpretation </span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> ht        1.07 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> age       1.02 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> lwt       1.14 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> race      1.03 No collinearity</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $ui</span></span>
+<span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">##   Variable   VIF Interpretation </span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> ui        1.01 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> age       1.03 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> lwt       1.07 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> race      1.04 No collinearity</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## $ptl_cat</span></span>
+<span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">##   Variable   VIF Interpretation </span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> ptl_cat   1.03 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> age       1.05 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> lwt       1.07 No collinearity</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> race      1.04 No collinearity</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="model-fit-plots">Model Fit Plots<a class="anchor" aria-label="anchor" href="#model-fit-plots"></a>
+</h3>
+<p><code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> turns fitted models into quick
+diagnostic plots. It accepts raw <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> and
+<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> objects, and it also works with models saved inside
+<code><a href="../reference/uni_reg.html">uni_reg()</a></code> and <code><a href="../reference/multi_reg.html">multi_reg()</a></code> results.</p>
+<p>For logistic regression, the calibration plot compares predicted
+probabilities with observed event proportions. Points close to the
+diagonal line suggest that the model predictions are reasonably aligned
+with the observed data. Calibration is usually most useful for
+multivariable models because predicted probabilities vary across many
+people.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model_fit.html">plot_model_fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">birthwt_multi</span>,</span>
+<span>  type <span class="op">=</span> <span class="va">calibration</span>,</span>
+<span>  bins <span class="op">=</span> <span class="fl">6</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="diagnostics-selection_files/figure-html/diag-fit-logistic-1.png" class="r-plt" alt="" width="700"></p>
+<p>When a <code><a href="../reference/uni_reg.html">uni_reg()</a></code> object contains several models, use
+<code>model_name</code> to choose the exposure you want to inspect. For
+a simple binary exposure, calibration may only show two points because
+the model has only two fitted probabilities; in that situation, residual
+and influence plots are usually more useful.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">birthwt_uni</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uni_reg.html">uni_reg</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"smoke"</span><span class="op">)</span>,</span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plot_model_fit.html">plot_model_fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">birthwt_uni</span>,</span>
+<span>  model_name <span class="op">=</span> <span class="va">smoke</span>,</span>
+<span>  type <span class="op">=</span> <span class="va">residual</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="diagnostics-selection_files/figure-html/diag-fit-uni-1.png" class="r-plt" alt="" width="700"></p>
+<p>For logistic models, residual plots often form two visible bands.
+That is a normal consequence of a 0/1 outcome and should be interpreted
+as a screening plot rather than a linear-model residual plot.</p>
+<p>For linear regression, <code>type = all</code> shows the classic
+residual, Q-Q, scale-location, and Cook’s distance views.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_lm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">bwt</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">lwt</span>, data <span class="op">=</span> <span class="va">birthwt_data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_model_fit.html">plot_model_fit</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span></code></pre></div>
+<p><img src="diagnostics-selection_files/figure-html/diag-fit-linear-1.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level3">
+<h3 id="proportional-hazards-screening">Proportional Hazards Screening<a class="anchor" aria-label="anchor" href="#proportional-hazards-screening"></a>
+</h3>
+<p>For Cox models, use <code><a href="../reference/check_ph.html">check_ph()</a></code> before treating hazard
+ratios as final. It reports Schoenfeld residual tests from
+<code><a href="https://rdrr.io/pkg/survival/man/cox.zph.html" class="external-link">survival::cox.zph()</a></code>, including a global test. Small
+p-values suggest possible non-proportional hazards and should be
+reviewed with plots, follow-up pattern, and clinical judgement.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"data_lungcancer"</span>, package <span class="op">=</span> <span class="st">"gtregression"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">lung_data</span> <span class="op">&lt;-</span> <span class="va">data_lungcancer</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    trt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">trt</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                 labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Standard treatment"</span>, <span class="st">"Test treatment"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">prior</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cox_reg.html">cox_reg</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">trt</span>, <span class="va">celltype</span>, <span class="va">prior</span><span class="op">)</span>,</span>
+<span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">karno</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/check_ph.html">check_ph</a></span><span class="op">(</span><span class="va">cox_fit</span>, format <span class="op">=</span> <span class="va">gt</span><span class="op">)</span></span></code></pre></div>
 <div id="ufivjubqtx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#ufivjubqtx table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -1481,8 +1632,8 @@ helpers keep diagnostics close to the regression workflow.</p>
 
 #ufivjubqtx .gt_sourcenote {
   font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -1553,6 +1704,623 @@ helpers keep diagnostics close to the regression workflow.</p>
 }
 
 #ufivjubqtx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading">
+<td colspan="7" class="gt_heading gt_title gt_font_normal gt_bottom_border" style>Proportional hazards check</td>
+    </tr>
+<tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Model">Model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Term">Term</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Test">Test</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Chi.square">Chi-square</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="df">df</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="p.value">p-value</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Interpretation">Interpretation</th>
+    </tr>
+</thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #E7F5EC;">trt</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #E7F5EC;">trt</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #E7F5EC;">Term</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #E7F5EC;">0.28</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #E7F5EC;">1</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #E7F5EC;">0.594</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #E7F5EC;">No evidence of PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #E7F5EC;">trt</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #E7F5EC;">age</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #E7F5EC;">Term</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #E7F5EC;">2.10</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #E7F5EC;">1</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #E7F5EC;">0.147</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #E7F5EC;">No evidence of PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #FDE2E2;">trt</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #FDE2E2;">karno</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #FDE2E2;">Term</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #FDE2E2;">12.00</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #FDE2E2;">1</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #FDE2E2;">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #FDE2E2;">Possible PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #FDE2E2;">trt</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #FDE2E2;">GLOBAL</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #FDE2E2;">Global</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #FDE2E2;">19.10</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #FDE2E2;">3</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #FDE2E2;">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #FDE2E2;">Possible PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #FDE2E2;">celltype</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #FDE2E2;">celltype</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #FDE2E2;">Term</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #FDE2E2;">14.15</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #FDE2E2;">3</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #FDE2E2;">0.003</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #FDE2E2;">Possible PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #E7F5EC;">celltype</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #E7F5EC;">age</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #E7F5EC;">Term</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #E7F5EC;">1.99</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #E7F5EC;">1</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #E7F5EC;">0.158</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #E7F5EC;">No evidence of PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #FDE2E2;">celltype</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #FDE2E2;">karno</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #FDE2E2;">Term</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #FDE2E2;">14.77</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #FDE2E2;">1</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #FDE2E2;">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #FDE2E2;">Possible PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #FDE2E2;">celltype</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #FDE2E2;">GLOBAL</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #FDE2E2;">Global</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #FDE2E2;">30.18</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #FDE2E2;">5</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #FDE2E2;">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #FDE2E2;">Possible PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #E7F5EC;">prior</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #E7F5EC;">prior</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #E7F5EC;">Term</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #E7F5EC;">1.87</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #E7F5EC;">1</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #E7F5EC;">0.171</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #E7F5EC;">No evidence of PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #E7F5EC;">prior</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #E7F5EC;">age</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #E7F5EC;">Term</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #E7F5EC;">2.18</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #E7F5EC;">1</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #E7F5EC;">0.140</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #E7F5EC;">No evidence of PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #FDE2E2;">prior</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #FDE2E2;">karno</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #FDE2E2;">Term</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #FDE2E2;">13.31</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #FDE2E2;">1</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #FDE2E2;">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #FDE2E2;">Possible PH violation</td>
+</tr>
+<tr>
+<td headers="Model" class="gt_row gt_left" style="background-color: #FDE2E2;">prior</td>
+<td headers="Term" class="gt_row gt_left" style="background-color: #FDE2E2;">GLOBAL</td>
+<td headers="Test" class="gt_row gt_left" style="background-color: #FDE2E2;">Global</td>
+<td headers="Chi.square" class="gt_row gt_center" style="background-color: #FDE2E2;">22.29</td>
+<td headers="df" class="gt_row gt_center" style="background-color: #FDE2E2;">3</td>
+<td headers="p.value" class="gt_row gt_center" style="background-color: #FDE2E2;">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left" style="background-color: #FDE2E2;">Possible PH violation</td>
+</tr>
+</tbody>
+<tfoot><tr class="gt_sourcenotes">
+<td class="gt_sourcenote" colspan="7"><span class="gt_from_md">Screening aid only. Small p-values suggest possible non-proportional hazards; interpret with Schoenfeld residual plots, follow-up pattern, clinical context, and model purpose. alpha = 0.05; transform = km.</span></td>
+    </tr></tfoot>
+</table>
+</div>
+<p>Use <code>format = tibble</code> when you want to inspect or filter
+the diagnostic results.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/check_ph.html">check_ph</a></span><span class="op">(</span><span class="va">cox_fit</span>, transform <span class="op">=</span> <span class="va">rank</span>, format <span class="op">=</span> <span class="va">tibble</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 12 × 7</span></span></span>
+<span><span class="co">##    Model    Term     Test   Chi.square    df   p.value Interpretation           </span></span>
+<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span> trt      trt      Term        0.278     1 0.598     No evidence of PH violat…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span> trt      age      Term        2.04      1 0.153     No evidence of PH violat…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span> trt      karno    Term       12.6       1 0.000<span style="text-decoration: underline;">377</span>  Possible PH violation    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> trt      GLOBAL   Global     19.7       3 0.000<span style="text-decoration: underline;">191</span>  Possible PH violation    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> celltype celltype Term       14.3       3 0.002<span style="text-decoration: underline;">49</span>   Possible PH violation    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span> celltype age      Term        1.93      1 0.164     No evidence of PH violat…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span> celltype karno    Term       15.4       1 0.000<span style="text-decoration: underline;">087</span>7 Possible PH violation    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span> celltype GLOBAL   Global     30.6       5 0.000<span style="text-decoration: underline;">011</span>4 Possible PH violation    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span> prior    prior    Term        1.92      1 0.166     No evidence of PH violat…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span> prior    age      Term        2.13      1 0.145     No evidence of PH violat…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span> prior    karno    Term       14.0       1 0.000<span style="text-decoration: underline;">187</span>  Possible PH violation    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span> prior    GLOBAL   Global     23.0       3 0.000<span style="text-decoration: underline;">040</span>1 Possible PH violation</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="stepwise-model-selection">Stepwise Model Selection<a class="anchor" aria-label="anchor" href="#stepwise-model-selection"></a>
+</h3>
+<p><code><a href="../reference/select_models.html">select_models()</a></code> compares candidate models step by step.
+It is useful for exploration, teaching, and sensitivity checks. It
+should not replace a planned model based on study design or a causal
+framework.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">selected</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_models.html">select_models</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span>,</span>
+<span>  direction <span class="op">=</span> <span class="va">forward</span>,</span>
+<span>  format <span class="op">=</span> <span class="va">gt</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">selected</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<div id="ayorehalsp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ayorehalsp table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#ayorehalsp thead, #ayorehalsp tbody, #ayorehalsp tfoot, #ayorehalsp tr, #ayorehalsp td, #ayorehalsp th {
+  border-style: none;
+}
+
+#ayorehalsp p {
+  margin: 0;
+  padding: 0;
+}
+
+#ayorehalsp .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#ayorehalsp .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#ayorehalsp .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#ayorehalsp .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#ayorehalsp .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#ayorehalsp .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#ayorehalsp .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#ayorehalsp .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#ayorehalsp .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#ayorehalsp .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#ayorehalsp .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ayorehalsp .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#ayorehalsp .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#ayorehalsp .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#ayorehalsp .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ayorehalsp .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#ayorehalsp .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#ayorehalsp .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#ayorehalsp .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ayorehalsp .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#ayorehalsp .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ayorehalsp .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#ayorehalsp .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ayorehalsp .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ayorehalsp .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ayorehalsp .gt_left {
+  text-align: left;
+}
+
+#ayorehalsp .gt_center {
+  text-align: center;
+}
+
+#ayorehalsp .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#ayorehalsp .gt_font_normal {
+  font-weight: normal;
+}
+
+#ayorehalsp .gt_font_bold {
+  font-weight: bold;
+}
+
+#ayorehalsp .gt_font_italic {
+  font-style: italic;
+}
+
+#ayorehalsp .gt_super {
+  font-size: 65%;
+}
+
+#ayorehalsp .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#ayorehalsp .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#ayorehalsp .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#ayorehalsp .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#ayorehalsp .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#ayorehalsp .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#ayorehalsp .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#ayorehalsp .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#ayorehalsp div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1651,6 +2419,41 @@ helpers keep diagnostics close to the regression workflow.</p>
 </tfoot>
 </table>
 </div>
+<p>The selected direction is recorded in the formatted table footer.
+Backward and both-direction searches are available using the same
+interface.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/select_models.html">select_models</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span>,</span>
+<span>  direction <span class="op">=</span> <span class="va">backward</span>,</span>
+<span>  format <span class="op">=</span> <span class="va">tibble</span></span>
+<span><span class="op">)</span><span class="op">$</span><span class="va">results_table</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 8</span></span></span>
+<span><span class="co">##   model_id formula        n_predictors   AIC   BIC logLik deviance selected_vars</span></span>
+<span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>        1 low ~ age + l…            7  215.  244.  -<span style="color: #BB0000;">98.4</span>     197. age + lwt + …</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>        2 low ~ lwt + r…            6  214.  240.  -<span style="color: #BB0000;">98.9</span>     198. lwt + race +…</span></span></code></pre>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/select_models.html">select_models</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span>,</span>
+<span>  direction <span class="op">=</span> <span class="va">both</span>,</span>
+<span>  format <span class="op">=</span> <span class="va">tibble</span></span>
+<span><span class="op">)</span><span class="op">$</span><span class="va">results_table</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 8</span></span></span>
+<span><span class="co">##   model_id formula        n_predictors   AIC   BIC logLik deviance selected_vars</span></span>
+<span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>        1 low ~ 1                   0  237.  240.  -<span style="color: #BB0000;">117.</span>     235. <span style="color: #949494;">""</span>           </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>        2 low ~ ptl_cat             1  226.  232.  -<span style="color: #BB0000;">111.</span>     222. <span style="color: #949494;">"</span>ptl_cat<span style="color: #949494;">"</span>    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span>        3 low ~ ptl_cat…            2  223.  233.  -<span style="color: #BB0000;">109.</span>     217. <span style="color: #949494;">"</span>ptl_cat + a…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span>        4 low ~ ptl_cat…            3  221.  234.  -<span style="color: #BB0000;">107.</span>     213. <span style="color: #949494;">"</span>ptl_cat + a…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span>        5 low ~ ptl_cat…            4  217.  234.  -<span style="color: #BB0000;">104.</span>     207. <span style="color: #949494;">"</span>ptl_cat + a…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span>        6 low ~ ptl_cat…            5  217.  237.  -<span style="color: #BB0000;">103.</span>     205. <span style="color: #949494;">"</span>ptl_cat + a…</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="what-to-inspect">What To Inspect<a class="anchor" aria-label="anchor" href="#what-to-inspect"></a>
@@ -1658,16 +2461,24 @@ helpers keep diagnostics close to the regression workflow.</p>
 <ul>
 <li>
 <code><a href="../reference/check_convergence.html">check_convergence()</a></code>: convergence status and maximum
-fitted probabilities. Use <code>format = "gt"</code> or
-<code>format = "flextable"</code> for viewing tables.</li>
+fitted probabilities. Use <code>format = gt</code> or
+<code>format = flextable</code> for viewing tables.</li>
 <li>
 <code><a href="../reference/check_collinearity.html">check_collinearity()</a></code>: VIF and interpretation. Nested
 model outputs keep their list structure when formatted.</li>
 <li>
+<code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code>: residual, calibration,
+observed-versus-predicted, and influence plots for
+<code>lm</code>/<code>glm</code> models and stored
+<code><a href="../reference/uni_reg.html">uni_reg()</a></code> / <code><a href="../reference/multi_reg.html">multi_reg()</a></code> fitted models.</li>
+<li>
+<code><a href="../reference/check_ph.html">check_ph()</a></code>: Schoenfeld residual proportional hazards
+tests for Cox models, including term-level and global tests.</li>
+<li>
 <code><a href="../reference/select_models.html">select_models()</a></code>: <code>$results_table</code>,
 <code>$best_model</code>, <code>$all_models</code>, and
-<code>$table</code> when <code>format = "gt"</code> or
-<code>format = "flextable"</code>.</li>
+<code>$direction</code>; <code>$table</code> is added when
+<code>format = gt</code> or <code>format = flextable</code>.</li>
 </ul>
 </div>
 </div>

@@ -41,10 +41,10 @@ plot_reg(
 
 - caption:
 
-  Optional plot caption. If `NULL`, an adjustment note is added
-  automatically for adjusted
+  Optional plot caption. If `NULL`, notes are added automatically for
+  adjusted
   [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
-  objects when `show_adjustment_note = TRUE`.
+  objects and displayed reference categories.
 
 - ref_line:
 
@@ -81,7 +81,10 @@ plot_reg(
 
 - show_ref:
 
-  Logical; if `TRUE`, reference rows are shown.
+  Logical; if `TRUE`, reference rows are shown. If `FALSE`, binary
+  exposures are shown as compact rows for the estimated non-reference
+  category; affirmative levels such as `Yes` or `1` are displayed using
+  the variable name.
 
 - sig_color:
 

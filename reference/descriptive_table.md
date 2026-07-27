@@ -62,8 +62,12 @@ descriptive_table(
 
 - statistic:
 
-  optional named vector per continuous var: values in
-  "mean","median","mode","count" (default is "median" = Median (IQR))
+  Optional summary type for numeric variables. Use a single value such
+  as `"mean"` or `mean` for all numeric variables, or a named vector
+  such as `c(age = mean, ftv = categorical)`. Supported values are
+  `"mean"`, `"median"`, `"mode"`, `"count"`, and `"categorical"`. Use
+  `"categorical"` for numeric ordinal variables that should be shown as
+  n (%).
 
 - value:
 
@@ -96,6 +100,17 @@ containing:
 
   Long audit data with variable, level, and type.
 
+- `variable_labels`:
+
+  Named character vector of display labels used for variables.
+
 - metadata:
 
   Additional metadata fields.
+
+## Details
+
+If variables have a `"label"` attribute, for example from
+[`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
+those labels are used automatically in the displayed table. Internal
+matching still uses the original column names.

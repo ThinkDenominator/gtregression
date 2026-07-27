@@ -19,6 +19,10 @@ tables.
   : Univariate regression
 - [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
   : Multivariable regression
+- [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+  : Cox proportional hazards regression
+- [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+  : Parametric survival regression
 
 ## Stratified Regression Tables
 
@@ -31,9 +35,29 @@ Repeat univariable or adjusted models within levels of a stratifier.
 
 ## Visualise Regression Results
 
-Turn regression tables into forest plots and publication-style forest
-tables.
+Turn regression and survival outputs into curves, forest plots, and
+publication-style forest tables.
 
+- [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md)
+  : Kaplan-Meier survival plot
+- [`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md)
+  : Kaplan-Meier risk table
+- [`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md)
+  : Restricted mean survival time table
+- [`survival_summary()`](https://thinkdenominator.github.io/gtregression/reference/survival_summary.md)
+  : Kaplan-Meier survival summary table
+- [`survival_quantiles()`](https://thinkdenominator.github.io/gtregression/reference/survival_quantiles.md)
+  : Kaplan-Meier survival quantile table
+- [`survival_prob()`](https://thinkdenominator.github.io/gtregression/reference/survival_prob.md)
+  : Kaplan-Meier survival probability table
+- [`logrank_test()`](https://thinkdenominator.github.io/gtregression/reference/logrank_test.md)
+  : Log-rank test for Kaplan-Meier survival curves
+- [`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md)
+  : Compare parametric survival model distributions
+- [`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md)
+  : Plot observed and fitted parametric survival curves
+- [`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md)
+  : Predict survival probabilities from a parametric survival model
 - [`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md)
   : Visualize a regression model as a forest plot
 - [`plot_reg_combine()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.md)
@@ -45,12 +69,16 @@ tables.
 
 ## Diagnostics and Model Selection
 
-Check convergence, collinearity, and candidate model paths.
+Check convergence, collinearity, model fit, and candidate model paths.
 
 - [`check_convergence()`](https://thinkdenominator.github.io/gtregression/reference/check_convergence.md)
   : Check Convergence for a Regression Model
 - [`check_collinearity()`](https://thinkdenominator.github.io/gtregression/reference/check_collinearity.md)
   : Check collinearity using VIF for fitted models
+- [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md)
+  : Check proportional hazards assumption for Cox models
+- [`plot_model_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_model_fit.md)
+  : Plot Model Fit Diagnostics
 - [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md)
   : Stepwise Model Selection with Evaluation Metrics
 
@@ -100,6 +128,8 @@ Built-in datasets for examples, teaching, and tests.
   : Student Absenteeism in Rural Schools
 - [`data_epilepsy`](https://thinkdenominator.github.io/gtregression/reference/data_epilepsy.md)
   : Epilepsy Treatment and Seizure Counts
+- [`data_endometrial`](https://thinkdenominator.github.io/gtregression/reference/data_endometrial.md)
+  : Endometrial Cancer Histology Grade Data
 - [`data_infertility`](https://thinkdenominator.github.io/gtregression/reference/data_infertility.md)
   : Infertility Matched Case-Control Study
 - [`data_lungcancer`](https://thinkdenominator.github.io/gtregression/reference/data_lungcancer.md)

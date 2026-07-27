@@ -26,6 +26,7 @@ with evaluation metrics and the best model based on the lowest AIC."></head><bod
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -59,6 +60,9 @@ with evaluation metrics and the best model based on the lowest AIC.</p>
 <span>  <span class="va">outcome</span>,</span>
 <span>  <span class="va">exposures</span>,</span>
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
+<span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  event <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  distribution <span class="op">=</span> <span class="st">"weibull"</span>,</span>
 <span>  direction <span class="op">=</span> <span class="st">"forward"</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span>, <span class="st">"tibble"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -74,7 +78,8 @@ with evaluation metrics and the best model based on the lowest AIC.</p>
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
 <dd><p>A single character string indicating the outcome variable.
-Quoted and bare names are accepted.</p></dd>
+Quoted and bare names are accepted. Not used for survival approaches when
+<code>time</code> and <code>event</code> are supplied.</p></dd>
 
 
 <dt id="arg-exposures">exposures<a class="anchor" aria-label="anchor" href="#arg-exposures"></a></dt>
@@ -85,7 +90,21 @@ names are recommended in scripts, and bare names are also accepted.</p></dd>
 <dt id="arg-approach">approach<a class="anchor" aria-label="anchor" href="#arg-approach"></a></dt>
 <dd><p>Regression method. One of:
 <code>"logit"</code>, <code>"logbinomial"</code>, <code>"poisson"</code>,
-<code>"robpoisson"</code>, <code>"negbin"</code>, or <code>"linear"</code>.</p></dd>
+<code>"robpoisson"</code>, <code>"negbin"</code>, <code>"linear"</code>, <code>"cox"</code>, or
+<code>"survreg"</code>.</p></dd>
+
+
+<dt id="arg-time-event">time, event<a class="anchor" aria-label="anchor" href="#arg-time-event"></a></dt>
+<dd><p>Survival time and event indicator for <code>approach = "cox"</code>
+or <code>approach = "survreg"</code>. Quoted and bare names are accepted.</p></dd>
+
+
+<dt id="arg-distribution">distribution<a class="anchor" aria-label="anchor" href="#arg-distribution"></a></dt>
+<dd><p>Parametric survival distribution for
+<code>approach = "survreg"</code>. One of <code>"weibull"</code>,
+<code>"exponential"</code>, <code>"lognormal"</code>, or <code>"loglogistic"</code>.
+Common spellings such as <code>"log-normal"</code> and <code>"log-logistic"</code> are
+also accepted.</p></dd>
 
 
 <dt id="arg-direction">direction<a class="anchor" aria-label="anchor" href="#arg-direction"></a></dt>

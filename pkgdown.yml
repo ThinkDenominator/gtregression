@@ -9,8 +9,9 @@ articles:
   gtregression-intro: gtregression-intro.html
   regression-tables: regression-tables.html
   stratified-analysis: stratified-analysis.html
+  survival-analysis: survival-analysis.html
   visualise-results: visualise-results.html
-last_built: 2026-07-22T16:15Z
+last_built: 2026-07-27T09:30Z
 urls:
   reference: https://thinkdenominator.github.io/gtregression/reference
   article: https://thinkdenominator.github.io/gtregression/articles

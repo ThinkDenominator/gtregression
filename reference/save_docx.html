@@ -26,6 +26,7 @@ single Word document."></head><body>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -59,6 +60,7 @@ single Word document.</p>
 <span>  plots <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  filename <span class="op">=</span> <span class="st">"report.docx"</span>,</span>
 <span>  titles <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  table_width <span class="op">=</span> <span class="fl">6.5</span>,</span>
 <span>  plot_width <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  plot_height <span class="op">=</span> <span class="fl">5</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -85,6 +87,12 @@ directory is supplied, the file is saved in <code><a href="https://rdrr.io/r/bas
 <dt id="arg-titles">titles<a class="anchor" aria-label="anchor" href="#arg-titles"></a></dt>
 <dd><p>Optional character vector of titles for tables and plots in
 the order they are added.</p></dd>
+
+
+<dt id="arg-table-width">table_width<a class="anchor" aria-label="anchor" href="#arg-table-width"></a></dt>
+<dd><p>Maximum table width in inches for Word export. The default
+<code>6.5</code> fits a standard portrait Word page with common margins. Use
+<code>NULL</code> to keep the original flextable widths.</p></dd>
 
 
 <dt id="arg-plot-width">plot_width<a class="anchor" aria-label="anchor" href="#arg-plot-width"></a></dt>
@@ -118,7 +126,7 @@ the order they are added.</p></dd>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">save_docx</span><span class="op">(</span>tables <span class="op">=</span> <span class="va">tbl</span>, filename <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"report"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Word document saved at: /tmp/RtmpyrO5nP/report1a8e36be9fe5.docx</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Word document saved at: /tmp/RtmpXKuG5h/report1a8b46c5f7f1.docx</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

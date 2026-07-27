@@ -13,6 +13,9 @@ select_models(
   outcome,
   exposures,
   approach = "logit",
+  time = NULL,
+  event = NULL,
+  distribution = "weibull",
   direction = "forward",
   format = c("flextable", "gt", "tibble")
 )
@@ -27,7 +30,8 @@ select_models(
 - outcome:
 
   A single character string indicating the outcome variable. Quoted and
-  bare names are accepted.
+  bare names are accepted. Not used for survival approaches when `time`
+  and `event` are supplied.
 
 - exposures:
 
@@ -37,7 +41,19 @@ select_models(
 - approach:
 
   Regression method. One of: `"logit"`, `"logbinomial"`, `"poisson"`,
-  `"robpoisson"`, `"negbin"`, or `"linear"`.
+  `"robpoisson"`, `"negbin"`, `"linear"`, `"cox"`, or `"survreg"`.
+
+- time, event:
+
+  Survival time and event indicator for `approach = "cox"` or
+  `approach = "survreg"`. Quoted and bare names are accepted.
+
+- distribution:
+
+  Parametric survival distribution for `approach = "survreg"`. One of
+  `"weibull"`, `"exponential"`, `"lognormal"`, or `"loglogistic"`.
+  Common spellings such as `"log-normal"` and `"log-logistic"` are also
+  accepted.
 
 - direction:
 

@@ -1,9 +1,12 @@
 # Side-by-side forest plots: univariate vs multivariable
 
-Creates two aligned forest plots from `gtregression` objects returned by
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
-and
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md).
+Creates two aligned forest plots from compatible `gtregression`
+regression objects such as crude and adjusted outputs from
+[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md),
+[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
+[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
+or
+[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
 
 ## Usage
 
@@ -48,8 +51,10 @@ plot_reg_combine(
 
 - caption:
 
-  Optional combined plot caption. If `NULL`, an adjustment note is added
-  automatically from `tbl_multi` when `show_adjustment_note = TRUE`.
+  Optional combined plot caption. If `NULL`, notes are added
+  automatically for adjusted
+  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+  objects and displayed reference categories.
 
 - ref_line:
 
@@ -74,7 +79,10 @@ plot_reg_combine(
 
 - show_ref:
 
-  Logical; if `TRUE`, include reference levels as `(ref)`.
+  Logical; if `TRUE`, include reference levels as `(Ref.)`. If `FALSE`,
+  binary exposures are shown as compact rows for the estimated
+  non-reference category; affirmative levels such as `Yes` or `1` are
+  displayed using the variable name.
 
 - sig_color, sig_errorbar_color:
 

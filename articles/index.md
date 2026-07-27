@@ -11,6 +11,8 @@
   Tables](https://thinkdenominator.github.io/gtregression/articles/descriptive-tables.md):
 - [Regression
   Tables](https://thinkdenominator.github.io/gtregression/articles/regression-tables.md):
+- [Survival
+  Analysis](https://thinkdenominator.github.io/gtregression/articles/survival-analysis.md):
 
 ### Visualise
 

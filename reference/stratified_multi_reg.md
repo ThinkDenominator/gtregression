@@ -55,7 +55,7 @@ stratified_multi_reg(
 
 - approach:
 
-  One of `"logit"`, `"logbinomial"`, `"poisson"`, `"linear"`,
+  One of `"logit"`, `"firth"`, `"logbinomial"`, `"poisson"`, `"linear"`,
   `"robpoisson"`, or `"negbin"`
 
 - format:
@@ -92,6 +92,10 @@ A list of class `c("gtregression","stratified_multi_reg", ...)` with:
 
   Named list of model summaries by stratum.
 
+- `variable_labels`:
+
+  Named character vector of display labels used for exposure variables.
+
 - `reg_check`:
 
   Named list of diagnostics by stratum.
@@ -105,6 +109,11 @@ A list of class `c("gtregression","stratified_multi_reg", ...)` with:
 If `adjust_for = NULL`, all `exposures` are included in one
 multivariable model within each stratum. If `adjust_for` is supplied,
 one adjusted model is fitted per exposure within each stratum.
+
+If exposure variables have a `"label"` attribute, for example from
+[`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
+those labels are used automatically in the displayed table. Internal
+matching still uses the original column names.
 
 ## Examples
 

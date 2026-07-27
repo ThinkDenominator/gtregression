@@ -12,7 +12,8 @@ uni_reg(
   exposures,
   approach = "logit",
   format = c("flextable", "gt"),
-  theme = c("minimal")
+  theme = c("minimal"),
+  model_stats = FALSE
 )
 ```
 
@@ -34,7 +35,10 @@ uni_reg(
 
 - approach:
 
-  one of `"logit"`, `"logbinomial"`, `"poisson"`, `"linear"`
+  Regression approach. One of `"logit"`, `"firth"`, `"logbinomial"`,
+  `"poisson"`, `"robpoisson"`, `"linear"`, or `"negbin"`. Use `"firth"`
+  for Firth penalized logistic regression, especially with sparse cells
+  or separation.
 
 - format:
 
@@ -45,6 +49,14 @@ uni_reg(
   preset name (e.g. `"minimal"`, `"striped"`, `"clinical"`, `"shaded"`,
   `"jama"`) or primitives
   `c("plain","zebra","lines","labels_bold","compact","header_shaded")`
+
+- model_stats:
+
+  Logical; if `TRUE`, extract model-fit statistics such as AIC, BIC,
+  log-likelihood, deviance, pseudo R-squared for non-linear models, and
+  R-squared for linear models. Statistics are stored in the returned
+  object's `model_stats` element and are not added to the publication
+  table.
 
 ## Value
 
@@ -71,6 +83,14 @@ A list of class `c("gtregression","uni_reg", ...)` with elements:
 
   Per-model [`summary()`](https://rdrr.io/r/base/summary.html) results.
 
+- model_stats:
+
+  Model-fit statistics when `model_stats = TRUE`; otherwise `NULL`.
+
+- variable_labels:
+
+  Named character vector of display labels used for exposure variables.
+
 - reg_check:
 
   Diagnostics for linear models; message otherwise.
@@ -78,6 +98,13 @@ A list of class `c("gtregression","uni_reg", ...)` with elements:
 - approach, format, source:
 
   Metadata fields.
+
+## Details
+
+If exposure variables have a `"label"` attribute, for example from
+[`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
+those labels are used automatically in the displayed table and plots.
+Internal matching still uses the original column names.
 
 ## Examples
 

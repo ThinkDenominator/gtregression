@@ -38,6 +38,7 @@
 <li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -73,15 +74,22 @@
 <div class="section level2">
 <h2 id="visualise-regression-results">Visualise Regression Results<a class="anchor" aria-label="anchor" href="#visualise-regression-results"></a>
 </h2>
-<p>Regression tables are the evidence. Plots are the vibe check. Use
+<p>Regression tables are the evidence. Plots are the quick read. Use
+<code><a href="../reference/km_plot.html">km_plot()</a></code>, <code><a href="../reference/km_risk_table.html">km_risk_table()</a></code>,
+<code><a href="../reference/rmst_table.html">rmst_table()</a></code>, <code><a href="../reference/survival_summary.html">survival_summary()</a></code>,
+<code><a href="../reference/survival_quantiles.html">survival_quantiles()</a></code>, <code><a href="../reference/survival_prob.html">survival_prob()</a></code>,
+<code><a href="../reference/logrank_test.html">logrank_test()</a></code>, <code><a href="../reference/surv_model_compare.html">surv_model_compare()</a></code>,
+<code><a href="../reference/plot_surv_fit.html">plot_surv_fit()</a></code>, <code><a href="../reference/surv_predict.html">surv_predict()</a></code>,
 <code><a href="../reference/plot_reg.html">plot_reg()</a></code>, <code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code>,
-<code><a href="../reference/forest_df.html">forest_df()</a></code>, and <code><a href="../reference/forest_reg.html">forest_reg()</a></code> to make the
-results easier to scan.</p>
+<code><a href="../reference/forest_df.html">forest_df()</a></code>, and <code><a href="../reference/forest_reg.html">forest_reg()</a></code> to visualise
+survival and regression results, inspect reference categories, and
+prepare figures for manuscripts or reports.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://thinkdenominator.github.io/gtregression/">gtregression</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"data_birthwt"</span>, package <span class="op">=</span> <span class="st">"gtregression"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"data_lungcancer"</span>, package <span class="op">=</span> <span class="st">"gtregression"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">birthwt_data</span> <span class="op">&lt;-</span> <span class="va">data_birthwt</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -103,6 +111,15 @@ results easier to scan.</p>
 <span>  <span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"race"</span>, <span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span>, <span class="st">"ptl_cat"</span>, <span class="st">"ftv_cat"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">age</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Maternal age"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">lwt</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Maternal weight"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">race</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Maternal race"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">smoke</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Smoking during pregnancy"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">ht</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Hypertension"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">ui</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Uterine irritability"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">ptl_cat</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Previous preterm labour"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">ftv_cat</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"First trimester visits"</span></span>
+<span></span>
 <span><span class="va">birthwt_desc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/descriptive_table.html">descriptive_table</a></span><span class="op">(</span></span>
 <span>  <span class="va">birthwt_data</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="va">birthwt_exposures</span>,</span>
@@ -121,24 +138,296 @@ results easier to scan.</p>
 <span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span>, <span class="st">"ptl_cat"</span>, <span class="st">"ftv_cat"</span><span class="op">)</span>,</span>
 <span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"race"</span><span class="op">)</span>,</span>
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">lung_data</span> <span class="op">&lt;-</span> <span class="va">data_lungcancer</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    trt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">trt</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                 labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Standard treatment"</span>, <span class="st">"Test treatment"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="va">lung_surv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/surv_reg.html">surv_reg</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="st">"trt"</span>,</span>
+<span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"karno"</span><span class="op">)</span>,</span>
+<span>  distribution <span class="op">=</span> <span class="va">weibull</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="kaplan-meier-curve">Kaplan-Meier Curve<a class="anchor" aria-label="anchor" href="#kaplan-meier-curve"></a>
+</h3>
+<p><code><a href="../reference/km_plot.html">km_plot()</a></code> gives the survival curve before regression
+modelling. Use it to show the observed survival experience by group,
+with optional confidence intervals, censoring marks, log-rank p-value,
+and number-at-risk table.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/km_plot.html">km_plot</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">trt</span>,</span>
+<span>  break_time_by <span class="op">=</span> <span class="fl">200</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Kaplan-Meier Survival by Treatment"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/km-plot-1.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level3">
+<h3 id="risk-table">Risk Table<a class="anchor" aria-label="anchor" href="#risk-table"></a>
+</h3>
+<p><code><a href="../reference/km_risk_table.html">km_risk_table()</a></code> gives the number at risk at selected
+follow-up times as a standalone table. This is useful when the risk
+table needs to be reported beside or underneath a Kaplan-Meier
+curve.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/km_risk_table.html">km_risk_table</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">trt</span>,</span>
+<span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">90</span>, <span class="fl">180</span>, <span class="fl">365</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="restricted-mean-survival-time">Restricted Mean Survival Time<a class="anchor" aria-label="anchor" href="#restricted-mean-survival-time"></a>
+</h3>
+<p><code><a href="../reference/rmst_table.html">rmst_table()</a></code> reports the average survival time up to a
+fixed follow-up point, called <code>tau</code>. This is useful when
+readers want an absolute survival-time summary, or when hazard ratios
+are difficult to explain.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rmst_table.html">rmst_table</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">trt</span>,</span>
+<span>  tau <span class="op">=</span> <span class="fl">365</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="kaplan-meier-summary">Kaplan-Meier Summary<a class="anchor" aria-label="anchor" href="#kaplan-meier-summary"></a>
+</h3>
+<p><code><a href="../reference/survival_summary.html">survival_summary()</a></code> is the table companion to the
+Kaplan-Meier curve. It reports the number analysed, events, censored
+observations, and median survival with a 95% confidence interval. Use it
+when readers need the key survival numbers without reading them from the
+plot.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_summary.html">survival_summary</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">trt</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="survival-quantiles">Survival Quantiles<a class="anchor" aria-label="anchor" href="#survival-quantiles"></a>
+</h3>
+<p><code><a href="../reference/survival_quantiles.html">survival_quantiles()</a></code> reports detailed Kaplan-Meier time
+points. This is useful when the median alone is not enough, or when you
+want to show the 25th, 50th, and 75th percentile event times by
+group.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_quantiles.html">survival_quantiles</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">trt</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="survival-probabilities">Survival Probabilities<a class="anchor" aria-label="anchor" href="#survival-probabilities"></a>
+</h3>
+<p><code><a href="../reference/survival_prob.html">survival_prob()</a></code> reports Kaplan-Meier survival
+probability at fixed follow-up times. This is useful for clinically
+familiar summaries such as 90-day, 6-month, or 1-year survival.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_prob.html">survival_prob</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">trt</span>,</span>
+<span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">180</span>, <span class="fl">365</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="log-rank-test">Log-Rank Test<a class="anchor" aria-label="anchor" href="#log-rank-test"></a>
+</h3>
+<p><code><a href="../reference/logrank_test.html">logrank_test()</a></code> formally compares Kaplan-Meier curves
+between groups. It is useful after the curve and summary table, but it
+does not give an effect size; use <code><a href="../reference/cox_reg.html">cox_reg()</a></code> when a hazard
+ratio is needed.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/logrank_test.html">logrank_test</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">trt</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="parametric-survival-model-comparison">Parametric Survival Model Comparison<a class="anchor" aria-label="anchor" href="#parametric-survival-model-comparison"></a>
+</h3>
+<p><code><a href="../reference/surv_model_compare.html">surv_model_compare()</a></code> helps users choose a candidate
+distribution before using <code><a href="../reference/surv_reg.html">surv_reg()</a></code>. It fits the same
+model with Weibull, exponential, lognormal, and loglogistic
+distributions, then compares AIC and BIC.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/surv_model_compare.html">surv_model_compare</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"trt"</span>, <span class="st">"celltype"</span><span class="op">)</span>,</span>
+<span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"karno"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="parametric-survival-fit-plot">Parametric Survival Fit Plot<a class="anchor" aria-label="anchor" href="#parametric-survival-fit-plot"></a>
+</h3>
+<p><code><a href="../reference/plot_surv_fit.html">plot_surv_fit()</a></code> is the visual companion to
+<code><a href="../reference/surv_model_compare.html">surv_model_compare()</a></code>. It overlays the observed Kaplan-Meier
+curve with fitted parametric survival curves, so users can check whether
+a distribution that looks good by AIC/BIC also follows the observed
+survival pattern.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_surv_fit.html">plot_surv_fit</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">trt</span>,</span>
+<span>  distributions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">weibull</span>, <span class="va">lognormal</span><span class="op">)</span>,</span>
+<span>  break_time_by <span class="op">=</span> <span class="fl">200</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/plot-surv-fit-1.png" class="r-plt" alt="" width="700"></p>
+<p>Adjusted fitted curves can also be drawn. In that case, the curves
+are predicted at typical adjustment values, such as medians for numeric
+variables and the most common level for categorical variables.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_surv_fit.html">plot_surv_fit</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">status</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">trt</span>,</span>
+<span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">karno</span><span class="op">)</span>,</span>
+<span>  distributions <span class="op">=</span> <span class="va">loglogistic</span>,</span>
+<span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">800</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/plot-surv-fit-adjusted-1.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level3">
+<h3 id="parametric-survival-prediction">Parametric Survival Prediction<a class="anchor" aria-label="anchor" href="#parametric-survival-prediction"></a>
+</h3>
+<p><code><a href="../reference/surv_predict.html">surv_predict()</a></code> turns a fitted parametric survival model
+into predicted survival probabilities at clinically useful follow-up
+times. This helps users move from a time-ratio table to a more direct
+statement such as predicted 90-day, 180-day, or 1-year survival for a
+profile.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/surv_predict.html">surv_predict</a></span><span class="op">(</span></span>
+<span>  model <span class="op">=</span> <span class="va">lung_surv</span><span class="op">$</span><span class="va">models</span><span class="op">$</span><span class="va">trt</span>,</span>
+<span>  newdata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    trt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="st">"Test treatment"</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">lung_data</span><span class="op">$</span><span class="va">trt</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    age <span class="op">=</span> <span class="fl">60</span>,</span>
+<span>    karno <span class="op">=</span> <span class="fl">70</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">180</span>, <span class="fl">365</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>If <code>newdata</code> is omitted, <code><a href="../reference/surv_predict.html">surv_predict()</a></code> uses
+a typical profile from the model data, using medians for numeric
+variables and the most common level for categorical variables.</p>
+</div>
 <div class="section level3">
 <h3 id="one-regression-plot">One Regression Plot<a class="anchor" aria-label="anchor" href="#one-regression-plot"></a>
 </h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/plot_reg.html">plot_reg()</a></code> turns a <code><a href="../reference/uni_reg.html">uni_reg()</a></code> or
+<code><a href="../reference/multi_reg.html">multi_reg()</a></code> result into a forest-style plot. By default,
+categorical reference levels are shown and labelled as
+<code>(Ref.)</code>; the caption explains the abbreviation. Variable
+labels set on the data are used automatically in the plot.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_reg.html">plot_reg</a></span><span class="op">(</span></span>
-<span>  <span class="va">birthwt_multi</span>,</span>
-<span>  title <span class="op">=</span> <span class="st">"Adjusted Regression for Low Birth Weight"</span></span>
+<span>  <span class="va">birthwt_uni</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Crude Associations With Low Birth Weight"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/one-plot-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 <div class="section level3">
+<h3 id="adjusted-regression-plot">Adjusted Regression Plot<a class="anchor" aria-label="anchor" href="#adjusted-regression-plot"></a>
+</h3>
+<p>When the input comes from <code>multi_reg(adjust_for = ...)</code>,
+the adjustment set is shown in the plot caption by default. This keeps
+the figure interpretable when it is copied into slides or a manuscript
+draft.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_reg.html">plot_reg</a></span><span class="op">(</span></span>
+<span>  <span class="va">birthwt_multi</span>,</span>
+<span>  show_ref <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  log_x <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Adjusted Associations With Low Birth Weight"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/adjusted-plot-1.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level3">
+<h3 id="compact-binary-predictors">Compact Binary Predictors<a class="anchor" aria-label="anchor" href="#compact-binary-predictors"></a>
+</h3>
+<p>For Yes/No, 1/0, true/false, or similar binary predictors, set
+<code>show_ref = FALSE</code> to hide reference rows. Affirmative binary
+levels such as <code>Yes</code> are displayed as the exposure name
+itself, so the plot remains compact: <code>smoke</code>,
+<code>ht</code>, <code>ui</code>, and <code>ptl_cat</code> are easier to
+read than repeated <code>variable: Yes</code> labels.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_reg.html">plot_reg</a></span><span class="op">(</span></span>
+<span>  <span class="va">birthwt_uni</span>,</span>
+<span>  show_ref <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Crude Associations With Reference Rows Hidden"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/compact-binary-plot-1.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level3">
+<h3 id="log-axis-and-tick-marks">Log Axis and Tick Marks<a class="anchor" aria-label="anchor" href="#log-axis-and-tick-marks"></a>
+</h3>
+<p>For ratio measures such as odds ratios, risk ratios, and incidence
+rate ratios, <code>log_x = TRUE</code> uses a log-scaled x-axis. If you
+do not provide tick marks, <code>gtregression</code> chooses sensible
+defaults around the null value of 1.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_reg.html">plot_reg</a></span><span class="op">(</span></span>
+<span>  <span class="va">birthwt_uni</span>,</span>
+<span>  log_x <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Crude Associations on a Log Scale"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/log-axis-plot-1.png" class="r-plt" alt="" width="700"></p>
+<p>You can still take full control of the visible axis range and tick
+marks.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_reg.html">plot_reg</a></span><span class="op">(</span></span>
+<span>  <span class="va">birthwt_uni</span>,</span>
+<span>  show_ref <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  log_x <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">12</span><span class="op">)</span>,</span>
+<span>  breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Crude Associations With Custom Axis"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/custom-axis-plot-1.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level3">
 <h3 id="compare-crude-and-adjusted-effects">Compare Crude and Adjusted Effects<a class="anchor" aria-label="anchor" href="#compare-crude-and-adjusted-effects"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code> places crude and adjusted model
+results side by side. This is useful when a manuscript needs to show how
+adjustment changes the estimate. Axis limits and tick marks can be
+controlled separately for each side.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_reg_combine.html">plot_reg_combine</a></span><span class="op">(</span></span>
 <span>  tbl_uni <span class="op">=</span> <span class="va">birthwt_uni</span>,</span>
 <span>  tbl_multi <span class="op">=</span> <span class="va">birthwt_multi</span>,</span>
+<span>  show_ref <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  log_x <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  xlim_uni <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">12</span><span class="op">)</span>,</span>
+<span>  breaks_uni <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span>,</span>
+<span>  xlim_multi <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">16</span><span class="op">)</span>,</span>
+<span>  breaks_multi <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span>,</span>
 <span>  title_uni <span class="op">=</span> <span class="st">"Crude Effects"</span>,</span>
 <span>  title_multi <span class="op">=</span> <span class="st">"Adjusted Effects"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -148,8 +437,10 @@ results easier to scan.</p>
 <h3 id="publication-style-forest-table">Publication-Style Forest Table<a class="anchor" aria-label="anchor" href="#publication-style-forest-table"></a>
 </h3>
 <p><code><a href="../reference/forest_df.html">forest_df()</a></code> prepares the data. <code><a href="../reference/forest_reg.html">forest_reg()</a></code>
-draws the forest table.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+draws the forest table. This is the most manuscript-oriented plot when
+you want descriptive summaries and crude or adjusted estimates in the
+same figure.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">forest_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/forest_df.html">forest_df</a></span><span class="op">(</span></span>
 <span>  uni <span class="op">=</span> <span class="va">birthwt_uni</span>,</span>
 <span>  multi <span class="op">=</span> <span class="va">birthwt_multi</span>,</span>
@@ -158,6 +449,57 @@ draws the forest table.</p>
 <span></span>
 <span><span class="fu"><a href="../reference/forest_reg.html">forest_reg</a></span><span class="op">(</span><span class="va">forest_data</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/forest-table-1.png" class="r-plt" alt="" width="700"></p>
+<div class="section level4">
+<h4 id="fine-tune-forest-tables">Fine-Tune Forest Tables<a class="anchor" aria-label="anchor" href="#fine-tune-forest-tables"></a>
+</h4>
+<p>Wide forest tables combine descriptive summaries, crude estimates,
+adjusted estimates, and one or two forest plot panels. If the x-axis
+labels are crowded, control the axis range and tick marks with
+<code>xlim</code> and <code>ticks_at</code>.</p>
+<p>Use a list when the table has crude and adjusted forest plot
+columns.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/forest_reg.html">forest_reg</a></span><span class="op">(</span></span>
+<span>  <span class="va">forest_data</span>,</span>
+<span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">25</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  ticks_at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span>, <span class="fl">16</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/forest-axis-control-1.png" class="r-plt" alt="" width="700"></p>
+<p>If the plot panel itself looks too narrow or too wide, tune
+<code>ci_col_width</code>. This changes the blank spacer column that
+<code>forestploter</code> uses for drawing the confidence intervals.
+Larger values give the CI panel more room; smaller values make the
+overall table more compact.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/forest_reg.html">forest_reg</a></span><span class="op">(</span></span>
+<span>  <span class="va">forest_data</span>,</span>
+<span>  ci_col_width <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">18</span>, <span class="fl">22</span><span class="op">)</span>,</span>
+<span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">25</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  ticks_at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span>, <span class="fl">16</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/forest-ci-width-1.png" class="r-plt" alt="" width="700"></p>
+<p>For publication export, use a wider graphics device or document
+canvas when the table includes several descriptive columns and two model
+columns.</p>
+<p>You can also build and draw in one call.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/forest_reg.html">forest_reg</a></span><span class="op">(</span></span>
+<span>  uni <span class="op">=</span> <span class="va">birthwt_uni</span>,</span>
+<span>  multi <span class="op">=</span> <span class="va">birthwt_multi</span>,</span>
+<span>  desc <span class="op">=</span> <span class="va">birthwt_desc</span>,</span>
+<span>  side <span class="op">=</span> <span class="st">"left"</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualise-results_files/figure-html/forest-one-call-1.png" class="r-plt" alt="" width="700"></p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="what-to-inspect">What To Inspect<a class="anchor" aria-label="anchor" href="#what-to-inspect"></a>
@@ -169,7 +511,40 @@ draws the forest table.</p>
 <code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code> returns a combined
 <code>ggplot</code>.</li>
 <li>
+<code><a href="../reference/km_risk_table.html">km_risk_table()</a></code> reports at-risk, event, and censored
+counts at requested follow-up times.</li>
+<li>
+<code><a href="../reference/rmst_table.html">rmst_table()</a></code> reports restricted mean survival time up
+to a chosen time point.</li>
+<li>
+<code>show_ref = TRUE</code> displays reference levels as
+<code>(Ref.)</code>.</li>
+<li>
+<code>show_ref = FALSE</code> hides reference levels; affirmative
+binary predictors are shown as compact bold exposure rows.</li>
+<li>Adjustment variables from <code>multi_reg(adjust_for = ...)</code>
+are carried into plot captions.</li>
+<li>
+<code>log_x = TRUE</code> uses log scaling for non-linear model
+effect measures.</li>
+<li>
 <code><a href="../reference/forest_df.html">forest_df()</a></code> returns the plotting data frame.</li>
+<li>
+<code><a href="../reference/survival_prob.html">survival_prob()</a></code> reports survival probability at
+requested follow-up times.</li>
+<li>
+<code><a href="../reference/surv_model_compare.html">surv_model_compare()</a></code> compares parametric survival
+distributions before fitting final <code><a href="../reference/surv_reg.html">surv_reg()</a></code> tables.</li>
+<li>
+<code><a href="../reference/plot_surv_fit.html">plot_surv_fit()</a></code> overlays fitted parametric survival
+curves on the observed Kaplan-Meier curve.</li>
+<li>
+<code><a href="../reference/surv_predict.html">surv_predict()</a></code> reports model-based survival
+probabilities at user-specified follow-up times.</li>
+<li>In <code><a href="../reference/forest_reg.html">forest_reg()</a></code>, use <code>xlim</code> and
+<code>ticks_at</code> when x-axis labels overlap.</li>
+<li>In <code><a href="../reference/forest_reg.html">forest_reg()</a></code>, use <code>ci_col_width</code> when the
+CI plot panel is too narrow or too wide.</li>
 <li>
 <code><a href="../reference/forest_reg.html">forest_reg()</a></code> returns <code>plot</code>,
 <code>data</code>, <code>input_data</code>, and <code>meta</code>.</li>

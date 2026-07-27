@@ -14,6 +14,92 @@
   including downstream regression plots and combined regression plots.
 - Added adjusted-variable notes to regression plots and combined
   regression plots.
+- Added optional model-fit statistics for
+  [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+  and
+  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+  via `model_stats = TRUE`, with AIC, BIC, log-likelihood, deviance,
+  pseudo R-squared, linear-model R-squared, and model N stored in
+  `$model_stats`.
+- Added `approach = "firth"` / `approach = firth` for Firth penalized
+  logistic regression in
+  [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md),
+  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
+  [`stratified_uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_uni_reg.md),
+  and
+  [`stratified_multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_multi_reg.md),
+  with OR tables and compatibility with regression plots and forest plot
+  helpers.
+- Added `data_endometrial`, a classic endometrial cancer dataset with a
+  separation pattern, for teaching and testing Firth logistic
+  regression.
+- Added
+  [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+  for beginner-friendly Cox proportional hazards regression using
+  `time`, `event`, `exposures`, and optional `adjust_for`, returning
+  publication-ready HR and adjusted HR tables.
+- Added
+  [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+  for beginner-friendly parametric survival regression using `time`,
+  `event`, `exposures`, optional `adjust_for`, and a selectable survival
+  distribution, returning publication-ready time-ratio tables.
+- Added
+  [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md)
+  for Kaplan-Meier survival curves with optional confidence intervals,
+  censoring marks, log-rank p-values, and number-at-risk tables.
+- Added
+  [`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md)
+  for standalone Kaplan-Meier risk tables at requested follow-up times,
+  with at-risk, event, and censored counts.
+- Added
+  [`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md)
+  for restricted mean survival time summaries up to a chosen follow-up
+  time, with optional two-group RMST difference.
+- Added
+  [`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md)
+  for comparing candidate parametric survival distributions by AIC, BIC,
+  log-likelihood, scale, events, and N.
+- Added
+  [`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md)
+  for visually comparing observed Kaplan-Meier curves with fitted
+  parametric survival curves.
+- Added
+  [`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md)
+  for model-based survival probability predictions from fitted
+  parametric survival regression models.
+- Added
+  [`survival_summary()`](https://thinkdenominator.github.io/gtregression/reference/survival_summary.md)
+  for Kaplan-Meier median survival summaries with total N, events,
+  censored counts, and publication-style table outputs.
+- Added
+  [`survival_quantiles()`](https://thinkdenominator.github.io/gtregression/reference/survival_quantiles.md)
+  for Kaplan-Meier survival time quantiles, including event percentiles,
+  corresponding survival probabilities, and confidence intervals.
+- Added
+  [`survival_prob()`](https://thinkdenominator.github.io/gtregression/reference/survival_prob.md)
+  for Kaplan-Meier survival probabilities at fixed follow-up times, with
+  at-risk, event, censored, and confidence interval columns.
+- Added
+  [`logrank_test()`](https://thinkdenominator.github.io/gtregression/reference/logrank_test.md)
+  for formal comparison of Kaplan-Meier survival curves, with observed
+  and expected events plus formatted p-value output.
+- Added
+  [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md)
+  for proportional hazards screening of Cox models using Schoenfeld
+  residual tests, with flextable, gt, and tibble outputs.
+- Added
+  [`plot_model_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_model_fit.md)
+  for visual model diagnostics from fitted `lm`/`glm` models and from
+  models stored in
+  [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+  and
+  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+  outputs.
+- Added automatic support for variable label attributes, including
+  labels set with
+  [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
+  across descriptive, regression, stratified, merged, plotted, and
+  forest-style outputs.
 - Added publication-style display outputs for diagnostic and helper
   functions including
   [`dissect()`](https://thinkdenominator.github.io/gtregression/reference/dissect.md),
@@ -27,7 +113,7 @@
   comparisons.
 - Added manual case-study scripts under `dev/manual-tests/` for
   real-time testing of logistic, linear, log-binomial, robust Poisson,
-  Poisson, and negative binomial workflows.
+  Poisson, negative binomial, Cox, and parametric survival workflows.
 
 ### Changed
 
@@ -58,6 +144,25 @@
   [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
   support for descriptive summaries combined with univariable and
   multivariable regression outputs.
+- Improved downstream survival support so
+  [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+  and
+  [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+  outputs work with
+  [`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md),
+  [`plot_reg_combine()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.md),
+  [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md),
+  [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md),
+  [`merge_tables()`](https://thinkdenominator.github.io/gtregression/reference/merge_tables.md),
+  [`modify_table()`](https://thinkdenominator.github.io/gtregression/reference/modify_table.md),
+  and
+  [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md).
+- Improved table footer and source-note spacing across publication and
+  helper tables so abbreviations, adjustment notes, and caveats render
+  more compactly in flextable, gt, Word, and pkgdown outputs.
+- Improved Word export so flextable outputs are fitted to a standard
+  Word page width by default, with `save_docx(table_width = ...)`
+  available for custom document layouts.
 - Improved
   [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md)
   output so formatted tables clearly report the model selection

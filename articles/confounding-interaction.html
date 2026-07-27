@@ -38,6 +38,7 @@
 <li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -57,8 +58,8 @@
 
 
 
-
-<div class="row">
+<link href="confounding-interaction_files/tabwid-1.1.3/tabwid.css" rel="stylesheet">
+<script src="confounding-interaction_files/tabwid-1.1.3/tabwid.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Confounding and Interaction</h1>
@@ -145,7 +146,11 @@ interaction hypothesis.</li>
 <span>    smoke <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">smoke</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    ht <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">ht</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">low</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Normal BW"</span>, <span class="st">"Low BW"</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">race</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Maternal race"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">smoke</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Smoking during pregnancy"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">ht</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Hypertension"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="identify-confounders">Identify Confounders<a class="anchor" aria-label="anchor" href="#identify-confounders"></a>
@@ -153,48 +158,20 @@ interaction hypothesis.</li>
 <p>Use <code>method = "change"</code> for the model-based
 change-in-estimate method. Use <code>method = "mh"</code> or
 <code>method = "both"</code> when Mantel-Haenszel is appropriate. The
-output is intentionally tidy rather than publication-first.</p>
+output is intentionally tidy and intended for viewing, not as a final
+publication table.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">confounder_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/identify_confounder.html">identify_confounder</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"smoke"</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="va">smoke</span>,</span>
 <span>  potential_confounder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"race"</span>, <span class="st">"ht"</span><span class="op">)</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"both"</span></span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span>,</span>
+<span>  method <span class="op">=</span> <span class="va">both</span>,</span>
+<span>  format <span class="op">=</span> <span class="va">gt</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">confounder_check</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 13</span></span></span>
-<span><span class="co">##   exposure candidate crude_est adjusted_est mh_est percent_change</span></span>
-<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> smoke    race           2.02         3.05   3.09          51.0 </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> smoke    ht             2.02         2.04   2.03           0.78</span></span>
-<span><span class="co">## <span style="color: #949494;"># ℹ 7 more variables: percent_change_model &lt;dbl&gt;, percent_change_mh &lt;dbl&gt;,</span></span></span>
-<span><span class="co">## <span style="color: #949494;">#   is_confounder &lt;lgl&gt;, interaction_p &lt;dbl&gt;, is_effect_modifier &lt;lgl&gt;,</span></span></span>
-<span><span class="co">## <span style="color: #949494;">#   decision &lt;chr&gt;, recommendation &lt;chr&gt;</span></span></span></code></pre>
-</div>
-<div class="section level3">
-<h3 id="test-interaction">Test Interaction<a class="anchor" aria-label="anchor" href="#test-interaction"></a>
-</h3>
-<p><code><a href="../reference/interaction_models.html">interaction_models()</a></code> compares models with and without
-the interaction term. It is deliberately model-based and uses
-<code>LRT</code> or <code>Wald</code>, not Mantel-Haenszel. Use it when
-the interaction term is planned or supported by clinical, causal, or
-subject-matter reasoning.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">interaction_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interaction_models.html">interaction_models</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
-<span>  exposure <span class="op">=</span> <span class="st">"smoke"</span>,</span>
-<span>  effect_modifier <span class="op">=</span> <span class="st">"race"</span>,</span>
-<span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span><span class="op">)</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
-<span>  test <span class="op">=</span> <span class="st">"LRT"</span>,</span>
-<span>  format <span class="op">=</span> <span class="st">"gt"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">interaction_check</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<span><span class="va">confounder_check</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
 <div id="mwlefoodfi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#mwlefoodfi table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -225,13 +202,13 @@ subject-matter reasoning.</p>
   width: auto;
   border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #A8A8A8;
+  border-top-color: #DADADA;
   border-right-style: none;
   border-right-width: 2px;
   border-right-color: #D3D3D3;
   border-bottom-style: solid;
   border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
+  border-bottom-color: #DADADA;
   border-left-style: none;
   border-left-width: 2px;
   border-left-color: #D3D3D3;
@@ -569,8 +546,8 @@ subject-matter reasoning.</p>
 
 #mwlefoodfi .gt_sourcenote {
   font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -645,6 +622,591 @@ subject-matter reasoning.</p>
 }
 </style>
 <table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Exposure">Exposure</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Candidate">Candidate</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Crude-estimate">Crude estimate</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Adjusted-estimate">Adjusted estimate</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="MH-estimate">MH estimate</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="a%-change-model">% change model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="a%-change-MH">% change MH</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Confounder?">Confounder?</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Interaction-p">Interaction p</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Effect-modifier?">Effect modifier?</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Decision">Decision</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Recommendation">Recommendation</th>
+    </tr></thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="Exposure" class="gt_row gt_left">smoke</td>
+<td headers="Candidate" class="gt_row gt_left">race</td>
+<td headers="Crude estimate" class="gt_row gt_center">2.022</td>
+<td headers="Adjusted estimate" class="gt_row gt_center">3.053</td>
+<td headers="MH estimate" class="gt_row gt_center">3.086</td>
+<td headers="% change model" class="gt_row gt_center">50.98</td>
+<td headers="% change MH" class="gt_row gt_center">52.64</td>
+<td headers="Confounder?" class="gt_row gt_center">Yes</td>
+<td headers="Interaction p" class="gt_row gt_center">0.206</td>
+<td headers="Effect modifier?" class="gt_row gt_center">No</td>
+<td headers="Decision" class="gt_row gt_left">Confounder</td>
+<td headers="Recommendation" class="gt_row gt_left">Adjust for race.</td>
+</tr>
+<tr>
+<td headers="Exposure" class="gt_row gt_left">smoke</td>
+<td headers="Candidate" class="gt_row gt_left">ht</td>
+<td headers="Crude estimate" class="gt_row gt_center">2.022</td>
+<td headers="Adjusted estimate" class="gt_row gt_center">2.038</td>
+<td headers="MH estimate" class="gt_row gt_center">2.032</td>
+<td headers="% change model" class="gt_row gt_center">0.78</td>
+<td headers="% change MH" class="gt_row gt_center">0.51</td>
+<td headers="Confounder?" class="gt_row gt_center">No</td>
+<td headers="Interaction p" class="gt_row gt_center">0.607</td>
+<td headers="Effect modifier?" class="gt_row gt_center">No</td>
+<td headers="Decision" class="gt_row gt_left">No evidence</td>
+<td headers="Recommendation" class="gt_row gt_left">No clear statistical evidence to include ht as a confounder.</td>
+</tr>
+</tbody>
+<tfoot><tr class="gt_sourcenotes">
+<td class="gt_sourcenote" colspan="12"><span class="gt_from_md">Screening aid only; use DAGs, subject-matter knowledge, and study design to decide confounding and effect modification.</span></td>
+    </tr></tfoot>
+</table>
+</div>
+<p>The underlying summary remains available for inspection or further
+filtering.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">confounder_check</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 13</span></span></span>
+<span><span class="co">##   exposure candidate crude_est adjusted_est mh_est percent_change</span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> smoke    race           2.02         3.05   3.09          51.0 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> smoke    ht             2.02         2.04   2.03           0.78</span></span>
+<span><span class="co">## <span style="color: #949494;"># ℹ 7 more variables: percent_change_model &lt;dbl&gt;, percent_change_mh &lt;dbl&gt;,</span></span></span>
+<span><span class="co">## <span style="color: #949494;">#   is_confounder &lt;lgl&gt;, interaction_p &lt;dbl&gt;, is_effect_modifier &lt;lgl&gt;,</span></span></span>
+<span><span class="co">## <span style="color: #949494;">#   decision &lt;chr&gt;, recommendation &lt;chr&gt;</span></span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="mantel-haenszel-estimate">Mantel-Haenszel Estimate<a class="anchor" aria-label="anchor" href="#mantel-haenszel-estimate"></a>
+</h3>
+<p>Mantel-Haenszel is useful when the question is whether a stratified
+pooled estimate differs meaningfully from the crude estimate. It is
+available for eligible binary/categorical settings. It is not the same
+as fitting an interaction term.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/identify_confounder.html">identify_confounder</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="va">smoke</span>,</span>
+<span>  potential_confounder <span class="op">=</span> <span class="va">race</span>,</span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span>,</span>
+<span>  method <span class="op">=</span> <span class="va">mh</span>,</span>
+<span>  format <span class="op">=</span> <span class="va">flextable</span></span>
+<span><span class="op">)</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<div class="tabwid">
+<style>.cl-f2de6112{}.cl-f2d5e01e{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-f2d5e032{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-f2d5e033{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-f2d967ca{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-f2d967d4{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-f2d967de{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-f2d9a136{width:1.081in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a14a{width:1.16in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a14b{width:1.606in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a154{width:1.863in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a155{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a15e{width:1.698in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a15f{width:1.449in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a160{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a168{width:1.398in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a169{width:1.655in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a16a{width:1.177in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a172{width:1.784in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a173{width:1.081in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a174{width:1.16in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a17c{width:1.606in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a17d{width:1.863in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a186{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a187{width:1.698in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a188{width:1.449in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a190{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a191{width:1.398in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a19a{width:1.655in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a19b{width:1.177in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a19c{width:1.784in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1a4{width:1.081in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1ae{width:1.16in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1af{width:1.606in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1b0{width:1.863in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1b8{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1b9{width:1.698in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1ba{width:1.449in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1c2{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1c3{width:1.398in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1c4{width:1.655in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1cc{width:1.177in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-f2d9a1cd{width:1.784in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
+<table data-quarto-disable-processing="true" class="table cl-f2de6112">
+<thead><tr style="overflow-wrap:break-word;">
+<th class="cl-f2d9a136"><p class="cl-f2d967ca"><span class="cl-f2d5e01e">Exposure</span></p></th>
+<th class="cl-f2d9a14a"><p class="cl-f2d967ca"><span class="cl-f2d5e01e">Candidate</span></p></th>
+<th class="cl-f2d9a14b"><p class="cl-f2d967d4"><span class="cl-f2d5e01e">Crude estimate</span></p></th>
+<th class="cl-f2d9a154"><p class="cl-f2d967d4"><span class="cl-f2d5e01e">Adjusted estimate</span></p></th>
+<th class="cl-f2d9a155"><p class="cl-f2d967d4"><span class="cl-f2d5e01e">MH estimate</span></p></th>
+<th class="cl-f2d9a15e"><p class="cl-f2d967d4"><span class="cl-f2d5e01e">% change model</span></p></th>
+<th class="cl-f2d9a15f"><p class="cl-f2d967d4"><span class="cl-f2d5e01e">% change MH</span></p></th>
+<th class="cl-f2d9a160"><p class="cl-f2d967d4"><span class="cl-f2d5e01e">Confounder?</span></p></th>
+<th class="cl-f2d9a168"><p class="cl-f2d967d4"><span class="cl-f2d5e01e">Interaction p</span></p></th>
+<th class="cl-f2d9a169"><p class="cl-f2d967d4"><span class="cl-f2d5e01e">Effect modifier?</span></p></th>
+<th class="cl-f2d9a16a"><p class="cl-f2d967ca"><span class="cl-f2d5e01e">Decision</span></p></th>
+<th class="cl-f2d9a172"><p class="cl-f2d967ca"><span class="cl-f2d5e01e">Recommendation</span></p></th>
+</tr></thead>
+<tbody><tr style="overflow-wrap:break-word;">
+<td class="cl-f2d9a173"><p class="cl-f2d967ca"><span class="cl-f2d5e032">smoke</span></p></td>
+<td class="cl-f2d9a174"><p class="cl-f2d967ca"><span class="cl-f2d5e032">race</span></p></td>
+<td class="cl-f2d9a17c"><p class="cl-f2d967d4"><span class="cl-f2d5e032">2.022</span></p></td>
+<td class="cl-f2d9a17d"><p class="cl-f2d967d4"><span class="cl-f2d5e032">3.053</span></p></td>
+<td class="cl-f2d9a186"><p class="cl-f2d967d4"><span class="cl-f2d5e032">3.086</span></p></td>
+<td class="cl-f2d9a187"><p class="cl-f2d967d4"><span class="cl-f2d5e032">50.98</span></p></td>
+<td class="cl-f2d9a188"><p class="cl-f2d967d4"><span class="cl-f2d5e032">52.64</span></p></td>
+<td class="cl-f2d9a190"><p class="cl-f2d967d4"><span class="cl-f2d5e032">Yes</span></p></td>
+<td class="cl-f2d9a191"><p class="cl-f2d967d4"><span class="cl-f2d5e032">0.206</span></p></td>
+<td class="cl-f2d9a19a"><p class="cl-f2d967d4"><span class="cl-f2d5e032">No</span></p></td>
+<td class="cl-f2d9a19b"><p class="cl-f2d967ca"><span class="cl-f2d5e032">Confounder</span></p></td>
+<td class="cl-f2d9a19c"><p class="cl-f2d967ca"><span class="cl-f2d5e032">Adjust for race.</span></p></td>
+</tr></tbody>
+<tfoot><tr style="overflow-wrap:break-word;"><td colspan="12" class="cl-f2d9a1a4"><p class="cl-f2d967de"><span class="cl-f2d5e033">Screening aid only; use DAGs, subject-matter knowledge, and study design to decide confounding and effect modification.</span></p></td></tr></tfoot>
+</table>
+</div>
+</div>
+<div class="section level3">
+<h3 id="test-interaction">Test Interaction<a class="anchor" aria-label="anchor" href="#test-interaction"></a>
+</h3>
+<p><code><a href="../reference/interaction_models.html">interaction_models()</a></code> compares models with and without
+the interaction term. It is deliberately model-based and uses
+<code>LRT</code> or <code>Wald</code>, not Mantel-Haenszel. Use it when
+the interaction term is planned or supported by clinical, causal, or
+subject-matter reasoning.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">interaction_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interaction_models.html">interaction_models</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">low</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="va">smoke</span>,</span>
+<span>  effect_modifier <span class="op">=</span> <span class="va">race</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span><span class="op">)</span>,</span>
+<span>  approach <span class="op">=</span> <span class="va">logit</span>,</span>
+<span>  test <span class="op">=</span> <span class="va">LRT</span>,</span>
+<span>  format <span class="op">=</span> <span class="va">gt</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">interaction_check</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<div id="wkkeulbfdp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#wkkeulbfdp table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#wkkeulbfdp thead, #wkkeulbfdp tbody, #wkkeulbfdp tfoot, #wkkeulbfdp tr, #wkkeulbfdp td, #wkkeulbfdp th {
+  border-style: none;
+}
+
+#wkkeulbfdp p {
+  margin: 0;
+  padding: 0;
+}
+
+#wkkeulbfdp .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#wkkeulbfdp .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#wkkeulbfdp .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#wkkeulbfdp .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#wkkeulbfdp .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#wkkeulbfdp .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#wkkeulbfdp .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#wkkeulbfdp .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#wkkeulbfdp .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#wkkeulbfdp .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#wkkeulbfdp .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#wkkeulbfdp .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#wkkeulbfdp .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#wkkeulbfdp .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#wkkeulbfdp .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wkkeulbfdp .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#wkkeulbfdp .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#wkkeulbfdp .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#wkkeulbfdp .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wkkeulbfdp .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#wkkeulbfdp .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wkkeulbfdp .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#wkkeulbfdp .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wkkeulbfdp .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#wkkeulbfdp .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#wkkeulbfdp .gt_left {
+  text-align: left;
+}
+
+#wkkeulbfdp .gt_center {
+  text-align: center;
+}
+
+#wkkeulbfdp .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#wkkeulbfdp .gt_font_normal {
+  font-weight: normal;
+}
+
+#wkkeulbfdp .gt_font_bold {
+  font-weight: bold;
+}
+
+#wkkeulbfdp .gt_font_italic {
+  font-style: italic;
+}
+
+#wkkeulbfdp .gt_super {
+  font-size: 65%;
+}
+
+#wkkeulbfdp .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#wkkeulbfdp .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#wkkeulbfdp .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#wkkeulbfdp .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#wkkeulbfdp .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#wkkeulbfdp .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#wkkeulbfdp .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#wkkeulbfdp .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#wkkeulbfdp div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead>
 <tr class="gt_heading">
 <td colspan="10" class="gt_heading gt_title gt_font_normal gt_bottom_border" style>Interaction screening</td>
@@ -681,12 +1243,67 @@ subject-matter reasoning.</p>
 </div>
 </div>
 <div class="section level3">
+<h3 id="overlap-and-difference">Overlap and Difference<a class="anchor" aria-label="anchor" href="#overlap-and-difference"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Topic</th>
+<th><code><a href="../reference/identify_confounder.html">identify_confounder()</a></code></th>
+<th><code><a href="../reference/interaction_models.html">interaction_models()</a></code></th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Main purpose</td>
+<td>Organises candidate confounder and effect-modifier screening
+signals.</td>
+<td>Tests a planned exposure-by-modifier term.</td>
+</tr>
+<tr class="even">
+<td>Typical input</td>
+<td>Exposure plus one or more candidate variables.</td>
+<td>One exposure and one effect modifier.</td>
+</tr>
+<tr class="odd">
+<td>Confounding</td>
+<td>Crude vs adjusted change-in-estimate; optional Mantel-Haenszel
+comparison.</td>
+<td>Not designed for confounder selection.</td>
+</tr>
+<tr class="even">
+<td>Effect modification</td>
+<td>Screening signal from stratum-specific estimates and interaction
+p-value.</td>
+<td>Model comparison using LRT or Wald test.</td>
+</tr>
+<tr class="odd">
+<td>Best use</td>
+<td>Early review of candidate variables, with DAGs and judgement.</td>
+<td>Focused test of a clinically or biologically plausible
+interaction.</td>
+</tr>
+<tr class="even">
+<td>Output status</td>
+<td>Viewing aid, not publication-ready evidence by itself.</td>
+<td>Viewing aid; report with stratum-specific estimates when
+relevant.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
 <h3 id="what-to-inspect">What To Inspect<a class="anchor" aria-label="anchor" href="#what-to-inspect"></a>
 </h3>
 <ul>
 <li>
 <code><a href="../reference/identify_confounder.html">identify_confounder()</a></code>: <code>$summary</code>,
-<code>$table</code>, and <code>$details</code>.</li>
+<code>$table</code>, <code>$details</code>, <code>$mh_estimate</code>,
+<code>$mh_status</code>, <code>$decision</code>, and
+<code>$recommendation</code>.</li>
 <li>
 <code><a href="../reference/interaction_models.html">interaction_models()</a></code>: <code>$summary</code>,
 <code>$table</code>, <code>$p_value</code>, <code>$decision</code>, and

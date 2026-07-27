@@ -17,12 +17,13 @@ forest_reg(
   multi = NULL,
   desc = NULL,
   theme = NULL,
-  ci_col_width = 0.25,
+  ci_col_width = 20,
   side = c("right", "left"),
   quiet = TRUE,
   effects = NULL,
   ticks_at = NULL,
   ticks_digits = NULL,
+  xlim = NULL,
   ...
 )
 ```
@@ -44,14 +45,17 @@ forest_reg(
 
   Optional
   [`forestploter::forest_theme()`](https://rdrr.io/pkg/forestploter/man/forest_theme.html).
-  If `NULL`, a sensible default is used. You may pass colors and styling
-  either here or through `...`.
+  If `NULL`, `forestploter` defaults are used. You may pass colors and
+  styling either here or through `...`.
 
 - ci_col_width:
 
-  Numeric or length-2 numeric. Relative width of the CI column(s). A
-  vector like `c(0.22, 0.26)` lets you tune unadjusted and adjusted
-  columns separately.
+  Numeric value, or length-2 numeric for two effect columns, controlling
+  the blank spacer width used by `forestploter` for the
+  confidence-interval plot column(s). Values greater than 1 are
+  interpreted as approximate character counts. Values between 0 and 1
+  are accepted for backward compatibility and converted to character
+  counts.
 
 - side:
 
@@ -79,6 +83,13 @@ forest_reg(
 - ticks_digits:
 
   Optional number of digits for x-axis tick labels.
+
+- xlim:
+
+  Optional numeric vector of length 2, or length-2 list for two effect
+  columns, specifying x-axis limits. If `NULL`,
+  [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html)
+  chooses the default limits.
 
 - ...:
 
@@ -135,4 +146,21 @@ multi_or <- multi_reg(
 )
 
 forest_reg(uni = uni_or, multi = multi_or)
+
+
+# If axis labels overlap, set x-axis limits and tick marks.
+forest_reg(
+  uni = uni_or,
+  multi = multi_or,
+  xlim = list(c(0.25, 8), c(0.25, 12)),
+  ticks_at = list(c(0.5, 1, 2, 4, 8), c(0.5, 1, 2, 4, 8))
+)
+
+
+# If the forest plot panel is too narrow or too wide, tune ci_col_width.
+forest_reg(
+  uni = uni_or,
+  multi = multi_or,
+  ci_col_width = c(18, 22)
+)
 ```

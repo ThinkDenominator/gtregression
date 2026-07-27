@@ -12,6 +12,7 @@ save_docx(
   plots = NULL,
   filename = "report.docx",
   titles = NULL,
+  table_width = 6.5,
   plot_width = 6,
   plot_height = 5
 )
@@ -38,6 +39,12 @@ save_docx(
 
   Optional character vector of titles for tables and plots in the order
   they are added.
+
+- table_width:
+
+  Maximum table width in inches for Word export. The default `6.5` fits
+  a standard portrait Word page with common margins. Use `NULL` to keep
+  the original flextable widths.
 
 - plot_width:
 
@@ -70,5 +77,5 @@ tbl <- uni_reg(
 )
 
 save_docx(tables = tbl, filename = tempfile("report"))
-#> Word document saved at: /tmp/RtmpyrO5nP/report1a8e36be9fe5.docx
+#> Word document saved at: /tmp/RtmpXKuG5h/report1a8b46c5f7f1.docx
 ```

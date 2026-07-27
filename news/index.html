@@ -22,6 +22,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -49,9 +50,27 @@
 <li>Added support for unquoted option values in common arguments, including model approaches and output formats, so users can write calls such as <code>approach = logit</code> and <code>format = flextable</code>.</li>
 <li>Added <code>adjust_for</code> support for adjusted multivariable workflows, including downstream regression plots and combined regression plots.</li>
 <li>Added adjusted-variable notes to regression plots and combined regression plots.</li>
+<li>Added optional model-fit statistics for <code><a href="../reference/uni_reg.html">uni_reg()</a></code> and <code><a href="../reference/multi_reg.html">multi_reg()</a></code> via <code>model_stats = TRUE</code>, with AIC, BIC, log-likelihood, deviance, pseudo R-squared, linear-model R-squared, and model N stored in <code>$model_stats</code>.</li>
+<li>Added <code>approach = "firth"</code> / <code>approach = firth</code> for Firth penalized logistic regression in <code><a href="../reference/uni_reg.html">uni_reg()</a></code>, <code><a href="../reference/multi_reg.html">multi_reg()</a></code>, <code><a href="../reference/stratified_uni_reg.html">stratified_uni_reg()</a></code>, and <code><a href="../reference/stratified_multi_reg.html">stratified_multi_reg()</a></code>, with OR tables and compatibility with regression plots and forest plot helpers.</li>
+<li>Added <code>data_endometrial</code>, a classic endometrial cancer dataset with a separation pattern, for teaching and testing Firth logistic regression.</li>
+<li>Added <code><a href="../reference/cox_reg.html">cox_reg()</a></code> for beginner-friendly Cox proportional hazards regression using <code>time</code>, <code>event</code>, <code>exposures</code>, and optional <code>adjust_for</code>, returning publication-ready HR and adjusted HR tables.</li>
+<li>Added <code><a href="../reference/surv_reg.html">surv_reg()</a></code> for beginner-friendly parametric survival regression using <code>time</code>, <code>event</code>, <code>exposures</code>, optional <code>adjust_for</code>, and a selectable survival distribution, returning publication-ready time-ratio tables.</li>
+<li>Added <code><a href="../reference/km_plot.html">km_plot()</a></code> for Kaplan-Meier survival curves with optional confidence intervals, censoring marks, log-rank p-values, and number-at-risk tables.</li>
+<li>Added <code><a href="../reference/km_risk_table.html">km_risk_table()</a></code> for standalone Kaplan-Meier risk tables at requested follow-up times, with at-risk, event, and censored counts.</li>
+<li>Added <code><a href="../reference/rmst_table.html">rmst_table()</a></code> for restricted mean survival time summaries up to a chosen follow-up time, with optional two-group RMST difference.</li>
+<li>Added <code><a href="../reference/surv_model_compare.html">surv_model_compare()</a></code> for comparing candidate parametric survival distributions by AIC, BIC, log-likelihood, scale, events, and N.</li>
+<li>Added <code><a href="../reference/plot_surv_fit.html">plot_surv_fit()</a></code> for visually comparing observed Kaplan-Meier curves with fitted parametric survival curves.</li>
+<li>Added <code><a href="../reference/surv_predict.html">surv_predict()</a></code> for model-based survival probability predictions from fitted parametric survival regression models.</li>
+<li>Added <code><a href="../reference/survival_summary.html">survival_summary()</a></code> for Kaplan-Meier median survival summaries with total N, events, censored counts, and publication-style table outputs.</li>
+<li>Added <code><a href="../reference/survival_quantiles.html">survival_quantiles()</a></code> for Kaplan-Meier survival time quantiles, including event percentiles, corresponding survival probabilities, and confidence intervals.</li>
+<li>Added <code><a href="../reference/survival_prob.html">survival_prob()</a></code> for Kaplan-Meier survival probabilities at fixed follow-up times, with at-risk, event, censored, and confidence interval columns.</li>
+<li>Added <code><a href="../reference/logrank_test.html">logrank_test()</a></code> for formal comparison of Kaplan-Meier survival curves, with observed and expected events plus formatted p-value output.</li>
+<li>Added <code><a href="../reference/check_ph.html">check_ph()</a></code> for proportional hazards screening of Cox models using Schoenfeld residual tests, with flextable, gt, and tibble outputs.</li>
+<li>Added <code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> for visual model diagnostics from fitted <code>lm</code>/<code>glm</code> models and from models stored in <code><a href="../reference/uni_reg.html">uni_reg()</a></code> and <code><a href="../reference/multi_reg.html">multi_reg()</a></code> outputs.</li>
+<li>Added automatic support for variable label attributes, including labels set with <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>, across descriptive, regression, stratified, merged, plotted, and forest-style outputs.</li>
 <li>Added publication-style display outputs for diagnostic and helper functions including <code><a href="../reference/dissect.html">dissect()</a></code>, <code><a href="../reference/select_models.html">select_models()</a></code>, <code><a href="../reference/interaction_models.html">interaction_models()</a></code>, and <code><a href="../reference/identify_confounder.html">identify_confounder()</a></code>.</li>
 <li>Added Mantel-Haenszel comparison support to <code><a href="../reference/identify_confounder.html">identify_confounder()</a></code> to support confounding assessment alongside crude and adjusted model comparisons.</li>
-<li>Added manual case-study scripts under <code>dev/manual-tests/</code> for real-time testing of logistic, linear, log-binomial, robust Poisson, Poisson, and negative binomial workflows.</li>
+<li>Added manual case-study scripts under <code>dev/manual-tests/</code> for real-time testing of logistic, linear, log-binomial, robust Poisson, Poisson, negative binomial, Cox, and parametric survival workflows.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="changed-1-1-0">Changed<a class="anchor" aria-label="anchor" href="#changed-1-1-0"></a></h3>
@@ -60,6 +79,9 @@
 <li>Improved <code><a href="../reference/merge_tables.html">merge_tables()</a></code> so descriptive, crude, and adjusted tables can be combined more reliably, including when visible variable labels differ between input tables.</li>
 <li>Improved <code><a href="../reference/modify_table.html">modify_table()</a></code> so merged tables retain clean headers, spanners, and footnotes after relabelling.</li>
 <li>Improved <code><a href="../reference/forest_df.html">forest_df()</a></code> and <code><a href="../reference/forest_reg.html">forest_reg()</a></code> support for descriptive summaries combined with univariable and multivariable regression outputs.</li>
+<li>Improved downstream survival support so <code><a href="../reference/cox_reg.html">cox_reg()</a></code> and <code><a href="../reference/surv_reg.html">surv_reg()</a></code> outputs work with <code><a href="../reference/plot_reg.html">plot_reg()</a></code>, <code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code>, <code><a href="../reference/forest_df.html">forest_df()</a></code>, <code><a href="../reference/forest_reg.html">forest_reg()</a></code>, <code><a href="../reference/merge_tables.html">merge_tables()</a></code>, <code><a href="../reference/modify_table.html">modify_table()</a></code>, and <code><a href="../reference/select_models.html">select_models()</a></code>.</li>
+<li>Improved table footer and source-note spacing across publication and helper tables so abbreviations, adjustment notes, and caveats render more compactly in flextable, gt, Word, and pkgdown outputs.</li>
+<li>Improved Word export so flextable outputs are fitted to a standard Word page width by default, with <code>save_docx(table_width = ...)</code> available for custom document layouts.</li>
 <li>Improved <code><a href="../reference/select_models.html">select_models()</a></code> output so formatted tables clearly report the model selection direction used.</li>
 <li>Improved repository organization for CRAN readiness, including excluding development-only manual scripts from package builds.</li>
 </ul></div>

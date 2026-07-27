@@ -26,6 +26,7 @@ spanners for each stratum, two columns: "Adjusted &amp;lt;effect&amp;gt;" and "p
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -102,7 +103,7 @@ using standard formula syntax, e.g. <code>"bmi*sex"</code></p></dd>
 
 
 <dt id="arg-approach">approach<a class="anchor" aria-label="anchor" href="#arg-approach"></a></dt>
-<dd><p>One of <code>"logit"</code>, <code>"logbinomial"</code>, <code>"poisson"</code>,
+<dd><p>One of <code>"logit"</code>, <code>"firth"</code>, <code>"logbinomial"</code>, <code>"poisson"</code>,
 <code>"linear"</code>, <code>"robpoisson"</code>, or <code>"negbin"</code></p></dd>
 
 
@@ -134,6 +135,10 @@ using standard formula syntax, e.g. <code>"bmi*sex"</code></p></dd>
   <dt><code>model_summaries</code></dt>
 <dd><p>Named list of model summaries by stratum.</p></dd>
 
+  <dt><code>variable_labels</code></dt>
+<dd><p>Named character vector of display labels used
+  for exposure variables.</p></dd>
+
   <dt><code>reg_check</code></dt>
 <dd><p>Named list of diagnostics by stratum.</p></dd>
 
@@ -147,6 +152,10 @@ using standard formula syntax, e.g. <code>"bmi*sex"</code></p></dd>
     <p>If <code>adjust_for = NULL</code>, all <code>exposures</code> are included in one
 multivariable model within each stratum. If <code>adjust_for</code> is supplied,
 one adjusted model is fitted per exposure within each stratum.</p>
+
+<p>If exposure variables have a <code>"label"</code> attribute, for example from
+<code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>, those labels are used automatically in the
+displayed table. Internal matching still uses the original column names.</p>
     </div>
 
     <div class="section level2">

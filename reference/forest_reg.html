@@ -28,6 +28,7 @@ table-style forest plot."></head><body>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -63,12 +64,13 @@ table-style forest plot.</p>
 <span>  multi <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  desc <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  theme <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ci_col_width <span class="op">=</span> <span class="fl">0.25</span>,</span>
+<span>  ci_col_width <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  side <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"right"</span>, <span class="st">"left"</span><span class="op">)</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ticks_at <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ticks_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -88,15 +90,17 @@ table-style forest plot.</p>
 
 
 <dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>
-<dd><p>Optional <code><a href="https://rdrr.io/pkg/forestploter/man/forest_theme.html" class="external-link">forestploter::forest_theme()</a></code>. If <code>NULL</code>, a
-sensible default is used. You may pass colors and styling either here or
-through <code>...</code>.</p></dd>
+<dd><p>Optional <code><a href="https://rdrr.io/pkg/forestploter/man/forest_theme.html" class="external-link">forestploter::forest_theme()</a></code>. If <code>NULL</code>,
+<code>forestploter</code> defaults are used. You may pass colors and styling
+either here or through <code>...</code>.</p></dd>
 
 
 <dt id="arg-ci-col-width">ci_col_width<a class="anchor" aria-label="anchor" href="#arg-ci-col-width"></a></dt>
-<dd><p>Numeric or length-2 numeric. Relative width of the CI column(s).
-A vector like <code>c(0.22, 0.26)</code> lets you tune unadjusted and adjusted
-columns separately.</p></dd>
+<dd><p>Numeric value, or length-2 numeric for two effect columns,
+controlling the blank spacer width used by <code>forestploter</code> for the
+confidence-interval plot column(s). Values greater than 1 are interpreted
+as approximate character counts. Values between 0 and 1 are accepted for
+backward compatibility and converted to character counts.</p></dd>
 
 
 <dt id="arg-side">side<a class="anchor" aria-label="anchor" href="#arg-side"></a></dt>
@@ -121,6 +125,12 @@ columns, specifying x-axis tick positions. If <code>NULL</code>,
 
 <dt id="arg-ticks-digits">ticks_digits<a class="anchor" aria-label="anchor" href="#arg-ticks-digits"></a></dt>
 <dd><p>Optional number of digits for x-axis tick labels.</p></dd>
+
+
+<dt id="arg-xlim">xlim<a class="anchor" aria-label="anchor" href="#arg-xlim"></a></dt>
+<dd><p>Optional numeric vector of length 2, or length-2 list for two
+effect columns, specifying x-axis limits. If <code>NULL</code>,
+<code><a href="https://rdrr.io/pkg/forestploter/man/forest.html" class="external-link">forestploter::forest()</a></code> chooses the default limits.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -173,6 +183,23 @@ columns, specifying x-axis tick positions. If <code>NULL</code>,
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">forest_reg</span><span class="op">(</span>uni <span class="op">=</span> <span class="va">uni_or</span>, multi <span class="op">=</span> <span class="va">multi_or</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="forest_reg-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># If axis labels overlap, set x-axis limits and tick marks.</span></span></span>
+<span class="r-in"><span><span class="fu">forest_reg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  uni <span class="op">=</span> <span class="va">uni_or</span>,</span></span>
+<span class="r-in"><span>  multi <span class="op">=</span> <span class="va">multi_or</span>,</span></span>
+<span class="r-in"><span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  ticks_at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="forest_reg-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># If the forest plot panel is too narrow or too wide, tune ci_col_width.</span></span></span>
+<span class="r-in"><span><span class="fu">forest_reg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  uni <span class="op">=</span> <span class="va">uni_or</span>,</span></span>
+<span class="r-in"><span>  multi <span class="op">=</span> <span class="va">multi_or</span>,</span></span>
+<span class="r-in"><span>  ci_col_width <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">18</span>, <span class="fl">22</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="forest_reg-3.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

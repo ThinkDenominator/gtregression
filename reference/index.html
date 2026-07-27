@@ -22,6 +22,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -86,6 +87,20 @@
 
         </dt>
         <dd>Multivariable regression</dd>
+
+        <dt>
+
+          <code><a href="cox_reg.html">cox_reg()</a></code>
+
+        </dt>
+        <dd>Cox proportional hazards regression</dd>
+
+        <dt>
+
+          <code><a href="surv_reg.html">surv_reg()</a></code>
+
+        </dt>
+        <dd>Parametric survival regression</dd>
       </dl></div><div class="section level2">
       <h2 id="stratified-regression-tables">Stratified Regression Tables<a class="anchor" aria-label="anchor" href="#stratified-regression-tables"></a></h2>
 
@@ -112,7 +127,7 @@
       </dl></div><div class="section level2">
       <h2 id="visualise-regression-results">Visualise Regression Results<a class="anchor" aria-label="anchor" href="#visualise-regression-results"></a></h2>
 
-      <div class="section-desc"><p>Turn regression tables into forest plots and publication-style forest tables.</p></div>
+      <div class="section-desc"><p>Turn regression and survival outputs into curves, forest plots, and publication-style forest tables.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -120,6 +135,76 @@
 
 
       <dl><dt>
+
+          <code><a href="km_plot.html">km_plot()</a></code>
+
+        </dt>
+        <dd>Kaplan-Meier survival plot</dd>
+
+        <dt>
+
+          <code><a href="km_risk_table.html">km_risk_table()</a></code>
+
+        </dt>
+        <dd>Kaplan-Meier risk table</dd>
+
+        <dt>
+
+          <code><a href="rmst_table.html">rmst_table()</a></code>
+
+        </dt>
+        <dd>Restricted mean survival time table</dd>
+
+        <dt>
+
+          <code><a href="survival_summary.html">survival_summary()</a></code>
+
+        </dt>
+        <dd>Kaplan-Meier survival summary table</dd>
+
+        <dt>
+
+          <code><a href="survival_quantiles.html">survival_quantiles()</a></code>
+
+        </dt>
+        <dd>Kaplan-Meier survival quantile table</dd>
+
+        <dt>
+
+          <code><a href="survival_prob.html">survival_prob()</a></code>
+
+        </dt>
+        <dd>Kaplan-Meier survival probability table</dd>
+
+        <dt>
+
+          <code><a href="logrank_test.html">logrank_test()</a></code>
+
+        </dt>
+        <dd>Log-rank test for Kaplan-Meier survival curves</dd>
+
+        <dt>
+
+          <code><a href="surv_model_compare.html">surv_model_compare()</a></code>
+
+        </dt>
+        <dd>Compare parametric survival model distributions</dd>
+
+        <dt>
+
+          <code><a href="plot_surv_fit.html">plot_surv_fit()</a></code>
+
+        </dt>
+        <dd>Plot observed and fitted parametric survival curves</dd>
+
+        <dt>
+
+          <code><a href="surv_predict.html">surv_predict()</a></code>
+
+        </dt>
+        <dd>Predict survival probabilities from a parametric survival model</dd>
+
+        <dt>
 
           <code><a href="plot_reg.html">plot_reg()</a></code>
 
@@ -149,7 +234,7 @@
       </dl></div><div class="section level2">
       <h2 id="diagnostics-and-model-selection">Diagnostics and Model Selection<a class="anchor" aria-label="anchor" href="#diagnostics-and-model-selection"></a></h2>
 
-      <div class="section-desc"><p>Check convergence, collinearity, and candidate model paths.</p></div>
+      <div class="section-desc"><p>Check convergence, collinearity, model fit, and candidate model paths.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -169,6 +254,20 @@
 
         </dt>
         <dd>Check collinearity using VIF for fitted models</dd>
+
+        <dt>
+
+          <code><a href="check_ph.html">check_ph()</a></code>
+
+        </dt>
+        <dd>Check proportional hazards assumption for Cox models</dd>
+
+        <dt>
+
+          <code><a href="plot_model_fit.html">plot_model_fit()</a></code>
+
+        </dt>
+        <dd>Plot Model Fit Diagnostics</dd>
 
         <dt>
 
@@ -303,6 +402,13 @@
 
         </dt>
         <dd>Epilepsy Treatment and Seizure Counts</dd>
+
+        <dt>
+
+          <code><a href="data_endometrial.html">data_endometrial</a></code>
+
+        </dt>
+        <dd>Endometrial Cancer Histology Grade Data</dd>
 
         <dt>
 

@@ -24,6 +24,7 @@ functions such as uni_reg() or multi_reg()."></head><body>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -84,9 +85,9 @@ functions such as <code><a href="uni_reg.html">uni_reg()</a></code> or <code><a 
 
 
 <dt id="arg-caption">caption<a class="anchor" aria-label="anchor" href="#arg-caption"></a></dt>
-<dd><p>Optional plot caption. If <code>NULL</code>, an adjustment note is
-added automatically for adjusted <code><a href="multi_reg.html">multi_reg()</a></code> objects when
-<code>show_adjustment_note = TRUE</code>.</p></dd>
+<dd><p>Optional plot caption. If <code>NULL</code>, notes are added
+automatically for adjusted <code><a href="multi_reg.html">multi_reg()</a></code> objects and displayed
+reference categories.</p></dd>
 
 
 <dt id="arg-ref-line">ref_line<a class="anchor" aria-label="anchor" href="#arg-ref-line"></a></dt>
@@ -123,7 +124,10 @@ Defaults to 0 for linear models and 1 otherwise.</p></dd>
 
 
 <dt id="arg-show-ref">show_ref<a class="anchor" aria-label="anchor" href="#arg-show-ref"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, reference rows are shown.</p></dd>
+<dd><p>Logical; if <code>TRUE</code>, reference rows are shown. If
+<code>FALSE</code>, binary exposures are shown as compact rows for the estimated
+non-reference category; affirmative levels such as <code>Yes</code> or <code>1</code>
+are displayed using the variable name.</p></dd>
 
 
 <dt id="arg-sig-color">sig_color<a class="anchor" aria-label="anchor" href="#arg-sig-color"></a></dt>

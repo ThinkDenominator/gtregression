@@ -72,13 +72,20 @@ multi_or <- multi_reg(
 
 forest_data <- forest_df(uni_or, multi_or)
 head(forest_data)
-#>   Characteristic        OR (95% CI)    Adjusted OR (95% CI)      se_uni
-#> 1            age   0.95 (0.89-1.01)                         0.031513184
-#> 2            lwt   0.99 (0.97-1.00)                         0.006169475
-#> 3          smoke                                                     NA
-#> 4             No                 --                      --          NA
-#> 5            Yes   2.02 (1.08-3.78)        1.96 (1.03-3.70) 0.319636414
-#> 6             ht                                                     NA
+#>   Characteristic                                              OR (95% CI)
+#> 1            age                                         0.95 (0.89-1.01)
+#> 2            lwt                                         0.99 (0.97-1.00)
+#> 3          smoke                                                         
+#> 4             No                                                     Ref.
+#> 5            Yes                                         2.02 (1.08-3.78)
+#> 6             ht                                                         
+#>                                           Adjusted OR (95% CI)      se_uni
+#> 1                                                              0.031513184
+#> 2                                                              0.006169475
+#> 3                                                                       NA
+#> 4                                                         Ref.          NA
+#> 5                                             1.96 (1.03-3.70) 0.319636414
+#> 6                                                                       NA
 #>      se_adj
 #> 1        NA
 #> 2        NA

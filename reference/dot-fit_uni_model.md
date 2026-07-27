@@ -26,10 +26,10 @@ single exposure or a vector of exposures.
 - approach:
 
   A string specifying the regression approach. One of \`"logit"\`,
-  \`"logbinomial"\`, \`"poisson"\`, \`"linear"\`, \`"robpoisson"\`, or
-  \`"negbin"\`.
+  \`"firth"\`, \`"logbinomial"\`, \`"poisson"\`, \`"linear"\`,
+  \`"robpoisson"\`, or \`"negbin"\`.
 
 ## Value
 
-A fitted model object (\`glm\`, \`lm\`, \`riskratio\`, or \`negbin\`) or
-\`NULL\` if fitting fails.
+A fitted model object (\`glm\`, \`logistf\`, \`lm\`, \`riskratio\`, or
+\`negbin\`) or \`NULL\` if fitting fails.

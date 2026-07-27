@@ -12,8 +12,8 @@
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <meta property="og:title" content="gtregression">
-<meta name="description" content="Publication-ready regression tables and plots for logistic, log-binomial, Poisson, robust Poisson, negative binomial, and linear models">
-<meta property="og:description" content="Publication-ready regression tables and plots for logistic, log-binomial, Poisson, robust Poisson, negative binomial, and linear models">
+<meta name="description" content="Publication-ready regression and survival analysis tables, plots, diagnostics, and Word-friendly outputs">
+<meta property="og:description" content="Publication-ready regression and survival analysis tables, plots, diagnostics, and Word-friendly outputs">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -40,6 +40,7 @@
 <li><a class="dropdown-item" href="articles/gtregression-intro.html">Start Here</a></li>
     <li><a class="dropdown-item" href="articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="articles/regression-tables.html">Regression</a></li>
+    <li><a class="dropdown-item" href="articles/survival-analysis.html">Survival</a></li>
     <li><a class="dropdown-item" href="articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -63,7 +64,7 @@
 gtregression
 </h1></div>
 <p>
-Publication-ready regression tables and forest plots for real-world health data. Fit models, compare estimates, visualise results, and export manuscript-ready outputs without hand-formatting every coefficient.
+Publication-ready regression and survival analysis tables, plots, and forest plots for real-world health data. Fit models, compare estimates, visualise results, and export manuscript-ready outputs without hand-formatting every coefficient.
 </p>
 <div class="gtreg-actions">
 <p><a href="articles/gtregression-intro.html">Start the workflow</a><a class="secondary" href="reference/index.html">Explore functions</a></p>
@@ -77,10 +78,10 @@ Publication-ready regression tables and forest plots for real-world health data.
 
 <!-- badges: end -->
 <div class="section level2">
-<h2 id="publication-ready-regression-tables-and-plots">Publication-Ready Regression Tables and Plots<a class="anchor" aria-label="anchor" href="#publication-ready-regression-tables-and-plots"></a>
+<h2 id="publication-ready-regression-and-survival-outputs">Publication-Ready Regression and Survival Outputs<a class="anchor" aria-label="anchor" href="#publication-ready-regression-and-survival-outputs"></a>
 </h2>
 <p><code>gtregression</code> helps you move from model to manuscript: fit regression models, produce clean tables, visualise estimates, merge outputs, and export results without hand-formatting every coefficient.</p>
-<p>It supports logistic, log-binomial, Poisson, robust Poisson, negative binomial, linear, adjusted, and stratified regression workflows.</p>
+<p>It supports logistic, log-binomial, Poisson, robust Poisson, negative binomial, linear, Cox, and parametric survival workflows, including adjusted and stratified models.</p>
 <table class="table">
 <colgroup>
 <col width="50%">
@@ -97,15 +98,19 @@ Publication-ready regression tables and forest plots for real-world health data.
 </tr>
 <tr>
 <td>Regression tables</td>
-<td>Crude, adjusted, stratified, and linear model outputs</td>
+<td>Crude, adjusted, stratified, linear, Cox, and parametric survival outputs</td>
+</tr>
+<tr>
+<td>Survival analysis</td>
+<td>Kaplan-Meier curves, survival summaries, RMST, log-rank tests, Cox PH checks, and survival predictions</td>
 </tr>
 <tr>
 <td>Visualisations</td>
-<td>Forest plots and publication-style forest tables</td>
+<td>Regression plots, survival curves, fitted survival curves, and forest tables</td>
 </tr>
 <tr>
 <td>Interpretation helpers</td>
-<td>Confounding, interaction, convergence, and collinearity checks</td>
+<td>Confounding, interaction, convergence, collinearity, model selection, and survival diagnostics</td>
 </tr>
 <tr>
 <td>Exports</td>
@@ -163,6 +168,10 @@ Publication-ready regression tables and forest plots for real-world health data.
 <span></span>
 <span><span class="va">exposures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"race"</span>, <span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">age</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Maternal age"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">lwt</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Maternal weight"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">smoke</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Smoking during pregnancy"</span></span>
+<span></span>
 <span><span class="va">desc</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/descriptive_table.html">descriptive_table</a></span><span class="op">(</span></span>
 <span>  <span class="va">birthwt_data</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
@@ -187,12 +196,24 @@ Publication-ready regression tables and forest plots for real-world health data.
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/plot_reg.html">plot_reg</a></span><span class="op">(</span><span class="va">multi</span>, title <span class="op">=</span> <span class="st">"Adjusted Regression for Low Birth Weight"</span><span class="op">)</span></span></code></pre></div>
+<p>Variable labels set with <code>attr(x, "label")</code> or <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code> are used automatically in display tables and plots, while original column names remain available internally for merging, modification, and testing.</p>
 <p>Objects stay inspectable:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">desc</span><span class="op">$</span><span class="va">table</span></span>
 <span><span class="va">uni</span><span class="op">$</span><span class="va">table</span></span>
 <span><span class="va">multi</span><span class="op">$</span><span class="va">table</span></span>
 <span><span class="va">multi</span><span class="op">$</span><span class="va">models</span></span></code></pre></div>
+<p>Optional model-fit statistics can be requested without changing the publication table:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">uni_stats</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/uni_reg.html">uni_reg</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
+<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
+<span>  model_stats <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">uni_stats</span><span class="op">$</span><span class="va">model_stats</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="browse-by-task">Browse by Task<a class="anchor" aria-label="anchor" href="#browse-by-task"></a>
@@ -218,6 +239,10 @@ Publication-ready regression tables and forest plots for real-world health data.
 <tr>
 <td>Regression tables</td>
 <td><a href="https://thinkdenominator.github.io/gtregression/articles/regression-tables.html">Regression Tables</a></td>
+</tr>
+<tr>
+<td>Survival analysis</td>
+<td><a href="https://thinkdenominator.github.io/gtregression/articles/survival-analysis.html">Survival Analysis</a></td>
 </tr>
 <tr>
 <td>Visualise estimates</td>
@@ -264,7 +289,13 @@ Publication-ready regression tables and forest plots for real-world health data.
 <tr>
 <td>Model</td>
 <td>
-<code><a href="reference/uni_reg.html">uni_reg()</a></code>, <code><a href="reference/multi_reg.html">multi_reg()</a></code>
+<code><a href="reference/uni_reg.html">uni_reg()</a></code>, <code><a href="reference/multi_reg.html">multi_reg()</a></code>, <code><a href="reference/cox_reg.html">cox_reg()</a></code>, <code><a href="reference/surv_reg.html">surv_reg()</a></code>
+</td>
+</tr>
+<tr>
+<td>Survival</td>
+<td>
+<code><a href="reference/km_plot.html">km_plot()</a></code>, <code><a href="reference/km_risk_table.html">km_risk_table()</a></code>, <code><a href="reference/survival_summary.html">survival_summary()</a></code>, <code><a href="reference/survival_quantiles.html">survival_quantiles()</a></code>, <code><a href="reference/survival_prob.html">survival_prob()</a></code>, <code><a href="reference/rmst_table.html">rmst_table()</a></code>, <code><a href="reference/logrank_test.html">logrank_test()</a></code>, <code><a href="reference/check_ph.html">check_ph()</a></code>, <code><a href="reference/surv_model_compare.html">surv_model_compare()</a></code>, <code><a href="reference/plot_surv_fit.html">plot_surv_fit()</a></code>, <code><a href="reference/surv_predict.html">surv_predict()</a></code>
 </td>
 </tr>
 <tr>
@@ -282,7 +313,7 @@ Publication-ready regression tables and forest plots for real-world health data.
 <tr>
 <td>Diagnose</td>
 <td>
-<code><a href="reference/check_convergence.html">check_convergence()</a></code>, <code><a href="reference/check_collinearity.html">check_collinearity()</a></code>, <code><a href="reference/select_models.html">select_models()</a></code>
+<code><a href="reference/check_convergence.html">check_convergence()</a></code>, <code><a href="reference/check_collinearity.html">check_collinearity()</a></code>, <code><a href="reference/check_ph.html">check_ph()</a></code>, <code><a href="reference/select_models.html">select_models()</a></code>
 </td>
 </tr>
 <tr>
@@ -320,6 +351,7 @@ Publication-ready regression tables and forest plots for real-world health data.
 <li><a href="https://github.com/ThinkDenominator/gtregression/issues" class="external-link">Report a bug</a></li>
 <li><a href="articles/gtregression-intro.html">Start Here</a></li>
 <li><a href="articles/visualise-results.html">Visualise Regression Results</a></li>
+<li><a href="articles/survival-analysis.html">Survival Analysis</a></li>
 <li><a href="reference/index.html">Function Overview</a></li>
 </ul>
 </div>
