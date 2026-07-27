@@ -1,10 +1,7 @@
-test_that(".fit_uni_model returns correct model class (PimaIndiansDiabetes2)", {
-  skip_if_not_installed("mlbench")
+test_that(".fit_uni_model returns correct model class", {
   skip_if_not_installed("risks")
 
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  df <- PimaIndiansDiabetes2 |>
+  df <- data_PimaIndiansDiabetes |>
     dplyr::mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       age_cat = dplyr::case_when(
@@ -50,11 +47,7 @@ test_that(".fit_uni_model returns correct model class (PimaIndiansDiabetes2)", {
 })
 
 test_that(".fit_uni_model handles model fitting failure gracefully", {
-  skip_if_not_installed("mlbench")
-
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  df <- PimaIndiansDiabetes2 |>
+  df <- data_PimaIndiansDiabetes |>
     dplyr::mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       constant = factor("only", levels = "only")

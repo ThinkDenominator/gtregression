@@ -1,10 +1,7 @@
 test_that(".fit_multi_model returns correct model class for each approach", {
-  skip_if_not_installed("mlbench")
   skip_if_not_installed("risks")
 
-  data("PimaIndiansDiabetes2", package = "mlbench")
-
-  df <- PimaIndiansDiabetes2 |>
+  df <- data_PimaIndiansDiabetes |>
     dplyr::mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       age_cat = dplyr::case_when(

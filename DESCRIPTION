@@ -64,7 +64,6 @@ Suggests:
     testthat (>= 3.1.5),
     knitr,
     rmarkdown,
-    mlbench,
     car,
     forcats,
     pkgdown,
