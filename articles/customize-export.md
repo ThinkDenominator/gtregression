@@ -98,7 +98,7 @@ birthwt_custom$table
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
 | Adjusted for maternal age, maternal weight, and maternal race. |  |  |
 
-Adjusted regression for low birth weight {.table .cl-857d6858
+Adjusted regression for low birth weight {.table .cl-f78cc88e
 quarto-disable-processing="true"}
 
 ## Merge Tables
@@ -185,7 +185,7 @@ birthwt_merged_paper$table
 | Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-85ffbd58 quarto-disable-processing="true"}
+.cl-f815c7ba quarto-disable-processing="true"}
 
 ## Save Outputs
 

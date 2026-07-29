@@ -77,5 +77,5 @@ tbl <- uni_reg(
 )
 
 save_docx(tables = tbl, filename = tempfile("report"))
-#> Word document saved at: /tmp/RtmpKVIPrx/report1a5219926cee.docx
+#> Word document saved at: /tmp/RtmpIQXhIf/report1a5620b07203.docx
 ```

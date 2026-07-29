@@ -115,7 +115,7 @@ survival_summary(
 | Test treatment | 68 | 64 | 4 | 52.5 (44.0-95.0) |
 | Median survival is estimated using Kaplan-Meier methods. Not reached means survival did not fall to 50% during observed follow-up. |  |  |  |  |
 
-Kaplan-Meier survival summary {.table .cl-9b532a3c
+Kaplan-Meier survival summary {.table .cl-0ec810bc
 quarto-disable-processing="true"}
 
 ``` r
@@ -139,7 +139,7 @@ survival_prob(
 | Test treatment | 365.0 | 6 | 7 | 1 | 11.0% (5.3%-22.7%) |
 | Survival probabilities are estimated using Kaplan-Meier methods. Events and censored counts are interval counts up to each requested time point. |  |  |  |  |  |
 
-Kaplan-Meier survival probabilities {.table .cl-9b74fa9a
+Kaplan-Meier survival probabilities {.table .cl-0ee93bf2
 quarto-disable-processing="true"}
 
 [`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md)
@@ -165,7 +165,7 @@ rmst_table(
 | Difference (Test treatment - Standard treatment) | 365.0 |  |  |  | -6.6 (-45.3-32.2) | 0.740 |
 | RMST is restricted mean survival time up to tau. For two groups, the difference is the second group minus the first group. |  |  |  |  |  |  |
 
-Restricted mean survival time {.table .cl-9ba14c08
+Restricted mean survival time {.table .cl-0f13e29e
 quarto-disable-processing="true"}
 
 ## 3. Compare Survival Curves
@@ -190,7 +190,7 @@ logrank_test(
 | Test treatment | 68 | 64 | 63.50 |
 | Log-rank test: chi-square = 0.01, df = 1, p-value = 0.928. This compares survival curves; use cox_reg() when a hazard ratio is needed. |  |  |  |
 
-Log-rank test {.table .cl-9bc70f4c quarto-disable-processing="true"}
+Log-rank test {.table .cl-0f385c1e quarto-disable-processing="true"}
 
 ## 4. Fit Cox Regression
 
@@ -280,7 +280,7 @@ surv_model_compare(
 | weibull | 1,449.11 | 1,475.39 | -715.55 | 0.93 | 137 | 128 | No | No |
 | Lower AIC or BIC indicates better relative fit among the compared distributions. Use model fit statistics with clinical judgment and visual checks. |  |  |  |  |  |  |  |  |
 
-Parametric survival model comparison {.table .cl-9c6a1156
+Parametric survival model comparison {.table .cl-0fd534da
 quarto-disable-processing="true"}
 
 ``` r
@@ -379,7 +379,7 @@ surv_predict(
 | 1 | Test treatment | 60 | 70 | 365.0 | 11.1% | loglogistic |
 | Model-based predictions from a parametric survival regression model. Distribution: loglogistic. Predictions depend on the supplied profile and model specification. |  |  |  |  |  |  |
 
-Predicted survival probabilities {.table .cl-9d230b8e
+Predicted survival probabilities {.table .cl-108c43e6
 quarto-disable-processing="true"}
 
 ## 7. Visualise And Export Model Results

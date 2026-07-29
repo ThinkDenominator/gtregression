@@ -54,5 +54,5 @@ p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
   ggplot2::geom_point()
 
 save_plot(p, filename = tempfile("plot"), format = "png")
-#> Plot saved at: /tmp/RtmpKVIPrx/plot1a523bf526b1.png
+#> Plot saved at: /tmp/RtmpIQXhIf/plot1a5663dec975.png
 ```

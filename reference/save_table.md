@@ -47,5 +47,5 @@ tbl <- uni_reg(
 )
 
 save_table(tbl, filename = tempfile("table"), format = "html")
-#> Table saved at: /tmp/RtmpKVIPrx/table1a524b981aa7.html
+#> Table saved at: /tmp/RtmpIQXhIf/table1a564eb6a86f.html
 ```
