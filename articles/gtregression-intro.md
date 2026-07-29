@@ -250,7 +250,7 @@ birthwt_final$table
 | Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-7ff00f1c quarto-disable-processing="true"}
+.cl-19ddf702 quarto-disable-processing="true"}
 
 Save helpers return file paths and use
 [`tempdir()`](https://rdrr.io/r/base/tempfile.html) when no directory is

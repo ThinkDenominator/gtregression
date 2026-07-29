@@ -279,6 +279,8 @@ Check convergence, collinearity, model fit, and candidate model paths.
   : Check proportional hazards assumption for Cox models
 - [`plot_model_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_model_fit.md)
   : Plot model-fit diagnostics
+- [`compare_models()`](https://thinkdenominator.github.io/gtregression/reference/compare_models.md)
+  : Compare Prespecified Regression Models
 - [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md)
   : Stepwise model selection with fit metrics
 
