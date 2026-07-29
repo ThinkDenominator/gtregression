@@ -13,6 +13,12 @@
 #'   are recommended in scripts, and bare names are also accepted.
 #' @param adjust_for Optional character vector of adjustment variables. When
 #'   supplied, one adjusted model is fitted per exposure.
+#' @param multivariable Logical; if \code{FALSE} (default), the current
+#'   exposure-by-exposure workflow is used. If \code{TRUE}, one multivariable
+#'   parametric survival model is fitted using all variables in
+#'   \code{exposures}, and all exposure coefficients are reported.
+#' @param multivariate Optional logical alias for \code{multivariable}. This is
+#'   accepted for convenience; \code{multivariable} is used internally.
 #' @param distribution Parametric survival distribution. One of
 #'   \code{"weibull"}, \code{"exponential"}, \code{"lognormal"}, or
 #'   \code{"loglogistic"}. Quoted and bare values are accepted. Common
@@ -31,10 +37,17 @@
 #' a time ratio below 1 suggests shorter survival time, conditional on the chosen
 #' distribution.
 #'
-#' Without \code{adjust_for}, \code{surv_reg()} fits one crude model per
-#' exposure and reports \code{Time Ratio (95\% CI)}. With \code{adjust_for}, it
-#' fits one adjusted model per exposure and reports
-#' \code{Adjusted Time Ratio (95\% CI)}.
+#' By default, \code{surv_reg()} keeps the exposure-by-exposure workflow:
+#' without \code{adjust_for}, one crude model is fitted per exposure; with
+#' \code{adjust_for}, one adjusted model is fitted per exposure and only the
+#' exposure estimate is reported.
+#'
+#' With \code{multivariable = TRUE}, all variables in \code{exposures} are
+#' included in one parametric survival model and all coefficients are reported.
+#' Since these estimates are adjusted for the other variables in the same model,
+#' the table reports \code{Adjusted Time Ratio (95\% CI)}. The
+#' \code{adjust_for} argument is not used in this mode; include every variable
+#' that belongs in the model inside \code{exposures}.
 #'
 #' If exposure variables have a \code{"label"} attribute, for example from
 #' \code{labelled::var_label()}, those labels are used automatically in the
@@ -76,6 +89,24 @@
 #'   distribution = lognormal
 #' )
 #'
+#' surv_reg(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposures = c(trt, celltype, prior, age, karno),
+#'   distribution = weibull,
+#'   multivariable = TRUE
+#' )
+#'
+#' # multivariate is accepted as an alias
+#' surv_reg(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposures = c(trt, age, karno),
+#'   multivariate = TRUE
+#' )
+#'
 #' @importFrom survival Surv survreg
 #' @export
 surv_reg <- function(data,
@@ -83,6 +114,8 @@ surv_reg <- function(data,
                      event,
                      exposures,
                      adjust_for = NULL,
+                     multivariable = FALSE,
+                     multivariate = NULL,
                      distribution = "weibull",
                      format = c("flextable", "gt"),
                      theme = c("minimal"),
@@ -104,6 +137,24 @@ surv_reg <- function(data,
   if (!is.logical(model_stats) || length(model_stats) != 1L || is.na(model_stats)) {
     stop("`model_stats` must be TRUE or FALSE.", call. = FALSE)
   }
+  if (!is.null(multivariate)) {
+    if (!is.logical(multivariate) || length(multivariate) != 1L || is.na(multivariate)) {
+      stop("`multivariate` must be TRUE or FALSE.", call. = FALSE)
+    }
+    if (!identical(multivariable, FALSE) && !identical(multivariable, multivariate)) {
+      stop("Use only one of `multivariable` or `multivariate`, or give them the same value.", call. = FALSE)
+    }
+    multivariable <- multivariate
+  }
+  if (!is.logical(multivariable) || length(multivariable) != 1L || is.na(multivariable)) {
+    stop("`multivariable` must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (isTRUE(multivariable) && !is.null(adjust_for) && length(adjust_for) > 0) {
+    stop(
+      "`adjust_for` is not used when `multivariable = TRUE`; include all model variables in `exposures`.",
+      call. = FALSE
+    )
+  }
 
   format <- match.arg(format, c("flextable", "gt"))
   theme <- .resolve_theme(theme)
@@ -116,10 +167,11 @@ surv_reg <- function(data,
     event = event,
     exposures = exposures,
     adjust_for = adjust_for,
+    multivariable = multivariable,
     distribution = distribution
   )
 
-  effect_label <- if (adjusted_mode) {
+  effect_label <- if (adjusted_mode || isTRUE(multivariable)) {
     "Adjusted Time Ratio (95% CI)"
   } else {
     "Time Ratio (95% CI)"
@@ -140,6 +192,7 @@ surv_reg <- function(data,
     paste0("Distribution: ", distribution, "."),
     if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
     if (adjusted_mode) .adjustment_note(adjust_for) else NULL,
+    if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
     paste0(
       "Event variable: ", event,
       " (1 = event, 0 = censored after internal coding)."
@@ -167,6 +220,7 @@ surv_reg <- function(data,
     format = format,
     source = "surv_reg",
     adjusted_mode = adjusted_mode,
+    multivariable = isTRUE(multivariable),
     adjust_for = if (adjusted_mode) unique(adjust_for) else NULL,
     exposures = unique(exposures)
   )
@@ -182,9 +236,34 @@ surv_reg <- function(data,
                            event,
                            exposures,
                            adjust_for = NULL,
+                           multivariable = FALSE,
                            distribution = "weibull") {
   data_valid <- .validate_cox_inputs(data, time, event, exposures, adjust_for)
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
+
+  if (isTRUE(multivariable)) {
+    predictors <- unique(exposures)
+    data_model <- .surv_model_data(data_valid, time, event, predictors)
+    fit <- .fit_surv_model(data_model, time, event, predictors, distribution)
+
+    if (is.null(fit)) {
+      stop("Parametric survival model fitting failed for the multivariable model.", call. = FALSE)
+    }
+
+    td_list <- lapply(predictors, function(exposure) .tidy_survreg(fit, exposure))
+    td_list <- Filter(Negate(is.null), td_list)
+    if (!length(td_list)) {
+      stop("No estimable survival coefficients for the multivariable model.", call. = FALSE)
+    }
+
+    fits <- list(multivariable_model = fit)
+    return(list(
+      data_clean = data_valid,
+      table_body = do.call(rbind, td_list),
+      models = fits,
+      model_summaries = lapply(fits, summary)
+    ))
+  }
 
   fits <- vector("list", length(exposures))
   names(fits) <- exposures

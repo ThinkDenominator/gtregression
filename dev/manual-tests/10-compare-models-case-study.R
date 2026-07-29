@@ -194,8 +194,8 @@ cox_m2 <- cox_reg(
   data = lung_data,
   time = time,
   event = status,
-  exposures = trt,
-  adjust_for = c(age, karno, celltype, prior)
+  exposures = c(trt, age, karno, celltype, prior),
+  multivariable = TRUE
 )
 
 cox_compare <- compare_models(
@@ -252,8 +252,8 @@ aft_m2 <- surv_reg(
   data = lung_data,
   time = time,
   event = status,
-  exposures = trt,
-  adjust_for = c(age, karno, celltype, prior),
+  exposures = c(trt, age, karno, celltype, prior),
+  multivariable = TRUE,
   distribution = weibull
 )
 

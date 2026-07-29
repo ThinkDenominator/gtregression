@@ -10,6 +10,8 @@ surv_reg(
   event,
   exposures,
   adjust_for = NULL,
+  multivariable = FALSE,
+  multivariate = NULL,
   distribution = "weibull",
   format = c("flextable", "gt"),
   theme = c("minimal"),
@@ -32,6 +34,14 @@ are recommended in scripts, and bare names are also accepted.}
 
 \item{adjust_for}{Optional character vector of adjustment variables. When
 supplied, one adjusted model is fitted per exposure.}
+
+\item{multivariable}{Logical; if \code{FALSE} (default), the current
+exposure-by-exposure workflow is used. If \code{TRUE}, one multivariable
+parametric survival model is fitted using all variables in
+\code{exposures}, and all exposure coefficients are reported.}
+
+\item{multivariate}{Optional logical alias for \code{multivariable}. This is
+accepted for convenience; \code{multivariable} is used internally.}
 
 \item{distribution}{Parametric survival distribution. One of
 \code{"weibull"}, \code{"exponential"}, \code{"lognormal"}, or
@@ -71,10 +81,17 @@ displayed as a time ratio. A time ratio above 1 suggests longer survival time;
 a time ratio below 1 suggests shorter survival time, conditional on the chosen
 distribution.
 
-Without \code{adjust_for}, \code{surv_reg()} fits one crude model per
-exposure and reports \code{Time Ratio (95\% CI)}. With \code{adjust_for}, it
-fits one adjusted model per exposure and reports
-\code{Adjusted Time Ratio (95\% CI)}.
+By default, \code{surv_reg()} keeps the exposure-by-exposure workflow:
+without \code{adjust_for}, one crude model is fitted per exposure; with
+\code{adjust_for}, one adjusted model is fitted per exposure and only the
+exposure estimate is reported.
+
+With \code{multivariable = TRUE}, all variables in \code{exposures} are
+included in one parametric survival model and all coefficients are reported.
+Since these estimates are adjusted for the other variables in the same model,
+the table reports \code{Adjusted Time Ratio (95\% CI)}. The
+\code{adjust_for} argument is not used in this mode; include every variable
+that belongs in the model inside \code{exposures}.
 
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the
@@ -101,6 +118,24 @@ surv_reg(
   exposures = c(trt, celltype, prior),
   adjust_for = c(age, karno),
   distribution = lognormal
+)
+
+surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior, age, karno),
+  distribution = weibull,
+  multivariable = TRUE
+)
+
+# multivariate is accepted as an alias
+surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  multivariate = TRUE
 )
 
 }

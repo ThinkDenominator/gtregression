@@ -13,6 +13,12 @@
 #'   are recommended in scripts, and bare names are also accepted.
 #' @param adjust_for Optional character vector of adjustment variables. When
 #'   supplied, one adjusted Cox model is fitted per exposure.
+#' @param multivariable Logical; if \code{FALSE} (default), the current
+#'   exposure-by-exposure workflow is used. If \code{TRUE}, one multivariable
+#'   Cox model is fitted using all variables in \code{exposures}, and all
+#'   exposure coefficients are reported.
+#' @param multivariate Optional logical alias for \code{multivariable}. This is
+#'   accepted for convenience; \code{multivariable} is used internally.
 #' @param format Output table format; one of \code{"flextable"} (default) or
 #'   \code{"gt"}.
 #' @param theme Table styling preset.
@@ -20,9 +26,20 @@
 #'   including AIC, BIC, log-likelihood, concordance, number of events, and N.
 #'
 #' @details
-#' Without \code{adjust_for}, \code{cox_reg()} fits one crude Cox model per
-#' exposure and reports \code{HR (95\% CI)}. With \code{adjust_for}, it fits one
-#' adjusted Cox model per exposure and reports \code{Adjusted HR (95\% CI)}.
+#' By default, \code{cox_reg()} keeps the exposure-by-exposure workflow:
+#' without \code{adjust_for}, one crude Cox model is fitted per exposure; with
+#' \code{adjust_for}, one adjusted Cox model is fitted per exposure and only the
+#' exposure estimate is reported. This is useful for screening or for reporting
+#' several adjusted exposure effects.
+#'
+#' With \code{multivariable = TRUE}, all variables in \code{exposures} are
+#' included in a single Cox model and all coefficients are reported. This mirrors
+#' the multivariable workflow used by \code{multi_reg()}. The
+#' \code{adjust_for} argument is not used in this mode; include every variable
+#' that belongs in the model inside \code{exposures}. Since these estimates are
+#' adjusted for the other variables in the same model, the table reports
+#' \code{Adjusted HR (95\% CI)}.
+#'
 #' The proportional hazards assumption should be assessed separately, for
 #' example with \code{check_ph()}.
 #'
@@ -65,6 +82,23 @@
 #'   adjust_for = c(age, karno)
 #' )
 #'
+#' cox_reg(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposures = c(trt, celltype, prior, age, karno),
+#'   multivariable = TRUE
+#' )
+#'
+#' # multivariate is accepted as an alias
+#' cox_reg(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposures = c(trt, age, karno),
+#'   multivariate = TRUE
+#' )
+#'
 #' @importFrom survival Surv coxph
 #' @export
 cox_reg <- function(data,
@@ -72,6 +106,8 @@ cox_reg <- function(data,
                     event,
                     exposures,
                     adjust_for = NULL,
+                    multivariable = FALSE,
+                    multivariate = NULL,
                     format = c("flextable", "gt"),
                     theme = c("minimal"),
                     model_stats = FALSE) {
@@ -86,6 +122,24 @@ cox_reg <- function(data,
   if (!is.logical(model_stats) || length(model_stats) != 1L || is.na(model_stats)) {
     stop("`model_stats` must be TRUE or FALSE.", call. = FALSE)
   }
+  if (!is.null(multivariate)) {
+    if (!is.logical(multivariate) || length(multivariate) != 1L || is.na(multivariate)) {
+      stop("`multivariate` must be TRUE or FALSE.", call. = FALSE)
+    }
+    if (!identical(multivariable, FALSE) && !identical(multivariable, multivariate)) {
+      stop("Use only one of `multivariable` or `multivariate`, or give them the same value.", call. = FALSE)
+    }
+    multivariable <- multivariate
+  }
+  if (!is.logical(multivariable) || length(multivariable) != 1L || is.na(multivariable)) {
+    stop("`multivariable` must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (isTRUE(multivariable) && !is.null(adjust_for) && length(adjust_for) > 0) {
+    stop(
+      "`adjust_for` is not used when `multivariable = TRUE`; include all model variables in `exposures`.",
+      call. = FALSE
+    )
+  }
 
   format <- match.arg(format, c("flextable", "gt"))
   theme <- .resolve_theme(theme)
@@ -97,10 +151,11 @@ cox_reg <- function(data,
     time = time,
     event = event,
     exposures = exposures,
-    adjust_for = adjust_for
+    adjust_for = adjust_for,
+    multivariable = multivariable
   )
 
-  effect_label <- if (adjusted_mode) "Adjusted HR (95% CI)" else "HR (95% CI)"
+  effect_label <- if (adjusted_mode || isTRUE(multivariable)) "Adjusted HR (95% CI)" else "HR (95% CI)"
   variable_labels <- .var_label_map(data, unique(exposures))
   display_df <- .make_display_multi(
     core$table_body,
@@ -115,6 +170,7 @@ cox_reg <- function(data,
     .abbrev_note("cox"),
     if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
     if (adjusted_mode) .adjustment_note(adjust_for) else NULL,
+    if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
     paste0(
       "Event variable: ", event,
       " (1 = event, 0 = censored after internal coding)."
@@ -141,6 +197,7 @@ cox_reg <- function(data,
     format = format,
     source = "cox_reg",
     adjusted_mode = adjusted_mode,
+    multivariable = isTRUE(multivariable),
     adjust_for = if (adjusted_mode) unique(adjust_for) else NULL,
     exposures = unique(exposures)
   )
@@ -151,9 +208,33 @@ cox_reg <- function(data,
 
 #' @keywords internal
 #' @noRd
-.run_cox_core <- function(data, time, event, exposures, adjust_for = NULL) {
+.run_cox_core <- function(data, time, event, exposures, adjust_for = NULL, multivariable = FALSE) {
   data_valid <- .validate_cox_inputs(data, time, event, exposures, adjust_for)
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
+
+  if (isTRUE(multivariable)) {
+    predictors <- unique(exposures)
+    data_model <- .cox_model_data(data_valid, time, event, predictors)
+    fit <- .fit_cox_model(data_model, time, event, predictors)
+
+    if (is.null(fit)) {
+      stop("Cox model fitting failed for the multivariable model.", call. = FALSE)
+    }
+
+    td_list <- lapply(predictors, function(exposure) .tidy_cox(fit, exposure))
+    td_list <- Filter(Negate(is.null), td_list)
+    if (!length(td_list)) {
+      stop("No estimable Cox coefficients for the multivariable model.", call. = FALSE)
+    }
+
+    fits <- list(multivariable_model = fit)
+    return(list(
+      data_clean = data_valid,
+      table_body = do.call(rbind, td_list),
+      models = fits,
+      model_summaries = lapply(fits, summary)
+    ))
+  }
 
   fits <- vector("list", length(exposures))
   names(fits) <- exposures

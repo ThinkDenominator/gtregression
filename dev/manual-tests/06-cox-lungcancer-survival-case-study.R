@@ -483,7 +483,7 @@ cox_crude_stats <- cox_reg(
   exposures = survival_exposures,
   model_stats = TRUE
 )
-
+cox_crude_stats
 cox_crude_stats$model_stats
 
 
@@ -520,7 +520,41 @@ cox_reg(
 )
 
 
-## 14. Check proportional hazards assumption ----------------------------------
+## 14. Single multivariable Cox model -----------------------------------------
+
+## Question:
+## What happens if the exposure list itself defines the final Cox model?
+##
+## Use multivariable = TRUE when you want one Cox model containing all variables
+## listed in exposures, and you want all coefficients reported. This is the Cox
+## equivalent of the default multi_reg() workflow. The heading should read
+## Adjusted HR (95% CI), because each coefficient is adjusted for the other
+## variables in the model.
+
+cox_full_model <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior, age, karno),
+  multivariable = TRUE,
+  model_stats = TRUE
+)
+
+cox_full_model
+cox_full_model$table_body
+cox_full_model$model_stats
+
+## multivariate = TRUE is accepted as a user-friendly alias.
+cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  multivariate = TRUE
+)
+
+
+## 15. Check proportional hazards assumption ----------------------------------
 
 ## Cox HRs assume the hazard ratio is reasonably constant over follow-up time.
 ## check_ph() uses Schoenfeld residual tests via survival::cox.zph().
@@ -540,7 +574,7 @@ check_ph(cox_adjusted, transform = rank, format = gt)
 check_ph(cox_adjusted$models$trt, format = tibble)
 
 
-## 15. Polish the Cox tables ---------------------------------------------------
+## 16. Polish the Cox tables ---------------------------------------------------
 
 ## modify_table() should work with cox_reg() objects just like other regression
 ## outputs. Use this for publication wording, headers, captions, and caveats.
@@ -693,7 +727,7 @@ forest_reg(
 )
 
 
-## 19. Model comparison for prespecified Cox models ---------------------------
+## 20. Model comparison for prespecified Cox models ---------------------------
 
 ## compare_models() is for models the analyst has already chosen and fitted.
 ## This is different from select_models(), which searches along a model path.
@@ -719,8 +753,8 @@ cox_m2 <- cox_reg(
   data = lung_data,
   time = time,
   event = status,
-  exposures = trt,
-  adjust_for = c(age, karno, celltype, prior)
+  exposures = c(trt, age, karno, celltype, prior),
+  multivariable = TRUE
 )
 
 cox_compare <- compare_models(

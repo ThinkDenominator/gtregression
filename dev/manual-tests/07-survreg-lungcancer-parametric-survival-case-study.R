@@ -580,7 +580,41 @@ surv_lognormal_stats$model_stats
 surv_loglogistic_stats$model_stats
 
 
-## 14. Compare prespecified parametric survival models ------------------------
+## 14. Single multivariable parametric survival model -------------------------
+
+## Question:
+## What happens if the exposure list itself defines the final AFT model?
+##
+## Use multivariable = TRUE when you want one parametric survival model
+## containing all variables listed in exposures, and you want all coefficients
+## reported. The heading should read Adjusted Time Ratio (95% CI), because each
+## coefficient is adjusted for the other variables in the model.
+
+surv_full_model <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior, age, karno),
+  distribution = weibull,
+  multivariable = TRUE,
+  model_stats = TRUE
+)
+
+surv_full_model
+surv_full_model$table_body
+surv_full_model$model_stats
+
+## multivariate = TRUE is accepted as a user-friendly alias.
+surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  multivariate = TRUE
+)
+
+
+## 15. Compare prespecified parametric survival models ------------------------
 
 ## surv_model_compare() compares distributions for one formula.
 ## compare_models() compares fitted candidate survreg objects. This is useful
@@ -608,8 +642,8 @@ aft_m2 <- surv_reg(
   data = lung_data,
   time = time,
   event = status,
-  exposures = trt,
-  adjust_for = c(age, karno, celltype, prior),
+  exposures = c(trt, age, karno, celltype, prior),
+  multivariable = TRUE,
   distribution = weibull
 )
 

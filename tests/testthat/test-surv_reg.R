@@ -69,6 +69,58 @@ test_that("surv_reg returns adjusted time-ratio tables and model stats", {
   expect_true(all(res$model_stats$events > 0))
 })
 
+test_that("surv_reg supports a single multivariable parametric survival model", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+
+  res <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior, age, karno),
+    distribution = weibull,
+    multivariable = TRUE,
+    model_stats = TRUE
+  )
+
+  direct <- survival::survreg(
+    survival::Surv(time, status) ~ trt + celltype + prior + age + karno,
+    data = df,
+    dist = "weibull",
+    model = TRUE
+  )
+
+  expect_s3_class(res, "surv_reg")
+  expect_false(res$adjusted_mode)
+  expect_true(res$multivariable)
+  expect_null(res$adjust_for)
+  expect_named(res$models, "multivariable_model")
+  expect_equal(stats::nobs(res$models$multivariable_model), stats::nobs(direct))
+  expect_equal(stats::coef(res$models$multivariable_model), stats::coef(direct), tolerance = 1e-8)
+  expect_equal(res$model_stats$model, "multivariable_model")
+  expect_true("Adjusted Time Ratio (95% CI)" %in% names(res$table_display))
+  expect_true(all(c("trt", "celltype", "prior", "age", "karno") %in% res$table_body$exposure))
+})
+
+test_that("surv_reg accepts multivariate alias for multivariable mode", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+
+  res <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, age, karno),
+    multivariate = TRUE
+  )
+
+  expect_true(res$multivariable)
+  expect_named(res$models, "multivariable_model")
+  expect_true("Adjusted Time Ratio (95% CI)" %in% names(res$table_display))
+})
+
 test_that("surv_reg uses exposure-specific complete cases for crude models", {
   skip_if_not_installed("survival")
 
@@ -137,6 +189,25 @@ test_that("surv_reg validates survival and distribution inputs", {
   expect_error(
     surv_reg(df, time = "time", event = "status", exposures = "age", model_stats = NA),
     "`model_stats` must be TRUE or FALSE"
+  )
+  expect_error(
+    surv_reg(df, time = "time", event = "status", exposures = "age", multivariable = NA),
+    "`multivariable` must be TRUE or FALSE"
+  )
+  expect_error(
+    surv_reg(df, time = "time", event = "status", exposures = "age", multivariate = NA),
+    "`multivariate` must be TRUE or FALSE"
+  )
+  expect_error(
+    surv_reg(
+      df,
+      time = "time",
+      event = "status",
+      exposures = "age",
+      adjust_for = "karno",
+      multivariable = TRUE
+    ),
+    "`adjust_for` is not used when `multivariable = TRUE`"
   )
 })
 

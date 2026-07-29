@@ -10,6 +10,8 @@ cox_reg(
   event,
   exposures,
   adjust_for = NULL,
+  multivariable = FALSE,
+  multivariate = NULL,
   format = c("flextable", "gt"),
   theme = c("minimal"),
   model_stats = FALSE
@@ -31,6 +33,14 @@ are recommended in scripts, and bare names are also accepted.}
 
 \item{adjust_for}{Optional character vector of adjustment variables. When
 supplied, one adjusted Cox model is fitted per exposure.}
+
+\item{multivariable}{Logical; if \code{FALSE} (default), the current
+exposure-by-exposure workflow is used. If \code{TRUE}, one multivariable
+Cox model is fitted using all variables in \code{exposures}, and all
+exposure coefficients are reported.}
+
+\item{multivariate}{Optional logical alias for \code{multivariable}. This is
+accepted for convenience; \code{multivariable} is used internally.}
 
 \item{format}{Output table format; one of \code{"flextable"} (default) or
 \code{"gt"}.}
@@ -58,9 +68,20 @@ A list of class \code{c("gtregression","cox_reg", ...)} with elements:
 Fit Cox proportional hazards models and report hazard ratios.
 }
 \details{
-Without \code{adjust_for}, \code{cox_reg()} fits one crude Cox model per
-exposure and reports \code{HR (95\% CI)}. With \code{adjust_for}, it fits one
-adjusted Cox model per exposure and reports \code{Adjusted HR (95\% CI)}.
+By default, \code{cox_reg()} keeps the exposure-by-exposure workflow:
+without \code{adjust_for}, one crude Cox model is fitted per exposure; with
+\code{adjust_for}, one adjusted Cox model is fitted per exposure and only the
+exposure estimate is reported. This is useful for screening or for reporting
+several adjusted exposure effects.
+
+With \code{multivariable = TRUE}, all variables in \code{exposures} are
+included in a single Cox model and all coefficients are reported. This mirrors
+the multivariable workflow used by \code{multi_reg()}. The
+\code{adjust_for} argument is not used in this mode; include every variable
+that belongs in the model inside \code{exposures}. Since these estimates are
+adjusted for the other variables in the same model, the table reports
+\code{Adjusted HR (95\% CI)}.
+
 The proportional hazards assumption should be assessed separately, for
 example with \code{check_ph()}.
 
@@ -88,6 +109,23 @@ cox_reg(
   event = status,
   exposures = c(trt, celltype, prior),
   adjust_for = c(age, karno)
+)
+
+cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior, age, karno),
+  multivariable = TRUE
+)
+
+# multivariate is accepted as an alias
+cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  multivariate = TRUE
 )
 
 }
