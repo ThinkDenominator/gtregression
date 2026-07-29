@@ -1,7 +1,5 @@
 # Stratified Analysis
 
-## Stratified Analysis
-
 Stratified regression repeats the analysis inside each subgroup and
 places the results side by side. It is useful when the same association
 may look different across groups.
@@ -32,7 +30,7 @@ attr(birthwt_data$ui, "label") <- "Uterine irritability"
 attr(birthwt_data$ptl_cat, "label") <- "Previous preterm labour"
 ```
 
-### Describe by Stratum
+## Describe by Stratum
 
 Start with a descriptive table by the stratifying variable. This is the
 companion table for the stratified regression: it helps users see the
@@ -72,7 +70,7 @@ strata_desc$table
 | Categorical variables shown as n (%); percentages are by column. |  |  |  |  |
 | Continuous variables shown as Median (IQR). |  |  |  |  |
 
-### Univariable by Stratum
+## Univariable by Stratum
 
 [`stratified_uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_uni_reg.md)
 fits one model per exposure inside each stratum. The result is a single
@@ -112,7 +110,7 @@ strata_uni$table
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |  |  |
 | Ref. = reference category. |  |  |  |  |  |  |  |  |  |
 
-### Full Multivariable Model by Stratum
+## Full Multivariable Model by Stratum
 
 With `adjust_for = NULL`,
 [`stratified_multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_multi_reg.md)
@@ -154,7 +152,7 @@ strata_full$table
 | Ref. = reference category. |  |  |  |  |  |  |
 | Complete observations included by race stratum: White: N = 96; Black: N = 26; Other: N = 67 |  |  |  |  |  |  |
 
-### Exposure-Specific Adjusted Models by Stratum
+## Exposure-Specific Adjusted Models by Stratum
 
 Use `adjust_for` when each exposure should be adjusted for the same
 variables within each stratum. This mirrors
@@ -200,7 +198,7 @@ If a stratum cannot fit a model, the function skips that stratum with a
 warning and continues. This is intentional: sparse strata are common in
 real data, and one small subgroup should not erase the whole analysis.
 
-### What To Inspect
+## What To Inspect
 
 - `$table`: rendered side-by-side table.
 - `$table_display`: wide data used to build the table.

@@ -1,4 +1,4 @@
-# Plot Model Fit Diagnostics
+# Plot model-fit diagnostics
 
 Visualise model fit for fitted regression models and models stored
 inside
@@ -56,8 +56,8 @@ multiple diagnostics are requested.
 
 ## Details
 
-`plot_model_fit()` is intended as a model-checking visual aid, not as a
-publication table. For survival models, use
+`plot_model_fit()` is a visual check of how a fitted model behaves, not
+a formal model-selection rule. For survival models, use
 [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md)
 for Cox proportional hazards diagnostics and
 [`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md)

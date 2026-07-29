@@ -8,11 +8,11 @@
 data.**
 
 `gtregression` helps you fit, adjust, stratify, visualise, and export
-regression results with beginner-friendly R syntax. It supports
-logistic, log-binomial, Poisson, robust Poisson, negative binomial, Cox
-survival, parametric survival, and linear regression. `flextable` is the
-default table engine, so outputs are Word-friendly from the start;
-`format = gt` remains available for HTML-first workflows.
+regression results with approachable R syntax. It supports logistic,
+log-binomial, Poisson, robust Poisson, negative binomial, Cox survival,
+parametric survival, and linear regression. `flextable` is the default
+table engine, so outputs are Word-friendly from the start; `format = gt`
+remains available for HTML-first workflows.
 
 ### What You Can Make
 
@@ -26,6 +26,21 @@ default table engine, so outputs are Word-friendly from the start;
 - Model diagnostics, model selection, confounding, and interaction
   checks.
 - HTML, PDF, PNG, and Word outputs.
+
+### What Powers the Package
+
+`gtregression` is a readable interface over standard R modelling and
+reporting packages. The fitted models remain available inside the
+returned objects, so users can inspect the analysis behind the displayed
+table.
+
+| Area | Core packages used |
+|----|----|
+| Data handling | `dplyr`, `purrr`, `tibble`, `rlang` |
+| Regression and survival models | `stats`, `MASS`, `survival`, `risks`, `logistf` |
+| Robust inference and model tidying | `sandwich`, `lmtest`, `broom`, `broom.helpers` |
+| Tables and Word output | `flextable`, `officer`, `gt` |
+| Plots and forest plots | `ggplot2`, `patchwork`, `forestploter`, `scales` |
 
 ### Install
 
@@ -235,7 +250,7 @@ birthwt_final$table
 | Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-74028b5e quarto-disable-processing="true"}
+.cl-907181f4 quarto-disable-processing="true"}
 
 Save helpers return file paths and use
 [`tempdir()`](https://rdrr.io/r/base/tempfile.html) when no directory is
@@ -259,6 +274,10 @@ save_docx(tables = birthwt_final, filename = "birthwt-report")
   Analysis**](https://thinkdenominator.github.io/gtregression/articles/survival-analysis.md):
   Kaplan-Meier curves, survival summaries, Cox regression, parametric
   survival models, and survival predictions.
+- [**Causal
+  Mediation**](https://thinkdenominator.github.io/gtregression/articles/causal-mediation.md):
+  estimate direct, indirect, total, and proportion mediated effects with
+  clear causal caveats.
 - [**Visualise
   Results**](https://thinkdenominator.github.io/gtregression/articles/visualise-results.md):
   plot regression estimates and forest tables.

@@ -39,6 +39,7 @@
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -71,9 +72,6 @@
 
     
     
-<div class="section level2">
-<h2 id="visualise-regression-results">Visualise Regression Results<a class="anchor" aria-label="anchor" href="#visualise-regression-results"></a>
-</h2>
 <p>Regression tables are the evidence. Plots are the quick read. Use
 <code><a href="../reference/km_plot.html">km_plot()</a></code>, <code><a href="../reference/km_risk_table.html">km_risk_table()</a></code>,
 <code><a href="../reference/rmst_table.html">rmst_table()</a></code>, <code><a href="../reference/survival_summary.html">survival_summary()</a></code>,
@@ -154,9 +152,9 @@ prepare figures for manuscripts or reports.</p>
 <span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"karno"</span><span class="op">)</span>,</span>
 <span>  distribution <span class="op">=</span> <span class="va">weibull</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="kaplan-meier-curve">Kaplan-Meier Curve<a class="anchor" aria-label="anchor" href="#kaplan-meier-curve"></a>
-</h3>
+<div class="section level2">
+<h2 id="kaplan-meier-curve">Kaplan-Meier Curve<a class="anchor" aria-label="anchor" href="#kaplan-meier-curve"></a>
+</h2>
 <p><code><a href="../reference/km_plot.html">km_plot()</a></code> gives the survival curve before regression
 modelling. Use it to show the observed survival experience by group,
 with optional confidence intervals, censoring marks, log-rank p-value,
@@ -172,9 +170,9 @@ and number-at-risk table.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/km-plot-1.png" class="r-plt" alt="" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="risk-table">Risk Table<a class="anchor" aria-label="anchor" href="#risk-table"></a>
-</h3>
+<div class="section level2">
+<h2 id="risk-table">Risk Table<a class="anchor" aria-label="anchor" href="#risk-table"></a>
+</h2>
 <p><code><a href="../reference/km_risk_table.html">km_risk_table()</a></code> gives the number at risk at selected
 follow-up times as a standalone table. This is useful when the risk
 table needs to be reported beside or underneath a Kaplan-Meier
@@ -188,9 +186,9 @@ curve.</p>
 <span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">90</span>, <span class="fl">180</span>, <span class="fl">365</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="restricted-mean-survival-time">Restricted Mean Survival Time<a class="anchor" aria-label="anchor" href="#restricted-mean-survival-time"></a>
-</h3>
+<div class="section level2">
+<h2 id="restricted-mean-survival-time">Restricted Mean Survival Time<a class="anchor" aria-label="anchor" href="#restricted-mean-survival-time"></a>
+</h2>
 <p><code><a href="../reference/rmst_table.html">rmst_table()</a></code> reports the average survival time up to a
 fixed follow-up point, called <code>tau</code>. This is useful when
 readers want an absolute survival-time summary, or when hazard ratios
@@ -204,9 +202,9 @@ are difficult to explain.</p>
 <span>  tau <span class="op">=</span> <span class="fl">365</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="kaplan-meier-summary">Kaplan-Meier Summary<a class="anchor" aria-label="anchor" href="#kaplan-meier-summary"></a>
-</h3>
+<div class="section level2">
+<h2 id="kaplan-meier-summary">Kaplan-Meier Summary<a class="anchor" aria-label="anchor" href="#kaplan-meier-summary"></a>
+</h2>
 <p><code><a href="../reference/survival_summary.html">survival_summary()</a></code> is the table companion to the
 Kaplan-Meier curve. It reports the number analysed, events, censored
 observations, and median survival with a 95% confidence interval. Use it
@@ -220,9 +218,9 @@ plot.</p>
 <span>  by <span class="op">=</span> <span class="va">trt</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="survival-quantiles">Survival Quantiles<a class="anchor" aria-label="anchor" href="#survival-quantiles"></a>
-</h3>
+<div class="section level2">
+<h2 id="survival-quantiles">Survival Quantiles<a class="anchor" aria-label="anchor" href="#survival-quantiles"></a>
+</h2>
 <p><code><a href="../reference/survival_quantiles.html">survival_quantiles()</a></code> reports detailed Kaplan-Meier time
 points. This is useful when the median alone is not enough, or when you
 want to show the 25th, 50th, and 75th percentile event times by
@@ -235,9 +233,9 @@ group.</p>
 <span>  by <span class="op">=</span> <span class="va">trt</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="survival-probabilities">Survival Probabilities<a class="anchor" aria-label="anchor" href="#survival-probabilities"></a>
-</h3>
+<div class="section level2">
+<h2 id="survival-probabilities">Survival Probabilities<a class="anchor" aria-label="anchor" href="#survival-probabilities"></a>
+</h2>
 <p><code><a href="../reference/survival_prob.html">survival_prob()</a></code> reports Kaplan-Meier survival
 probability at fixed follow-up times. This is useful for clinically
 familiar summaries such as 90-day, 6-month, or 1-year survival.</p>
@@ -250,9 +248,9 @@ familiar summaries such as 90-day, 6-month, or 1-year survival.</p>
 <span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">180</span>, <span class="fl">365</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="log-rank-test">Log-Rank Test<a class="anchor" aria-label="anchor" href="#log-rank-test"></a>
-</h3>
+<div class="section level2">
+<h2 id="log-rank-test">Log-Rank Test<a class="anchor" aria-label="anchor" href="#log-rank-test"></a>
+</h2>
 <p><code><a href="../reference/logrank_test.html">logrank_test()</a></code> formally compares Kaplan-Meier curves
 between groups. It is useful after the curve and summary table, but it
 does not give an effect size; use <code><a href="../reference/cox_reg.html">cox_reg()</a></code> when a hazard
@@ -265,9 +263,9 @@ ratio is needed.</p>
 <span>  by <span class="op">=</span> <span class="va">trt</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="parametric-survival-model-comparison">Parametric Survival Model Comparison<a class="anchor" aria-label="anchor" href="#parametric-survival-model-comparison"></a>
-</h3>
+<div class="section level2">
+<h2 id="parametric-survival-model-comparison">Parametric Survival Model Comparison<a class="anchor" aria-label="anchor" href="#parametric-survival-model-comparison"></a>
+</h2>
 <p><code><a href="../reference/surv_model_compare.html">surv_model_compare()</a></code> helps users choose a candidate
 distribution before using <code><a href="../reference/surv_reg.html">surv_reg()</a></code>. It fits the same
 model with Weibull, exponential, lognormal, and loglogistic
@@ -281,9 +279,9 @@ distributions, then compares AIC and BIC.</p>
 <span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"karno"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="parametric-survival-fit-plot">Parametric Survival Fit Plot<a class="anchor" aria-label="anchor" href="#parametric-survival-fit-plot"></a>
-</h3>
+<div class="section level2">
+<h2 id="parametric-survival-fit-plot">Parametric Survival Fit Plot<a class="anchor" aria-label="anchor" href="#parametric-survival-fit-plot"></a>
+</h2>
 <p><code><a href="../reference/plot_surv_fit.html">plot_surv_fit()</a></code> is the visual companion to
 <code><a href="../reference/surv_model_compare.html">surv_model_compare()</a></code>. It overlays the observed Kaplan-Meier
 curve with fitted parametric survival curves, so users can check whether
@@ -314,9 +312,9 @@ variables and the most common level for categorical variables.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/plot-surv-fit-adjusted-1.png" class="r-plt" alt="" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="parametric-survival-prediction">Parametric Survival Prediction<a class="anchor" aria-label="anchor" href="#parametric-survival-prediction"></a>
-</h3>
+<div class="section level2">
+<h2 id="parametric-survival-prediction">Parametric Survival Prediction<a class="anchor" aria-label="anchor" href="#parametric-survival-prediction"></a>
+</h2>
 <p><code><a href="../reference/surv_predict.html">surv_predict()</a></code> turns a fitted parametric survival model
 into predicted survival probabilities at clinically useful follow-up
 times. This helps users move from a time-ratio table to a more direct
@@ -336,9 +334,9 @@ profile.</p>
 a typical profile from the model data, using medians for numeric
 variables and the most common level for categorical variables.</p>
 </div>
-<div class="section level3">
-<h3 id="one-regression-plot">One Regression Plot<a class="anchor" aria-label="anchor" href="#one-regression-plot"></a>
-</h3>
+<div class="section level2">
+<h2 id="one-regression-plot">One Regression Plot<a class="anchor" aria-label="anchor" href="#one-regression-plot"></a>
+</h2>
 <p><code><a href="../reference/plot_reg.html">plot_reg()</a></code> turns a <code><a href="../reference/uni_reg.html">uni_reg()</a></code> or
 <code><a href="../reference/multi_reg.html">multi_reg()</a></code> result into a forest-style plot. By default,
 categorical reference levels are shown and labelled as
@@ -351,9 +349,9 @@ labels set on the data are used automatically in the plot.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/one-plot-1.png" class="r-plt" alt="" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="adjusted-regression-plot">Adjusted Regression Plot<a class="anchor" aria-label="anchor" href="#adjusted-regression-plot"></a>
-</h3>
+<div class="section level2">
+<h2 id="adjusted-regression-plot">Adjusted Regression Plot<a class="anchor" aria-label="anchor" href="#adjusted-regression-plot"></a>
+</h2>
 <p>When the input comes from <code>multi_reg(adjust_for = ...)</code>,
 the adjustment set is shown in the plot caption by default. This keeps
 the figure interpretable when it is copied into slides or a manuscript
@@ -367,9 +365,9 @@ draft.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/adjusted-plot-1.png" class="r-plt" alt="" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="compact-binary-predictors">Compact Binary Predictors<a class="anchor" aria-label="anchor" href="#compact-binary-predictors"></a>
-</h3>
+<div class="section level2">
+<h2 id="compact-binary-predictors">Compact Binary Predictors<a class="anchor" aria-label="anchor" href="#compact-binary-predictors"></a>
+</h2>
 <p>For Yes/No, 1/0, true/false, or similar binary predictors, set
 <code>show_ref = FALSE</code> to hide reference rows. Affirmative binary
 levels such as <code>Yes</code> are displayed as the exposure name
@@ -384,9 +382,9 @@ read than repeated <code>variable: Yes</code> labels.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/compact-binary-plot-1.png" class="r-plt" alt="" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="log-axis-and-tick-marks">Log Axis and Tick Marks<a class="anchor" aria-label="anchor" href="#log-axis-and-tick-marks"></a>
-</h3>
+<div class="section level2">
+<h2 id="log-axis-and-tick-marks">Log Axis and Tick Marks<a class="anchor" aria-label="anchor" href="#log-axis-and-tick-marks"></a>
+</h2>
 <p>For ratio measures such as odds ratios, risk ratios, and incidence
 rate ratios, <code>log_x = TRUE</code> uses a log-scaled x-axis. If you
 do not provide tick marks, <code>gtregression</code> chooses sensible
@@ -411,9 +409,9 @@ marks.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/custom-axis-plot-1.png" class="r-plt" alt="" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="compare-crude-and-adjusted-effects">Compare Crude and Adjusted Effects<a class="anchor" aria-label="anchor" href="#compare-crude-and-adjusted-effects"></a>
-</h3>
+<div class="section level2">
+<h2 id="compare-crude-and-adjusted-effects">Compare Crude and Adjusted Effects<a class="anchor" aria-label="anchor" href="#compare-crude-and-adjusted-effects"></a>
+</h2>
 <p><code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code> places crude and adjusted model
 results side by side. This is useful when a manuscript needs to show how
 adjustment changes the estimate. Axis limits and tick marks can be
@@ -433,9 +431,9 @@ controlled separately for each side.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/combined-plot-1.png" class="r-plt" alt="" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="publication-style-forest-table">Publication-Style Forest Table<a class="anchor" aria-label="anchor" href="#publication-style-forest-table"></a>
-</h3>
+<div class="section level2">
+<h2 id="publication-style-forest-table">Publication-Style Forest Table<a class="anchor" aria-label="anchor" href="#publication-style-forest-table"></a>
+</h2>
 <p><code><a href="../reference/forest_df.html">forest_df()</a></code> prepares the data. <code><a href="../reference/forest_reg.html">forest_reg()</a></code>
 draws the forest table. This is the most manuscript-oriented plot when
 you want descriptive summaries and crude or adjusted estimates in the
@@ -449,9 +447,9 @@ same figure.</p>
 <span></span>
 <span><span class="fu"><a href="../reference/forest_reg.html">forest_reg</a></span><span class="op">(</span><span class="va">forest_data</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualise-results_files/figure-html/forest-table-1.png" class="r-plt" alt="" width="700"></p>
-<div class="section level4">
-<h4 id="fine-tune-forest-tables">Fine-Tune Forest Tables<a class="anchor" aria-label="anchor" href="#fine-tune-forest-tables"></a>
-</h4>
+<div class="section level3">
+<h3 id="fine-tune-forest-tables">Fine-Tune Forest Tables<a class="anchor" aria-label="anchor" href="#fine-tune-forest-tables"></a>
+</h3>
 <p>Wide forest tables combine descriptive summaries, crude estimates,
 adjusted estimates, and one or two forest plot panels. If the x-axis
 labels are crowded, control the axis range and tick marks with
@@ -501,9 +499,9 @@ columns.</p>
 <p><img src="visualise-results_files/figure-html/forest-one-call-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 </div>
-<div class="section level3">
-<h3 id="what-to-inspect">What To Inspect<a class="anchor" aria-label="anchor" href="#what-to-inspect"></a>
-</h3>
+<div class="section level2">
+<h2 id="what-to-inspect">What To Inspect<a class="anchor" aria-label="anchor" href="#what-to-inspect"></a>
+</h2>
 <ul>
 <li>
 <code><a href="../reference/plot_reg.html">plot_reg()</a></code> returns a <code>ggplot</code>.</li>
@@ -549,7 +547,6 @@ CI plot panel is too narrow or too wide.</li>
 <code><a href="../reference/forest_reg.html">forest_reg()</a></code> returns <code>plot</code>,
 <code>data</code>, <code>input_data</code>, and <code>meta</code>.</li>
 </ul>
-</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -1,7 +1,5 @@
 # Descriptive Tables
 
-## Descriptive Tables
-
 Start with a table that people can actually read.
 [`descriptive_table()`](https://thinkdenominator.github.io/gtregression/reference/descriptive_table.md)
 creates publication-ready summaries for continuous, categorical, and
@@ -44,7 +42,7 @@ attr(birthwt_data$ptl_cat, "label") <- "Previous preterm labour"
 attr(birthwt_data$ftv_cat, "label") <- "First trimester visits"
 ```
 
-### Column Percentages
+## Column Percentages
 
 Use column percentages when the table is grouped by outcome or another
 column. Continuous variables are shown as median (IQR) by default, and
@@ -92,7 +90,7 @@ desc_column$table
 | Categorical variables shown as n (%); percentages are by column. |  |  |  |
 | Continuous variables shown as Median (IQR). |  |  |  |
 
-### Row Percentages
+## Row Percentages
 
 Use row percentages when the question is how each exposure level is
 distributed across groups. Common option values can be written with or
@@ -138,7 +136,7 @@ descriptive_table(
 | Categorical variables shown as n (%); percentages are by row (Overall shows counts). |  |  |  |
 | Continuous variables shown as Median (IQR). |  |  |  |
 
-### Summary Choices
+## Summary Choices
 
 Use `statistic` when continuous variables need a different summary. A
 single value applies to all numeric variables. A named vector lets you
@@ -194,7 +192,7 @@ descriptive_table(
 )
 ```
 
-### Output Format
+## Output Format
 
 `flextable` is the default because it behaves well in Word workflows.
 Use `format = gt` when the output is mainly for HTML or pkgdown.
@@ -237,7 +235,7 @@ descriptive_table(
 | Categorical variables shown as n (%); percentages are by column. |  |  |
 | Continuous variables shown as Median (IQR). |  |  |
 
-### What To Inspect
+## What To Inspect
 
 - `$table`: rendered `gt` or `flextable` output.
 - `$table_body`: clean data behind the table.

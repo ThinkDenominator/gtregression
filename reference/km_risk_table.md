@@ -1,7 +1,6 @@
 # Kaplan-Meier risk table
 
-Create a standalone Kaplan-Meier risk table at user-specified follow-up
-times.
+Tabulate the number at risk at selected follow-up times.
 
 ## Usage
 

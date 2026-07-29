@@ -39,6 +39,7 @@
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -71,9 +72,6 @@
 
     
     
-<div class="section level2">
-<h2 id="confounding-and-interaction">Confounding and Interaction<a class="anchor" aria-label="anchor" href="#confounding-and-interaction"></a>
-</h2>
 <p>Confounding asks whether adjustment changes the exposure effect.
 Interaction asks whether the exposure effect differs across another
 variable.</p>
@@ -82,9 +80,9 @@ Use DAGs, subject-matter knowledge, and study design to decide which
 variables are confounders or effect modifiers. Automated
 change-in-estimate and interaction checks should not be used as the sole
 basis for model adjustment.</p>
-<div class="section level3">
-<h3 id="which-function-should-i-use">Which Function Should I Use?<a class="anchor" aria-label="anchor" href="#which-function-should-i-use"></a>
-</h3>
+<div class="section level2">
+<h2 id="which-function-should-i-use">Which Function Should I Use?<a class="anchor" aria-label="anchor" href="#which-function-should-i-use"></a>
+</h2>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -111,6 +109,13 @@ together.</td>
 <code>exposure:effect_modifier</code> using LRT or Wald tests.</td>
 </tr>
 <tr class="odd">
+<td>Could part of an exposure-outcome association operate through a
+mediator?</td>
+<td><code><a href="../reference/mediation_analysis.html">mediation_analysis()</a></code></td>
+<td>Estimates direct, indirect, total, and proportion mediated effects
+with explicit causal caveats.</td>
+</tr>
+<tr class="even">
 <td>Do I need a Mantel-Haenszel estimate?</td>
 <td>
 <code>identify_confounder(method = "mh")</code> or
@@ -129,6 +134,8 @@ variables.</li>
 evidence for candidate confounders or effect modifiers.</li>
 <li>Use <code><a href="../reference/interaction_models.html">interaction_models()</a></code> when you have a planned
 interaction hypothesis.</li>
+<li>Use <code><a href="../reference/mediation_analysis.html">mediation_analysis()</a></code> when the mediator is part of a
+planned causal question and the temporal order is defensible.</li>
 <li>If interaction is important, consider stratified reporting with
 <code><a href="../reference/stratified_uni_reg.html">stratified_uni_reg()</a></code> or
 <code><a href="../reference/stratified_multi_reg.html">stratified_multi_reg()</a></code>.</li>
@@ -152,9 +159,9 @@ interaction hypothesis.</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">smoke</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Smoking during pregnancy"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">ht</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Hypertension"</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="identify-confounders">Identify Confounders<a class="anchor" aria-label="anchor" href="#identify-confounders"></a>
-</h3>
+<div class="section level2">
+<h2 id="identify-confounders">Identify Confounders<a class="anchor" aria-label="anchor" href="#identify-confounders"></a>
+</h2>
 <p>Use <code>method = "change"</code> for the model-based
 change-in-estimate method. Use <code>method = "mh"</code> or
 <code>method = "both"</code> when Mantel-Haenszel is appropriate. The
@@ -684,9 +691,9 @@ filtering.</p>
 <span><span class="co">## <span style="color: #949494;">#   is_confounder &lt;lgl&gt;, interaction_p &lt;dbl&gt;, is_effect_modifier &lt;lgl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   decision &lt;chr&gt;, recommendation &lt;chr&gt;</span></span></span></code></pre>
 </div>
-<div class="section level3">
-<h3 id="mantel-haenszel-estimate">Mantel-Haenszel Estimate<a class="anchor" aria-label="anchor" href="#mantel-haenszel-estimate"></a>
-</h3>
+<div class="section level2">
+<h2 id="mantel-haenszel-estimate">Mantel-Haenszel Estimate<a class="anchor" aria-label="anchor" href="#mantel-haenszel-estimate"></a>
+</h2>
 <p>Mantel-Haenszel is useful when the question is whether a stratified
 pooled estimate differs meaningfully from the crude estimate. It is
 available for eligible binary/categorical settings. It is not the same
@@ -702,43 +709,43 @@ as fitting an interaction term.</p>
 <span>  format <span class="op">=</span> <span class="va">flextable</span></span>
 <span><span class="op">)</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
 <div class="tabwid">
-<style>.cl-65c7359e{}.cl-65be86a6{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-65be86b0{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-65be86ba{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-65c21154{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-65c21168{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-65c21172{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-65c24d72{width:1.081in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24d7c{width:1.16in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24d7d{width:1.606in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24d86{width:1.863in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24d87{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24d88{width:1.698in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24d90{width:1.449in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24d9a{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24d9b{width:1.398in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24da4{width:1.655in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24dae{width:1.177in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24db8{width:1.784in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24db9{width:1.081in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24dc2{width:1.16in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24dc3{width:1.606in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24dcc{width:1.863in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24dd6{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24de0{width:1.698in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24de1{width:1.449in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24dea{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24deb{width:1.398in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24df4{width:1.655in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24df5{width:1.177in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24dfe{width:1.784in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24dff{width:1.081in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e00{width:1.16in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e08{width:1.606in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e09{width:1.863in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e12{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e13{width:1.698in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e14{width:1.449in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e1c{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e1d{width:1.398in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e26{width:1.655in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e27{width:1.177in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-65c24e28{width:1.784in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
-<table data-quarto-disable-processing="true" class="table cl-65c7359e">
+<style>.cl-812c4b16{}.cl-8123a34e{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-8123a358{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-8123a362{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-81273248{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-8127325c{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-81273266{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-81276be6{width:1.081in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276bf0{width:1.16in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276bf1{width:1.606in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276bfa{width:1.863in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276bfb{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c04{width:1.698in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c05{width:1.449in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c0e{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c0f{width:1.398in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c10{width:1.655in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c18{width:1.177in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c19{width:1.784in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c22{width:1.081in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c23{width:1.16in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c24{width:1.606in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c2c{width:1.863in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c2d{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c2e{width:1.698in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c36{width:1.449in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c37{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c40{width:1.398in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c41{width:1.655in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c42{width:1.177in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c4a{width:1.784in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c4b{width:1.081in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c4c{width:1.16in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c54{width:1.606in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c55{width:1.863in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c56{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c5e{width:1.698in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c5f{width:1.449in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c68{width:1.377in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c69{width:1.398in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c6a{width:1.655in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c6b{width:1.177in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-81276c72{width:1.784in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
+<table data-quarto-disable-processing="true" class="table cl-812c4b16">
 <thead><tr style="overflow-wrap:break-word;">
-<th class="cl-65c24d72"><p class="cl-65c21154"><span class="cl-65be86a6">Exposure</span></p></th>
-<th class="cl-65c24d7c"><p class="cl-65c21154"><span class="cl-65be86a6">Candidate</span></p></th>
-<th class="cl-65c24d7d"><p class="cl-65c21168"><span class="cl-65be86a6">Crude estimate</span></p></th>
-<th class="cl-65c24d86"><p class="cl-65c21168"><span class="cl-65be86a6">Adjusted estimate</span></p></th>
-<th class="cl-65c24d87"><p class="cl-65c21168"><span class="cl-65be86a6">MH estimate</span></p></th>
-<th class="cl-65c24d88"><p class="cl-65c21168"><span class="cl-65be86a6">% change model</span></p></th>
-<th class="cl-65c24d90"><p class="cl-65c21168"><span class="cl-65be86a6">% change MH</span></p></th>
-<th class="cl-65c24d9a"><p class="cl-65c21168"><span class="cl-65be86a6">Confounder?</span></p></th>
-<th class="cl-65c24d9b"><p class="cl-65c21168"><span class="cl-65be86a6">Interaction p</span></p></th>
-<th class="cl-65c24da4"><p class="cl-65c21168"><span class="cl-65be86a6">Effect modifier?</span></p></th>
-<th class="cl-65c24dae"><p class="cl-65c21154"><span class="cl-65be86a6">Decision</span></p></th>
-<th class="cl-65c24db8"><p class="cl-65c21154"><span class="cl-65be86a6">Recommendation</span></p></th>
+<th class="cl-81276be6"><p class="cl-81273248"><span class="cl-8123a34e">Exposure</span></p></th>
+<th class="cl-81276bf0"><p class="cl-81273248"><span class="cl-8123a34e">Candidate</span></p></th>
+<th class="cl-81276bf1"><p class="cl-8127325c"><span class="cl-8123a34e">Crude estimate</span></p></th>
+<th class="cl-81276bfa"><p class="cl-8127325c"><span class="cl-8123a34e">Adjusted estimate</span></p></th>
+<th class="cl-81276bfb"><p class="cl-8127325c"><span class="cl-8123a34e">MH estimate</span></p></th>
+<th class="cl-81276c04"><p class="cl-8127325c"><span class="cl-8123a34e">% change model</span></p></th>
+<th class="cl-81276c05"><p class="cl-8127325c"><span class="cl-8123a34e">% change MH</span></p></th>
+<th class="cl-81276c0e"><p class="cl-8127325c"><span class="cl-8123a34e">Confounder?</span></p></th>
+<th class="cl-81276c0f"><p class="cl-8127325c"><span class="cl-8123a34e">Interaction p</span></p></th>
+<th class="cl-81276c10"><p class="cl-8127325c"><span class="cl-8123a34e">Effect modifier?</span></p></th>
+<th class="cl-81276c18"><p class="cl-81273248"><span class="cl-8123a34e">Decision</span></p></th>
+<th class="cl-81276c19"><p class="cl-81273248"><span class="cl-8123a34e">Recommendation</span></p></th>
 </tr></thead>
 <tbody><tr style="overflow-wrap:break-word;">
-<td class="cl-65c24db9"><p class="cl-65c21154"><span class="cl-65be86b0">smoke</span></p></td>
-<td class="cl-65c24dc2"><p class="cl-65c21154"><span class="cl-65be86b0">race</span></p></td>
-<td class="cl-65c24dc3"><p class="cl-65c21168"><span class="cl-65be86b0">2.022</span></p></td>
-<td class="cl-65c24dcc"><p class="cl-65c21168"><span class="cl-65be86b0">3.053</span></p></td>
-<td class="cl-65c24dd6"><p class="cl-65c21168"><span class="cl-65be86b0">3.086</span></p></td>
-<td class="cl-65c24de0"><p class="cl-65c21168"><span class="cl-65be86b0">50.98</span></p></td>
-<td class="cl-65c24de1"><p class="cl-65c21168"><span class="cl-65be86b0">52.64</span></p></td>
-<td class="cl-65c24dea"><p class="cl-65c21168"><span class="cl-65be86b0">Yes</span></p></td>
-<td class="cl-65c24deb"><p class="cl-65c21168"><span class="cl-65be86b0">0.206</span></p></td>
-<td class="cl-65c24df4"><p class="cl-65c21168"><span class="cl-65be86b0">No</span></p></td>
-<td class="cl-65c24df5"><p class="cl-65c21154"><span class="cl-65be86b0">Confounder</span></p></td>
-<td class="cl-65c24dfe"><p class="cl-65c21154"><span class="cl-65be86b0">Adjust for race.</span></p></td>
+<td class="cl-81276c22"><p class="cl-81273248"><span class="cl-8123a358">smoke</span></p></td>
+<td class="cl-81276c23"><p class="cl-81273248"><span class="cl-8123a358">race</span></p></td>
+<td class="cl-81276c24"><p class="cl-8127325c"><span class="cl-8123a358">2.022</span></p></td>
+<td class="cl-81276c2c"><p class="cl-8127325c"><span class="cl-8123a358">3.053</span></p></td>
+<td class="cl-81276c2d"><p class="cl-8127325c"><span class="cl-8123a358">3.086</span></p></td>
+<td class="cl-81276c2e"><p class="cl-8127325c"><span class="cl-8123a358">50.98</span></p></td>
+<td class="cl-81276c36"><p class="cl-8127325c"><span class="cl-8123a358">52.64</span></p></td>
+<td class="cl-81276c37"><p class="cl-8127325c"><span class="cl-8123a358">Yes</span></p></td>
+<td class="cl-81276c40"><p class="cl-8127325c"><span class="cl-8123a358">0.206</span></p></td>
+<td class="cl-81276c41"><p class="cl-8127325c"><span class="cl-8123a358">No</span></p></td>
+<td class="cl-81276c42"><p class="cl-81273248"><span class="cl-8123a358">Confounder</span></p></td>
+<td class="cl-81276c4a"><p class="cl-81273248"><span class="cl-8123a358">Adjust for race.</span></p></td>
 </tr></tbody>
-<tfoot><tr style="overflow-wrap:break-word;"><td colspan="12" class="cl-65c24dff"><p class="cl-65c21172"><span class="cl-65be86ba">Screening aid only; use DAGs, subject-matter knowledge, and study design to decide confounding and effect modification.</span></p></td></tr></tfoot>
+<tfoot><tr style="overflow-wrap:break-word;"><td colspan="12" class="cl-81276c4b"><p class="cl-81273266"><span class="cl-8123a362">Screening aid only; use DAGs, subject-matter knowledge, and study design to decide confounding and effect modification.</span></p></td></tr></tfoot>
 </table>
 </div>
 </div>
-<div class="section level3">
-<h3 id="test-interaction">Test Interaction<a class="anchor" aria-label="anchor" href="#test-interaction"></a>
-</h3>
+<div class="section level2">
+<h2 id="test-interaction">Test Interaction<a class="anchor" aria-label="anchor" href="#test-interaction"></a>
+</h2>
 <p><code><a href="../reference/interaction_models.html">interaction_models()</a></code> compares models with and without
 the interaction term. It is deliberately model-based and uses
 <code>LRT</code> or <code>Wald</code>, not Mantel-Haenszel. Use it when
@@ -1242,9 +1249,652 @@ subject-matter reasoning.</p>
 </table>
 </div>
 </div>
-<div class="section level3">
-<h3 id="overlap-and-difference">Overlap and Difference<a class="anchor" aria-label="anchor" href="#overlap-and-difference"></a>
-</h3>
+<div class="section level2">
+<h2 id="causal-mediation">Causal Mediation<a class="anchor" aria-label="anchor" href="#causal-mediation"></a>
+</h2>
+<p><code><a href="../reference/mediation_analysis.html">mediation_analysis()</a></code> asks whether part of an
+exposure-outcome association may operate through a mediator. In this
+example, obesity is the exposure, plasma glucose is the mediator, and
+diabetes is the outcome. The question is not only “is obesity associated
+with diabetes?”, but also “how much of that association may operate
+through plasma glucose?”.</p>
+<p>The default output is a publication-ready flextable. The table
+reports:</p>
+<ul>
+<li>
+<strong>Total effect</strong>: the overall exposure-outcome
+association.</li>
+<li>
+<strong>Direct effect</strong>: the part not operating through the
+mediator.</li>
+<li>
+<strong>Indirect effect</strong>: the part operating through the
+mediator.</li>
+<li>
+<strong>Proportion mediated</strong>: the share of the total effect
+attributed to the indirect pathway.</li>
+</ul>
+<p>For logistic outcomes, effects are reported as predicted probability
+differences, not odds ratios. For example, an estimate of
+<code>0.068</code> means about a 6.8 percentage-point difference on the
+predicted probability scale.</p>
+<p>Treat mediation output as causal only when the usual mediation
+assumptions are supported by study design, DAGs, temporality, and
+subject-matter knowledge. In particular, there should be no unmeasured
+exposure-outcome, exposure-mediator, or mediator-outcome confounding,
+and the mediator should occur before the outcome.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"data_diabetes_mediation"</span>, package <span class="op">=</span> <span class="st">"gtregression"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">diabetes_med</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mediation_analysis.html">mediation_analysis</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">data_diabetes_mediation</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="va">obesity</span>,</span>
+<span>  mediator <span class="op">=</span> <span class="va">glucose</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">diabetes</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">blood_pressure</span>, <span class="va">pregnancies</span>, <span class="va">diabetes_pedigree</span><span class="op">)</span>,</span>
+<span>  outcome_approach <span class="op">=</span> <span class="va">logit</span>,</span>
+<span>  sims <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">123</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">diabetes_med</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<div class="tabwid">
+<style>.cl-8215c232{}.cl-820df598{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-820df5ac{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-820df5b6{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-82115850{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-8211585a{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-82115922{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-8211808c{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-82118096{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-82118097{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180a0{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180aa{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180ab{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180ac{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180b4{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180be{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180bf{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180c0{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180c8{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180c9{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180ca{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180d2{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180d3{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180dc{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180dd{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180e6{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180e7{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180e8{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180f0{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180f1{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180fa{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-821180fb{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
+<table data-quarto-disable-processing="true" class="table cl-8215c232">
+<thead><tr style="overflow-wrap:break-word;">
+<th class="cl-8211808c"><p class="cl-82115850"><span class="cl-820df598">Effect</span></p></th>
+<th class="cl-82118096"><p class="cl-8211585a"><span class="cl-820df598">Estimate</span></p></th>
+<th class="cl-82118097"><p class="cl-8211585a"><span class="cl-820df598">95% CI</span></p></th>
+<th class="cl-821180a0"><p class="cl-8211585a"><span class="cl-820df598">p-value</span></p></th>
+<th class="cl-821180aa"><p class="cl-82115850"><span class="cl-820df598">Interpretation</span></p></th>
+</tr></thead>
+<tbody>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-821180ab"><p class="cl-82115850"><span class="cl-820df5ac">Total effect</span></p></td>
+<td class="cl-821180ac"><p class="cl-8211585a"><span class="cl-820df5ac">0.268</span></p></td>
+<td class="cl-821180b4"><p class="cl-8211585a"><span class="cl-820df5ac">0.188 to 0.341</span></p></td>
+<td class="cl-821180be"><p class="cl-8211585a"><span class="cl-820df5ac">&lt;0.001</span></p></td>
+<td class="cl-821180bf"><p class="cl-82115850"><span class="cl-820df5ac">Overall exposure-outcome association</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-821180c0"><p class="cl-82115850"><span class="cl-820df5ac">Direct effect</span></p></td>
+<td class="cl-821180c8"><p class="cl-8211585a"><span class="cl-820df5ac">0.200</span></p></td>
+<td class="cl-821180c9"><p class="cl-8211585a"><span class="cl-820df5ac">0.131 to 0.266</span></p></td>
+<td class="cl-821180ca"><p class="cl-8211585a"><span class="cl-820df5ac">&lt;0.001</span></p></td>
+<td class="cl-821180d2"><p class="cl-82115850"><span class="cl-820df5ac">Association not through the mediator</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-821180c0"><p class="cl-82115850"><span class="cl-820df5ac">Indirect effect</span></p></td>
+<td class="cl-821180c8"><p class="cl-8211585a"><span class="cl-820df5ac">0.068</span></p></td>
+<td class="cl-821180c9"><p class="cl-8211585a"><span class="cl-820df5ac">0.037 to 0.106</span></p></td>
+<td class="cl-821180ca"><p class="cl-8211585a"><span class="cl-820df5ac">&lt;0.001</span></p></td>
+<td class="cl-821180d2"><p class="cl-82115850"><span class="cl-820df5ac">Association through the mediator</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-821180d3"><p class="cl-82115850"><span class="cl-820df5ac">Proportion mediated</span></p></td>
+<td class="cl-821180dc"><p class="cl-8211585a"><span class="cl-820df5ac">0.255</span></p></td>
+<td class="cl-821180dd"><p class="cl-8211585a"><span class="cl-820df5ac">0.137 to 0.392</span></p></td>
+<td class="cl-821180e6"><p class="cl-8211585a"><span class="cl-820df5ac">&lt;0.001</span></p></td>
+<td class="cl-821180e7"><p class="cl-82115850"><span class="cl-820df5ac">Share of total effect through the mediator</span></p></td>
+</tr>
+</tbody>
+<tfoot>
+<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-821180e8"><p class="cl-82115922"><span class="cl-820df5b6">Effects are predicted probability differences from logistic outcome models.</span></p></td></tr>
+<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-821180e8"><p class="cl-82115922"><span class="cl-820df5b6">Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100.</span></p></td></tr>
+<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-821180e8"><p class="cl-82115922"><span class="cl-820df5b6">Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function.</span></p></td></tr>
+<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-821180e8"><p class="cl-82115922"><span class="cl-820df5b6">Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions.</span></p></td></tr>
+</tfoot>
+</table>
+</div>
+<p>The underlying values remain available for audit, reporting, or
+custom formatting.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">diabetes_med</span><span class="op">$</span><span class="va">table_body</span></span></code></pre></div>
+<pre><code><span><span class="co">##                effect              Effect   estimate  conf.low conf.high</span></span>
+<span><span class="co">## total           total        Total effect 0.26811037 0.1882239 0.3413496</span></span>
+<span><span class="co">## direct         direct       Direct effect 0.19978127 0.1306665 0.2664345</span></span>
+<span><span class="co">## indirect     indirect     Indirect effect 0.06832911 0.0368084 0.1057748</span></span>
+<span><span class="co">## proportion proportion Proportion mediated 0.25485440 0.1365921 0.3920930</span></span>
+<span><span class="co">##            p.value                             Interpretation</span></span>
+<span><span class="co">## total            0       Overall exposure-outcome association</span></span>
+<span><span class="co">## direct           0       Association not through the mediator</span></span>
+<span><span class="co">## indirect         0           Association through the mediator</span></span>
+<span><span class="co">## proportion       0 Share of total effect through the mediator</span></span></code></pre>
+<p>Use <code>format = gt</code> when preparing HTML-first outputs such
+as websites or teaching pages.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">med_gt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mediation_analysis.html">mediation_analysis</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">data_diabetes_mediation</span>,</span>
+<span>  exposure <span class="op">=</span> <span class="va">obesity</span>,</span>
+<span>  mediator <span class="op">=</span> <span class="va">glucose</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="va">diabetes</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">blood_pressure</span>, <span class="va">pregnancies</span>, <span class="va">diabetes_pedigree</span><span class="op">)</span>,</span>
+<span>  outcome_approach <span class="op">=</span> <span class="va">logit</span>,</span>
+<span>  format <span class="op">=</span> <span class="va">gt</span>,</span>
+<span>  sims <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">123</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">med_gt</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
+<div id="ufivjubqtx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ufivjubqtx table {
+  font-family: system-ui;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#ufivjubqtx thead, #ufivjubqtx tbody, #ufivjubqtx tfoot, #ufivjubqtx tr, #ufivjubqtx td, #ufivjubqtx th {
+  border-style: none;
+}
+
+#ufivjubqtx p {
+  margin: 0;
+  padding: 0;
+}
+
+#ufivjubqtx .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#ufivjubqtx .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#ufivjubqtx .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#ufivjubqtx .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#ufivjubqtx .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#ufivjubqtx .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#ufivjubqtx .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#ufivjubqtx .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#ufivjubqtx .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#ufivjubqtx .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#ufivjubqtx .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ufivjubqtx .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#ufivjubqtx .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#ufivjubqtx .gt_row {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#ufivjubqtx .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ufivjubqtx .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#ufivjubqtx .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#ufivjubqtx .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#ufivjubqtx .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ufivjubqtx .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#ufivjubqtx .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ufivjubqtx .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#ufivjubqtx .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ufivjubqtx .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ufivjubqtx .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ufivjubqtx .gt_left {
+  text-align: left;
+}
+
+#ufivjubqtx .gt_center {
+  text-align: center;
+}
+
+#ufivjubqtx .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#ufivjubqtx .gt_font_normal {
+  font-weight: normal;
+}
+
+#ufivjubqtx .gt_font_bold {
+  font-weight: bold;
+}
+
+#ufivjubqtx .gt_font_italic {
+  font-style: italic;
+}
+
+#ufivjubqtx .gt_super {
+  font-size: 65%;
+}
+
+#ufivjubqtx .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#ufivjubqtx .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#ufivjubqtx .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#ufivjubqtx .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#ufivjubqtx .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#ufivjubqtx .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#ufivjubqtx .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#ufivjubqtx .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#ufivjubqtx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="table gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Effect">Effect</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Estimate">Estimate</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="a95%-CI">95% CI</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="p-value">p-value</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Interpretation">Interpretation</th>
+    </tr></thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="Effect" class="gt_row gt_left">Total effect</td>
+<td headers="Estimate" class="gt_row gt_center">0.268</td>
+<td headers="95% CI" class="gt_row gt_center">0.188 to 0.341</td>
+<td headers="p-value" class="gt_row gt_center">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left">Overall exposure-outcome association</td>
+</tr>
+<tr>
+<td headers="Effect" class="gt_row gt_left">Direct effect</td>
+<td headers="Estimate" class="gt_row gt_center">0.200</td>
+<td headers="95% CI" class="gt_row gt_center">0.131 to 0.266</td>
+<td headers="p-value" class="gt_row gt_center">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left">Association not through the mediator</td>
+</tr>
+<tr>
+<td headers="Effect" class="gt_row gt_left">Indirect effect</td>
+<td headers="Estimate" class="gt_row gt_center">0.068</td>
+<td headers="95% CI" class="gt_row gt_center">0.037 to 0.106</td>
+<td headers="p-value" class="gt_row gt_center">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left">Association through the mediator</td>
+</tr>
+<tr>
+<td headers="Effect" class="gt_row gt_left">Proportion mediated</td>
+<td headers="Estimate" class="gt_row gt_center">0.255</td>
+<td headers="95% CI" class="gt_row gt_center">0.137 to 0.392</td>
+<td headers="p-value" class="gt_row gt_center">&lt;0.001</td>
+<td headers="Interpretation" class="gt_row gt_left">Share of total effect through the mediator</td>
+</tr>
+</tbody>
+<tfoot>
+<tr class="gt_sourcenotes">
+<td class="gt_sourcenote" colspan="5">Effects are predicted probability differences from logistic outcome models.</td>
+    </tr>
+<tr class="gt_sourcenotes">
+<td class="gt_sourcenote" colspan="5">Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100.</td>
+    </tr>
+<tr class="gt_sourcenotes">
+<td class="gt_sourcenote" colspan="5">Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function.</td>
+    </tr>
+<tr class="gt_sourcenotes">
+<td class="gt_sourcenote" colspan="5">Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions.</td>
+    </tr>
+</tfoot>
+</table>
+</div>
+<p><code><a href="../reference/plot_mediation.html">plot_mediation()</a></code> draws the same planned causal structure
+as a path diagram. It is useful for teaching, presentations, or checking
+that the exposure, mediator, and outcome have been specified as
+intended.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_mediation.html">plot_mediation</a></span><span class="op">(</span><span class="va">diabetes_med</span><span class="op">)</span></span></code></pre></div>
+<p><img src="confounding-interaction_files/figure-html/mediation-plot-1.png" class="r-plt" alt="" width="672"></p>
+<p>If the estimates make the plot too busy, hide them and use the
+diagram only to show the assumed path structure.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_mediation.html">plot_mediation</a></span><span class="op">(</span><span class="va">diabetes_med</span>, show_estimates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="confounding-interaction_files/figure-html/mediation-plot-simple-1.png" class="r-plt" alt="" width="672"></p>
+</div>
+<div class="section level2">
+<h2 id="overlap-and-difference">Overlap and Difference<a class="anchor" aria-label="anchor" href="#overlap-and-difference"></a>
+</h2>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -1294,10 +1944,14 @@ relevant.</td>
 </tr>
 </tbody>
 </table>
+<p><code><a href="../reference/mediation_analysis.html">mediation_analysis()</a></code> is different from both functions.
+It decomposes one planned exposure-outcome relationship into direct and
+mediator-related components; it does not select confounders or test
+whether effects differ across strata.</p>
 </div>
-<div class="section level3">
-<h3 id="what-to-inspect">What To Inspect<a class="anchor" aria-label="anchor" href="#what-to-inspect"></a>
-</h3>
+<div class="section level2">
+<h2 id="what-to-inspect">What To Inspect<a class="anchor" aria-label="anchor" href="#what-to-inspect"></a>
+</h2>
 <ul>
 <li>
 <code><a href="../reference/identify_confounder.html">identify_confounder()</a></code>: <code>$summary</code>,
@@ -1308,10 +1962,14 @@ relevant.</td>
 <code><a href="../reference/interaction_models.html">interaction_models()</a></code>: <code>$summary</code>,
 <code>$table</code>, <code>$p_value</code>, <code>$decision</code>, and
 fitted model objects.</li>
+<li>
+<code><a href="../reference/mediation_analysis.html">mediation_analysis()</a></code>: <code>$table</code>,
+<code>$table_body</code>, <code>$models</code>, <code>$boot</code>,
+<code>$values</code>, <code>$variable_labels</code>, and
+<code>$complete_data</code>.</li>
 <li>Use subject-matter knowledge with these outputs. The functions
 support interpretation; they do not replace the study design.</li>
 </ul>
-</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

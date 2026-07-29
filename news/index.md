@@ -35,14 +35,14 @@
   regression.
 - Added
   [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
-  for beginner-friendly Cox proportional hazards regression using
-  `time`, `event`, `exposures`, and optional `adjust_for`, returning
-  publication-ready HR and adjusted HR tables.
+  for Cox proportional hazards regression using `time`, `event`,
+  `exposures`, and optional `adjust_for`, returning HR and adjusted HR
+  tables.
 - Added
   [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
-  for beginner-friendly parametric survival regression using `time`,
-  `event`, `exposures`, optional `adjust_for`, and a selectable survival
-  distribution, returning publication-ready time-ratio tables.
+  for parametric survival regression using `time`, `event`, `exposures`,
+  optional `adjust_for`, and a selectable survival distribution,
+  returning time-ratio tables.
 - Added
   [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md)
   for Kaplan-Meier survival curves with optional confidence intervals,
@@ -95,13 +95,25 @@
   and
   [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
   outputs.
+- Added
+  [`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md)
+  for regression-based mediation analysis with formatted direct,
+  indirect, total, and proportion mediated tables.
+- Added
+  [`plot_mediation()`](https://thinkdenominator.github.io/gtregression/reference/plot_mediation.md)
+  for drawing a mediation path diagram from
+  [`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md)
+  outputs.
+- Added `data_diabetes_mediation`, a health-related diabetes teaching
+  dataset for practicing obesity, glucose, and diabetes mediation
+  workflows.
 - Added automatic support for variable label attributes, including
   labels set with
   [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
   across descriptive, regression, stratified, merged, plotted, and
   forest-style outputs.
-- Added publication-style display outputs for diagnostic and helper
-  functions including
+- Added formatted display outputs for diagnostic and review functions
+  including
   [`dissect()`](https://thinkdenominator.github.io/gtregression/reference/dissect.md),
   [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md),
   [`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md),
@@ -113,7 +125,8 @@
   comparisons.
 - Added manual case-study scripts under `dev/manual-tests/` for
   real-time testing of logistic, linear, log-binomial, robust Poisson,
-  Poisson, negative binomial, Cox, and parametric survival workflows.
+  Poisson, negative binomial, Cox, parametric survival, Firth, and
+  mediation workflows.
 
 ### Changed
 
@@ -124,11 +137,13 @@
   [`stratified_uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_uni_reg.md),
   and
   [`stratified_multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_multi_reg.md)
-  documentation with clearer beginner-friendly examples using package
-  datasets.
+  documentation with clearer examples using package datasets.
 - Improved pkgdown organization, homepage content, reference grouping,
   and rendered examples to better show publication-ready tables and
   plots.
+- Improved README and pkgdown documentation with an explicit dependency
+  overview showing the trusted R packages used for modelling, tidying,
+  tables, Word export, figures, diagnostics, and forest plots.
 - Improved
   [`merge_tables()`](https://thinkdenominator.github.io/gtregression/reference/merge_tables.md)
   so descriptive, crude, and adjusted tables can be combined more
@@ -157,9 +172,9 @@
   [`modify_table()`](https://thinkdenominator.github.io/gtregression/reference/modify_table.md),
   and
   [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md).
-- Improved table footer and source-note spacing across publication and
-  helper tables so abbreviations, adjustment notes, and caveats render
-  more compactly in flextable, gt, Word, and pkgdown outputs.
+- Improved table footer and source-note spacing across formatted tables
+  so abbreviations, adjustment notes, and caveats render more compactly
+  in flextable, gt, Word, and pkgdown outputs.
 - Improved Word export so flextable outputs are fitted to a standard
   Word page width by default, with `save_docx(table_width = ...)`
   available for custom document layouts.
@@ -189,9 +204,9 @@
   so failed multivariable model fits return a clear non-converged table
   rather than failing during table formatting.
 - Fixed pkgdown reference metadata for internal print methods.
-- Fixed save helpers so files are written to a temporary directory when
-  users do not provide an explicit destination, supporting CRAN-safe
-  examples and tests.
+- Fixed save functions so files are written to a temporary directory
+  when users do not provide an explicit destination, supporting
+  CRAN-safe examples and tests.
 
 ## gtregression 1.0.0
 

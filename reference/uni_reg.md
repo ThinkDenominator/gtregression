@@ -1,7 +1,7 @@
 # Univariate regression
 
-Create a publication-ready univariate regression table using either gt
-or flextable
+Fit one model per exposure and return a clean regression table in
+flextable or gt format.
 
 ## Usage
 
@@ -21,7 +21,7 @@ uni_reg(
 
 - data:
 
-  data.frame
+  A data frame containing the outcome and exposure variables.
 
 - outcome:
 
@@ -46,7 +46,7 @@ uni_reg(
 
 - theme:
 
-  preset name (e.g. `"minimal"`, `"striped"`, `"clinical"`, `"shaded"`,
+  Preset name (e.g. `"minimal"`, `"striped"`, `"clinical"`, `"shaded"`,
   `"jama"`) or primitives
   `c("plain","zebra","lines","labels_bold","compact","header_shaded")`
 
@@ -100,6 +100,10 @@ A list of class `c("gtregression","uni_reg", ...)` with elements:
   Metadata fields.
 
 ## Details
+
+Use this when you want a quick crude association table before building
+an adjusted model. The fitted models are kept in the returned object, so
+the formatted table does not hide the underlying analysis.
 
 If exposure variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),

@@ -59,37 +59,42 @@ publication-style forest tables.
 - [`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md)
   : Predict survival probabilities from a parametric survival model
 - [`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md)
-  : Visualize a regression model as a forest plot
+  : Plot regression estimates
 - [`plot_reg_combine()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.md)
   : Side-by-side forest plots: univariate vs multivariable
 - [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
   : Build a compatible data frame for forest plots
 - [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
-  : Draw a publication-ready forest plot
+  : Draw a forest table from regression outputs
 
 ## Diagnostics and Model Selection
 
 Check convergence, collinearity, model fit, and candidate model paths.
 
 - [`check_convergence()`](https://thinkdenominator.github.io/gtregression/reference/check_convergence.md)
-  : Check Convergence for a Regression Model
+  : Check regression model convergence
 - [`check_collinearity()`](https://thinkdenominator.github.io/gtregression/reference/check_collinearity.md)
   : Check collinearity using VIF for fitted models
 - [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md)
   : Check proportional hazards assumption for Cox models
 - [`plot_model_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_model_fit.md)
-  : Plot Model Fit Diagnostics
+  : Plot model-fit diagnostics
 - [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md)
-  : Stepwise Model Selection with Evaluation Metrics
+  : Stepwise model selection with fit metrics
 
 ## Confounding and Interaction
 
-Support interpretation with confounding and interaction checks.
+Support interpretation with confounding, interaction, and mediation
+workflows.
 
 - [`identify_confounder()`](https://thinkdenominator.github.io/gtregression/reference/identify_confounder.md)
   : Identify confounders and effect modifiers
 - [`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md)
   : Compare Models With and Without an Interaction Term
+- [`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md)
+  : Causal mediation analysis
+- [`plot_mediation()`](https://thinkdenominator.github.io/gtregression/reference/plot_mediation.md)
+  : Plot mediation paths
 
 ## Modify, Merge, and Export
 
@@ -130,6 +135,8 @@ Built-in datasets for examples, teaching, and tests.
   : Epilepsy Treatment and Seizure Counts
 - [`data_endometrial`](https://thinkdenominator.github.io/gtregression/reference/data_endometrial.md)
   : Endometrial Cancer Histology Grade Data
+- [`data_diabetes_mediation`](https://thinkdenominator.github.io/gtregression/reference/data_diabetes_mediation.md)
+  : Diabetes Mediation Teaching Dataset
 - [`data_infertility`](https://thinkdenominator.github.io/gtregression/reference/data_infertility.md)
   : Infertility Matched Case-Control Study
 - [`data_lungcancer`](https://thinkdenominator.github.io/gtregression/reference/data_lungcancer.md)

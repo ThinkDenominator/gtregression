@@ -1,6 +1,6 @@
 # Identify confounders and effect modifiers
 
-Assesses whether one or more candidate variables act as confounders or
+Review whether one or more candidate variables may act as confounders or
 effect modifiers for one or more exposures.
 
 ## Usage

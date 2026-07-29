@@ -1,6 +1,6 @@
-# Linear Regression Diagnostic Checks (Internal)
+# Linear regression diagnostic checks (internal)
 
-Performs diagnostic checks for fitted linear regression models.
+Runs diagnostic checks for fitted linear regression models.
 
 ## Usage
 

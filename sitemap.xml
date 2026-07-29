@@ -2,6 +2,7 @@
 <url><loc>https://thinkdenominator.github.io/gtregression/404.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/LICENSE-text.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/LICENSE.html</loc></url>
+<url><loc>https://thinkdenominator.github.io/gtregression/articles/causal-mediation.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/articles/confounding-interaction.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/articles/customize-export.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/articles/descriptive-tables.html</loc></url>
@@ -22,6 +23,7 @@
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/cox_reg.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/data_PimaIndiansDiabetes.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/data_birthwt.html</loc></url>
+<url><loc>https://thinkdenominator.github.io/gtregression/reference/data_diabetes_mediation.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/data_endometrial.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/data_epilepsy.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/data_gt_quin.html</loc></url>
@@ -48,9 +50,11 @@
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/km_plot.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/km_risk_table.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/logrank_test.html</loc></url>
+<url><loc>https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/merge_tables.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/modify_table.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/multi_reg.html</loc></url>
+<url><loc>https://thinkdenominator.github.io/gtregression/reference/plot_mediation.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/plot_model_fit.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/plot_reg.html</loc></url>
 <url><loc>https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.html</loc></url>

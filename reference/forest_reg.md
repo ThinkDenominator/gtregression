@@ -1,4 +1,4 @@
-# Draw a publication-ready forest plot
+# Draw a forest table from regression outputs
 
 Wrapper around
 [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html)
@@ -6,7 +6,7 @@ that works directly with
 [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
 output or with `gtregression` regression objects. It can show
 descriptive columns and one or two model effect columns in a table-style
-forest plot.
+forest plot while leaving axis and interval drawing to forestploter.
 
 ## Usage
 

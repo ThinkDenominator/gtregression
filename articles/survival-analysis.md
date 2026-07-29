@@ -1,12 +1,10 @@
 # Survival Analysis
 
-## Survival Analysis
-
-`gtregression` supports a complete beginner-friendly survival workflow:
-describe the cohort, draw Kaplan-Meier curves, summarise observed
-survival, compare groups, fit Cox or parametric survival models, check
-assumptions, predict survival probabilities, visualise estimates, and
-export publication-ready tables.
+`gtregression` supports a complete survival workflow: describe the
+cohort, draw Kaplan-Meier curves, summarise observed survival, compare
+groups, fit Cox or parametric survival models, check assumptions,
+predict survival probabilities, visualise estimates, and export
+publication-ready tables.
 
 ``` r
 
@@ -38,7 +36,7 @@ attr(lung_data$prior, "label") <- "Prior therapy"
 surv_exposures <- c("trt", "celltype", "karno", "age", "prior")
 ```
 
-### 1. Describe The Cohort
+## 1. Describe The Cohort
 
 Start with a baseline table. This helps readers understand the treatment
 groups before looking at survival curves or models.
@@ -76,7 +74,7 @@ lung_summary$table
 | Categorical variables shown as n (%); percentages are by column. |  |  |  |
 | Continuous summaries: time = Median (IQR); karno = Mean (SD); age = Mean (SD). |  |  |  |
 
-### 2. Show Observed Survival
+## 2. Show Observed Survival
 
 Use
 [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md)
@@ -117,7 +115,7 @@ survival_summary(
 | Test treatment | 68 | 64 | 4 | 52.5 (44.0-95.0) |
 | Median survival is estimated using Kaplan-Meier methods. Not reached means survival did not fall to 50% during observed follow-up. |  |  |  |  |
 
-Kaplan-Meier survival summary {.table .cl-7f731b8e
+Kaplan-Meier survival summary {.table .cl-9b532a3c
 quarto-disable-processing="true"}
 
 ``` r
@@ -141,7 +139,7 @@ survival_prob(
 | Test treatment | 365.0 | 6 | 7 | 1 | 11.0% (5.3%-22.7%) |
 | Survival probabilities are estimated using Kaplan-Meier methods. Events and censored counts are interval counts up to each requested time point. |  |  |  |  |  |
 
-Kaplan-Meier survival probabilities {.table .cl-7f98c9f6
+Kaplan-Meier survival probabilities {.table .cl-9b74fa9a
 quarto-disable-processing="true"}
 
 [`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md)
@@ -167,10 +165,10 @@ rmst_table(
 | Difference (Test treatment - Standard treatment) | 365.0 |  |  |  | -6.6 (-45.3-32.2) | 0.740 |
 | RMST is restricted mean survival time up to tau. For two groups, the difference is the second group minus the first group. |  |  |  |  |  |  |
 
-Restricted mean survival time {.table .cl-7fc5aea8
+Restricted mean survival time {.table .cl-9ba14c08
 quarto-disable-processing="true"}
 
-### 3. Compare Survival Curves
+## 3. Compare Survival Curves
 
 [`logrank_test()`](https://thinkdenominator.github.io/gtregression/reference/logrank_test.md)
 compares Kaplan-Meier curves. It is a group comparison test, not an
@@ -192,9 +190,9 @@ logrank_test(
 | Test treatment | 68 | 64 | 63.50 |
 | Log-rank test: chi-square = 0.01, df = 1, p-value = 0.928. This compares survival curves; use cox_reg() when a hazard ratio is needed. |  |  |  |
 
-Log-rank test {.table .cl-7fed11aa quarto-disable-processing="true"}
+Log-rank test {.table .cl-9bc70f4c quarto-disable-processing="true"}
 
-### 4. Fit Cox Regression
+## 4. Fit Cox Regression
 
 [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
 reports hazard ratios. Use `adjust_for` to produce adjusted hazard
@@ -249,7 +247,7 @@ check_ph(cox_adjusted)$table
 
     ## NULL
 
-### 5. Fit Parametric Survival Regression
+## 5. Fit Parametric Survival Regression
 
 [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
 fits accelerated failure time style parametric survival models and
@@ -282,7 +280,7 @@ surv_model_compare(
 | weibull | 1,449.11 | 1,475.39 | -715.55 | 0.93 | 137 | 128 | No | No |
 | Lower AIC or BIC indicates better relative fit among the compared distributions. Use model fit statistics with clinical judgment and visual checks. |  |  |  |  |  |  |  |  |
 
-Parametric survival model comparison {.table .cl-80954c12
+Parametric survival model comparison {.table .cl-9c6a1156
 quarto-disable-processing="true"}
 
 ``` r
@@ -355,7 +353,7 @@ surv_adjusted$model_stats
     ## 2 celltype  loglogistic 1438.331 1458.771 -712.1656 0.5796411    128 137
     ## 3    prior  loglogistic 1449.486 1464.086 -719.7429 0.6178590    128 137
 
-### 6. Predict Survival Probabilities
+## 6. Predict Survival Probabilities
 
 [`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md)
 turns a fitted parametric survival model into predicted survival
@@ -381,10 +379,10 @@ surv_predict(
 | 1 | Test treatment | 60 | 70 | 365.0 | 11.1% | loglogistic |
 | Model-based predictions from a parametric survival regression model. Distribution: loglogistic. Predictions depend on the supplied profile and model specification. |  |  |  |  |  |  |
 
-Predicted survival probabilities {.table .cl-8155c582
+Predicted survival probabilities {.table .cl-9d230b8e
 quarto-disable-processing="true"}
 
-### 7. Visualise And Export Model Results
+## 7. Visualise And Export Model Results
 
 The survival model outputs work with the same downstream tools used for
 other regression tables.
@@ -421,7 +419,7 @@ confidence-interval plot panel is too narrow or too wide, tune
 `ci_col_width`. For very wide descriptive-plus-crude-plus-adjusted
 tables, export using a wider graphics device or Word canvas.
 
-### Survival Workflow Map
+## Survival Workflow Map
 
 | Task | Function |
 |----|----|

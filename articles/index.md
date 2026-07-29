@@ -33,6 +33,8 @@
 
 - [Confounding and
   Interaction](https://thinkdenominator.github.io/gtregression/articles/confounding-interaction.md):
+- [Causal Mediation
+  Analysis](https://thinkdenominator.github.io/gtregression/articles/causal-mediation.md):
 
 ### Export
 

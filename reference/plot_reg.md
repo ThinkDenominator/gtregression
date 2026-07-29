@@ -1,10 +1,12 @@
-# Visualize a regression model as a forest plot
+# Plot regression estimates
 
-Creates a forest plot from a fitted `gtregression` object produced by
+Draw a forest-style plot from a fitted `gtregression` object produced by
 functions such as
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md),
+[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
+[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
 or
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md).
+[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
 
 ## Usage
 

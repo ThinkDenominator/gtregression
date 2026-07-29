@@ -1,7 +1,5 @@
 # Regression Tables
 
-## Regression Tables
-
 Go from fitted models to publication-ready tables without
 hand-formatting effect estimates. `gtregression` supports logistic,
 log-binomial, Poisson, robust Poisson, negative binomial, Cox survival,
@@ -44,7 +42,7 @@ attr(birthwt_data$ptl_cat, "label") <- "Previous preterm labour"
 attr(birthwt_data$ftv_cat, "label") <- "First trimester visits"
 ```
 
-### Univariable Models
+## Univariable Models
 
 [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
 fits one model per exposure and returns a table ready for reports.
@@ -93,7 +91,7 @@ birthwt_uni$table
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |
 | Ref. = reference category. |  |  |  |
 
-### Multivariable Models
+## Multivariable Models
 
 With `adjust_for = NULL`,
 [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
@@ -135,7 +133,7 @@ birthwt_full$table
 | Ref. = reference category. |  |  |
 | N = 189 complete observations included in the multivariable model |  |  |
 
-### Exposure-Specific Adjusted Models
+## Exposure-Specific Adjusted Models
 
 Use `adjust_for` when you want one adjusted model per exposure, each
 adjusted for the same core covariate set. This is useful for screening
@@ -183,7 +181,7 @@ The adjustment variables are recorded in a compact table footnote, so
 the result is ready for manuscript-style reporting without making the
 table unnecessarily tall.
 
-### Optional Model Statistics
+## Optional Model Statistics
 
 Publication tables should stay readable. When you need model-fit
 information, set `model_stats = TRUE` and inspect the returned object’s
@@ -252,7 +250,7 @@ birthwt_multi_stats$model_stats
     ## 3        NA            NA 189
     ## 4        NA            NA 189
 
-### Other Effect Measures
+## Other Effect Measures
 
 Switch the `approach` to change the estimand.
 
@@ -322,12 +320,12 @@ multi_reg(
 | Ref. = reference category. |  |  |
 | N = 79 complete observations included in the multivariable model |  |  |
 
-### Cox Survival Models
+## Cox Survival Models
 
 [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
-uses beginner-friendly `time` and `event` arguments and returns hazard
-ratios. Without `adjust_for`, the table shows crude HRs. With
-`adjust_for`, the table shows adjusted HRs.
+uses direct `time` and `event` arguments and returns hazard ratios.
+Without `adjust_for`, the table shows crude HRs. With `adjust_for`, the
+table shows adjusted HRs.
 
 ``` r
 
@@ -419,7 +417,7 @@ lung_adj_hr$model_stats
     ## 2 celltype 961.0882 975.3484 -475.5441   0.7349500    128 128
     ## 3    prior 974.7459 983.3019 -484.3729   0.7134257    128 128
 
-### Parametric Survival Models
+## Parametric Survival Models
 
 [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
 uses the same `time`, `event`, `exposures`, and `adjust_for` grammar as
@@ -506,7 +504,7 @@ lung_adj_time_ratio$model_stats
     ## 2 celltype    lognormal 1444.379 1464.819 -715.1894 1.064351    128 137
     ## 3    prior    lognormal 1451.768 1466.368 -720.8840 1.112741    128 137
 
-### Continuous Outcomes
+## Continuous Outcomes
 
 Linear regression outputs beta coefficients and keeps diagnostics under
 `$reg_check`.
@@ -544,7 +542,7 @@ birthwt_linear$table
 | Ref. = reference category. |  |  |
 | N = 189 complete observations included in the multivariable model |  |  |
 
-### What To Inspect
+## What To Inspect
 
 - `$table`: publication-ready table.
 - `$table_body`: numeric estimates behind the display.

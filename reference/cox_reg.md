@@ -1,6 +1,6 @@
 # Cox proportional hazards regression
 
-Create a publication-ready Cox regression table with hazard ratios.
+Fit Cox proportional hazards models and report hazard ratios.
 
 ## Usage
 
@@ -98,7 +98,9 @@ A list of class `c("gtregression","cox_reg", ...)` with elements:
 
 Without `adjust_for`, `cox_reg()` fits one crude Cox model per exposure
 and reports `HR (95% CI)`. With `adjust_for`, it fits one adjusted Cox
-model per exposure and reports `Adjusted HR (95% CI)`.
+model per exposure and reports `Adjusted HR (95% CI)`. The proportional
+hazards assumption should be assessed separately, for example with
+[`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md).
 
 If exposure variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),

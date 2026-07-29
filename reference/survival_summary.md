@@ -1,7 +1,7 @@
 # Kaplan-Meier survival summary table
 
-Create a publication-ready Kaplan-Meier summary table with total N,
-events, censored observations, and median survival with 95
+Summarise Kaplan-Meier follow-up with total N, events, censoring, and
+median survival with a 95
 
 ## Usage
 

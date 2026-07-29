@@ -1,7 +1,5 @@
 # Customize, Merge, and Export
 
-## Customize, Merge, and Export
-
 Make the output look like it belongs in the final report. Rename labels,
 merge tables, and save tables or plots.
 
@@ -51,7 +49,7 @@ birthwt_multi <- multi_reg(
 )
 ```
 
-### Customize Labels
+## Customize Labels
 
 If labels already live on the data, `gtregression` uses them
 automatically.
@@ -100,10 +98,10 @@ birthwt_custom$table
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
 | Adjusted for maternal age, maternal weight, and maternal race. |  |  |
 
-Adjusted regression for low birth weight {.table .cl-6864d428
+Adjusted regression for low birth weight {.table .cl-857d6858
 quarto-disable-processing="true"}
 
-### Merge Tables
+## Merge Tables
 
 [`merge_tables()`](https://thinkdenominator.github.io/gtregression/reference/merge_tables.md)
 combines descriptive, crude, and adjusted results. Matching is based on
@@ -187,9 +185,9 @@ birthwt_merged_paper$table
 | Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-68e32404 quarto-disable-processing="true"}
+.cl-85ffbd58 quarto-disable-processing="true"}
 
-### Save Outputs
+## Save Outputs
 
 When no directory is supplied, save helpers use
 [`tempdir()`](https://rdrr.io/r/base/tempfile.html). This keeps examples
@@ -215,7 +213,7 @@ plot_path <- save_plot(
 )
 ```
 
-### Word Reports
+## Word Reports
 
 `flextable` is the default table engine, so Word export works naturally.
 If a table was created as `format = gt`, save it as HTML/PDF or recreate
@@ -244,7 +242,7 @@ docx_path <- save_docx(
 )
 ```
 
-### What To Inspect
+## What To Inspect
 
 - [`modify_table()`](https://thinkdenominator.github.io/gtregression/reference/modify_table.md):
   changed labels, caption, and caveat.

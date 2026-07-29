@@ -1,7 +1,5 @@
 # Visualise Regression Results
 
-## Visualise Regression Results
-
 Regression tables are the evidence. Plots are the quick read. Use
 [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md),
 [`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md),
@@ -94,7 +92,7 @@ lung_surv <- surv_reg(
 )
 ```
 
-### Kaplan-Meier Curve
+## Kaplan-Meier Curve
 
 [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md)
 gives the survival curve before regression modelling. Use it to show the
@@ -115,7 +113,7 @@ km_plot(
 
 ![](visualise-results_files/figure-html/km-plot-1.png)
 
-### Risk Table
+## Risk Table
 
 [`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md)
 gives the number at risk at selected follow-up times as a standalone
@@ -133,7 +131,7 @@ km_risk_table(
 )
 ```
 
-### Restricted Mean Survival Time
+## Restricted Mean Survival Time
 
 [`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md)
 reports the average survival time up to a fixed follow-up point, called
@@ -151,7 +149,7 @@ rmst_table(
 )
 ```
 
-### Kaplan-Meier Summary
+## Kaplan-Meier Summary
 
 [`survival_summary()`](https://thinkdenominator.github.io/gtregression/reference/survival_summary.md)
 is the table companion to the Kaplan-Meier curve. It reports the number
@@ -169,7 +167,7 @@ survival_summary(
 )
 ```
 
-### Survival Quantiles
+## Survival Quantiles
 
 [`survival_quantiles()`](https://thinkdenominator.github.io/gtregression/reference/survival_quantiles.md)
 reports detailed Kaplan-Meier time points. This is useful when the
@@ -186,7 +184,7 @@ survival_quantiles(
 )
 ```
 
-### Survival Probabilities
+## Survival Probabilities
 
 [`survival_prob()`](https://thinkdenominator.github.io/gtregression/reference/survival_prob.md)
 reports Kaplan-Meier survival probability at fixed follow-up times. This
@@ -204,7 +202,7 @@ survival_prob(
 )
 ```
 
-### Log-Rank Test
+## Log-Rank Test
 
 [`logrank_test()`](https://thinkdenominator.github.io/gtregression/reference/logrank_test.md)
 formally compares Kaplan-Meier curves between groups. It is useful after
@@ -222,7 +220,7 @@ logrank_test(
 )
 ```
 
-### Parametric Survival Model Comparison
+## Parametric Survival Model Comparison
 
 [`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md)
 helps users choose a candidate distribution before using
@@ -241,7 +239,7 @@ surv_model_compare(
 )
 ```
 
-### Parametric Survival Fit Plot
+## Parametric Survival Fit Plot
 
 [`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md)
 is the visual companion to
@@ -283,7 +281,7 @@ plot_surv_fit(
 
 ![](visualise-results_files/figure-html/plot-surv-fit-adjusted-1.png)
 
-### Parametric Survival Prediction
+## Parametric Survival Prediction
 
 [`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md)
 turns a fitted parametric survival model into predicted survival
@@ -309,7 +307,7 @@ If `newdata` is omitted,
 uses a typical profile from the model data, using medians for numeric
 variables and the most common level for categorical variables.
 
-### One Regression Plot
+## One Regression Plot
 
 [`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md)
 turns a
@@ -331,7 +329,7 @@ plot_reg(
 
 ![](visualise-results_files/figure-html/one-plot-1.png)
 
-### Adjusted Regression Plot
+## Adjusted Regression Plot
 
 When the input comes from `multi_reg(adjust_for = ...)`, the adjustment
 set is shown in the plot caption by default. This keeps the figure
@@ -349,7 +347,7 @@ plot_reg(
 
 ![](visualise-results_files/figure-html/adjusted-plot-1.png)
 
-### Compact Binary Predictors
+## Compact Binary Predictors
 
 For Yes/No, 1/0, true/false, or similar binary predictors, set
 `show_ref = FALSE` to hide reference rows. Affirmative binary levels
@@ -368,7 +366,7 @@ plot_reg(
 
 ![](visualise-results_files/figure-html/compact-binary-plot-1.png)
 
-### Log Axis and Tick Marks
+## Log Axis and Tick Marks
 
 For ratio measures such as odds ratios, risk ratios, and incidence rate
 ratios, `log_x = TRUE` uses a log-scaled x-axis. If you do not provide
@@ -403,7 +401,7 @@ plot_reg(
 
 ![](visualise-results_files/figure-html/custom-axis-plot-1.png)
 
-### Compare Crude and Adjusted Effects
+## Compare Crude and Adjusted Effects
 
 [`plot_reg_combine()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.md)
 places crude and adjusted model results side by side. This is useful
@@ -428,7 +426,7 @@ plot_reg_combine(
 
 ![](visualise-results_files/figure-html/combined-plot-1.png)
 
-### Publication-Style Forest Table
+## Publication-Style Forest Table
 
 [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
 prepares the data.
@@ -450,7 +448,7 @@ forest_reg(forest_data, quiet = TRUE)
 
 ![](visualise-results_files/figure-html/forest-table-1.png)
 
-#### Fine-Tune Forest Tables
+### Fine-Tune Forest Tables
 
 Wide forest tables combine descriptive summaries, crude estimates,
 adjusted estimates, and one or two forest plot panels. If the x-axis
@@ -514,7 +512,7 @@ forest_reg(
 
 ![](visualise-results_files/figure-html/forest-one-call-1.png)
 
-### What To Inspect
+## What To Inspect
 
 - [`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md)
   returns a `ggplot`.

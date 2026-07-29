@@ -1,7 +1,5 @@
 # Diagnostics and Model Selection
 
-## Diagnostics and Model Selection
-
 Before the final table goes into a manuscript, check the model. These
 helpers keep diagnostics close to the regression workflow. They are
 screening aids: interpret them with the study design, clinical or
@@ -28,7 +26,7 @@ birthwt_data <- data_birthwt |>
 exposures <- c("age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat")
 ```
 
-### Convergence Screening
+## Convergence Screening
 
 Use
 [`check_convergence()`](https://thinkdenominator.github.io/gtregression/reference/check_convergence.md)
@@ -75,9 +73,9 @@ check_convergence(
 | smoke + ht + ui + ptl_cat | logbinomial | No |  |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-6e3db6e4 quarto-disable-processing="true"}
+Convergence check {.table .cl-8b021242 quarto-disable-processing="true"}
 
-### Collinearity Screening
+## Collinearity Screening
 
 [`check_collinearity()`](https://thinkdenominator.github.io/gtregression/reference/check_collinearity.md)
 reports VIF-style diagnostics for multivariable models. High VIF values
@@ -162,7 +160,7 @@ check_collinearity(birthwt_adjusted, format = tibble)
     ## 3 lwt       1.07 No collinearity
     ## 4 race      1.04 No collinearity
 
-### Model Fit Plots
+## Model Fit Plots
 
 [`plot_model_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_model_fit.md)
 turns fitted models into quick diagnostic plots. It accepts raw
@@ -232,7 +230,7 @@ plot_model_fit(fit_lm)
 
 ![](diagnostics-selection_files/figure-html/diag-fit-linear-1.png)
 
-### Proportional Hazards Screening
+## Proportional Hazards Screening
 
 For Cox models, use
 [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md)
@@ -309,7 +307,7 @@ check_ph(cox_fit, transform = rank, format = tibble)
     ## 11 prior    karno    Term       14.0       1 0.000187  Possible PH violation    
     ## 12 prior    GLOBAL   Global     23.0       3 0.0000401 Possible PH violation
 
-### Stepwise Model Selection
+## Stepwise Model Selection
 
 [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md)
 compares candidate models step by step. It is useful for exploration,
@@ -386,7 +384,7 @@ select_models(
     ## 5        5 low ~ ptl_cat…            4  217.  234.  -104.     207. "ptl_cat + a…
     ## 6        6 low ~ ptl_cat…            5  217.  237.  -103.     205. "ptl_cat + a…
 
-### What To Inspect
+## What To Inspect
 
 - [`check_convergence()`](https://thinkdenominator.github.io/gtregression/reference/check_convergence.md):
   convergence status and maximum fitted probabilities. Use `format = gt`

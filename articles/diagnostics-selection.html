@@ -39,6 +39,7 @@
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
@@ -71,9 +72,6 @@
 
     
     
-<div class="section level2">
-<h2 id="diagnostics-and-model-selection">Diagnostics and Model Selection<a class="anchor" aria-label="anchor" href="#diagnostics-and-model-selection"></a>
-</h2>
 <p>Before the final table goes into a manuscript, check the model. These
 helpers keep diagnostics close to the regression workflow. They are
 screening aids: interpret them with the study design, clinical or
@@ -96,9 +94,9 @@ subject-matter judgement, and the diagnostics from the fitted model.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">exposures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"race"</span>, <span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span>, <span class="st">"ptl_cat"</span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="convergence-screening">Convergence Screening<a class="anchor" aria-label="anchor" href="#convergence-screening"></a>
-</h3>
+<div class="section level2">
+<h2 id="convergence-screening">Convergence Screening<a class="anchor" aria-label="anchor" href="#convergence-screening"></a>
+</h2>
 <p>Use <code><a href="../reference/check_convergence.html">check_convergence()</a></code> before interpreting model
 estimates, especially for log-binomial and small or sparse
 binary-outcome models. A non-converged model is a fitting warning, not a
@@ -597,28 +595,28 @@ may be a more practical sensitivity analysis.</p>
 <span>  format <span class="op">=</span> <span class="va">flextable</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="tabwid">
-<style>.cl-6e3db6e4{}.cl-6e3350d2{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6e3350e6{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6e3350e7{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-6e37aad8{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-6e37aaec{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-6e37aaf6{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-6e37ed72{width:2.274in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37ed86{width:1.175in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37ed87{width:1.212in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37ed90{width:1.691in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37ed91{width:2.274in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37ed9a{width:1.175in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37eda4{width:1.212in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37eda5{width:1.691in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37edae{width:2.274in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37edaf{width:1.175in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37edb0{width:1.212in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-6e37edb8{width:1.691in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
-<table data-quarto-disable-processing="true" class="table cl-6e3db6e4">
+<style>.cl-8b021242{}.cl-8af7ea2e{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-8af7ea38{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-8af7ea42{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-8afc2daa{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-8afc2db4{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-8afc2dbe{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-8afc6c7a{width:2.274in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6c84{width:1.175in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6c85{width:1.212in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6c8e{width:1.691in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6c8f{width:2.274in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6c90{width:1.175in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6c98{width:1.212in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6c99{width:1.691in;background-color:rgba(253, 226, 226, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6c9a{width:2.274in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6ca2{width:1.175in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6ca3{width:1.212in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8afc6ca4{width:1.691in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
+<table data-quarto-disable-processing="true" class="table cl-8b021242">
 <caption style="display:table-caption;margin:0pt;text-align:center;border-bottom: 0.00pt solid transparent;border-top: 0.00pt solid transparent;border-left: 0.00pt solid transparent;border-right: 0.00pt solid transparent;padding-top:3pt;padding-bottom:3pt;padding-left:3pt;padding-right:3pt;line-height: 1;background-color:transparent;"><span>Convergence check</span></caption>
 <thead><tr style="overflow-wrap:break-word;">
-<th class="cl-6e37ed72"><p class="cl-6e37aad8"><span class="cl-6e3350d2">Exposure</span></p></th>
-<th class="cl-6e37ed86"><p class="cl-6e37aad8"><span class="cl-6e3350d2">Model</span></p></th>
-<th class="cl-6e37ed87"><p class="cl-6e37aaec"><span class="cl-6e3350d2">Converged</span></p></th>
-<th class="cl-6e37ed90"><p class="cl-6e37aaec"><span class="cl-6e3350d2">Max fitted value</span></p></th>
+<th class="cl-8afc6c7a"><p class="cl-8afc2daa"><span class="cl-8af7ea2e">Exposure</span></p></th>
+<th class="cl-8afc6c84"><p class="cl-8afc2daa"><span class="cl-8af7ea2e">Model</span></p></th>
+<th class="cl-8afc6c85"><p class="cl-8afc2db4"><span class="cl-8af7ea2e">Converged</span></p></th>
+<th class="cl-8afc6c8e"><p class="cl-8afc2db4"><span class="cl-8af7ea2e">Max fitted value</span></p></th>
 </tr></thead>
 <tbody><tr style="overflow-wrap:break-word;">
-<td class="cl-6e37ed91"><p class="cl-6e37aad8"><span class="cl-6e3350e6">smoke + ht + ui + ptl_cat</span></p></td>
-<td class="cl-6e37ed9a"><p class="cl-6e37aad8"><span class="cl-6e3350e6">logbinomial</span></p></td>
-<td class="cl-6e37eda4"><p class="cl-6e37aaec"><span class="cl-6e3350e6">No</span></p></td>
-<td class="cl-6e37eda5"><p class="cl-6e37aaec"><span class="cl-6e3350e6"></span></p></td>
+<td class="cl-8afc6c8f"><p class="cl-8afc2daa"><span class="cl-8af7ea38">smoke + ht + ui + ptl_cat</span></p></td>
+<td class="cl-8afc6c90"><p class="cl-8afc2daa"><span class="cl-8af7ea38">logbinomial</span></p></td>
+<td class="cl-8afc6c98"><p class="cl-8afc2db4"><span class="cl-8af7ea38">No</span></p></td>
+<td class="cl-8afc6c99"><p class="cl-8afc2db4"><span class="cl-8af7ea38"></span></p></td>
 </tr></tbody>
-<tfoot><tr style="overflow-wrap:break-word;"><td colspan="4" class="cl-6e37edae"><p class="cl-6e37aaf6"><span class="cl-6e3350e7">Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates.</span></p></td></tr></tfoot>
+<tfoot><tr style="overflow-wrap:break-word;"><td colspan="4" class="cl-8afc6c9a"><p class="cl-8afc2dbe"><span class="cl-8af7ea42">Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates.</span></p></td></tr></tfoot>
 </table>
 </div>
 </div>
-<div class="section level3">
-<h3 id="collinearity-screening">Collinearity Screening<a class="anchor" aria-label="anchor" href="#collinearity-screening"></a>
-</h3>
+<div class="section level2">
+<h2 id="collinearity-screening">Collinearity Screening<a class="anchor" aria-label="anchor" href="#collinearity-screening"></a>
+</h2>
 <p><code><a href="../reference/check_collinearity.html">check_collinearity()</a></code> reports VIF-style diagnostics for
 multivariable models. High VIF values are prompts to inspect coding,
 overlap between predictors, and the scientific purpose of the model.</p>
@@ -1182,9 +1180,9 @@ model can be inspected separately.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">3</span> lwt       1.07 No collinearity</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">4</span> race      1.04 No collinearity</span></span></code></pre>
 </div>
-<div class="section level3">
-<h3 id="model-fit-plots">Model Fit Plots<a class="anchor" aria-label="anchor" href="#model-fit-plots"></a>
-</h3>
+<div class="section level2">
+<h2 id="model-fit-plots">Model Fit Plots<a class="anchor" aria-label="anchor" href="#model-fit-plots"></a>
+</h2>
 <p><code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> turns fitted models into quick
 diagnostic plots. It accepts raw <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> and
 <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> objects, and it also works with models saved inside
@@ -1231,9 +1229,9 @@ residual, Q-Q, scale-location, and Cook’s distance views.</p>
 <span><span class="fu"><a href="../reference/plot_model_fit.html">plot_model_fit</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span></code></pre></div>
 <p><img src="diagnostics-selection_files/figure-html/diag-fit-linear-1.png" class="r-plt" alt="" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="proportional-hazards-screening">Proportional Hazards Screening<a class="anchor" aria-label="anchor" href="#proportional-hazards-screening"></a>
-</h3>
+<div class="section level2">
+<h2 id="proportional-hazards-screening">Proportional Hazards Screening<a class="anchor" aria-label="anchor" href="#proportional-hazards-screening"></a>
+</h2>
 <p>For Cox models, use <code><a href="../reference/check_ph.html">check_ph()</a></code> before treating hazard
 ratios as final. It reports Schoenfeld residual tests from
 <code><a href="https://rdrr.io/pkg/survival/man/cox.zph.html" class="external-link">survival::cox.zph()</a></code>, including a global test. Small
@@ -1857,9 +1855,9 @@ the diagnostic results.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">11</span> prior    karno    Term       14.0       1 0.000<span style="text-decoration: underline;">187</span>  Possible PH violation    </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">12</span> prior    GLOBAL   Global     23.0       3 0.000<span style="text-decoration: underline;">040</span>1 Possible PH violation</span></span></code></pre>
 </div>
-<div class="section level3">
-<h3 id="stepwise-model-selection">Stepwise Model Selection<a class="anchor" aria-label="anchor" href="#stepwise-model-selection"></a>
-</h3>
+<div class="section level2">
+<h2 id="stepwise-model-selection">Stepwise Model Selection<a class="anchor" aria-label="anchor" href="#stepwise-model-selection"></a>
+</h2>
 <p><code><a href="../reference/select_models.html">select_models()</a></code> compares candidate models step by step.
 It is useful for exploration, teaching, and sensitivity checks. It
 should not replace a planned model based on study design or a causal
@@ -2455,9 +2453,9 @@ interface.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">5</span>        5 low ~ ptl_cat…            4  217.  234.  -<span style="color: #BB0000;">104.</span>     207. <span style="color: #949494;">"</span>ptl_cat + a…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">6</span>        6 low ~ ptl_cat…            5  217.  237.  -<span style="color: #BB0000;">103.</span>     205. <span style="color: #949494;">"</span>ptl_cat + a…</span></span></code></pre>
 </div>
-<div class="section level3">
-<h3 id="what-to-inspect">What To Inspect<a class="anchor" aria-label="anchor" href="#what-to-inspect"></a>
-</h3>
+<div class="section level2">
+<h2 id="what-to-inspect">What To Inspect<a class="anchor" aria-label="anchor" href="#what-to-inspect"></a>
+</h2>
 <ul>
 <li>
 <code><a href="../reference/check_convergence.html">check_convergence()</a></code>: convergence status and maximum
@@ -2480,7 +2478,6 @@ tests for Cox models, including term-level and global tests.</li>
 <code>$direction</code>; <code>$table</code> is added when
 <code>format = gt</code> or <code>format = flextable</code>.</li>
 </ul>
-</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
