@@ -69,6 +69,36 @@ test_that("surv_reg returns adjusted time-ratio tables and model stats", {
   expect_true(all(res$model_stats$events > 0))
 })
 
+test_that("surv_reg uses exposure-specific complete cases for crude models", {
+  skip_if_not_installed("survival")
+
+  df <- data.frame(
+    time = c(1, 2, 3, 5, 9, 12, 20, 40),
+    status = c(1, 1, 0, 1, 0, 1, 0, 1),
+    age = c(40, 44, 50, 52, 60, 62, 70, 72),
+    marker = c(1, 0, NA, 1, NA, 0, 1, 0)
+  )
+
+  res <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(age, marker),
+    distribution = weibull,
+    model_stats = TRUE
+  )
+
+  direct_age <- survival::survreg(survival::Surv(time, status) ~ age, data = df, dist = "weibull")
+  direct_marker <- survival::survreg(survival::Surv(time, status) ~ marker, data = df, dist = "weibull")
+
+  expect_equal(stats::nobs(res$models$age), stats::nobs(direct_age))
+  expect_equal(stats::nobs(res$models$marker), stats::nobs(direct_marker))
+  expect_gt(stats::nobs(res$models$age), stats::nobs(res$models$marker))
+  expect_equal(res$model_stats$n, c(stats::nobs(direct_age), stats::nobs(direct_marker)))
+  expect_equal(stats::coef(res$models$age), stats::coef(direct_age), tolerance = 1e-8)
+  expect_equal(stats::coef(res$models$marker), stats::coef(direct_marker), tolerance = 1e-8)
+})
+
 test_that("surv_reg normalizes common distribution spellings", {
   skip_if_not_installed("survival")
 

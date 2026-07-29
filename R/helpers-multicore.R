@@ -19,16 +19,16 @@
 
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
 
-  data_clean <- .validate_multi_inputs(
-    data = data,
-    outcome = outcome,
-    exposures = exposures,
-    approach = approach,
-    adjust_for = adjust_for,
-    interaction = interaction
-  )
-
   if (!adjusted_mode) {
+    data_clean <- .validate_multi_inputs(
+      data = data,
+      outcome = outcome,
+      exposures = exposures,
+      approach = approach,
+      adjust_for = adjust_for,
+      interaction = interaction
+    )
+
     fit <- .fit_multi_model(
       data = data_clean,
       outcome = outcome,
@@ -66,12 +66,21 @@
 
     tds <- vector("list", length(exposures))
     names(tds) <- exposures
+    n_used <- stats::setNames(rep(NA_integer_, length(exposures)), exposures)
 
     for (i in seq_along(exposures)) {
       exp_i <- exposures[i]
+      data_i <- .validate_multi_inputs(
+        data = data,
+        outcome = outcome,
+        exposures = exp_i,
+        approach = approach,
+        adjust_for = adjust_for,
+        interaction = interaction
+      )
 
       fit_i <- .fit_multi_model(
-        data = data_clean,
+        data = data_i,
         outcome = outcome,
         exposures = exp_i,
         approach = approach,
@@ -97,6 +106,7 @@
 
       fits[[i]] <- fit_i
       tds[[i]] <- td_i
+      n_used[[i]] <- tryCatch(stats::nobs(fit_i), error = function(e) nrow(data_i))
     }
 
     td <- do.call(rbind, tds)
@@ -117,7 +127,7 @@
     )
     names(reg_diagnostics) <- names(fits)
 
-    n_used <- nrow(data_clean)
+    data_clean <- data
   }
 
   list(

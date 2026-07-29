@@ -100,6 +100,30 @@ test_that("multi_reg optionally returns model-fit statistics", {
   )
 })
 
+test_that("multi_reg default mode matches the direct combined model", {
+  df <- data.frame(
+    y = c(0, 1, 0, 1, 0, 1, 1, 0),
+    age = c(40, 44, 50, 52, 60, 62, 70, 72),
+    marker = c(1, 0, NA, 1, NA, 0, 1, 0)
+  )
+
+  res <- multi_reg(
+    data = df,
+    outcome = y,
+    exposures = c(age, marker),
+    approach = logit,
+    model_stats = TRUE
+  )
+  direct <- stats::glm(y ~ age + marker, data = df, family = stats::binomial("logit"))
+
+  expect_equal(
+    stats::coef(res$models$multivariable_model),
+    stats::coef(direct),
+    tolerance = 1e-8
+  )
+  expect_equal(res$model_stats$n, stats::nobs(direct))
+})
+
 test_that("multi_reg adjusted mode fits one model per exposure", {
   df <- birthwt_multi_data()
 
@@ -121,6 +145,34 @@ test_that("multi_reg adjusted mode fits one model per exposure", {
   expect_equal(res$exposures, c("smoke", "ht", "ui"))
   expect_equal(unique(res$table_body$exposure), c("smoke", "ht", "ui"))
   expect_true(all(vapply(res$models, inherits, logical(1), what = "glm")))
+})
+
+test_that("multi_reg adjusted mode uses exposure-specific complete cases", {
+  df <- data.frame(
+    y = c(1.2, 1.5, 1.8, 2.3, 2.8, 3.1, 3.4, 3.9),
+    age = c(40, 44, 50, 52, 60, 62, 70, 72),
+    marker = c(1, 0, NA, 1, NA, 0, 1, 0),
+    adjust = c(2, 1, 2, 3, 3, 4, 5, 4)
+  )
+
+  res <- multi_reg(
+    data = df,
+    outcome = y,
+    exposures = c(age, marker),
+    adjust_for = adjust,
+    approach = linear,
+    model_stats = TRUE
+  )
+
+  direct_age <- stats::lm(y ~ age + adjust, data = df)
+  direct_marker <- stats::lm(y ~ marker + adjust, data = df)
+
+  expect_equal(stats::nobs(res$models$age), stats::nobs(direct_age))
+  expect_equal(stats::nobs(res$models$marker), stats::nobs(direct_marker))
+  expect_gt(stats::nobs(res$models$age), stats::nobs(res$models$marker))
+  expect_equal(res$model_stats$n, c(stats::nobs(direct_age), stats::nobs(direct_marker)))
+  expect_equal(stats::coef(res$models$age), stats::coef(direct_age), tolerance = 1e-8)
+  expect_equal(stats::coef(res$models$marker), stats::coef(direct_marker), tolerance = 1e-8)
 })
 
 test_that("multi_reg accepts bare and quoted output options", {

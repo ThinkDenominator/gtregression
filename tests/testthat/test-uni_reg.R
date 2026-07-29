@@ -63,6 +63,44 @@ test_that("uni_reg optionally returns model-fit statistics", {
   )
 })
 
+test_that("uni_reg matches direct model fits with exposure-specific complete cases", {
+  df <- data.frame(
+    y = c(0, 1, 0, 1, 0, 1, 1, 0),
+    y_cont = c(1.1, 1.4, 1.8, 2.2, 2.5, 3.0, 3.4, 3.9),
+    age = c(40, 44, 50, 52, 60, 62, 70, 72),
+    marker = c(1, 0, NA, 1, NA, 0, 1, 0)
+  )
+
+  logit_res <- uni_reg(
+    data = df,
+    outcome = y,
+    exposures = c(age, marker),
+    approach = logit,
+    model_stats = TRUE
+  )
+  direct_logit_age <- stats::glm(y ~ age, data = df, family = stats::binomial("logit"))
+  direct_logit_marker <- stats::glm(y ~ marker, data = df, family = stats::binomial("logit"))
+
+  expect_equal(stats::coef(logit_res$models$age), stats::coef(direct_logit_age), tolerance = 1e-8)
+  expect_equal(stats::coef(logit_res$models$marker), stats::coef(direct_logit_marker), tolerance = 1e-8)
+  expect_equal(logit_res$model_stats$n, c(stats::nobs(direct_logit_age), stats::nobs(direct_logit_marker)))
+  expect_gt(stats::nobs(logit_res$models$age), stats::nobs(logit_res$models$marker))
+
+  linear_res <- uni_reg(
+    data = df,
+    outcome = y_cont,
+    exposures = c(age, marker),
+    approach = linear,
+    model_stats = TRUE
+  )
+  direct_lm_age <- stats::lm(y_cont ~ age, data = df)
+  direct_lm_marker <- stats::lm(y_cont ~ marker, data = df)
+
+  expect_equal(stats::coef(linear_res$models$age), stats::coef(direct_lm_age), tolerance = 1e-8)
+  expect_equal(stats::coef(linear_res$models$marker), stats::coef(direct_lm_marker), tolerance = 1e-8)
+  expect_equal(linear_res$model_stats$n, c(stats::nobs(direct_lm_age), stats::nobs(direct_lm_marker)))
+})
+
 test_that("uni_reg supports logbinomial and old hyphenated alias", {
   df <- data.frame(
     y = c(0, 1, 0, 1, 0, 1),

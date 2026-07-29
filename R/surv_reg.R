@@ -183,7 +183,7 @@ surv_reg <- function(data,
                            exposures,
                            adjust_for = NULL,
                            distribution = "weibull") {
-  data_clean <- .validate_cox_inputs(data, time, event, exposures, adjust_for)
+  data_valid <- .validate_cox_inputs(data, time, event, exposures, adjust_for)
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
 
   fits <- vector("list", length(exposures))
@@ -194,7 +194,8 @@ surv_reg <- function(data,
   for (i in seq_along(exposures)) {
     exposure <- exposures[i]
     predictors <- if (adjusted_mode) c(exposure, adjust_for) else exposure
-    fit <- .fit_surv_model(data_clean, time, event, predictors, distribution)
+    data_model <- .surv_model_data(data_valid, time, event, predictors)
+    fit <- .fit_surv_model(data_model, time, event, predictors, distribution)
 
     if (is.null(fit)) {
       stop("Parametric survival model fitting failed for exposure '", exposure, "'.", call. = FALSE)
@@ -210,11 +211,33 @@ surv_reg <- function(data,
   }
 
   list(
-    data_clean = data_clean,
+    data_clean = data_valid,
     table_body = do.call(rbind, tds),
     models = fits,
     model_summaries = lapply(fits, summary)
   )
+}
+
+#' @keywords internal
+#' @noRd
+.surv_model_data <- function(data, time, event, predictors) {
+  vars_needed <- unique(c(time, event, predictors))
+  cc_idx <- stats::complete.cases(data[, vars_needed, drop = FALSE])
+  data_model <- data[cc_idx, , drop = FALSE]
+
+  if (nrow(data_model) == 0) {
+    stop("No complete cases available for this parametric survival model.", call. = FALSE)
+  }
+
+  if (sum(data_model[[event]] == 1, na.rm = TRUE) == 0) {
+    stop("`event` must include at least one event for this parametric survival model.", call. = FALSE)
+  }
+  if (sum(data_model[[event]] == 0, na.rm = TRUE) == 0) {
+    stop("`event` must include at least one censored observation for this parametric survival model.", call. = FALSE)
+  }
+
+  .validate_exposures(data_model, predictors)
+  data_model
 }
 
 #' @keywords internal

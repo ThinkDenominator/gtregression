@@ -140,15 +140,21 @@ multi_reg <- function(data,
       }
     )
   } else {
+    n_note <- if (length(unique(stats::na.omit(core$n_used))) == 1L) {
+      paste0(
+        "N = ", unique(stats::na.omit(core$n_used)),
+        " complete observations included across outcome, exposure, and adjustment variables"
+      )
+    } else {
+      "N varies by exposure according to complete observations for outcome, the current exposure, and adjustment variables"
+    }
+
     c(
       .abbrev_note(approach),
       if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
       .adjustment_note(adjust_for),
       if (!is.null(interaction)) .interaction_note(interaction) else NULL,
-      paste0(
-        "N = ", core$n_used,
-        " complete observations included across outcome, exposure, and adjustment variables"
-      )
+      n_note
     )
   }
 

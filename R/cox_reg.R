@@ -152,7 +152,7 @@ cox_reg <- function(data,
 #' @keywords internal
 #' @noRd
 .run_cox_core <- function(data, time, event, exposures, adjust_for = NULL) {
-  data_clean <- .validate_cox_inputs(data, time, event, exposures, adjust_for)
+  data_valid <- .validate_cox_inputs(data, time, event, exposures, adjust_for)
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
 
   fits <- vector("list", length(exposures))
@@ -163,7 +163,8 @@ cox_reg <- function(data,
   for (i in seq_along(exposures)) {
     exposure <- exposures[i]
     predictors <- if (adjusted_mode) c(exposure, adjust_for) else exposure
-    fit <- .fit_cox_model(data_clean, time, event, predictors)
+    data_model <- .cox_model_data(data_valid, time, event, predictors)
+    fit <- .fit_cox_model(data_model, time, event, predictors)
 
     if (is.null(fit)) {
       stop("Cox model fitting failed for exposure '", exposure, "'.", call. = FALSE)
@@ -179,7 +180,7 @@ cox_reg <- function(data,
   }
 
   list(
-    data_clean = data_clean,
+    data_clean = data_valid,
     table_body = do.call(rbind, tds),
     models = fits,
     model_summaries = lapply(fits, summary)
@@ -255,23 +256,40 @@ cox_reg <- function(data,
     stop("`time` must contain non-negative follow-up times.", call. = FALSE)
   }
 
-  vars_needed <- unique(c(time, event, exposures, adjust_for))
-  cc_idx <- stats::complete.cases(data[, vars_needed, drop = FALSE])
-  data_clean <- data[cc_idx, , drop = FALSE]
-  if (nrow(data_clean) == 0) {
-    stop("No complete cases available for Cox regression.", call. = FALSE)
-  }
+  data_valid <- data
 
-  data_clean[[event]] <- .cox_event01(data_clean[[event]])
-  if (sum(data_clean[[event]] == 1) == 0) {
+  data_valid[[event]] <- .cox_event01(data_valid[[event]])
+  if (sum(data_valid[[event]] == 1, na.rm = TRUE) == 0) {
     stop("`event` must include at least one event.", call. = FALSE)
   }
-  if (sum(data_clean[[event]] == 0) == 0) {
+  if (sum(data_valid[[event]] == 0, na.rm = TRUE) == 0) {
     stop("`event` must include at least one censored observation.", call. = FALSE)
   }
 
-  .validate_exposures(data_clean, unique(c(exposures, adjust_for)))
-  data_clean
+  .validate_exposures(data_valid, unique(c(exposures, adjust_for)))
+  data_valid
+}
+
+#' @keywords internal
+#' @noRd
+.cox_model_data <- function(data, time, event, predictors) {
+  vars_needed <- unique(c(time, event, predictors))
+  cc_idx <- stats::complete.cases(data[, vars_needed, drop = FALSE])
+  data_model <- data[cc_idx, , drop = FALSE]
+
+  if (nrow(data_model) == 0) {
+    stop("No complete cases available for this Cox model.", call. = FALSE)
+  }
+
+  if (sum(data_model[[event]] == 1, na.rm = TRUE) == 0) {
+    stop("`event` must include at least one event for this Cox model.", call. = FALSE)
+  }
+  if (sum(data_model[[event]] == 0, na.rm = TRUE) == 0) {
+    stop("`event` must include at least one censored observation for this Cox model.", call. = FALSE)
+  }
+
+  .validate_exposures(data_model, predictors)
+  data_model
 }
 
 #' @keywords internal
@@ -418,7 +436,7 @@ cox_reg <- function(data,
       logLik = .safe_numeric(as.numeric(stats::logLik(fit))),
       concordance = .safe_numeric(concordance),
       events = .safe_numeric(fit$nevent),
-      n = .safe_numeric(stats::nobs(fit)),
+      n = .safe_numeric(fit$n),
       stringsAsFactors = FALSE
     )
   })

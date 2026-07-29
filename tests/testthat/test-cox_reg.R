@@ -111,6 +111,32 @@ test_that("cox_reg accepts zero follow-up times like survival::coxph", {
   expect_equal(got_hr, direct_hr, tolerance = 1e-8)
 })
 
+test_that("cox_reg uses exposure-specific complete cases for crude models", {
+  skip_if_not_installed("survival")
+
+  df <- lung_cox_data()
+  df$marker <- df$karno
+  df$marker[seq_len(20)] <- NA
+
+  res <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(age, marker),
+    model_stats = TRUE
+  )
+
+  direct_age <- survival::coxph(survival::Surv(time, status) ~ age, data = df)
+  direct_marker <- survival::coxph(survival::Surv(time, status) ~ marker, data = df)
+
+  expect_equal(res$models$age$n, direct_age$n)
+  expect_equal(res$models$marker$n, direct_marker$n)
+  expect_gt(res$models$age$n, res$models$marker$n)
+  expect_equal(res$model_stats$n, c(direct_age$n, direct_marker$n))
+  expect_equal(stats::coef(res$models$age), stats::coef(direct_age), tolerance = 1e-8)
+  expect_equal(stats::coef(res$models$marker), stats::coef(direct_marker), tolerance = 1e-8)
+})
+
 test_that("cox_reg accepts two-level factor exposures after complete-case filtering", {
   skip_if_not_installed("survival")
 
