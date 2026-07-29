@@ -5,7 +5,7 @@
   clinical = c("plain","labels_bold","compact"),
   striped  = c("zebra","labels_bold","compact"),
   shaded   = c("header_shaded","labels_bold","lines"),
-  # aliases (beginner-friendly; “inspired by”, not replicas)
+  # aliases ("inspired by", not replicas)
   jama     = c("plain","lines","labels_bold","compact")
 )
 #' @keywords internal

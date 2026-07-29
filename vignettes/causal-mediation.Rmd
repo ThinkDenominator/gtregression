@@ -1,0 +1,171 @@
+---
+title: "Causal Mediation Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Causal Mediation Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Mediation analysis asks whether part of an exposure-outcome association may pass
+through an intermediate variable. In health research, that question is usually
+interesting only after the clinical story, temporal order, and likely
+confounding structure have already been considered.
+
+`gtregression` provides a compact workflow for:
+
+- fitting the mediator and outcome models;
+- estimating total, direct, indirect, and proportion mediated effects;
+- displaying a publication-style table;
+- drawing a simple mediation path diagram.
+
+The output is deliberately transparent. It is a model-based aid to
+interpretation, not proof of causality by itself.
+
+## Example Question
+
+This article uses `data_diabetes_mediation`, a teaching dataset based on a
+diabetes risk profile. The example question is:
+
+> Does plasma glucose explain part of the association between obesity and
+> diabetes?
+
+```{r setup, message=FALSE, warning=FALSE}
+library(gtregression)
+library(dplyr)
+
+data("data_diabetes_mediation", package = "gtregression")
+
+glimpse(data_diabetes_mediation)
+```
+
+## Logistic Outcome
+
+For a binary outcome, use `outcome_approach = logit`. The effects are reported as
+predicted probability differences, which are often easier to explain than odds
+ratios in a mediation table.
+
+For final analyses, use a larger number of bootstrap simulations such as
+`sims = 500` or `sims = 1000`. The article uses a smaller value to keep the
+example quick to run.
+
+```{r mediation-logit, message=FALSE, warning=FALSE}
+diabetes_med <- mediation_analysis(
+  data = data_diabetes_mediation,
+  exposure = obesity,
+  mediator = glucose,
+  outcome = diabetes,
+  covariates = c(age, blood_pressure, pregnancies, diabetes_pedigree),
+  outcome_approach = logit,
+  sims = 100,
+  seed = 123
+)
+
+diabetes_med$table
+```
+
+The returned object keeps the table body, fitted models, bootstrap draws, and
+exposure comparison values available for checking.
+
+```{r inspect-object}
+diabetes_med$table_body
+diabetes_med$values
+diabetes_med$models$mediator
+diabetes_med$models$outcome
+head(diabetes_med$boot)
+```
+
+## Path Diagram
+
+`plot_mediation()` draws the exposure, mediator, outcome, and the direct and
+indirect paths.
+
+```{r mediation-plot, fig.width=7, fig.height=5}
+plot_mediation(diabetes_med)
+```
+
+If the figure is being used only to explain the causal structure, hide the
+estimates.
+
+```{r mediation-plot-no-estimates, fig.width=7, fig.height=5}
+plot_mediation(diabetes_med, show_estimates = FALSE)
+```
+
+## Quoted Names
+
+Quoted column names and stored character vectors work too. This is useful inside
+scripts, functions, and Shiny-style workflows.
+
+```{r mediation-quoted, message=FALSE, warning=FALSE}
+exposure_var <- "obesity"
+mediator_var <- "glucose"
+outcome_var <- "diabetes"
+covariate_vars <- c(
+  "age", "blood_pressure", "pregnancies", "diabetes_pedigree"
+)
+
+med_quoted <- mediation_analysis(
+  data = data_diabetes_mediation,
+  exposure = exposure_var,
+  mediator = mediator_var,
+  outcome = outcome_var,
+  covariates = covariate_vars,
+  outcome_approach = "logit",
+  sims = 100,
+  seed = 456
+)
+
+med_quoted$table
+```
+
+## Linear Outcome
+
+For a continuous outcome, use `outcome_approach = linear`. In this example, the
+outcome is body mass index, so the effects are reported as mean differences.
+
+```{r mediation-linear, message=FALSE, warning=FALSE}
+med_linear <- mediation_analysis(
+  data = data_diabetes_mediation,
+  exposure = obesity,
+  mediator = glucose,
+  outcome = bmi,
+  covariates = c(age, blood_pressure, pregnancies, diabetes_pedigree),
+  outcome_approach = linear,
+  sims = 100,
+  seed = 789
+)
+
+med_linear$table
+```
+
+```{r mediation-linear-plot, fig.width=7, fig.height=5}
+plot_mediation(med_linear)
+```
+
+## How To Report
+
+A compact reporting sentence might look like this:
+
+> In this teaching analysis, plasma glucose explained part of the model-based
+> obesity-diabetes association. Effects were estimated on the predicted
+> probability difference scale using logistic outcome models and bootstrap
+> confidence intervals.
+
+The table footnote records the exposure comparison, mediator, outcome, bootstrap
+replicates, and adjustment variables so readers can see what was estimated.
+
+## What Not To Claim
+
+Mediation estimates should not be treated as automatic causal proof. A cautious
+analysis should consider:
+
+- whether the exposure clearly precedes the mediator;
+- whether the mediator clearly precedes the outcome;
+- whether exposure-mediator, mediator-outcome, and exposure-outcome confounding
+  have been handled;
+- whether post-exposure confounders are present;
+- whether the model forms are plausible;
+- whether a DAG or subject-matter argument supports the causal interpretation.
+
+Use the table and plot to support interpretation after that thinking has been
+done.

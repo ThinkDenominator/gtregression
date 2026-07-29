@@ -5,7 +5,7 @@
 ## A diabetes clinic wants to understand which clinical measurements are
 ## associated with plasma glucose. The outcome is continuous, so this script
 ## uses linear regression and follows the analysis from raw data inspection to
-## publication-ready tables, plots, diagnostics, and export.
+## clean tables, plots, diagnostics, and export.
 ##
 ## How to use:
 ## Run this script section by section. The comments tell the user what to look
@@ -97,7 +97,7 @@ categorical_predictors <- c(
   "bmi", "age_cat", "npreg_cat", "bp_cat", "insulin_cat", "dpf_cat"
 )
 
-## 1.1-friendly labels:
+## Clearer labels for the reader:
 ## Label once, then all gtregression tables and plots use these display names.
 attr(pima_data$glucose, "label") <- "Plasma glucose"
 attr(pima_data$age, "label") <- "Age"
@@ -296,7 +296,7 @@ multi_adj_lm_stats$model_stats
 
 ## 7. Modify tables for publication ------------------------------------------
 
-## Use modify_table() to turn technically correct output into a reader-friendly
+## Use modify_table() to turn technically correct output into a reader-ready
 ## manuscript table.
 
 uni_lm_paper <- modify_table(
@@ -456,7 +456,7 @@ check_collinearity(multi_lm)
 check_collinearity(multi_lm, format = "gt")
 
 ## Stepwise model selection:
-## The publication-ready output states whether forward, backward, or both
+## The formatted output states whether forward, backward, or both
 ## selection was used.
 
 stepwise_forward <- select_models(
@@ -596,7 +596,7 @@ stratified_multi_reg(
 ## 14. Export outputs ---------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
-## path is supplied. This is CRAN-friendly and prevents accidental clutter.
+## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
 
 save_table(final_lm_table, filename = "pima-linear-table", format = "docx")
 save_plot(plot_comb_lm, filename = "pima-linear-plot", format = "png")

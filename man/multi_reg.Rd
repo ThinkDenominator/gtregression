@@ -81,10 +81,14 @@ A list of class \code{c("gtregression","multi_reg", ...)} with elements:
 }
 }
 \description{
-Create a publication-ready multivariable regression table using either
-\pkg{gt} or \pkg{flextable}, without a \pkg{gtsummary} dependency.
+Fit adjusted or multivariable regression models and return a manuscript-style
+table in \pkg{flextable} or \pkg{gt} format.
 }
 \details{
+Use the default mode when you want all exposures in one model. Use
+\code{adjust_for} when you want one adjusted estimate per reported exposure,
+with the same adjustment set used repeatedly.
+
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the
 displayed table and plots. Internal matching still uses the original column

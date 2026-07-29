@@ -2,7 +2,7 @@
 % Please edit documentation in R/reg_check_linear.R
 \name{.reg_check_linear}
 \alias{.reg_check_linear}
-\title{Linear Regression Diagnostic Checks (Internal)}
+\title{Linear regression diagnostic checks (internal)}
 \usage{
 .reg_check_linear(model, exposure)
 }
@@ -22,7 +22,7 @@ A data frame with one row per diagnostic test, including:
 }
 }
 \description{
-Performs diagnostic checks for fitted linear regression models.
+Runs diagnostic checks for fitted linear regression models.
 }
 \details{
 The returned rows cover heteroskedasticity, residual normality, model

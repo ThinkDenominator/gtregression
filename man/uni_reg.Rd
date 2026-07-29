@@ -15,7 +15,7 @@ uni_reg(
 )
 }
 \arguments{
-\item{data}{data.frame}
+\item{data}{A data frame containing the outcome and exposure variables.}
 
 \item{outcome}{Character scalar; outcome column name. Quoted and bare names
 are accepted.}
@@ -30,7 +30,7 @@ penalized logistic regression, especially with sparse cells or separation.}
 
 \item{format}{One of \code{"flextable"} (default) or \code{"gt"}.}
 
-\item{theme}{preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
+\item{theme}{Preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 \code{"shaded"}, \code{"jama"}) or primitives
 \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}}
 
@@ -58,10 +58,14 @@ A list of class \code{c("gtregression","uni_reg", ...)} with elements:
 }
 }
 \description{
-Create a publication-ready univariate regression table using either
-\pkg{gt} or \pkg{flextable}
+Fit one model per exposure and return a clean regression table in
+\pkg{flextable} or \pkg{gt} format.
 }
 \details{
+Use this when you want a quick crude association table before building an
+adjusted model. The fitted models are kept in the returned object, so the
+formatted table does not hide the underlying analysis.
+
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the
 displayed table and plots. Internal matching still uses the original column

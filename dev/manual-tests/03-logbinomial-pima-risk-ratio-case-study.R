@@ -9,7 +9,7 @@
 ##
 ## Log-binomial models estimate risk ratios directly. They are useful, but they
 ## may fail to converge in complex models. This script teaches users to inspect
-## convergence, start with simple models, and build publication-ready outputs.
+## convergence, start with focused models, and build clean outputs.
 ##
 ## How to use:
 ## Run this script section by section. The comments tell the user what to look
@@ -107,7 +107,7 @@ risk_factors <- c(
 
 core_risk_factors <- c("age_cat", "npreg_cat", "dpf_cat")
 
-## 1.1-friendly labels:
+## Clearer labels for the reader:
 ## Label once, then all gtregression tables and plots use these display names.
 attr(pima_data$glucose, "label") <- "Plasma glucose"
 attr(pima_data$mass, "label") <- "Body mass index"
@@ -346,7 +346,7 @@ multi_adj_rr_stats$model_stats
 
 ## 8. Modify tables for publication ------------------------------------------
 
-## This is where variable names become reader-friendly.
+## This is where variable names become easier for readers to follow.
 ## The labels below also flow into downstream plots when you plot the modified
 ## table object.
 
@@ -556,7 +556,7 @@ check_collinearity(multi_rr)
 check_collinearity(multi_rr, format = "gt")
 
 ## Stepwise model selection:
-## The publication-ready output states whether forward, backward, or both
+## The formatted output states whether forward, backward, or both
 ## selection was used.
 
 select_models(
@@ -695,7 +695,7 @@ stratified_multi_reg(
 ## 15. Export outputs ---------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
-## path is supplied. This is CRAN-friendly and prevents accidental clutter.
+## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
 
 save_table(final_rr_table_paper, filename = "pima-logbinomial-table", format = "docx")
 save_plot(plot_comb_rr, filename = "pima-logbinomial-plot", format = "png")

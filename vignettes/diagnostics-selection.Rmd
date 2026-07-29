@@ -7,8 +7,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Diagnostics and Model Selection
-
 Before the final table goes into a manuscript, check the model. These helpers
 keep diagnostics close to the regression workflow. They are screening aids:
 interpret them with the study design, clinical or subject-matter judgement, and

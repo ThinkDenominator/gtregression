@@ -101,7 +101,7 @@ risk_factors <- c(
 )
 best_risk_factors <- c("age_cat", "insulin_cat", "bmi", "dpf_cat")
 
-## 1.1-friendly labels:
+## Clearer labels for the reader:
 ## Label once, then all gtregression tables and plots use these display names.
 attr(pima_data$glucose, "label") <- "Plasma glucose"
 attr(pima_data$mass, "label") <- "Body mass index"
@@ -120,7 +120,7 @@ attr(pima_data$dpf_cat, "label") <- "Diabetes pedigree risk"
 ## Default output is a publication-style flextable.
 dissect(pima_data)
 
-## Use tibble output for a console-friendly data audit.
+## Use tibble output for a quick data audit.
 pima_dissect <- dissect(pima_data, format = "tibble")
 pima_dissect
 
@@ -561,7 +561,7 @@ check_collinearity(multi_rr_best)
 check_collinearity(multi_rr_best, format = "gt")
 
 ## Stepwise model selection:
-## The publication-ready output states whether forward, backward, or both
+## The formatted output states whether forward, backward, or both
 ## selection was used.
 
 stepwise_forward <- select_models(
@@ -704,7 +704,7 @@ stratified_multi_reg(
 ## 15. Export outputs ---------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
-## path is supplied. This is CRAN-friendly and prevents accidental clutter.
+## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
 
 save_table(final_rr_table_paper, filename = "pima-robpoisson-table", format = "docx")
 save_plot(plot_comb_rr, filename = "pima-robpoisson-plot", format = "png")

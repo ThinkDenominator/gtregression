@@ -2,7 +2,7 @@
 % Please edit documentation in R/select_models.R
 \name{select_models}
 \alias{select_models}
-\title{Stepwise Model Selection with Evaluation Metrics}
+\title{Stepwise model selection with fit metrics}
 \usage{
 select_models(
   data,
@@ -61,9 +61,13 @@ A list with the following components:
 }
 }
 \description{
-Performs stepwise model selection using forward, backward, or both directions
-across different regression approaches. The function returns a summary table
-with evaluation metrics and the best model based on the lowest AIC.
+Compare candidate models added or removed stepwise, then return the accepted
+steps, model-fit metrics, and the lowest-AIC model.
+}
+\details{
+Treat stepwise selection as a screening tool. It is best used alongside the
+study question, clinical judgement, and model diagnostics rather than as an
+automatic final-model rule.
 }
 \examples{
 data <- data_birthwt

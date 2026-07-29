@@ -46,6 +46,34 @@
 #' \doi{10.1002/sim.1047}
 "data_endometrial"
 
+#' Diabetes Mediation Teaching Dataset
+#'
+#' A health-related teaching dataset prepared from the Pima Indians Diabetes
+#' data. It is designed for the practical question: could part of the obesity
+#' and diabetes relationship operate through plasma glucose, after adjustment
+#' for basic clinical covariates?
+#'
+#' @format A data frame with variables:
+#' \describe{
+#'   \item{diabetes}{Diabetes status (\code{No}, \code{Yes})}
+#'   \item{obesity}{Obesity status based on BMI >= 30 (\code{No}, \code{Yes})}
+#'   \item{glucose}{Plasma glucose concentration}
+#'   \item{bmi}{Body mass index}
+#'   \item{age}{Age in years}
+#'   \item{blood_pressure}{Diastolic blood pressure}
+#'   \item{pregnancies}{Number of pregnancies}
+#'   \item{diabetes_pedigree}{Diabetes pedigree function}
+#' }
+#'
+#' @details
+#' This dataset is intended for practice and teaching. Mediation estimates from
+#' observational data should be interpreted causally only when the temporal
+#' ordering and no-unmeasured-confounding assumptions are justified by study
+#' design, DAGs, and subject-matter knowledge.
+#'
+#' @source Derived from \code{data_PimaIndiansDiabetes}.
+"data_diabetes_mediation"
+
 #' Infertility Matched Case-Control Study
 #'
 #' investigating the relationship between infertility and abortions.

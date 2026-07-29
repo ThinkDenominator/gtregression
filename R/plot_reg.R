@@ -1,7 +1,8 @@
-#' Visualize a regression model as a forest plot
+#' Plot regression estimates
 #'
-#' Creates a forest plot from a fitted \code{gtregression} object produced by
-#' functions such as \code{uni_reg()} or \code{multi_reg()}.
+#' Draw a forest-style plot from a fitted \code{gtregression} object produced by
+#' functions such as \code{uni_reg()}, \code{multi_reg()}, \code{cox_reg()}, or
+#' \code{surv_reg()}.
 #'
 #' @param tbl A fitted \code{gtregression} object.
 #' @param title Optional plot title.

@@ -67,7 +67,7 @@ If multiple combinations are supplied, returns a list with:
 }
 }
 \description{
-Assesses whether one or more candidate variables act as confounders or
+Review whether one or more candidate variables may act as confounders or
 effect modifiers for one or more exposures.
 }
 \details{

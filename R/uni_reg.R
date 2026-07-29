@@ -1,9 +1,9 @@
 #' Univariate regression
 #'
-#' Create a publication-ready univariate regression table using either
-#' \pkg{gt} or \pkg{flextable}
+#' Fit one model per exposure and return a clean regression table in
+#' \pkg{flextable} or \pkg{gt} format.
 #'
-#' @param data data.frame
+#' @param data A data frame containing the outcome and exposure variables.
 #' @param outcome Character scalar; outcome column name. Quoted and bare names
 #'   are accepted.
 #' @param exposures Character vector; exposure column names. Quoted names are
@@ -13,7 +13,7 @@
 #'   \code{"linear"}, or \code{"negbin"}. Use \code{"firth"} for Firth
 #'   penalized logistic regression, especially with sparse cells or separation.
 #' @param format One of \code{"flextable"} (default) or \code{"gt"}.
-#' @param theme preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
+#' @param theme Preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 #'   \code{"shaded"}, \code{"jama"}) or primitives
 #'   \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}
 #' @param model_stats Logical; if \code{TRUE}, extract model-fit statistics
@@ -23,6 +23,10 @@
 #'   the publication table.
 #'
 #' @details
+#' Use this when you want a quick crude association table before building an
+#' adjusted model. The fitted models are kept in the returned object, so the
+#' formatted table does not hide the underlying analysis.
+#'
 #' If exposure variables have a \code{"label"} attribute, for example from
 #' \code{labelled::var_label()}, those labels are used automatically in the
 #' displayed table and plots. Internal matching still uses the original column

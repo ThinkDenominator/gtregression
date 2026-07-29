@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------
-# Save helpers
+# Saving and export utilities
 # -------------------------------------------------------------------
 
 #' Resolve a table object for saving
@@ -20,7 +20,7 @@
   )
 }
 
-#' Check whether an object is table-like for save helpers
+#' Check whether an object can be exported as a table
 #' @keywords internal
 #' @noRd
 .is_save_table_like <- function(x) {

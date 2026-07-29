@@ -7,8 +7,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Confounding and Interaction
-
 Confounding asks whether adjustment changes the exposure effect. Interaction
 asks whether the exposure effect differs across another variable.
 
@@ -23,6 +21,7 @@ checks should not be used as the sole basis for model adjustment.
 |---|---|---|
 | Could these candidate variables be confounders or effect modifiers? | `identify_confounder()` | Screens crude, adjusted, Mantel-Haenszel, and interaction signals together. |
 | Does this planned interaction term improve the model? | `interaction_models()` | Compares models with and without `exposure:effect_modifier` using LRT or Wald tests. |
+| Could part of an exposure-outcome association operate through a mediator? | `mediation_analysis()` | Estimates direct, indirect, total, and proportion mediated effects with explicit causal caveats. |
 | Do I need a Mantel-Haenszel estimate? | `identify_confounder(method = "mh")` or `identify_confounder(method = "both")` | MH is a stratified pooled estimate for eligible binary/categorical settings, not a formal interaction-term test. |
 
 A practical workflow is:
@@ -31,7 +30,9 @@ A practical workflow is:
 2. Use `identify_confounder()` to organise screening evidence for candidate
    confounders or effect modifiers.
 3. Use `interaction_models()` when you have a planned interaction hypothesis.
-4. If interaction is important, consider stratified reporting with
+4. Use `mediation_analysis()` when the mediator is part of a planned causal
+   question and the temporal order is defensible.
+5. If interaction is important, consider stratified reporting with
    `stratified_uni_reg()` or `stratified_multi_reg()`.
 
 ```{r ci-setup, message=FALSE, warning=FALSE}
@@ -122,6 +123,90 @@ interaction_check <- interaction_models(
 interaction_check$table
 ```
 
+## Causal Mediation
+
+`mediation_analysis()` asks whether part of an exposure-outcome association may
+operate through a mediator. In this example, obesity is the exposure, plasma
+glucose is the mediator, and diabetes is the outcome. The question is not only
+"is obesity associated with diabetes?", but also "how much of that association
+may operate through plasma glucose?".
+
+The default output is a publication-ready flextable. The table reports:
+
+- **Total effect**: the overall exposure-outcome association.
+- **Direct effect**: the part not operating through the mediator.
+- **Indirect effect**: the part operating through the mediator.
+- **Proportion mediated**: the share of the total effect attributed to the
+  indirect pathway.
+
+For logistic outcomes, effects are reported as predicted probability
+differences, not odds ratios. For example, an estimate of `0.068` means about a
+6.8 percentage-point difference on the predicted probability scale.
+
+Treat mediation output as causal only when the usual mediation assumptions are
+supported by study design, DAGs, temporality, and subject-matter knowledge. In
+particular, there should be no unmeasured exposure-outcome,
+exposure-mediator, or mediator-outcome confounding, and the mediator should
+occur before the outcome.
+
+```{r mediation, message=FALSE, warning=FALSE}
+data("data_diabetes_mediation", package = "gtregression")
+
+diabetes_med <- mediation_analysis(
+  data = data_diabetes_mediation,
+  exposure = obesity,
+  mediator = glucose,
+  outcome = diabetes,
+  covariates = c(age, blood_pressure, pregnancies, diabetes_pedigree),
+  outcome_approach = logit,
+  sims = 100,
+  seed = 123
+)
+
+diabetes_med$table
+```
+
+The underlying values remain available for audit, reporting, or custom
+formatting.
+
+```{r mediation-body}
+diabetes_med$table_body
+```
+
+Use `format = gt` when preparing HTML-first outputs such as websites or
+teaching pages.
+
+```{r mediation-gt, message=FALSE, warning=FALSE}
+med_gt <- mediation_analysis(
+  data = data_diabetes_mediation,
+  exposure = obesity,
+  mediator = glucose,
+  outcome = diabetes,
+  covariates = c(age, blood_pressure, pregnancies, diabetes_pedigree),
+  outcome_approach = logit,
+  format = gt,
+  sims = 100,
+  seed = 123
+)
+
+med_gt$table
+```
+
+`plot_mediation()` draws the same planned causal structure as a path diagram.
+It is useful for teaching, presentations, or checking that the exposure,
+mediator, and outcome have been specified as intended.
+
+```{r mediation-plot, message=FALSE, warning=FALSE, fig.width=7, fig.height=4}
+plot_mediation(diabetes_med)
+```
+
+If the estimates make the plot too busy, hide them and use the diagram only to
+show the assumed path structure.
+
+```{r mediation-plot-simple, message=FALSE, warning=FALSE, fig.width=7, fig.height=4}
+plot_mediation(diabetes_med, show_estimates = FALSE)
+```
+
 ## Overlap and Difference
 
 | Topic | `identify_confounder()` | `interaction_models()` |
@@ -133,11 +218,18 @@ interaction_check$table
 | Best use | Early review of candidate variables, with DAGs and judgement. | Focused test of a clinically or biologically plausible interaction. |
 | Output status | Viewing aid, not publication-ready evidence by itself. | Viewing aid; report with stratum-specific estimates when relevant. |
 
+`mediation_analysis()` is different from both functions. It decomposes one
+planned exposure-outcome relationship into direct and mediator-related
+components; it does not select confounders or test whether effects differ across
+strata.
+
 ## What To Inspect
 
 - `identify_confounder()`: `$summary`, `$table`, `$details`, `$mh_estimate`,
   `$mh_status`, `$decision`, and `$recommendation`.
 - `interaction_models()`: `$summary`, `$table`, `$p_value`, `$decision`, and
   fitted model objects.
+- `mediation_analysis()`: `$table`, `$table_body`, `$models`, `$boot`,
+  `$values`, `$variable_labels`, and `$complete_data`.
 - Use subject-matter knowledge with these outputs. The functions support
   interpretation; they do not replace the study design.

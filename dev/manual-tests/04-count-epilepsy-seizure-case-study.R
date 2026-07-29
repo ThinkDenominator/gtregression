@@ -69,7 +69,7 @@ outcome <- "seizures"
 count_predictors <- c("treatment", "age_cat", "sex", "baseline_cat", "period_cat")
 core_predictors <- c("treatment", "age_cat", "baseline_cat")
 
-## 1.1-friendly labels:
+## Clearer labels for the reader:
 ## Label once, then all gtregression tables and plots use these display names.
 attr(epilepsy_data$seizures, "label") <- "Seizure count"
 attr(epilepsy_data$base, "label") <- "Baseline seizure count"
@@ -86,7 +86,7 @@ attr(epilepsy_data$period_cat, "label") <- "Follow-up period"
 ## Default output is a publication-style flextable.
 dissect(epilepsy_data)
 
-## Use tibble output when you want a console-friendly audit.
+## Use tibble output when you want a quick audit.
 epilepsy_dissect <- dissect(epilepsy_data, format = "tibble")
 epilepsy_dissect
 
@@ -341,7 +341,7 @@ multi_adj_nb_stats$model_stats
 
 ## 9. Modify tables for publication ------------------------------------------
 
-## Use modify_table() to make the count-model output publication friendly.
+## Use modify_table() to make the count-model output easier to read.
 
 multi_pois_paper <- modify_table(
   multi_adj_pois,
@@ -541,7 +541,7 @@ check_collinearity(multi_nb)
 check_collinearity(multi_nb, format = "gt")
 
 ## Stepwise model selection:
-## The publication-ready output states whether forward, backward, or both
+## The formatted output states whether forward, backward, or both
 ## selection was used.
 
 select_models(
@@ -681,7 +681,7 @@ stratified_multi_reg(
 ## 16. Export outputs ---------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
-## path is supplied. This is CRAN-friendly and prevents accidental clutter.
+## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
 
 save_table(final_count_table, filename = "epilepsy-count-table", format = "docx")
 save_plot(plot_nb_comb, filename = "epilepsy-count-plot", format = "png")

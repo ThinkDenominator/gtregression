@@ -55,23 +55,24 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 
 <!-- badges: end -->
 
-## Publication-Ready Regression and Survival Outputs
+## Publication-Ready Regression, Survival, and Mediation Outputs
 
 `gtregression` helps you move from model to manuscript: fit regression
 models, produce clean tables, visualise estimates, merge outputs, and
 export results without hand-formatting every coefficient.
 
 It supports logistic, log-binomial, Poisson, robust Poisson, negative
-binomial, linear, Cox, and parametric survival workflows, including adjusted and
-stratified models.
+binomial, linear, Cox, parametric survival, and causal mediation workflows,
+including adjusted and stratified models.
 
 | Build | What you get |
 |------------------------------------|------------------------------------|
 | Descriptive tables | Grouped summaries with row or column percentages |
 | Regression tables | Crude, adjusted, stratified, linear, Cox, and parametric survival outputs |
 | Survival analysis | Kaplan-Meier curves, survival summaries, RMST, log-rank tests, Cox PH checks, and survival predictions |
+| Mediation analysis | Direct, indirect, total, and proportion mediated effects with causal caveats |
 | Visualisations | Regression plots, survival curves, fitted survival curves, and forest tables |
-| Interpretation helpers | Confounding, interaction, convergence, collinearity, model selection, and survival diagnostics |
+| Interpretation helpers | Confounding, interaction, mediation, convergence, collinearity, model selection, and survival diagnostics |
 | Exports | HTML, PDF, PNG, and Word-ready outputs |
 
 ::::::: gtreg-workflow
@@ -96,8 +97,27 @@ stratified models.
 
 Many students, researchers, and public health analysts need regression
 outputs that are readable, reproducible, and report-ready.
-`gtregression` keeps the R syntax beginner-friendly while preserving
-transparent model objects underneath.
+`gtregression` keeps the R syntax approachable while preserving transparent
+model objects underneath.
+
+## Built on Trusted R Packages
+
+`gtregression` is intentionally a readable interface over established R
+packages. The package uses widely trusted modelling,
+tidying, plotting, and reporting tools so users can inspect fitted models and
+understand the statistical engines behind each output.
+
+| Area | Core packages used |
+|------------------------------------|------------------------------------|
+| Data handling and tidy workflows | `dplyr`, `purrr`, `tibble`, `rlang` |
+| Model fitting | `stats`, `MASS`, `survival`, `risks`, `logistf` |
+| Robust and diagnostic inference | `sandwich`, `lmtest`, `broom`, `broom.helpers` |
+| Tables and Word-ready reporting | `flextable`, `officer`, `gt` |
+| Figures and forest plots | `ggplot2`, `patchwork`, `forestploter`, `scales` |
+| Optional development and checking tools | `testthat`, `knitr`, `rmarkdown`, `pkgdown`, `car`, `forcats`, `ggtext` |
+
+The user-facing functions return objects with fitted models, table bodies, and
+display metadata that advanced users can audit, modify, or reuse.
 
 ## Install
 
@@ -194,6 +214,7 @@ uni_stats$model_stats
 | Descriptive summaries | [Descriptive Tables](https://thinkdenominator.github.io/gtregression/articles/descriptive-tables.html) |
 | Regression tables | [Regression Tables](https://thinkdenominator.github.io/gtregression/articles/regression-tables.html) |
 | Survival analysis | [Survival Analysis](https://thinkdenominator.github.io/gtregression/articles/survival-analysis.html) |
+| Causal mediation | [Causal Mediation](https://thinkdenominator.github.io/gtregression/articles/causal-mediation.html) |
 | Visualise estimates | [Visualise Results](https://thinkdenominator.github.io/gtregression/articles/visualise-results.html) |
 | Stratified models | [Stratified Analysis](https://thinkdenominator.github.io/gtregression/articles/stratified-analysis.html) |
 | Diagnostics and selection | [Diagnostics](https://thinkdenominator.github.io/gtregression/articles/diagnostics-selection.html) |
@@ -210,7 +231,7 @@ uni_stats$model_stats
 | Stratify | `stratified_uni_reg()`, `stratified_multi_reg()` |
 | Visualise | `plot_reg()`, `plot_reg_combine()`, `forest_df()`, `forest_reg()` |
 | Diagnose | `check_convergence()`, `check_collinearity()`, `check_ph()`, `select_models()` |
-| Interpret | `identify_confounder()`, `interaction_models()` |
+| Interpret | `identify_confounder()`, `interaction_models()`, `mediation_analysis()`, `plot_mediation()` |
 | Polish and export | `modify_table()`, `merge_tables()`, `save_table()`, `save_plot()`, `save_docx()` |
 
 ## Citation
@@ -223,5 +244,7 @@ Zenodo. <https://doi.org/10.5281/zenodo.16905350>
 
 ## Acknowledgements
 
-`gtregression` builds on the R ecosystem, including `gtsummary`, `gt`,
-`flextable`, `MASS`, `risks`, `dplyr`, `ggplot2`, and related packages.
+`gtregression` builds on the R ecosystem, especially `stats`, `survival`,
+`MASS`, `risks`, `logistf`, `broom`, `broom.helpers`, `sandwich`, `lmtest`,
+`dplyr`, `purrr`, `tibble`, `rlang`, `flextable`, `officer`, `gt`, `ggplot2`,
+`patchwork`, `forestploter`, and `scales`.

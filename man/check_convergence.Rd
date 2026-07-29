@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_convergence.R
 \name{check_convergence}
 \alias{check_convergence}
-\title{Check Convergence for a Regression Model}
+\title{Check regression model convergence}
 \usage{
 check_convergence(
   data,
@@ -50,18 +50,16 @@ convergence diagnostics, including:
 }
 }
 \description{
-Assesses model convergence and provides diagnostics
-for each exposure (in univariate mode) or
-for the full model (in multivariable mode),
-depending on the regression approach used.
+Check whether requested models converge, either one exposure at a time or as
+a single multivariable model.
 }
 \details{
 For \code{robpoisson}, predicted probabilities (fitted values) may exceed 1,
 which is acceptable when estimating risk ratios but should not be interpreted
 as actual probabilities.
 
-This function is useful for identifying convergence issues, especially for
-\code{"logbinomial"} models, which often fail to converge.
+This is especially useful for \code{"logbinomial"} models, where convergence
+problems are common and robust Poisson may be a practical alternative.
 }
 \examples{
 if (requireNamespace("gtregression", quietly = TRUE)) {

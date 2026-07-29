@@ -47,8 +47,8 @@ with elements:
 }
 }
 \description{
-Create a publication-ready Kaplan-Meier summary table with total N, events,
-censored observations, and median survival with 95% confidence interval.
+Summarise Kaplan-Meier follow-up with total N, events, censoring, and median
+survival with a 95% confidence interval.
 }
 \details{
 Median survival is estimated from \code{survival::survfit()}. If the median

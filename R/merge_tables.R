@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------
-# merge_tables helpers
+# merge_tables internals
 # -------------------------------------------------------------------
 
 #' @keywords internal
@@ -382,7 +382,7 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
   ))
   footnotes <- footnotes[nzchar(footnotes)]
 
-  # ---------------- gt helpers ----------------
+  # ---------------- gt rendering ----------------
 
   apply_theme_gt <- function(tb, df, theme) {
     tb <- gt::tab_style(
@@ -504,7 +504,7 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
     tb
   }
 
-  # ---------------- flextable helpers ----------------
+  # ---------------- flextable rendering ----------------
 
   build_flex_merge <- function(df, spanners, col_labels, theme, footnotes) {
     stopifnot(requireNamespace("flextable", quietly = TRUE))

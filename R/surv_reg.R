@@ -1,7 +1,6 @@
 #' Parametric survival regression
 #'
-#' Create a publication-ready parametric survival regression table with time
-#' ratios.
+#' Fit parametric survival models and report time ratios.
 #'
 #' @param data A \code{data.frame} containing survival time, event status, and
 #'   exposure variables.

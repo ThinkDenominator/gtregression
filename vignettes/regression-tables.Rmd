@@ -7,8 +7,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Regression Tables
-
 Go from fitted models to publication-ready tables without hand-formatting
 effect estimates. `gtregression` supports logistic, log-binomial, Poisson,
 robust Poisson, negative binomial, Cox survival, parametric survival, and
@@ -187,7 +185,7 @@ multi_reg(
 
 ## Cox Survival Models
 
-`cox_reg()` uses beginner-friendly `time` and `event` arguments and returns
+`cox_reg()` uses direct `time` and `event` arguments and returns
 hazard ratios. Without `adjust_for`, the table shows crude HRs. With
 `adjust_for`, the table shows adjusted HRs.
 

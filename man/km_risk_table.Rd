@@ -54,7 +54,7 @@ with elements:
 }
 }
 \description{
-Create a standalone Kaplan-Meier risk table at user-specified follow-up times.
+Tabulate the number at risk at selected follow-up times.
 }
 \details{
 The \code{At risk} column gives the number still under observation at each

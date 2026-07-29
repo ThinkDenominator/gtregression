@@ -16,7 +16,7 @@ knitr::include_graphics("../man/figures/gtregression_hex.png")
 **Publication-ready regression tables and plots for real-world health data.**
 
 `gtregression` helps you fit, adjust, stratify, visualise, and export
-regression results with beginner-friendly R syntax. It supports logistic,
+regression results with approachable R syntax. It supports logistic,
 log-binomial, Poisson, robust Poisson, negative binomial, Cox survival,
 parametric survival, and linear regression. `flextable` is the default table
 engine, so outputs are Word-friendly from the start; `format = gt` remains
@@ -33,6 +33,20 @@ available for HTML-first workflows.
 - Forest plots and publication-style forest tables.
 - Model diagnostics, model selection, confounding, and interaction checks.
 - HTML, PDF, PNG, and Word outputs.
+
+## What Powers the Package
+
+`gtregression` is a readable interface over standard R modelling and reporting
+packages. The fitted models remain available inside the returned objects, so
+users can inspect the analysis behind the displayed table.
+
+| Area | Core packages used |
+|------------------------------------|------------------------------------|
+| Data handling | `dplyr`, `purrr`, `tibble`, `rlang` |
+| Regression and survival models | `stats`, `MASS`, `survival`, `risks`, `logistf` |
+| Robust inference and model tidying | `sandwich`, `lmtest`, `broom`, `broom.helpers` |
+| Tables and Word output | `flextable`, `officer`, `gt` |
+| Plots and forest plots | `ggplot2`, `patchwork`, `forestploter`, `scales` |
 
 ## Install
 
@@ -173,6 +187,8 @@ save_docx(tables = birthwt_final, filename = "birthwt-report")
 - [**Survival Analysis**](survival-analysis.html): Kaplan-Meier curves, survival
   summaries, Cox regression, parametric survival models, and survival
   predictions.
+- [**Causal Mediation**](causal-mediation.html): estimate direct, indirect,
+  total, and proportion mediated effects with clear causal caveats.
 - [**Visualise Results**](visualise-results.html): plot regression estimates and
   forest tables.
 - [**Stratified Analysis**](stratified-analysis.html): repeat models across

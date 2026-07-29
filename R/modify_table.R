@@ -1,4 +1,4 @@
-# ---------- helper: safely relabel display df ----------
+# ---------- display-label relabelling ----------
 #' @keywords internal
 #' @noRd
 .relabel_display <- function(display_df,

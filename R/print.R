@@ -46,7 +46,7 @@ print.identify_confounder_result <- function(x, ...) {
     cat("Confounder and effect-modifier screening\n")
     print(x$summary)
     cat("\n")
-    cat("Use `$table` for the formatted publication-ready table.\n")
+    cat("Use `$table` for the formatted display table.\n")
   } else {
     utils::str(x)
   }

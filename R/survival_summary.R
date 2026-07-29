@@ -1,7 +1,7 @@
 #' Kaplan-Meier survival summary table
 #'
-#' Create a publication-ready Kaplan-Meier summary table with total N, events,
-#' censored observations, and median survival with 95% confidence interval.
+#' Summarise Kaplan-Meier follow-up with total N, events, censoring, and median
+#' survival with a 95% confidence interval.
 #'
 #' @param data A \code{data.frame} containing survival time and event status.
 #' @param time Survival follow-up time. Quoted and bare names are accepted.

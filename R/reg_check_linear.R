@@ -1,6 +1,6 @@
-#' Linear Regression Diagnostic Checks (Internal)
+#' Linear regression diagnostic checks (internal)
 #'
-#' Performs diagnostic checks for fitted linear regression models.
+#' Runs diagnostic checks for fitted linear regression models.
 #'
 #' The returned rows cover heteroskedasticity, residual normality, model
 #' specification, and influential observations. If a diagnostic cannot be

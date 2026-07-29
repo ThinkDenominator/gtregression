@@ -1,8 +1,7 @@
-#' Stepwise Model Selection with Evaluation Metrics
+#' Stepwise model selection with fit metrics
 #'
-#' Performs stepwise model selection using forward, backward, or both directions
-#' across different regression approaches. The function returns a summary table
-#' with evaluation metrics and the best model based on the lowest AIC.
+#' Compare candidate models added or removed stepwise, then return the accepted
+#' steps, model-fit metrics, and the lowest-AIC model.
 #'
 #' @param data A data frame containing the outcome and predictor variables.
 #' @param outcome A single character string indicating the outcome variable.
@@ -38,6 +37,11 @@
 #'   \item \code{table}: A formatted \code{gt_tbl} or \code{flextable} when
 #'   \code{format} is \code{"gt"} or \code{"flextable"}.
 #' }
+#'
+#' @details
+#' Treat stepwise selection as a screening tool. It is best used alongside the
+#' study question, clinical judgement, and model diagnostics rather than as an
+#' automatic final-model rule.
 #'
 #' @importFrom stats AIC BIC anova as.formula binomial coef cooks.distance
 #' @importFrom stats deviance glm glm.control lm logLik na.omit nobs poisson

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_model_fit.R
 \name{plot_model_fit}
 \alias{plot_model_fit}
-\title{Plot Model Fit Diagnostics}
+\title{Plot model-fit diagnostics}
 \usage{
 plot_model_fit(
   model,
@@ -38,8 +38,8 @@ Visualise model fit for fitted regression models and models stored inside
 \code{uni_reg()} or \code{multi_reg()} results.
 }
 \details{
-\code{plot_model_fit()} is intended as a model-checking visual aid, not as a
-publication table. For survival models, use \code{check_ph()} for Cox
+\code{plot_model_fit()} is a visual check of how a fitted model behaves, not
+a formal model-selection rule. For survival models, use \code{check_ph()} for Cox
 proportional hazards diagnostics and \code{plot_surv_fit()} for parametric
 survival model fit.
 

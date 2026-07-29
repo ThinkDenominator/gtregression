@@ -1,7 +1,7 @@
 #' Stratified univariable regression
 #'
 #' Fit univariable regression models within each level of a stratifier and
-#' combine the results into a publication-ready stratified table rendered with
+#' combine the results into a stratified table rendered with
 #' \pkg{gt} or \pkg{flextable}.
 #'
 #' @param data A data frame containing the variables.

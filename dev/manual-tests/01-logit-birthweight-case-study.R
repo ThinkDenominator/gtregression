@@ -58,7 +58,7 @@ exposures <- c(
   "age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat", "ftv_cat"
 )
 
-## 1.1-friendly labels:
+## Clearer labels for the reader:
 ## Set variable labels once, then descriptive tables, regression tables, plots,
 ## merged tables, and forest outputs use them automatically.
 attr(birthwt_data$age, "label") <- "Maternal age"
@@ -254,7 +254,7 @@ multi_adj_stats$model_stats
 
 ## 6. Modify tables for publication ------------------------------------------
 
-## This is where the table becomes manuscript-friendly.
+## This is where the table is tuned for manuscript use.
 ## Use variable labels, level labels, custom headers, captions, and caveats.
 
 uni_or_paper <- modify_table(
@@ -622,7 +622,7 @@ interaction_models(
 ## 13. Export outputs ---------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
-## path is supplied. This is CRAN-friendly and prevents accidental clutter.
+## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
 
 save_table(final_table, filename = "birthwt-logit-table", format = "docx")
 save_plot(plot_comb, filename = "birthwt-logit-plot", format = "png")

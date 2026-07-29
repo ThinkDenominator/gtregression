@@ -150,7 +150,7 @@ km_plot(
 ## 4. Standalone Kaplan-Meier risk table --------------------------------------
 
 ## km_plot() can display a risk table underneath the curve. km_risk_table()
-## gives the same idea as a standalone publication-ready table.
+## gives the same idea as a standalone formatted table.
 ##
 ## What to check:
 ## - Time 0 should show the starting number at risk.
@@ -167,7 +167,7 @@ km_risk <- km_risk_table(
 
 km_risk
 
-## Console-friendly output for checking exact values.
+## Tibble output for checking exact values.
 km_risk_table(
   data = lung_data,
   time = time_var,
@@ -208,7 +208,7 @@ rmst_365 <- rmst_table(
 
 rmst_365
 
-## Console-friendly output for checking exact values.
+## Tibble output for checking exact values.
 rmst_table(
   data = lung_data,
   time = time_var,
@@ -282,7 +282,7 @@ km_quantiles <- survival_quantiles(
 
 km_quantiles
 
-## Console-friendly output for checking exact values.
+## Tibble output for checking exact values.
 km_quantiles_tibble <- survival_quantiles(
   data = lung_data,
   time = time_var,
@@ -335,7 +335,7 @@ km_prob <- survival_prob(
 
 km_prob
 
-## Console-friendly output for checking exact values.
+## Tibble output for checking exact values.
 km_prob_tibble <- survival_prob(
   data = lung_data,
   time = time_var,
@@ -425,7 +425,7 @@ surv_dist_compare <- surv_model_compare(
 
 surv_dist_compare
 
-## Console-friendly output for exact model-fit values.
+## Tibble output for exact model-fit values.
 surv_model_compare(
   data = lung_data,
   time = time_var,
@@ -844,7 +844,7 @@ select_models(
 ## 21. Export outputs ----------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
-## path is supplied. This is CRAN-friendly and prevents accidental clutter.
+## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
 
 save_table(final_surv_table_paper, filename = "lung-parametric-survival-table", format = "docx")
 save_plot(km_by_trt, filename = "lung-km-survival-curve", format = "png")

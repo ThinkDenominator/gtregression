@@ -1,9 +1,10 @@
-#' Draw a publication-ready forest plot
+#' Draw a forest table from regression outputs
 #'
 #' Wrapper around \code{forestploter::forest()} that works directly with
 #' \code{forest_df()} output or with \code{gtregression} regression objects.
 #' It can show descriptive columns and one or two model effect columns in a
-#' table-style forest plot.
+#' table-style forest plot while leaving axis and interval drawing to
+#' \pkg{forestploter}.
 #'
 #' @param df Output of \code{forest_df()}. If \code{NULL}, it is built from
 #'   \code{uni}, \code{multi}, and \code{desc}.

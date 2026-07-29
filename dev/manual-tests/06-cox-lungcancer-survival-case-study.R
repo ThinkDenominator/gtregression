@@ -59,7 +59,7 @@ time_var <- "time"
 event_var <- "status"
 survival_exposures <- c("trt", "celltype", "karno", "age", "prior")
 
-## 1.1-friendly labels:
+## Clearer labels for the reader:
 ## Label once, then all gtregression tables use these display names.
 attr(lung_data$time, "label") <- "Survival time"
 attr(lung_data$status, "label") <- "Death status"
@@ -76,7 +76,7 @@ attr(lung_data$prior, "label") <- "Prior therapy"
 ## Default output is a publication-style flextable.
 dissect(lung_data)
 
-## Use tibble output for a console-friendly audit.
+## Use tibble output for a quick audit.
 lung_dissect <- dissect(lung_data, format = "tibble")
 lung_dissect
 
@@ -156,7 +156,7 @@ km_plot(
 ## 4. Standalone Kaplan-Meier risk table --------------------------------------
 
 ## km_plot() can display a risk table underneath the curve. km_risk_table()
-## gives the same idea as a standalone publication-ready table.
+## gives the same idea as a standalone formatted table.
 ##
 ## What to check:
 ## - Time 0 should show the starting number at risk.
@@ -173,7 +173,7 @@ km_risk <- km_risk_table(
 
 km_risk
 
-## Console-friendly output for checking exact values.
+## Tibble output for checking exact values.
 km_risk_table(
   data = lung_data,
   time = time_var,
@@ -214,7 +214,7 @@ rmst_365 <- rmst_table(
 
 rmst_365
 
-## Console-friendly output for checking exact values.
+## Tibble output for checking exact values.
 rmst_table(
   data = lung_data,
   time = time_var,
@@ -288,7 +288,7 @@ km_quantiles <- survival_quantiles(
 
 km_quantiles
 
-## Console-friendly output for checking exact values.
+## Tibble output for checking exact values.
 km_quantiles_tibble <- survival_quantiles(
   data = lung_data,
   time = time_var,
@@ -341,7 +341,7 @@ km_prob <- survival_prob(
 
 km_prob
 
-## Console-friendly output for checking exact values.
+## Tibble output for checking exact values.
 km_prob_tibble <- survival_prob(
   data = lung_data,
   time = time_var,
@@ -591,7 +591,7 @@ final_survival_table_paper <- modify_table(
   final_survival_table,
   caveat = paste(
     "HR = hazard ratio.",
-    "This table is publication-ready, but proportional hazards diagnostics",
+    "This table is formatted for reporting, but proportional hazards diagnostics",
     "should be checked before final reporting."
   )
 )
@@ -736,7 +736,7 @@ select_models(
 ## 20. Export outputs ----------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
-## path is supplied. This is CRAN-friendly and prevents accidental clutter.
+## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
 
 save_table(final_survival_table_paper, filename = "lung-cox-table", format = "docx")
 save_plot(km_by_trt, filename = "lung-km-survival-curve", format = "png")

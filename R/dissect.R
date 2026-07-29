@@ -19,7 +19,7 @@
 #' dissect(data_birthwt)
 #' dissect(data_birthwt, format = "gt")
 #'
-#' # Print interpretation notes for beginners
+#' # Print notes that help interpret the data structure
 #' dissect(data_birthwt, verbose = TRUE)
 dissect <- function(data, verbose = FALSE, format = c("flextable", "gt", "tibble")) {
   if (!is.data.frame(data)) {
@@ -43,7 +43,7 @@ dissect <- function(data, verbose = FALSE, format = c("flextable", "gt", "tibble
     unique_vals <- length(unique(x_non_na))
     pct_missing <- round(mean(is.na(x)) * 100, 1)
 
-    # Levels or sample values
+    # Factor levels or sample values
     if (is.factor(x)) {
       lvls <- levels(x)
       levels_out <- paste(head(lvls, 5), collapse = ", ")
@@ -56,7 +56,7 @@ dissect <- function(data, verbose = FALSE, format = c("flextable", "gt", "tibble
       levels_out <- "-"
     }
 
-    # Compatibility tag and beginner-friendly hint
+    # Regression-readiness tag and practical hint
     if (all(is.na(x))) {
       comp <- "incompatible"
       hint <- "All values are missing; do not use as-is."

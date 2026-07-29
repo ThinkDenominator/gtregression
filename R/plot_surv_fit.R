@@ -34,7 +34,7 @@
 #' @details
 #' \code{plot_surv_fit()} is a visual diagnostic for parametric survival
 #' modelling. It is useful after \code{surv_model_compare()} and before treating
-#' a final \code{surv_reg()} model as publication-ready. It is not a Cox-model
+#' a final \code{surv_reg()} model as the preferred model. It is not a Cox-model
 #' diagnostic; use \code{check_ph()} for Cox proportional hazards assumptions.
 #'
 #' When \code{adjust_for} is supplied, fitted curves are predicted at typical

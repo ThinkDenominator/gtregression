@@ -1,6 +1,6 @@
 #' Kaplan-Meier risk table
 #'
-#' Create a standalone Kaplan-Meier risk table at user-specified follow-up times.
+#' Tabulate the number at risk at selected follow-up times.
 #'
 #' @param data A \code{data.frame} containing survival time and event status.
 #' @param time Survival follow-up time. Quoted and bare names are accepted.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_reg.R
 \name{plot_reg}
 \alias{plot_reg}
-\title{Visualize a regression model as a forest plot}
+\title{Plot regression estimates}
 \usage{
 plot_reg(
   tbl,
@@ -67,6 +67,7 @@ describing \code{adjust_for} variables when available.}
 A \code{ggplot2} object.
 }
 \description{
-Creates a forest plot from a fitted \code{gtregression} object produced by
-functions such as \code{uni_reg()} or \code{multi_reg()}.
+Draw a forest-style plot from a fitted \code{gtregression} object produced by
+functions such as \code{uni_reg()}, \code{multi_reg()}, \code{cox_reg()}, or
+\code{surv_reg()}.
 }

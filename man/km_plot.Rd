@@ -69,8 +69,8 @@ A \code{ggplot2} object when \code{risk_table = FALSE}; otherwise a
   \code{risk_table}, and \code{logrank_p}.
 }
 \description{
-Create a Kaplan-Meier survival curve with optional confidence interval,
-censoring marks, log-rank p-value, and risk table.
+Plot observed survival over time, with optional confidence intervals,
+censoring marks, a log-rank p-value, and a number-at-risk table.
 }
 \examples{
 lung_data <- data_lungcancer

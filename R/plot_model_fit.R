@@ -1,4 +1,4 @@
-#' Plot Model Fit Diagnostics
+#' Plot model-fit diagnostics
 #'
 #' Visualise model fit for fitted regression models and models stored inside
 #' \code{uni_reg()} or \code{multi_reg()} results.
@@ -18,8 +18,8 @@
 #'   multiple diagnostics are requested.
 #'
 #' @details
-#' \code{plot_model_fit()} is intended as a model-checking visual aid, not as a
-#' publication table. For survival models, use \code{check_ph()} for Cox
+#' \code{plot_model_fit()} is a visual check of how a fitted model behaves, not
+#' a formal model-selection rule. For survival models, use \code{check_ph()} for Cox
 #' proportional hazards diagnostics and \code{plot_surv_fit()} for parametric
 #' survival model fit.
 #'

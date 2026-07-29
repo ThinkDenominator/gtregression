@@ -21,12 +21,12 @@
   plots and forest plot helpers.
 * Added `data_endometrial`, a classic endometrial cancer dataset with a
   separation pattern, for teaching and testing Firth logistic regression.
-* Added `cox_reg()` for beginner-friendly Cox proportional hazards regression
-  using `time`, `event`, `exposures`, and optional `adjust_for`, returning
-  publication-ready HR and adjusted HR tables.
-* Added `surv_reg()` for beginner-friendly parametric survival regression using
+* Added `cox_reg()` for Cox proportional hazards regression using `time`,
+  `event`, `exposures`, and optional `adjust_for`, returning HR and adjusted HR
+  tables.
+* Added `surv_reg()` for parametric survival regression using
   `time`, `event`, `exposures`, optional `adjust_for`, and a selectable survival
-  distribution, returning publication-ready time-ratio tables.
+  distribution, returning time-ratio tables.
 * Added `km_plot()` for Kaplan-Meier survival curves with optional confidence
   intervals, censoring marks, log-rank p-values, and number-at-risk tables.
 * Added `km_risk_table()` for standalone Kaplan-Meier risk tables at requested
@@ -53,25 +53,34 @@
   Schoenfeld residual tests, with flextable, gt, and tibble outputs.
 * Added `plot_model_fit()` for visual model diagnostics from fitted `lm`/`glm`
   models and from models stored in `uni_reg()` and `multi_reg()` outputs.
+* Added `mediation_analysis()` for regression-based mediation analysis with
+  formatted direct, indirect, total, and proportion mediated tables.
+* Added `plot_mediation()` for drawing a mediation path diagram from
+  `mediation_analysis()` outputs.
+* Added `data_diabetes_mediation`, a health-related diabetes teaching dataset
+  for practicing obesity, glucose, and diabetes mediation workflows.
 * Added automatic support for variable label attributes, including labels set
   with `labelled::var_label()`, across descriptive, regression, stratified,
   merged, plotted, and forest-style outputs.
-* Added publication-style display outputs for diagnostic and helper functions
+* Added formatted display outputs for diagnostic and review functions
   including `dissect()`, `select_models()`, `interaction_models()`, and
   `identify_confounder()`.
 * Added Mantel-Haenszel comparison support to `identify_confounder()` to support
   confounding assessment alongside crude and adjusted model comparisons.
 * Added manual case-study scripts under `dev/manual-tests/` for real-time testing
   of logistic, linear, log-binomial, robust Poisson, Poisson, negative binomial,
-  Cox, and parametric survival workflows.
+  Cox, parametric survival, Firth, and mediation workflows.
 
 ## Changed
 
 * Improved `descriptive_table()`, `uni_reg()`, `multi_reg()`,
   `stratified_uni_reg()`, and `stratified_multi_reg()` documentation with clearer
-  beginner-friendly examples using package datasets.
+  examples using package datasets.
 * Improved pkgdown organization, homepage content, reference grouping, and
   rendered examples to better show publication-ready tables and plots.
+* Improved README and pkgdown documentation with an explicit dependency overview
+  showing the trusted R packages used for modelling, tidying, tables, Word
+  export, figures, diagnostics, and forest plots.
 * Improved `merge_tables()` so descriptive, crude, and adjusted tables can be
   combined more reliably, including when visible variable labels differ between
   input tables.
@@ -82,7 +91,7 @@
 * Improved downstream survival support so `cox_reg()` and `surv_reg()` outputs
   work with `plot_reg()`, `plot_reg_combine()`, `forest_df()`, `forest_reg()`,
   `merge_tables()`, `modify_table()`, and `select_models()`.
-* Improved table footer and source-note spacing across publication and helper
+* Improved table footer and source-note spacing across formatted
   tables so abbreviations, adjustment notes, and caveats render more compactly
   in flextable, gt, Word, and pkgdown outputs.
 * Improved Word export so flextable outputs are fitted to a standard Word page
@@ -104,7 +113,7 @@
 * Fixed `check_convergence()` so failed multivariable model fits return a clear
   non-converged table rather than failing during table formatting.
 * Fixed pkgdown reference metadata for internal print methods.
-* Fixed save helpers so files are written to a temporary directory when users do
+* Fixed save functions so files are written to a temporary directory when users do
   not provide an explicit destination, supporting CRAN-safe examples and tests.
 
 # gtregression 1.0.0

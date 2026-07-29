@@ -55,12 +55,14 @@ A list of class \code{c("gtregression","cox_reg", ...)} with elements:
 }
 }
 \description{
-Create a publication-ready Cox regression table with hazard ratios.
+Fit Cox proportional hazards models and report hazard ratios.
 }
 \details{
 Without \code{adjust_for}, \code{cox_reg()} fits one crude Cox model per
 exposure and reports \code{HR (95\% CI)}. With \code{adjust_for}, it fits one
 adjusted Cox model per exposure and reports \code{Adjusted HR (95\% CI)}.
+The proportional hazards assumption should be assessed separately, for
+example with \code{check_ph()}.
 
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the

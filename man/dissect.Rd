@@ -29,6 +29,6 @@ and suitability for use in regression models.
 dissect(data_birthwt)
 dissect(data_birthwt, format = "gt")
 
-# Print interpretation notes for beginners
+# Print notes that help interpret the data structure
 dissect(data_birthwt, verbose = TRUE)
 }

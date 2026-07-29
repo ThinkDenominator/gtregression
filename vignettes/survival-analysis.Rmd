@@ -7,9 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Survival Analysis
-
-`gtregression` supports a complete beginner-friendly survival workflow: describe
+`gtregression` supports a complete survival workflow: describe
 the cohort, draw Kaplan-Meier curves, summarise observed survival, compare
 groups, fit Cox or parametric survival models, check assumptions, predict
 survival probabilities, visualise estimates, and export publication-ready

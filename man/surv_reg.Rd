@@ -62,8 +62,7 @@ A list of class \code{c("gtregression","surv_reg", ...)} with elements:
 }
 }
 \description{
-Create a publication-ready parametric survival regression table with time
-ratios.
+Fit parametric survival models and report time ratios.
 }
 \details{
 \code{surv_reg()} fits accelerated failure time style parametric survival

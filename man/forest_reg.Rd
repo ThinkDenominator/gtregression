@@ -2,7 +2,7 @@
 % Please edit documentation in R/forest_reg.R
 \name{forest_reg}
 \alias{forest_reg}
-\title{Draw a publication-ready forest plot}
+\title{Draw a forest table from regression outputs}
 \usage{
 forest_reg(
   df = NULL,
@@ -73,7 +73,8 @@ A \code{gtregression_forest} object with elements:
 Wrapper around \code{forestploter::forest()} that works directly with
 \code{forest_df()} output or with \code{gtregression} regression objects.
 It can show descriptive columns and one or two model effect columns in a
-table-style forest plot.
+table-style forest plot while leaving axis and interval drawing to
+\pkg{forestploter}.
 }
 \examples{
 birthwt_data <- data_birthwt |>
