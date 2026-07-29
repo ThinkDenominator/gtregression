@@ -111,6 +111,39 @@ test_that("cox_reg accepts zero follow-up times like survival::coxph", {
   expect_equal(got_hr, direct_hr, tolerance = 1e-8)
 })
 
+test_that("cox_reg accepts two-level factor exposures after complete-case filtering", {
+  skip_if_not_installed("survival")
+
+  df <- data.frame(
+    time_90 = c(0, 1, 3, 5, 9, 12, 20, 40, 60, 90),
+    cs_event = c(1, 1, 0, 1, 0, 1, 0, 1, 0, 1),
+    within_admission = factor(
+      c("No", "Yes", "No", "Yes", "No", "Yes", "No", "Yes", "No", "Yes"),
+      levels = c("No", "Yes")
+    )
+  )
+
+  res <- cox_reg(
+    data = df,
+    time = time_90,
+    event = cs_event,
+    exposures = within_admission
+  )
+
+  direct <- survival::coxph(
+    survival::Surv(time_90, cs_event) ~ within_admission,
+    data = df
+  )
+  direct_hr <- unname(exp(stats::coef(direct)[["within_admissionYes"]]))
+  got_hr <- res$table_body$estimate[
+    res$table_body$exposure == "within_admission" &
+      res$table_body$level == "Yes"
+  ]
+
+  expect_s3_class(res, "cox_reg")
+  expect_equal(got_hr, direct_hr, tolerance = 1e-8)
+})
+
 test_that("cox_reg rejects negative follow-up times", {
   skip_if_not_installed("survival")
 

@@ -32,6 +32,14 @@ test_that(".validate_exposures passes with good inputs", {
   expect_invisible(.validate_exposures(df, c("num", "fac", "chr")))
 })
 
+test_that(".validate_exposures counts observed factor levels", {
+  df <- data.frame(
+    fac = factor(c("No", "Yes", "No", "Yes"), levels = c("No", "Yes"))
+  )
+
+  expect_invisible(.validate_exposures(df, "fac"))
+})
+
 test_that(".validate_exposures aggregates all error messages", {
   df <- data.frame(
     allNA  = c(NA, NA, NA),

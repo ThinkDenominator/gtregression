@@ -65,15 +65,17 @@
       next
     }
 
-    # Drop NA values for checks
+    # Drop NA values for observed-level checks.
     x_non_na <- x[!is.na(x)]
 
-    # Type checks
-    is_categorical <- is.factor(x_non_na) || is.character(x_non_na)
-    is_numeric <- is.numeric(x_non_na)
+    # Type checks should use the original extracted vector. Some classes can
+    # lose useful metadata after subsetting, while the observed-level count
+    # should use the non-missing values.
+    is_categorical <- is.factor(x) || is.character(x)
+    is_numeric <- is.numeric(x)
 
     if (is_categorical) {
-      if (length(unique(x_non_na)) < 2) {
+      if (length(unique(as.character(x_non_na))) < 2) {
         vars_invalid_cat <- c(vars_invalid_cat, var)
       }
     } else if (is_numeric) {
