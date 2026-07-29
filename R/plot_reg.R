@@ -101,7 +101,8 @@ plot_reg <- function(tbl,
     ref_line <- if (identical(approach, "linear")) 0 else 1
   }
 
-  is_multi <- source_type %in% c("multi_reg", "multi_reg_nbin")
+  is_multi <- source_type %in% c("multi_reg", "multi_reg_nbin") ||
+    .is_adjusted_reg_output(tbl)
 
   base_label <- dplyr::case_when(
     approach %in% c("logit", "firth") ~ "Odds Ratio",
@@ -385,11 +386,15 @@ plot_reg <- function(tbl,
   }
 
   adjust_for <- tbl$adjust_for
-  if (is.null(adjust_for) || !length(adjust_for)) {
-    return(NULL)
+  if (!is.null(adjust_for) && length(adjust_for)) {
+    return(.adjustment_note(adjust_for))
   }
 
-  .adjustment_note(adjust_for)
+  if (isTRUE(tbl$multivariable)) {
+    return("Adjusted for the other variables in the model")
+  }
+
+  NULL
 }
 
 #' Plot caption helper (internal)

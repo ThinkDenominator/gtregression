@@ -83,11 +83,11 @@
 
   is_uni   <- function(x) inherits(x, "gtregression") &&
     any(c("uni_reg", "gt_uni", "cox_reg", "gt_cox", "surv_reg", "gt_surv") %in% class(x)) &&
-    !isTRUE(x$adjusted_mode)
+    !.is_adjusted_reg_output(x)
   is_multi <- function(x) inherits(x, "gtregression") &&
     (any(c("multi_reg", "gt_multi") %in% class(x)) ||
        (any(c("cox_reg", "gt_cox", "surv_reg", "gt_surv") %in% class(x)) &&
-          isTRUE(x$adjusted_mode)))
+          .is_adjusted_reg_output(x)))
   is_desc  <- function(x) any(c("descriptive_table","gt_desc") %in% class(x)) ||
     (is.list(x) && !is.null(x$table_display) && !is.null(x$table_body)) ||
     (is.data.frame(x) && "Characteristic" %in% names(x))

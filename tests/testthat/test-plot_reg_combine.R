@@ -79,6 +79,56 @@ test_that("plot_reg_combine supports multi_reg adjust_for mode", {
   expect_true(1 %in% p_default_breaks[[1]]$scales$get_scales("x")$breaks)
 })
 
+test_that("plot_reg_combine supports survival multivariable counterparts", {
+  skip_if_not_installed("survival")
+
+  df <- data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+    )
+
+  cox_crude <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior)
+  )
+  cox_multi <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior, age, karno),
+    multivariable = TRUE
+  )
+  surv_crude <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior)
+  )
+  surv_multi <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior, age, karno),
+    multivariable = TRUE
+  )
+
+  p_cox <- plot_reg_combine(cox_crude, cox_multi)
+  p_surv <- plot_reg_combine(surv_crude, surv_multi)
+
+  expect_s3_class(p_cox, "patchwork")
+  expect_s3_class(p_surv, "patchwork")
+  expect_match(p_cox[[2]]$labels$x, "Adjusted Hazard Ratio", fixed = TRUE)
+  expect_match(p_surv[[2]]$labels$x, "Adjusted Time Ratio", fixed = TRUE)
+  expect_equal(
+    p_cox$patches$annotation$caption,
+    "Adjusted for the other variables in the model. Ref. = reference category."
+  )
+})
+
 test_that("plot_reg_combine supports mismatched exposures and linear models", {
   df <- birthwt_plot_combine_data()
 

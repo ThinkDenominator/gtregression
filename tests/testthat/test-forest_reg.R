@@ -260,6 +260,56 @@ test_that("forest_reg preserves adjusted header for multi-only plotted data", {
   expect_false(any(grepl("Odds Ratio", names(res$data), fixed = TRUE)))
 })
 
+test_that("forest_df recognises survival multivariable outputs as adjusted", {
+  skip_if_not_installed("survival")
+
+  df <- data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+    )
+
+  cox_crude <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior)
+  )
+  cox_multi <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior, age, karno),
+    multivariable = TRUE
+  )
+  surv_crude <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior)
+  )
+  surv_multi <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior, age, karno),
+    multivariable = TRUE
+  )
+
+  cox_both <- forest_df(cox_crude, cox_multi)
+  cox_only <- forest_df(cox_multi)
+  surv_both <- forest_df(surv_crude, surv_multi)
+  surv_only <- forest_df(surv_multi)
+
+  expect_true(all(c("HR (95% CI)", "Adjusted HR (95% CI)") %in% names(cox_both)))
+  expect_true("Adjusted HR (95% CI)" %in% names(cox_only))
+  expect_false("HR (95% CI)" %in% names(cox_only))
+  expect_true(all(c("Time Ratio (95% CI)", "Adjusted Time Ratio (95% CI)") %in% names(surv_both)))
+  expect_true("Adjusted Time Ratio (95% CI)" %in% names(surv_only))
+  expect_false("Time Ratio (95% CI)" %in% names(surv_only))
+})
+
 test_that("forest_reg leaves default axis ticks to forestploter and respects overrides", {
   skip_if_not_installed("forestploter")
 

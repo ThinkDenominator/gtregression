@@ -69,6 +69,46 @@ test_that("plot_reg supports multi_reg adjusted mode", {
   expect_true(all(c("smoke", "ht", "ui") %in% p$data$exposure))
 })
 
+test_that("plot_reg treats survival multivariable models as adjusted outputs", {
+  skip_if_not_installed("survival")
+
+  df <- data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+    )
+
+  cox_tbl <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior, age, karno),
+    multivariable = TRUE
+  )
+  surv_tbl <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior, age, karno),
+    multivariable = TRUE
+  )
+
+  p_cox <- plot_reg(cox_tbl)
+  p_surv <- plot_reg(surv_tbl)
+
+  expect_match(p_cox$labels$x, "Adjusted Hazard Ratio", fixed = TRUE)
+  expect_match(p_surv$labels$x, "Adjusted Time Ratio", fixed = TRUE)
+  expect_equal(
+    p_cox$labels$caption,
+    "Adjusted for the other variables in the model. Ref. = reference category."
+  )
+  expect_equal(
+    p_surv$labels$caption,
+    "Adjusted for the other variables in the model. Ref. = reference category."
+  )
+})
+
 test_that("plot_reg handles reference rows, ordering, significance, and x limits", {
   df <- birthwt_plot_data()
 

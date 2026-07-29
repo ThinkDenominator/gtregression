@@ -67,8 +67,8 @@ plot_reg_combine <- function(tbl_uni,
     identical(tbl_multi$source, "multi_reg")
   valid_survival_pair <- tbl_uni$source %in% c("cox_reg", "surv_reg") &&
     identical(tbl_uni$source, tbl_multi$source) &&
-    !isTRUE(tbl_uni$adjusted_mode) &&
-    isTRUE(tbl_multi$adjusted_mode)
+    !.is_adjusted_reg_output(tbl_uni) &&
+    .is_adjusted_reg_output(tbl_multi)
 
   if (!valid_standard_pair && !valid_survival_pair) {
     if (!identical(tbl_uni$source, "uni_reg") &&
