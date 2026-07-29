@@ -580,7 +580,67 @@ surv_lognormal_stats$model_stats
 surv_loglogistic_stats$model_stats
 
 
-## 14. Adjusted parametric survival regression --------------------------------
+## 14. Compare prespecified parametric survival models ------------------------
+
+## surv_model_compare() compares distributions for one formula.
+## compare_models() compares fitted candidate survreg objects. This is useful
+## when the question is whether adding clinical predictors improves a chosen
+## parametric model.
+
+aft_m0 <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  distribution = weibull
+)
+
+aft_m1 <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  distribution = weibull
+)
+
+aft_m2 <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno, celltype, prior),
+  distribution = weibull
+)
+
+aft_compare <- compare_models(
+  aft_m0,
+  aft_m1,
+  aft_m2,
+  model_names = c(
+    "Treatment only",
+    "Add age and performance",
+    "Full clinical model"
+  ),
+  primary_exposure = trt
+)
+
+aft_compare
+aft_compare$table_body
+aft_compare$table_display
+
+compare_models(
+  list(
+    "Treatment only" = aft_m0,
+    "Adjusted core" = aft_m1,
+    "Full clinical model" = aft_m2
+  ),
+  primary_exposure = "trt",
+  format = gt
+)
+
+
+## 15. Adjusted parametric survival regression --------------------------------
 
 ## With adjust_for, surv_reg() fits one adjusted model per exposure and reports
 ## Adjusted Time Ratio (95% CI).
@@ -611,7 +671,7 @@ surv_reg(
 )
 
 
-## 15. Predict survival probabilities from parametric models ------------------
+## 16. Predict survival probabilities from parametric models ------------------
 
 ## surv_predict() answers a practical clinical question after fitting surv_reg():
 ## what is the model-based survival probability at selected follow-up times for
@@ -654,7 +714,7 @@ surv_predict(
 )
 
 
-## 16. Polish the tables -------------------------------------------------------
+## 17. Polish the tables -------------------------------------------------------
 
 surv_weibull_paper <- modify_table(
   surv_weibull,
@@ -684,7 +744,7 @@ surv_adjusted_paper <- modify_table(
 surv_adjusted_paper
 
 
-## 17. Merge descriptive, crude, and adjusted survival tables ------------------
+## 18. Merge descriptive, crude, and adjusted survival tables ------------------
 
 final_surv_table <- merge_tables(
   lung_summary,
@@ -706,7 +766,7 @@ final_surv_table_paper <- modify_table(
 final_surv_table_paper
 
 
-## 18. Visualise parametric survival results ----------------------------------
+## 19. Visualise parametric survival results ----------------------------------
 
 ## plot_reg() works directly with surv_reg() objects. Use log_x = TRUE because
 ## Time Ratios are ratio measures centred on 1.
@@ -758,7 +818,7 @@ plot_reg_combine(
 )
 
 
-## 19. Forest table for parametric survival results ---------------------------
+## 20. Forest table for parametric survival results ---------------------------
 
 surv_forest_crude <- forest_df(surv_weibull)
 surv_forest_crude
@@ -797,7 +857,7 @@ forest_reg(
 )
 
 
-## 20. Model selection for parametric survival regression ----------------------
+## 21. Model selection for parametric survival regression ----------------------
 
 ## select_models() supports approach = survreg. Use the distribution argument to
 ## choose the parametric survival distribution used during selection.
@@ -841,7 +901,7 @@ select_models(
 )
 
 
-## 21. Export outputs ----------------------------------------------------------
+## 22. Export outputs ----------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
 ## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
@@ -866,7 +926,7 @@ save_docx(
 )
 
 
-## 22. Final checklist ---------------------------------------------------------
+## 23. Final checklist ---------------------------------------------------------
 
 ## Things to confirm manually:
 ## - surv_reg() displays Time Ratio (95% CI), not HR.
@@ -881,6 +941,8 @@ save_docx(
 ## - plot_surv_fit() overlays fitted AFT curves on observed Kaplan-Meier curves.
 ## - surv_predict() reports model-based survival probabilities for chosen profiles and times.
 ## - surv_reg(adjust_for = ...) displays Adjusted Time Ratio (95% CI).
+## - compare_models() compares fitted survreg objects without refitting them.
+## - compare_models(primary_exposure = ...) reports the selected Time Ratio and percentage change.
 ## - distribution accepts unquoted weibull, exponential, lognormal, loglogistic.
 ## - model_stats = TRUE stores distribution, scale, events, N, AIC, and BIC.
 ## - Factor reference categories display as Ref.

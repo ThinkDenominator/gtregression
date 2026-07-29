@@ -536,6 +536,59 @@ check_convergence(
 check_collinearity(multi_or)
 check_collinearity(multi_or, format = "gt")
 
+## Prespecified model comparison:
+## compare_models() is different from select_models(). Here we fit the models
+## with multi_reg(), then ask gtregression to compare those package outputs.
+## The comparison should not refit models or do hidden complete-case filtering.
+
+logit_m0 <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = smoke,
+  approach = logit
+)
+
+logit_m1 <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c(smoke, age, lwt),
+  approach = logit
+)
+
+logit_m2 <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c(smoke, age, lwt, race, ht, ui),
+  approach = logit
+)
+
+logit_compare <- compare_models(
+  logit_m0,
+  logit_m1,
+  logit_m2,
+  model_names = c(
+    "Smoking only",
+    "Add maternal age and weight",
+    "Add clinical risk factors"
+  ),
+  primary_exposure = smoke
+)
+
+logit_compare
+logit_compare$table_body
+logit_compare$table_display
+
+## Named-list input is handy when models have already been stored.
+compare_models(
+  list(
+    "Smoking only" = logit_m0,
+    "Adjusted core" = logit_m1,
+    "Clinical risk model" = logit_m2
+  ),
+  primary_exposure = "smoke",
+  format = gt
+)
+
 ## Stepwise model selection:
 ## Publication-ready output now reports the direction used.
 

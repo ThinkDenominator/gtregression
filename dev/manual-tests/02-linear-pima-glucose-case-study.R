@@ -455,6 +455,60 @@ forest_reg(df_lm_desc, side = "left")
 check_collinearity(multi_lm)
 check_collinearity(multi_lm, format = "gt")
 
+## Prespecified model comparison:
+## This is useful when clinical reasoning suggests a few candidate models.
+## Fit the models with multi_reg(), then compare AIC, BIC, log-likelihood, and
+## the change in a primary exposure such as BMI.
+
+lm_m0 <- multi_reg(
+  data = pima_data,
+  outcome = glucose,
+  exposures = mass,
+  approach = linear
+)
+
+lm_m1 <- multi_reg(
+  data = pima_data,
+  outcome = glucose,
+  exposures = c(mass, age, pregnant, pressure),
+  approach = linear
+)
+
+lm_m2 <- multi_reg(
+  data = pima_data,
+  outcome = glucose,
+  exposures = c(mass, age, pregnant, pressure, insulin, pedigree),
+  approach = linear
+)
+
+lm_compare <- compare_models(
+  lm_m0,
+  lm_m1,
+  lm_m2,
+  model_names = c(
+    "BMI only",
+    "Add clinical core",
+    "Add insulin and pedigree"
+  ),
+  primary_exposure = mass
+)
+
+lm_compare
+lm_compare$table_body
+lm_compare$table_display
+
+## Set nested = FALSE when candidate models are not a strict nested sequence.
+compare_models(
+  list(
+    "BMI only" = lm_m0,
+    "Clinical core" = lm_m1,
+    "Metabolic model" = lm_m2
+  ),
+  nested = FALSE,
+  primary_exposure = "mass",
+  format = gt
+)
+
 ## Stepwise model selection:
 ## The formatted output states whether forward, backward, or both
 ## selection was used.

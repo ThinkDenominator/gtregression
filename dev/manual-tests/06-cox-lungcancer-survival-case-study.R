@@ -691,7 +691,77 @@ forest_reg(
   multi = cox_adjusted,
   desc = lung_summary
 )
-## 19. Model selection for Cox regression -------------------------------------
+
+
+## 19. Model comparison for prespecified Cox models ---------------------------
+
+## compare_models() is for models the analyst has already chosen and fitted.
+## This is different from select_models(), which searches along a model path.
+## For Cox models, check that N, events, AIC/BIC, log-likelihood, and
+## concordance come from the cox_reg() fitted model stored in each object.
+
+cox_m0 <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt
+)
+
+cox_m1 <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno)
+)
+
+cox_m2 <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno, celltype, prior)
+)
+
+cox_compare <- compare_models(
+  cox_m0,
+  cox_m1,
+  cox_m2,
+  model_names = c(
+    "Treatment only",
+    "Add age and performance",
+    "Full clinical model"
+  ),
+  primary_exposure = trt
+)
+
+cox_compare
+cox_compare$table_body
+cox_compare$table_display
+
+## Direct sanity checks. These should agree with the model inside cox_reg().
+cox_compare$table_body$n[1]
+cox_m0$models[[1]]$n
+
+cox_compare$table_body$events[1]
+cox_m0$models[[1]]$nevent
+
+cox_compare$table_body$AIC[1]
+stats::AIC(cox_m0$models[[1]])
+
+## Named-list input and gt output are useful for HTML/pkgdown-style viewing.
+compare_models(
+  list(
+    "Treatment only" = cox_m0,
+    "Adjusted core" = cox_m1,
+    "Full clinical model" = cox_m2
+  ),
+  primary_exposure = "trt",
+  format = gt
+)
+
+
+## 20. Model selection for Cox regression -------------------------------------
 
 ## select_models() supports survival syntax using time and event instead of
 ## outcome. This is a screening aid only; do not replace clinical judgement or
@@ -733,7 +803,7 @@ select_models(
 )
 
 
-## 20. Export outputs ----------------------------------------------------------
+## 21. Export outputs ----------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
 ## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
@@ -758,7 +828,7 @@ save_docx(
 )
 
 
-## 21. Final checklist ---------------------------------------------------------
+## 22. Final checklist ---------------------------------------------------------
 
 ## Things to confirm manually:
 ## - cox_reg() displays HR (95% CI) by default.
@@ -781,6 +851,8 @@ save_docx(
 ## - plot_reg() respects show_ref = FALSE, xlim, and breaks for Cox HR plots.
 ## - forest_df() and forest_reg() work with Cox HR outputs.
 ## - forest_reg(side = "left") works with Cox forest tables.
+## - compare_models() reports Cox N, events, AIC/BIC, log-likelihood, and concordance.
+## - compare_models(primary_exposure = ...) reports the selected HR and percentage change.
 ## - select_models() supports approach = cox with time and event.
 ## - select_models() supports forward, backward, and both directions for Cox.
 ## - save_docx(table_width = 6.5) keeps wide Cox tables fitted to a Word page.

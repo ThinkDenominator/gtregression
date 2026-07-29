@@ -137,6 +137,7 @@ reference:
       - check_collinearity
       - check_ph
       - plot_model_fit
+      - compare_models
       - select_models
 
   - title: "Confounding and Interaction"
