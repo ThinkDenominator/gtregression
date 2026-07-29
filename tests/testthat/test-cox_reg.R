@@ -86,6 +86,46 @@ test_that("cox_reg validates survival inputs", {
   )
 })
 
+test_that("cox_reg accepts zero follow-up times like survival::coxph", {
+  skip_if_not_installed("survival")
+
+  df <- data.frame(
+    time = c(0, 2, 4, 6, 8, 10, 12, 14),
+    status = c(1, 1, 0, 1, 0, 1, 0, 1),
+    group = factor(c("A", "B", "A", "B", "A", "B", "A", "B"))
+  )
+
+  res <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = group
+  )
+
+  direct <- survival::coxph(survival::Surv(time, status) ~ group, data = df)
+  direct_hr <- unname(exp(stats::coef(direct)[["groupB"]]))
+  got_hr <- res$table_body$estimate[res$table_body$exposure == "group" &
+                                      res$table_body$level == "B"]
+
+  expect_s3_class(res, "cox_reg")
+  expect_equal(got_hr, direct_hr, tolerance = 1e-8)
+})
+
+test_that("cox_reg rejects negative follow-up times", {
+  skip_if_not_installed("survival")
+
+  df <- data.frame(
+    time = c(-1, 2, 4, 6),
+    status = c(1, 1, 0, 1),
+    age = c(50, 60, 55, 70)
+  )
+
+  expect_error(
+    cox_reg(df, time = time, event = status, exposures = age),
+    "`time` must contain non-negative follow-up times"
+  )
+})
+
 test_that("cox_reg aligns correctly when merged with descriptive tables", {
   skip_if_not_installed("survival")
 

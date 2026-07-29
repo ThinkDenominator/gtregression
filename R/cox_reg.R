@@ -251,8 +251,8 @@ cox_reg <- function(data,
     stop("`time` must be numeric.", call. = FALSE)
   }
 
-  if (any(data[[time]] <= 0, na.rm = TRUE)) {
-    stop("`time` must contain positive follow-up times.", call. = FALSE)
+  if (any(data[[time]] < 0, na.rm = TRUE)) {
+    stop("`time` must contain non-negative follow-up times.", call. = FALSE)
   }
 
   vars_needed <- unique(c(time, event, exposures, adjust_for))
