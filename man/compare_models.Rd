@@ -17,11 +17,9 @@ compare_models(
 )
 }
 \arguments{
-\item{...}{Two or more gtregression model objects, fitted model objects, or
-one list containing them. Recommended inputs are outputs from
-\code{multi_reg()}, \code{cox_reg()}, or \code{surv_reg()}. Raw fitted
-models with standard \code{AIC()}, \code{BIC()}, \code{logLik()}, and
-\code{nobs()} methods are also accepted for advanced workflows.}
+\item{...}{Two or more gtregression model objects, or one list containing
+them. Inputs should be outputs from \code{multi_reg()}, \code{cox_reg()},
+or \code{surv_reg()}.}
 
 \item{model_names}{Optional character vector of names to display. If omitted,
 names supplied in \code{...} are used; otherwise models are labelled
@@ -64,13 +62,13 @@ fitted the candidate models with functions such as \code{multi_reg()},
 }
 \details{
 \code{compare_models()} does not refit models and does not perform hidden
-complete-case filtering. When supplied with gtregression outputs, it extracts
-the fitted model stored in the object's \code{models} element. The reported
-N, event counts, and fit statistics therefore come from the model already
-fitted by \code{multi_reg()}, \code{cox_reg()}, or \code{surv_reg()}. This
-keeps model comparison separate from model selection: compare candidate
-models first, then choose the final model using clinical, epidemiological,
-and statistical judgement.
+complete-case filtering. It compares models already fitted by gtregression
+and extracts the single fitted model stored in each object's \code{models}
+element. The reported N, event counts, and fit statistics therefore come from
+the model already fitted by \code{multi_reg()}, \code{cox_reg()}, or
+\code{surv_reg()}. This keeps model comparison separate from model
+selection: compare candidate models first, then choose the final model using
+clinical, epidemiological, and statistical judgement.
 
 Likelihood-ratio p-values are meaningful only for nested models fitted to
 the same analysis sample. If the models are not nested, or if model sample

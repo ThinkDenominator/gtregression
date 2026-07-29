@@ -163,7 +163,12 @@ lung_data <- data_lungcancer |>
   mutate(
     trt = factor(trt, levels = c(1, 2),
                  labels = c("Standard treatment", "Test treatment")),
-    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes")),
+    celltype = factor(
+      celltype,
+      levels = c("squamous", "smallcell", "adeno", "large"),
+      labels = c("Squamous", "Small cell", "Adenocarcinoma", "Large cell")
+    )
   )
 
 cox_fit <- cox_reg(
@@ -186,6 +191,94 @@ check_ph(cox_fit, transform = rank, format = tibble)
 ```
 
 ## Stepwise Model Selection
+
+`compare_models()` is for prespecified candidate models that have already been
+fitted with gtregression. It answers a different question from stepwise
+selection: "How do these planned models compare?" The inputs should be
+`multi_reg()`, `cox_reg()`, or `surv_reg()` outputs, not raw `lm()`, `glm()`,
+`coxph()`, or `survreg()` objects. This keeps the workflow consistent with the
+publication-ready tables created by the package.
+
+```{r diag-compare-logit, message=FALSE, warning=FALSE}
+logit_m0 <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = smoke,
+  approach = logit
+)
+
+logit_m1 <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c(smoke, age, lwt),
+  approach = logit
+)
+
+logit_m2 <- multi_reg(
+  data = birthwt_data,
+  outcome = low,
+  exposures = c(smoke, age, lwt, race, ht, ui),
+  approach = logit
+)
+
+compare_models(
+  logit_m0,
+  logit_m1,
+  logit_m2,
+  model_names = c(
+    "Smoking only",
+    "Add age and weight",
+    "Full clinical model"
+  ),
+  primary_exposure = smoke,
+  format = gt
+)
+```
+
+The table reports N, number of parameters, AIC, BIC, log-likelihood, and
+likelihood-ratio comparisons when `nested = TRUE`. Lower AIC or BIC identifies
+better relative fit among the compared models. When `primary_exposure` is
+supplied, the table also tracks that effect estimate and the percentage change
+across models.
+
+For Cox and parametric survival models, fit the candidate models with `cox_reg()`
+or `surv_reg()` first. `compare_models()` then keeps survival-specific columns
+such as events and Cox concordance.
+
+```{r diag-compare-cox, message=FALSE, warning=FALSE}
+cox_m0 <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt
+)
+
+cox_m1 <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno)
+)
+
+cox_m2 <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno, celltype, prior),
+  multivariable = TRUE
+)
+
+compare_models(
+  list(
+    "Treatment only" = cox_m0,
+    "Add age and performance" = cox_m1,
+    "Full clinical model" = cox_m2
+  ),
+  primary_exposure = trt,
+  format = gt
+)
+```
 
 `select_models()` compares candidate models step by step. It is useful for
 exploration, teaching, and sensitivity checks. It should not replace a planned
@@ -238,5 +331,8 @@ select_models(
   fitted models.
 - `check_ph()`: Schoenfeld residual proportional hazards tests for Cox models,
   including term-level and global tests.
+- `compare_models()`: AIC, BIC, log-likelihood, likelihood-ratio tests, sample
+  size, events for survival models, and optional primary-exposure tracking for
+  gtregression candidate models.
 - `select_models()`: `$results_table`, `$best_model`, `$all_models`, and
   `$direction`; `$table` is added when `format = gt` or `format = flextable`.

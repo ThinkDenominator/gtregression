@@ -4,7 +4,7 @@
 ## Story:
 ## A clinical researcher has already fitted a few candidate gtregression models
 ## based on clinical reasoning and wants one clean table to compare them. This
-## is not stepwise selection. The models are fitted first with multi_reg(),
+## is not stepwise selection. The candidate models are fitted first with multi_reg(),
 ## cox_reg(), or surv_reg(), then compare_models() summarises AIC, BIC,
 ## log-likelihood, likelihood-ratio tests, sample size, and the change in a
 ## primary exposure estimate.
@@ -276,8 +276,8 @@ aft_compare$table_body
 ## 6. Final checklist ---------------------------------------------------------
 
 ## Things to confirm manually:
-## - compare_models() accepts separate fitted model objects.
-## - compare_models() accepts a named list of fitted model objects.
+## - compare_models() accepts separate gtregression model objects.
+## - compare_models() accepts a named list of gtregression model objects.
 ## - format = flextable is publication ready by default.
 ## - format = gt renders for HTML/pkgdown-style viewing.
 ## - $table_body exposes exact values for checking.
@@ -287,4 +287,4 @@ aft_compare$table_body
 ## - Best AIC and Best BIC identify better-fitting candidate models.
 ## - primary_exposure reports the selected estimate and percentage change.
 ## - nested = FALSE suppresses likelihood-ratio comparison columns.
-## - The function compares fitted objects; it should not refit the models.
+## - The function compares models stored inside gtregression objects; it should not refit them.

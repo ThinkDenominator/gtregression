@@ -78,13 +78,13 @@ test_that("compare_models supports list input and formatted tables", {
   skip_if_not_installed("flextable")
 
   df <- data.frame(
-    y = c(2, 3, 5, 6, 8, 9, 11, 12),
-    x1 = c(1, 2, 3, 4, 5, 6, 7, 8),
-    x2 = c(0, 1, 0, 1, 0, 1, 0, 1)
+    y = c(2.1, 3.4, 4.8, 6.2, 7.4, 8.9, 10.5, 11.7, 12.8, 14.1),
+    x1 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+    x2 = c(0, 1, 0, 1, 1, 0, 1, 0, 1, 0)
   )
 
-  m0 <- stats::lm(y ~ x1, data = df)
-  m1 <- stats::lm(y ~ x1 + x2, data = df)
+  m0 <- multi_reg(data = df, outcome = y, exposures = x1, approach = linear)
+  m1 <- multi_reg(data = df, outcome = y, exposures = c(x1, x2), approach = linear)
 
   res <- compare_models(
     list(base = m0, adjusted = m1),
@@ -95,6 +95,73 @@ test_that("compare_models supports list input and formatted tables", {
   expect_equal(res$table_body$model, c("base", "adjusted"))
   expect_true(all(is.na(res$table_body$LR_chisq)))
   expect_false("Events" %in% names(res$table_display))
+})
+
+test_that("compare_models rejects raw fitted model objects", {
+  df <- data.frame(
+    y = c(2, 3, 5, 6, 8, 9, 11, 12),
+    x1 = c(1, 2, 3, 4, 5, 6, 7, 8),
+    x2 = c(0, 1, 0, 1, 0, 1, 0, 1)
+  )
+
+  m0 <- stats::lm(y ~ x1, data = df)
+  m1 <- stats::lm(y ~ x1 + x2, data = df)
+
+  expect_error(
+    compare_models(m0, m1),
+    "gtregression objects"
+  )
+})
+
+test_that("compare_models supports multivariable Cox and parametric survival outputs", {
+  skip_if_not_installed("survival")
+
+  df <- data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes")),
+      celltype = factor(
+        celltype,
+        levels = c("squamous", "smallcell", "adeno", "large"),
+        labels = c("Squamous", "Small cell", "Adenocarcinoma", "Large cell")
+      )
+    )
+
+  cox_m0 <- cox_reg(data = df, time = time, event = status, exposures = trt)
+  cox_m1 <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, age, karno, celltype, prior),
+    multivariable = TRUE
+  )
+  cox_res <- compare_models(cox_m0, cox_m1, primary_exposure = trt, format = tibble)
+
+  expect_equal(cox_res$table_body$model_type, c("Cox regression", "Cox regression"))
+  expect_equal(cox_res$table_body$events, c(cox_m0$models[[1]]$nevent, cox_m1$models[[1]]$nevent))
+  expect_true(is.finite(cox_res$table_body$primary_estimate[2]))
+
+  aft_m0 <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = trt,
+    distribution = weibull
+  )
+  aft_m1 <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, age, karno, celltype, prior),
+    distribution = weibull,
+    multivariable = TRUE
+  )
+  aft_res <- compare_models(aft_m0, aft_m1, primary_exposure = trt, format = tibble)
+
+  expect_equal(aft_res$table_body$model_type, c("Parametric survival", "Parametric survival"))
+  expect_equal(aft_res$table_body$events, c(128, 128))
+  expect_true(is.finite(aft_res$table_body$primary_estimate[2]))
 })
 
 test_that("compare_models rejects gtregression objects with multiple fitted models", {

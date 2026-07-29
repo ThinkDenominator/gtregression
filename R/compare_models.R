@@ -5,11 +5,9 @@
 #' fitted the candidate models with functions such as \code{multi_reg()},
 #' \code{cox_reg()}, or \code{surv_reg()}.
 #'
-#' @param ... Two or more gtregression model objects, fitted model objects, or
-#'   one list containing them. Recommended inputs are outputs from
-#'   \code{multi_reg()}, \code{cox_reg()}, or \code{surv_reg()}. Raw fitted
-#'   models with standard \code{AIC()}, \code{BIC()}, \code{logLik()}, and
-#'   \code{nobs()} methods are also accepted for advanced workflows.
+#' @param ... Two or more gtregression model objects, or one list containing
+#'   them. Inputs should be outputs from \code{multi_reg()}, \code{cox_reg()},
+#'   or \code{surv_reg()}.
 #' @param model_names Optional character vector of names to display. If omitted,
 #'   names supplied in \code{...} are used; otherwise models are labelled
 #'   \code{Model 1}, \code{Model 2}, etc.
@@ -37,13 +35,13 @@
 #'
 #' @details
 #' \code{compare_models()} does not refit models and does not perform hidden
-#' complete-case filtering. When supplied with gtregression outputs, it extracts
-#' the fitted model stored in the object's \code{models} element. The reported
-#' N, event counts, and fit statistics therefore come from the model already
-#' fitted by \code{multi_reg()}, \code{cox_reg()}, or \code{surv_reg()}. This
-#' keeps model comparison separate from model selection: compare candidate
-#' models first, then choose the final model using clinical, epidemiological,
-#' and statistical judgement.
+#' complete-case filtering. It compares models already fitted by gtregression
+#' and extracts the single fitted model stored in each object's \code{models}
+#' element. The reported N, event counts, and fit statistics therefore come from
+#' the model already fitted by \code{multi_reg()}, \code{cox_reg()}, or
+#' \code{surv_reg()}. This keeps model comparison separate from model
+#' selection: compare candidate models first, then choose the final model using
+#' clinical, epidemiological, and statistical judgement.
 #'
 #' Likelihood-ratio p-values are meaningful only for nested models fitted to
 #' the same analysis sample. If the models are not nested, or if model sample
@@ -88,7 +86,7 @@ compare_models <- function(...,
                            theme = c("minimal")) {
   models <- .compare_models_list(...)
   if (length(models) < 2L) {
-    stop("Supply at least two fitted models to compare.", call. = FALSE)
+    stop("Supply at least two gtregression model objects to compare.", call. = FALSE)
   }
 
   format <- .choice_arg(
@@ -157,14 +155,21 @@ compare_models <- function(...,
   if (
     length(inputs) == 1L &&
       is.list(inputs[[1L]]) &&
-      !.is_compare_fitted_model(inputs[[1L]]) &&
       !.is_compare_gtregression_model(inputs[[1L]])
   ) {
     inputs <- inputs[[1L]]
   }
 
   if (!length(inputs)) {
-    stop("Supply gtregression model objects or fitted model objects to compare.", call. = FALSE)
+    stop("Supply gtregression model objects to compare.", call. = FALSE)
+  }
+
+  invalid_inputs <- vapply(inputs, function(x) !.is_compare_gtregression_model(x), logical(1))
+  if (any(invalid_inputs)) {
+    stop(
+      "All inputs must be gtregression objects from multi_reg(), cox_reg(), or surv_reg().",
+      call. = FALSE
+    )
   }
 
   models <- lapply(inputs, .compare_extract_model)
@@ -172,7 +177,7 @@ compare_models <- function(...,
   invalid <- vapply(models, function(x) !.is_compare_fitted_model(x), logical(1))
   if (any(invalid)) {
     stop(
-      "All inputs must be gtregression model objects or fitted model objects with a logLik() method.",
+      "The supplied gtregression objects must contain fitted models with a logLik() method.",
       call. = FALSE
     )
   }
@@ -204,7 +209,8 @@ compare_models <- function(...,
       stop(
         paste0(
           "Each gtregression object supplied to compare_models() must contain one fitted model. ",
-          "For cox_reg(), surv_reg(), or multi_reg(adjust_for = ...), supply one exposure per candidate model."
+          "Use multivariable = TRUE for a single full model, or supply one exposure per ",
+          "candidate model when using adjusted-exposure mode."
         ),
         call. = FALSE
       )

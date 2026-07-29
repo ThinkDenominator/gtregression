@@ -617,9 +617,9 @@ surv_reg(
 ## 15. Compare prespecified parametric survival models ------------------------
 
 ## surv_model_compare() compares distributions for one formula.
-## compare_models() compares fitted candidate survreg objects. This is useful
-## when the question is whether adding clinical predictors improves a chosen
-## parametric model.
+## compare_models() compares fitted candidate gtregression objects from
+## surv_reg(). This is useful when the question is whether adding clinical
+## predictors improves a chosen parametric model.
 
 aft_m0 <- surv_reg(
   data = lung_data,
@@ -975,7 +975,7 @@ save_docx(
 ## - plot_surv_fit() overlays fitted AFT curves on observed Kaplan-Meier curves.
 ## - surv_predict() reports model-based survival probabilities for chosen profiles and times.
 ## - surv_reg(adjust_for = ...) displays Adjusted Time Ratio (95% CI).
-## - compare_models() compares fitted survreg objects without refitting them.
+## - compare_models() compares fitted surv_reg() outputs without refitting them.
 ## - compare_models(primary_exposure = ...) reports the selected Time Ratio and percentage change.
 ## - distribution accepts unquoted weibull, exponential, lognormal, loglogistic.
 ## - model_stats = TRUE stores distribution, scale, events, N, AIC, and BIC.
