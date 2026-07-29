@@ -28,18 +28,12 @@ compare_models(
 
 - ...:
 
-  Two or more gtregression model objects, fitted model objects, or one
-  list containing them. Recommended inputs are outputs from
+  Two or more gtregression model objects, or one list containing them.
+  Inputs should be outputs from
   [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
   [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
   or
   [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
-  Raw fitted models with standard
-  [`AIC()`](https://rdrr.io/r/stats/AIC.html),
-  [`BIC()`](https://rdrr.io/r/stats/AIC.html),
-  [`logLik()`](https://rdrr.io/r/stats/logLik.html), and
-  [`nobs()`](https://rdrr.io/r/stats/nobs.html) methods are also
-  accepted for advanced workflows.
 
 - model_names:
 
@@ -96,10 +90,10 @@ A `gtregression` object with:
 ## Details
 
 `compare_models()` does not refit models and does not perform hidden
-complete-case filtering. When supplied with gtregression outputs, it
-extracts the fitted model stored in the object's `models` element. The
-reported N, event counts, and fit statistics therefore come from the
-model already fitted by
+complete-case filtering. It compares models already fitted by
+gtregression and extracts the single fitted model stored in each
+object's `models` element. The reported N, event counts, and fit
+statistics therefore come from the model already fitted by
 [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
 [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
 or

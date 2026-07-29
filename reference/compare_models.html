@@ -77,11 +77,9 @@ fitted the candidate models with functions such as <code><a href="multi_reg.html
 
 
 <dl><dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Two or more gtregression model objects, fitted model objects, or
-one list containing them. Recommended inputs are outputs from
-<code><a href="multi_reg.html">multi_reg()</a></code>, <code><a href="cox_reg.html">cox_reg()</a></code>, or <code><a href="surv_reg.html">surv_reg()</a></code>. Raw fitted
-models with standard <code><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">AIC()</a></code>, <code><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">BIC()</a></code>, <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code>, and
-<code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs()</a></code> methods are also accepted for advanced workflows.</p></dd>
+<dd><p>Two or more gtregression model objects, or one list containing
+them. Inputs should be outputs from <code><a href="multi_reg.html">multi_reg()</a></code>, <code><a href="cox_reg.html">cox_reg()</a></code>,
+or <code><a href="surv_reg.html">surv_reg()</a></code>.</p></dd>
 
 
 <dt id="arg-model-names">model_names<a class="anchor" aria-label="anchor" href="#arg-model-names"></a></dt>
@@ -134,13 +132,13 @@ default, while linear models are not.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>compare_models()</code> does not refit models and does not perform hidden
-complete-case filtering. When supplied with gtregression outputs, it extracts
-the fitted model stored in the object's <code>models</code> element. The reported
-N, event counts, and fit statistics therefore come from the model already
-fitted by <code><a href="multi_reg.html">multi_reg()</a></code>, <code><a href="cox_reg.html">cox_reg()</a></code>, or <code><a href="surv_reg.html">surv_reg()</a></code>. This
-keeps model comparison separate from model selection: compare candidate
-models first, then choose the final model using clinical, epidemiological,
-and statistical judgement.</p>
+complete-case filtering. It compares models already fitted by gtregression
+and extracts the single fitted model stored in each object's <code>models</code>
+element. The reported N, event counts, and fit statistics therefore come from
+the model already fitted by <code><a href="multi_reg.html">multi_reg()</a></code>, <code><a href="cox_reg.html">cox_reg()</a></code>, or
+<code><a href="surv_reg.html">surv_reg()</a></code>. This keeps model comparison separate from model
+selection: compare candidate models first, then choose the final model using
+clinical, epidemiological, and statistical judgement.</p>
 <p>Likelihood-ratio p-values are meaningful only for nested models fitted to
 the same analysis sample. If the models are not nested, or if model sample
 sizes differ, use AIC/BIC and subject-matter reasoning instead.</p>
