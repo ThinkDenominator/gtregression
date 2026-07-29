@@ -192,7 +192,7 @@ strata_multi$table
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |
 | Ref. = reference category. |  |  |  |  |  |  |
 | Adjusted for age and lwt |  |  |  |  |  |  |
-| Complete observations included by race stratum: White: N = 96; Black: N = 26; Other: N = 67 |  |  |  |  |  |  |
+| Complete observations included by race stratum: White: N = 96; Black: N = 96; Other: N = 96; White: N = 96; Black: N = 26; Other: N = 26; White: N = 26; Black: N = 26; Other: N = 67; White: N = 67; Black: N = 67; Other: N = 67 |  |  |  |  |  |  |
 
 If a stratum cannot fit a model, the function skips that stratum with a
 warning and continues. This is intentional: sparse strata are common in
