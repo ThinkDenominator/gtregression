@@ -56,6 +56,8 @@
 <span>  <span class="va">event</span>,</span>
 <span>  <span class="va">exposures</span>,</span>
 <span>  adjust_for <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  multivariable <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  multivariate <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  distribution <span class="op">=</span> <span class="st">"weibull"</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span><span class="op">)</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minimal"</span><span class="op">)</span>,</span>
@@ -91,6 +93,18 @@ are recommended in scripts, and bare names are also accepted.</p></dd>
 <dt id="arg-adjust-for">adjust_for<a class="anchor" aria-label="anchor" href="#arg-adjust-for"></a></dt>
 <dd><p>Optional character vector of adjustment variables. When
 supplied, one adjusted model is fitted per exposure.</p></dd>
+
+
+<dt id="arg-multivariable">multivariable<a class="anchor" aria-label="anchor" href="#arg-multivariable"></a></dt>
+<dd><p>Logical; if <code>FALSE</code> (default), the current
+exposure-by-exposure workflow is used. If <code>TRUE</code>, one multivariable
+parametric survival model is fitted using all variables in
+<code>exposures</code>, and all exposure coefficients are reported.</p></dd>
+
+
+<dt id="arg-multivariate">multivariate<a class="anchor" aria-label="anchor" href="#arg-multivariate"></a></dt>
+<dd><p>Optional logical alias for <code>multivariable</code>. This is
+accepted for convenience; <code>multivariable</code> is used internally.</p></dd>
 
 
 <dt id="arg-distribution">distribution<a class="anchor" aria-label="anchor" href="#arg-distribution"></a></dt>
@@ -151,10 +165,16 @@ models using <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class
 displayed as a time ratio. A time ratio above 1 suggests longer survival time;
 a time ratio below 1 suggests shorter survival time, conditional on the chosen
 distribution.</p>
-<p>Without <code>adjust_for</code>, <code>surv_reg()</code> fits one crude model per
-exposure and reports <code>Time Ratio (95% CI)</code>. With <code>adjust_for</code>, it
-fits one adjusted model per exposure and reports
-<code>Adjusted Time Ratio (95% CI)</code>.</p>
+<p>By default, <code>surv_reg()</code> keeps the exposure-by-exposure workflow:
+without <code>adjust_for</code>, one crude model is fitted per exposure; with
+<code>adjust_for</code>, one adjusted model is fitted per exposure and only the
+exposure estimate is reported.</p>
+<p>With <code>multivariable = TRUE</code>, all variables in <code>exposures</code> are
+included in one parametric survival model and all coefficients are reported.
+Since these estimates are adjusted for the other variables in the same model,
+the table reports <code>Adjusted Time Ratio (95% CI)</code>. The
+<code>adjust_for</code> argument is not used in this mode; include every variable
+that belongs in the model inside <code>exposures</code>.</p>
 <p>If exposure variables have a <code>"label"</code> attribute, for example from
 <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>, those labels are used automatically in the
 displayed table.</p>
@@ -182,6 +202,24 @@ displayed table.</p>
 <span class="r-in"><span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">trt</span>, <span class="va">celltype</span>, <span class="va">prior</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">karno</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  distribution <span class="op">=</span> <span class="va">lognormal</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">surv_reg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span></span>
+<span class="r-in"><span>  time <span class="op">=</span> <span class="va">time</span>,</span></span>
+<span class="r-in"><span>  event <span class="op">=</span> <span class="va">status</span>,</span></span>
+<span class="r-in"><span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">trt</span>, <span class="va">celltype</span>, <span class="va">prior</span>, <span class="va">age</span>, <span class="va">karno</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  distribution <span class="op">=</span> <span class="va">weibull</span>,</span></span>
+<span class="r-in"><span>  multivariable <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># multivariate is accepted as an alias</span></span></span>
+<span class="r-in"><span><span class="fu">surv_reg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span></span>
+<span class="r-in"><span>  time <span class="op">=</span> <span class="va">time</span>,</span></span>
+<span class="r-in"><span>  event <span class="op">=</span> <span class="va">status</span>,</span></span>
+<span class="r-in"><span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">trt</span>, <span class="va">age</span>, <span class="va">karno</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  multivariate <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

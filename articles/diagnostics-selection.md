@@ -73,7 +73,7 @@ check_convergence(
 | smoke + ht + ui + ptl_cat | logbinomial | No |  |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-15d4df4a quarto-disable-processing="true"}
+Convergence check {.table .cl-df4bf0a6 quarto-disable-processing="true"}
 
 ## Collinearity Screening
 

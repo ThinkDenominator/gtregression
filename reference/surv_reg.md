@@ -11,6 +11,8 @@ surv_reg(
   event,
   exposures,
   adjust_for = NULL,
+  multivariable = FALSE,
+  multivariate = NULL,
   distribution = "weibull",
   format = c("flextable", "gt"),
   theme = c("minimal"),
@@ -45,6 +47,18 @@ surv_reg(
 
   Optional character vector of adjustment variables. When supplied, one
   adjusted model is fitted per exposure.
+
+- multivariable:
+
+  Logical; if `FALSE` (default), the current exposure-by-exposure
+  workflow is used. If `TRUE`, one multivariable parametric survival
+  model is fitted using all variables in `exposures`, and all exposure
+  coefficients are reported.
+
+- multivariate:
+
+  Optional logical alias for `multivariable`. This is accepted for
+  convenience; `multivariable` is used internally.
 
 - distribution:
 
@@ -111,9 +125,17 @@ The exponentiated coefficient is displayed as a time ratio. A time ratio
 above 1 suggests longer survival time; a time ratio below 1 suggests
 shorter survival time, conditional on the chosen distribution.
 
-Without `adjust_for`, `surv_reg()` fits one crude model per exposure and
-reports `Time Ratio (95% CI)`. With `adjust_for`, it fits one adjusted
-model per exposure and reports `Adjusted Time Ratio (95% CI)`.
+By default, `surv_reg()` keeps the exposure-by-exposure workflow:
+without `adjust_for`, one crude model is fitted per exposure; with
+`adjust_for`, one adjusted model is fitted per exposure and only the
+exposure estimate is reported.
+
+With `multivariable = TRUE`, all variables in `exposures` are included
+in one parametric survival model and all coefficients are reported.
+Since these estimates are adjusted for the other variables in the same
+model, the table reports `Adjusted Time Ratio (95% CI)`. The
+`adjust_for` argument is not used in this mode; include every variable
+that belongs in the model inside `exposures`.
 
 If exposure variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
@@ -142,5 +164,23 @@ surv_reg(
   exposures = c(trt, celltype, prior),
   adjust_for = c(age, karno),
   distribution = lognormal
+)
+
+surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior, age, karno),
+  distribution = weibull,
+  multivariable = TRUE
+)
+
+# multivariate is accepted as an alias
+surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  multivariate = TRUE
 )
 ```

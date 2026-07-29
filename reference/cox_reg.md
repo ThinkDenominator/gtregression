@@ -11,6 +11,8 @@ cox_reg(
   event,
   exposures,
   adjust_for = NULL,
+  multivariable = FALSE,
+  multivariate = NULL,
   format = c("flextable", "gt"),
   theme = c("minimal"),
   model_stats = FALSE
@@ -44,6 +46,18 @@ cox_reg(
 
   Optional character vector of adjustment variables. When supplied, one
   adjusted Cox model is fitted per exposure.
+
+- multivariable:
+
+  Logical; if `FALSE` (default), the current exposure-by-exposure
+  workflow is used. If `TRUE`, one multivariable Cox model is fitted
+  using all variables in `exposures`, and all exposure coefficients are
+  reported.
+
+- multivariate:
+
+  Optional logical alias for `multivariable`. This is accepted for
+  convenience; `multivariable` is used internally.
 
 - format:
 
@@ -96,10 +110,23 @@ A list of class `c("gtregression","cox_reg", ...)` with elements:
 
 ## Details
 
-Without `adjust_for`, `cox_reg()` fits one crude Cox model per exposure
-and reports `HR (95% CI)`. With `adjust_for`, it fits one adjusted Cox
-model per exposure and reports `Adjusted HR (95% CI)`. The proportional
-hazards assumption should be assessed separately, for example with
+By default, `cox_reg()` keeps the exposure-by-exposure workflow: without
+`adjust_for`, one crude Cox model is fitted per exposure; with
+`adjust_for`, one adjusted Cox model is fitted per exposure and only the
+exposure estimate is reported. This is useful for screening or for
+reporting several adjusted exposure effects.
+
+With `multivariable = TRUE`, all variables in `exposures` are included
+in a single Cox model and all coefficients are reported. This mirrors
+the multivariable workflow used by
+[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md).
+The `adjust_for` argument is not used in this mode; include every
+variable that belongs in the model inside `exposures`. Since these
+estimates are adjusted for the other variables in the same model, the
+table reports `Adjusted HR (95% CI)`.
+
+The proportional hazards assumption should be assessed separately, for
+example with
 [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md).
 
 If exposure variables have a `"label"` attribute, for example from
@@ -128,5 +155,22 @@ cox_reg(
   event = status,
   exposures = c(trt, celltype, prior),
   adjust_for = c(age, karno)
+)
+
+cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, prior, age, karno),
+  multivariable = TRUE
+)
+
+# multivariate is accepted as an alias
+cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  multivariate = TRUE
 )
 ```

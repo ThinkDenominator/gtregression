@@ -56,6 +56,8 @@
 <span>  <span class="va">event</span>,</span>
 <span>  <span class="va">exposures</span>,</span>
 <span>  adjust_for <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  multivariable <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  multivariate <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span><span class="op">)</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minimal"</span><span class="op">)</span>,</span>
 <span>  model_stats <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -90,6 +92,18 @@ are recommended in scripts, and bare names are also accepted.</p></dd>
 <dt id="arg-adjust-for">adjust_for<a class="anchor" aria-label="anchor" href="#arg-adjust-for"></a></dt>
 <dd><p>Optional character vector of adjustment variables. When
 supplied, one adjusted Cox model is fitted per exposure.</p></dd>
+
+
+<dt id="arg-multivariable">multivariable<a class="anchor" aria-label="anchor" href="#arg-multivariable"></a></dt>
+<dd><p>Logical; if <code>FALSE</code> (default), the current
+exposure-by-exposure workflow is used. If <code>TRUE</code>, one multivariable
+Cox model is fitted using all variables in <code>exposures</code>, and all
+exposure coefficients are reported.</p></dd>
+
+
+<dt id="arg-multivariate">multivariate<a class="anchor" aria-label="anchor" href="#arg-multivariate"></a></dt>
+<dd><p>Optional logical alias for <code>multivariable</code>. This is
+accepted for convenience; <code>multivariable</code> is used internally.</p></dd>
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
@@ -137,10 +151,19 @@ including AIC, BIC, log-likelihood, concordance, number of events, and N.</p></d
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Without <code>adjust_for</code>, <code>cox_reg()</code> fits one crude Cox model per
-exposure and reports <code>HR (95% CI)</code>. With <code>adjust_for</code>, it fits one
-adjusted Cox model per exposure and reports <code>Adjusted HR (95% CI)</code>.
-The proportional hazards assumption should be assessed separately, for
+    <p>By default, <code>cox_reg()</code> keeps the exposure-by-exposure workflow:
+without <code>adjust_for</code>, one crude Cox model is fitted per exposure; with
+<code>adjust_for</code>, one adjusted Cox model is fitted per exposure and only the
+exposure estimate is reported. This is useful for screening or for reporting
+several adjusted exposure effects.</p>
+<p>With <code>multivariable = TRUE</code>, all variables in <code>exposures</code> are
+included in a single Cox model and all coefficients are reported. This mirrors
+the multivariable workflow used by <code><a href="multi_reg.html">multi_reg()</a></code>. The
+<code>adjust_for</code> argument is not used in this mode; include every variable
+that belongs in the model inside <code>exposures</code>. Since these estimates are
+adjusted for the other variables in the same model, the table reports
+<code>Adjusted HR (95% CI)</code>.</p>
+<p>The proportional hazards assumption should be assessed separately, for
 example with <code><a href="check_ph.html">check_ph()</a></code>.</p>
 <p>If exposure variables have a <code>"label"</code> attribute, for example from
 <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>, those labels are used automatically in the
@@ -168,6 +191,23 @@ displayed table.</p>
 <span class="r-in"><span>  event <span class="op">=</span> <span class="va">status</span>,</span></span>
 <span class="r-in"><span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">trt</span>, <span class="va">celltype</span>, <span class="va">prior</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">karno</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">cox_reg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span></span>
+<span class="r-in"><span>  time <span class="op">=</span> <span class="va">time</span>,</span></span>
+<span class="r-in"><span>  event <span class="op">=</span> <span class="va">status</span>,</span></span>
+<span class="r-in"><span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">trt</span>, <span class="va">celltype</span>, <span class="va">prior</span>, <span class="va">age</span>, <span class="va">karno</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  multivariable <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># multivariate is accepted as an alias</span></span></span>
+<span class="r-in"><span><span class="fu">cox_reg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span></span>
+<span class="r-in"><span>  time <span class="op">=</span> <span class="va">time</span>,</span></span>
+<span class="r-in"><span>  event <span class="op">=</span> <span class="va">status</span>,</span></span>
+<span class="r-in"><span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">trt</span>, <span class="va">age</span>, <span class="va">karno</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  multivariate <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
