@@ -33,10 +33,36 @@ test_that("cox_reg returns crude hazard ratio tables", {
   expect_equal(res$event, "status")
   expect_named(res$models, c("trt", "celltype", "karno"))
   expect_true(all(vapply(res$models, inherits, logical(1), what = "coxph")))
+  expect_true("N" %in% names(res$table_display))
   expect_true("HR (95% CI)" %in% names(res$table_display))
   expect_true("Treatment group" %in% res$table_display$Characteristic)
   expect_true("Ref." %in% res$table_display[["HR (95% CI)"]])
   expect_null(res$model_stats)
+})
+
+test_that("cox_reg crude tables display survival complete-case N consistently", {
+  skip_if_not_installed("survival")
+
+  df <- lung_cox_data()
+  df$karno[1:3] <- NA
+
+  res <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, karno)
+  )
+
+  karno_header <- which(attr(res$table_display, "row_exposure") == "karno" &
+                          res$table_display$is_header)[1]
+
+  expect_equal(
+    res$table_display$N[karno_header],
+    sum(stats::complete.cases(df[, c("time", "status", "karno")]))
+  )
+
+  expect_s3_class(modify_table(res, remove_N = TRUE), "cox_reg")
+  expect_false("N" %in% names(modify_table(res, remove_N = TRUE)$table_display))
 })
 
 test_that("cox_reg returns adjusted hazard ratio tables and model stats", {
@@ -456,4 +482,108 @@ test_that("cox_reg works with plotting and forest helpers", {
   expect_true(all(nchar(df_desc[[" "]]) >= 20))
   expect_true(all(nchar(df_desc[["  "]]) >= 20))
   expect_s3_class(forest_reg(df_desc), "gtregression_forest")
+})
+
+test_that("cox_reg supports stratified crude and adjusted Cox tables", {
+  skip_if_not_installed("survival")
+
+  df <- lung_cox_data()
+
+  crude <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, karno),
+    stratifier = trt,
+    format = gt
+  )
+
+  expect_s3_class(crude, "gtregression")
+  expect_s3_class(crude, "stratified_cox_reg")
+  expect_s3_class(crude, "cox_reg")
+  expect_equal(crude$source, "stratified_cox_reg")
+  expect_true(crude$stratified)
+  expect_false(crude$adjusted_mode)
+  expect_equal(crude$by, "trt")
+  expect_equal(crude$levels, c("Standard treatment", "Test treatment"))
+  expect_true("..N__Standard treatment" %in% names(crude$table_display))
+  expect_true("..eff__Standard treatment" %in% names(crude$table_display))
+  expect_true("..p__Test treatment" %in% names(crude$table_display))
+  expect_named(crude$per_stratum, c("Standard treatment", "Test treatment"))
+
+  adjusted <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, prior),
+    adjust_for = c(age, karno),
+    stratifier = trt,
+    model_stats = TRUE
+  )
+
+  expect_s3_class(adjusted, "stratified_cox_reg")
+  expect_true(adjusted$adjusted_mode)
+  expect_equal(adjusted$adjust_for, c("age", "karno"))
+  expect_true("..eff__Standard treatment" %in% names(adjusted$table_display))
+  expect_false(any(grepl("^\\.\\.N__", names(adjusted$table_display))))
+  expect_s3_class(adjusted$model_stats, "data.frame")
+  expect_true(all(c("stratum", "model", "AIC", "events", "n") %in% names(adjusted$model_stats)))
+})
+
+test_that("cox_reg supports stratified multivariable Cox tables", {
+  skip_if_not_installed("survival")
+
+  df <- lung_cox_data()
+
+  res <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, prior, age, karno),
+    stratifier = trt,
+    multivariable = TRUE
+  )
+
+  expect_s3_class(res, "stratified_cox_reg")
+  expect_true(res$multivariable)
+  expect_false(res$adjusted_mode)
+  expect_named(res$models, c("Standard treatment", "Test treatment"))
+  expect_named(res$models[["Standard treatment"]], "multivariable_model")
+  expect_true("..eff__Standard treatment" %in% names(res$table_display))
+  expect_true(any(trimws(res$table_display$Characteristic) %in% c("Age", "age")))
+})
+
+test_that("cox_reg validates stratifier inputs and rejects stratified plot helpers", {
+  skip_if_not_installed("survival")
+
+  df <- lung_cox_data()
+
+  expect_error(
+    cox_reg(df, time = time, event = status, exposures = trt, stratifier = trt),
+    "`stratifier` cannot also be used"
+  )
+  expect_error(
+    cox_reg(df, time = time, event = status, exposures = trt, adjust_for = age, stratifier = age),
+    "`stratifier` cannot also be used"
+  )
+  expect_error(
+    cox_reg(df, time = time, event = status, exposures = trt, stratifier = "time"),
+    "`stratifier` cannot also be used"
+  )
+  expect_error(
+    cox_reg(df, time = time, event = status, exposures = trt, interaction = trt*prior, stratifier = prior),
+    "`stratifier` cannot also be used"
+  )
+
+  stratified <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, karno),
+    stratifier = trt
+  )
+
+  expect_error(plot_reg(stratified), "does not support stratified")
+  expect_error(plot_reg_combine(stratified, stratified), "does not support stratified")
+  expect_error(forest_df(stratified), "does not support stratified")
 })

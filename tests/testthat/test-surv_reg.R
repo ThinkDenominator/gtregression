@@ -33,10 +33,37 @@ test_that("surv_reg returns crude time-ratio tables", {
   expect_null(res$adjust_for)
   expect_named(res$models, c("trt", "celltype", "karno"))
   expect_true(all(vapply(res$models, inherits, logical(1), what = "survreg")))
+  expect_true("N" %in% names(res$table_display))
   expect_true("Time Ratio (95% CI)" %in% names(res$table_display))
   expect_true("Treatment group" %in% res$table_display$Characteristic)
   expect_true("Ref." %in% res$table_display[["Time Ratio (95% CI)"]])
   expect_null(res$model_stats)
+})
+
+test_that("surv_reg crude tables display survival complete-case N consistently", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+  df$karno[1:3] <- NA
+
+  res <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, karno),
+    distribution = weibull
+  )
+
+  karno_header <- which(attr(res$table_display, "row_exposure") == "karno" &
+                          res$table_display$is_header)[1]
+
+  expect_equal(
+    res$table_display$N[karno_header],
+    sum(stats::complete.cases(df[, c("time", "status", "karno")]))
+  )
+
+  expect_s3_class(modify_table(res, remove_N = TRUE), "surv_reg")
+  expect_false("N" %in% names(modify_table(res, remove_N = TRUE)$table_display))
 })
 
 test_that("surv_reg returns adjusted time-ratio tables and model stats", {
@@ -323,4 +350,114 @@ test_that("surv_reg works with plotting and forest helpers", {
   expect_true("Time Ratio (95% CI)" %in% names(df_both))
   expect_true("Adjusted Time Ratio (95% CI)" %in% names(df_both))
   expect_s3_class(forest_reg(df_both), "gtregression_forest")
+})
+
+test_that("surv_reg supports stratified crude and adjusted survival tables", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+
+  crude <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, karno),
+    stratifier = trt,
+    distribution = weibull,
+    format = gt
+  )
+
+  expect_s3_class(crude, "gtregression")
+  expect_s3_class(crude, "stratified_surv_reg")
+  expect_s3_class(crude, "surv_reg")
+  expect_equal(crude$source, "stratified_surv_reg")
+  expect_true(crude$stratified)
+  expect_false(crude$adjusted_mode)
+  expect_equal(crude$by, "trt")
+  expect_equal(crude$distribution, "weibull")
+  expect_equal(crude$levels, c("Standard treatment", "Test treatment"))
+  expect_true("..N__Standard treatment" %in% names(crude$table_display))
+  expect_true("..eff__Standard treatment" %in% names(crude$table_display))
+  expect_named(crude$per_stratum, c("Standard treatment", "Test treatment"))
+
+  adjusted <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, prior),
+    adjust_for = c(age, karno),
+    stratifier = trt,
+    distribution = lognormal,
+    model_stats = TRUE
+  )
+
+  expect_s3_class(adjusted, "stratified_surv_reg")
+  expect_true(adjusted$adjusted_mode)
+  expect_equal(adjusted$adjust_for, c("age", "karno"))
+  expect_equal(adjusted$distribution, "lognormal")
+  expect_true("..eff__Standard treatment" %in% names(adjusted$table_display))
+  expect_false(any(grepl("^\\.\\.N__", names(adjusted$table_display))))
+  expect_s3_class(adjusted$model_stats, "data.frame")
+  expect_true(all(c("stratum", "model", "distribution", "AIC", "events", "n") %in%
+                    names(adjusted$model_stats)))
+})
+
+test_that("surv_reg supports stratified multivariable survival tables", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+
+  res <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, prior, age, karno),
+    stratifier = trt,
+    distribution = weibull,
+    multivariable = TRUE
+  )
+
+  expect_s3_class(res, "stratified_surv_reg")
+  expect_true(res$multivariable)
+  expect_false(res$adjusted_mode)
+  expect_named(res$models, c("Standard treatment", "Test treatment"))
+  expect_named(res$models[["Standard treatment"]], "multivariable_model")
+  expect_true("..eff__Standard treatment" %in% names(res$table_display))
+  expect_true(any(trimws(res$table_display$Characteristic) %in% c("Age", "age")))
+})
+
+test_that("surv_reg validates stratifier inputs and rejects stratified plot helpers", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+
+  expect_error(
+    surv_reg(df, time = time, event = status, exposures = trt, stratifier = trt),
+    "`stratifier` cannot also be used"
+  )
+  expect_error(
+    surv_reg(df, time = time, event = status, exposures = trt, adjust_for = age, stratifier = age),
+    "`stratifier` cannot also be used"
+  )
+  expect_error(
+    surv_reg(df, time = time, event = status, exposures = trt, stratifier = "status"),
+    "`stratifier` cannot also be used"
+  )
+  expect_error(
+    surv_reg(df, time = time, event = status, exposures = trt, interaction = trt*prior, stratifier = prior),
+    "`stratifier` cannot also be used"
+  )
+
+  stratified <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, karno),
+    stratifier = trt,
+    distribution = weibull
+  )
+
+  expect_error(plot_reg(stratified), "does not support stratified")
+  expect_error(plot_reg_combine(stratified, stratified), "does not support stratified")
+  expect_error(forest_df(stratified), "does not support stratified")
 })

@@ -13,6 +13,11 @@
 #'   are recommended in scripts, and bare names are also accepted.
 #' @param adjust_for Optional character vector of adjustment variables. When
 #'   supplied, one adjusted Cox model is fitted per exposure.
+#' @param stratifier Optional single stratifying variable. When supplied,
+#'   stratum-specific Cox tables are produced using the same crude, adjusted,
+#'   or multivariable workflow requested by the other arguments. The
+#'   stratifier cannot also be used as the time, event, exposure, adjustment,
+#'   or interaction variable.
 #' @param interaction Optional character scalar specifying one interaction term
 #'   using standard formula syntax, e.g. \code{"trt*prior"}. Quoted and bare
 #'   interaction syntax are accepted. In exposure-by-exposure mode, supply a
@@ -125,6 +130,7 @@ cox_reg <- function(data,
                     event,
                     exposures,
                     adjust_for = NULL,
+                    stratifier = NULL,
                     interaction = NULL,
                     multivariable = FALSE,
                     multivariate = NULL,
@@ -136,6 +142,11 @@ cox_reg <- function(data,
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
   adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  stratifier <- .survival_optional_single_var_arg(
+    substitute(stratifier),
+    data = data,
+    env = parent.frame()
+  )
   interaction <- .interaction_arg(substitute(interaction), env = parent.frame(), allow_null = TRUE)
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
@@ -167,6 +178,33 @@ cox_reg <- function(data,
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
   fmt_class <- if (format == "gt") "gt_cox" else "ft_cox"
 
+  if (!is.null(stratifier)) {
+    .validate_survival_stratifier(
+      data = data,
+      time = time,
+      event = event,
+      exposures = exposures,
+      adjust_for = adjust_for,
+      interaction = interaction,
+      stratifier = stratifier
+    )
+
+    return(.run_stratified_cox_reg(
+      data = data,
+      time = time,
+      event = event,
+      exposures = exposures,
+      adjust_for = adjust_for,
+      stratifier = stratifier,
+      interaction = interaction,
+      multivariable = multivariable,
+      format = format,
+      theme = theme,
+      model_stats = model_stats,
+      fmt_class = fmt_class
+    ))
+  }
+
   core <- .run_cox_core(
     data = data,
     time = time,
@@ -179,14 +217,28 @@ cox_reg <- function(data,
 
   effect_label <- if (adjusted_mode || isTRUE(multivariable)) "Adjusted HR (95% CI)" else "HR (95% CI)"
   variable_labels <- .var_label_map(data, unique(exposures))
-  display_df <- .make_display_multi(
-    core$table_body,
-    core$data_clean,
-    outcome = event,
-    effect_label = effect_label,
-    variable_labels = variable_labels
-  )
-  .must_be_display_df_multi(display_df)
+  crude_mode <- !adjusted_mode && !isTRUE(multivariable)
+
+  if (crude_mode) {
+    display_df <- .make_display_survival_uni(
+      core$table_body,
+      core$data_clean,
+      time = time,
+      event = event,
+      effect_label = effect_label,
+      variable_labels = variable_labels
+    )
+    .must_be_display_df(display_df)
+  } else {
+    display_df <- .make_display_multi(
+      core$table_body,
+      core$data_clean,
+      outcome = event,
+      effect_label = effect_label,
+      variable_labels = variable_labels
+    )
+    .must_be_display_df_multi(display_df)
+  }
 
   footnotes <- c(
     .abbrev_note("cox"),
@@ -201,9 +253,17 @@ cox_reg <- function(data,
   )
 
   tbl <- if (format == "gt") {
-    .build_gt_multi(display_df, effect_label, footnotes, theme)
+    if (crude_mode) {
+      .build_gt(display_df, effect_label, footnotes, theme)
+    } else {
+      .build_gt_multi(display_df, effect_label, footnotes, theme)
+    }
   } else {
-    .build_flextable_multi(display_df, effect_label, footnotes, theme)
+    if (crude_mode) {
+      .build_flextable(display_df, effect_label, footnotes, theme)
+    } else {
+      .build_flextable_multi(display_df, effect_label, footnotes, theme)
+    }
   }
 
   res <- list(

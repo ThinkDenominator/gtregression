@@ -73,6 +73,27 @@ test_that("km_plot builds without dropping confidence interval rows", {
   expect_warning(ggplot2::ggplot_build(res), NA)
 })
 
+test_that("km_plot draws log-rank p-value inside the graph", {
+  skip_if_not_installed("survival")
+  skip_if_not_installed("ggplot2")
+
+  df <- lung_km_data()
+
+  res <- km_plot(
+    data = df,
+    time = time,
+    event = status,
+    by = trt,
+    risk_table = FALSE,
+    p_value_position = c(100, 0.12)
+  )
+
+  last_layer <- ggplot2::layer_data(res, length(res$layers))
+  expect_true(any(grepl("Log-rank p", last_layer$label, fixed = TRUE)))
+  expect_equal(last_layer$x[1], 100)
+  expect_equal(last_layer$y[1], 0.12)
+})
+
 test_that("km_plot validates inputs", {
   skip_if_not_installed("survival")
 
@@ -107,6 +128,10 @@ test_that("km_plot validates inputs", {
   expect_error(
     km_plot(data = df, time = time, event = status, xlim = c(10, 1)),
     "`xlim` must be"
+  )
+  expect_error(
+    km_plot(data = df, time = time, event = status, p_value_position = c(10, 2)),
+    "`p_value_position` must be"
   )
   expect_error(
     km_plot(data = df, time = time, event = status, risk_table = NA),

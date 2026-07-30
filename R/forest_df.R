@@ -154,6 +154,15 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
   }
   digits <- as.integer(digits)
 
+  for (obj in list(uni, multi, desc)) {
+    if (inherits(obj, "gtregression") && isTRUE(obj$stratified)) {
+      stop(
+        "forest_df() does not support stratified regression objects yet.",
+        call. = FALSE
+      )
+    }
+  }
+
   `%||%`   <- function(a,b) if (!is.null(a)) a else b
   approach <- function(o) .normalize_approach(o$approach %||% "logit")
   is_ratio <- function(a) .normalize_approach(a) %in% c("logit","firth","logbinomial","poisson","robpoisson","negbin",

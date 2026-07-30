@@ -91,9 +91,40 @@
 #' Estimate a practical export canvas for forest plots
 #' @keywords internal
 #' @noRd
-.forest_export_dimensions <- function(forest, width = NULL, height = NULL, scale = 1) {
+.measure_forest_grob <- function(plot) {
+  if (is.null(plot[["widths"]]) || is.null(plot[["heights"]])) {
+    return(NULL)
+  }
+
+  tmp <- tempfile(fileext = ".pdf")
+  grDevices::pdf(file = tmp, width = 20, height = 20)
+  on.exit({
+    grDevices::dev.off()
+    unlink(tmp)
+  }, add = TRUE)
+
+  grid::grid.newpage()
+  width <- grid::convertWidth(sum(plot$widths), unitTo = "in", valueOnly = TRUE)
+  height <- grid::convertHeight(sum(plot$heights), unitTo = "in", valueOnly = TRUE)
+
+  if (!is.finite(width) || !is.finite(height) || width <= 0 || height <= 0) {
+    return(NULL)
+  }
+
+  list(width = width, height = height)
+}
+
+#' Estimate a practical export canvas for forest plots
+#' @keywords internal
+#' @noRd
+.forest_export_dimensions <- function(forest, plot, width = NULL, height = NULL,
+                                      scale = 1, padding = 0.25,
+                                      auto_size = TRUE) {
   if (!is.numeric(scale) || length(scale) != 1L || is.na(scale) || scale <= 0) {
     stop("`scale` must be a single positive number.", call. = FALSE)
+  }
+  if (!is.logical(auto_size) || length(auto_size) != 1L || is.na(auto_size)) {
+    stop("`auto_size` must be TRUE or FALSE.", call. = FALSE)
   }
   if (!is.null(width) &&
       (!is.numeric(width) || length(width) != 1L || is.na(width) || width <= 0)) {
@@ -102,6 +133,14 @@
   if (!is.null(height) &&
       (!is.numeric(height) || length(height) != 1L || is.na(height) || height <= 0)) {
     stop("`height` must be NULL or a single positive number.", call. = FALSE)
+  }
+
+  if (isTRUE(auto_size) && (is.null(width) || is.null(height))) {
+    measured <- .measure_forest_grob(plot)
+    if (!is.null(measured)) {
+      if (is.null(width)) width <- measured$width + (2 * padding)
+      if (is.null(height)) height <- measured$height + (2 * padding)
+    }
   }
 
   if (is.null(width) || is.null(height)) {
@@ -311,10 +350,15 @@ save_plot <- function(plot,
 #' @param format Output format. One of \code{"pdf"}, \code{"png"},
 #'   \code{"tiff"}, or \code{"jpg"}.
 #' @param width,height Optional export width and height in inches. If either is
-#'   \code{NULL}, a practical default is estimated from the number of rows and
+#'   \code{NULL} and \code{auto_size = TRUE}, the size is measured from the
+#'   intrinsic \pkg{forestploter} gtable dimensions. If measurement is not
+#'   possible, a practical fallback is estimated from the number of rows and
 #'   columns in the \code{forest_reg()} output.
 #' @param scale Positive multiplier applied to the export width and height. This
 #'   is a quick way to make a large forest plot roomier.
+#' @param auto_size Logical. If \code{TRUE}, measure the intrinsic forest plot
+#'   size when \code{width} or \code{height} is not supplied. If \code{FALSE},
+#'   use the fallback row/column-based sizing.
 #' @param padding White space around the forest plot in inches.
 #' @param dpi Resolution for raster formats.
 #'
@@ -343,19 +387,19 @@ save_plot <- function(plot,
 #'   forest,
 #'   filename = tempfile("forest-wide"),
 #'   format = "png",
-#'   width = 12,
-#'   height = 8,
+#'   scale = 1.2,
 #'   padding = 0.35,
 #'   dpi = 300
 #' )
 #' @export
-#' @importFrom grid grid.newpage grid.draw pushViewport popViewport viewport unit
+#' @importFrom grid grid.newpage grid.draw pushViewport popViewport viewport unit convertWidth convertHeight
 save_forest <- function(forest,
                         filename = "forest",
                         format = c("pdf", "png", "tiff", "jpg"),
                         width = NULL,
                         height = NULL,
                         scale = 1,
+                        auto_size = TRUE,
                         padding = 0.25,
                         dpi = 300) {
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("pdf", "png", "tiff", "jpg"))
@@ -370,7 +414,15 @@ save_forest <- function(forest,
   }
 
   plot <- .resolve_forest_object(forest)
-  dims <- .forest_export_dimensions(forest, width = width, height = height, scale = scale)
+  dims <- .forest_export_dimensions(
+    forest,
+    plot = plot,
+    width = width,
+    height = height,
+    scale = scale,
+    padding = padding,
+    auto_size = auto_size
+  )
   width <- dims$width
   height <- dims$height
 

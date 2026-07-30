@@ -62,6 +62,9 @@ plot_reg_combine <- function(tbl_uni,
   if (!inherits(tbl_multi, "gtregression")) {
     stop("`tbl_multi` must be a gtregression object.", call. = FALSE)
   }
+  if (isTRUE(tbl_uni$stratified) || isTRUE(tbl_multi$stratified)) {
+    stop("plot_reg_combine() does not support stratified objects.", call. = FALSE)
+  }
 
   valid_standard_pair <- identical(tbl_uni$source, "uni_reg") &&
     identical(tbl_multi$source, "multi_reg")

@@ -129,7 +129,7 @@ test_that("save_forest writes forest outputs and validates inputs", {
   out_pdf <- save_forest(forest, filename = file_pdf, format = pdf,
                          width = 7, height = 5, padding = 0.1)
   out_png <- save_forest(forest, filename = file_png, format = png,
-                         width = 7, height = 5, dpi = 72)
+                         width = 7, height = 5, auto_size = FALSE, dpi = 72)
   out_bare <- save_forest(forest, filename = file_bare, format = pdf,
                           width = 7, height = 5)
 
@@ -145,6 +145,7 @@ test_that("save_forest writes forest outputs and validates inputs", {
   expect_error(save_forest(forest, width = 0), "`width` must be")
   expect_error(save_forest(forest, height = NA_real_), "`height` must be")
   expect_error(save_forest(forest, scale = 0), "`scale` must be")
+  expect_error(save_forest(forest, auto_size = NA), "`auto_size` must be")
   expect_error(save_forest(forest, padding = -1), "`padding` must be")
   expect_error(save_forest(forest, padding = 3, width = 4, height = 4), "`padding` is too large")
   expect_error(save_forest(forest, dpi = -1), "`dpi` must be")

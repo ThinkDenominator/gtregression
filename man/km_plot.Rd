@@ -12,6 +12,7 @@ km_plot(
   conf.int = TRUE,
   risk_table = TRUE,
   p_value = TRUE,
+  p_value_position = NULL,
   censor = TRUE,
   break_time_by = NULL,
   xlim = NULL,
@@ -43,6 +44,11 @@ the curve.}
 
 \item{p_value}{Logical; if \code{TRUE}, show the log-rank p-value when
 \code{by} is supplied.}
+
+\item{p_value_position}{Optional numeric vector of length 2 giving the
+\code{x} and \code{y} coordinates for the log-rank p-value inside the
+plotting panel. If \code{NULL}, a lower-left position is chosen
+automatically.}
 
 \item{censor}{Logical; if \code{TRUE}, show censoring marks.}
 

@@ -60,8 +60,11 @@ plot_reg <- function(tbl,
     stop("`tbl` must contain `source` and `approach`.", call. = FALSE)
   }
 
-  if (identical(source_type, "stratified_multi_reg") ||
-      identical(source_type, "stratified_uni_reg")) {
+  if (isTRUE(tbl$stratified) ||
+      identical(source_type, "stratified_multi_reg") ||
+      identical(source_type, "stratified_uni_reg") ||
+      identical(source_type, "stratified_cox_reg") ||
+      identical(source_type, "stratified_surv_reg")) {
     stop("plot_reg() does not support stratified objects.", call. = FALSE)
   }
 

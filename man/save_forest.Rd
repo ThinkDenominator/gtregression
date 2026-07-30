@@ -11,6 +11,7 @@ save_forest(
   width = NULL,
   height = NULL,
   scale = 1,
+  auto_size = TRUE,
   padding = 0.25,
   dpi = 300
 )
@@ -26,11 +27,17 @@ directory is supplied, the file is saved in \code{tempdir()}.}
 \code{"tiff"}, or \code{"jpg"}.}
 
 \item{width, height}{Optional export width and height in inches. If either is
-\code{NULL}, a practical default is estimated from the number of rows and
+\code{NULL} and \code{auto_size = TRUE}, the size is measured from the
+intrinsic \pkg{forestploter} gtable dimensions. If measurement is not
+possible, a practical fallback is estimated from the number of rows and
 columns in the \code{forest_reg()} output.}
 
 \item{scale}{Positive multiplier applied to the export width and height. This
 is a quick way to make a large forest plot roomier.}
+
+\item{auto_size}{Logical. If \code{TRUE}, measure the intrinsic forest plot
+size when \code{width} or \code{height} is not supplied. If \code{FALSE},
+use the fallback row/column-based sizing.}
 
 \item{padding}{White space around the forest plot in inches.}
 
@@ -68,8 +75,7 @@ save_forest(
   forest,
   filename = tempfile("forest-wide"),
   format = "png",
-  width = 12,
-  height = 8,
+  scale = 1.2,
   padding = 0.35,
   dpi = 300
 )

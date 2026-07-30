@@ -10,6 +10,7 @@ cox_reg(
   event,
   exposures,
   adjust_for = NULL,
+  stratifier = NULL,
   interaction = NULL,
   multivariable = FALSE,
   multivariate = NULL,
@@ -34,6 +35,12 @@ are recommended in scripts, and bare names are also accepted.}
 
 \item{adjust_for}{Optional character vector of adjustment variables. When
 supplied, one adjusted Cox model is fitted per exposure.}
+
+\item{stratifier}{Optional single stratifying variable. When supplied,
+stratum-specific Cox tables are produced using the same crude, adjusted,
+or multivariable workflow requested by the other arguments. The
+stratifier cannot also be used as the time, event, exposure, adjustment,
+or interaction variable.}
 
 \item{interaction}{Optional character scalar specifying one interaction term
 using standard formula syntax, e.g. \code{"trt*prior"}. Quoted and bare

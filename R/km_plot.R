@@ -16,6 +16,10 @@
 #'   the curve.
 #' @param p_value Logical; if \code{TRUE}, show the log-rank p-value when
 #'   \code{by} is supplied.
+#' @param p_value_position Optional numeric vector of length 2 giving the
+#'   \code{x} and \code{y} coordinates for the log-rank p-value inside the
+#'   plotting panel. If \code{NULL}, a lower-left position is chosen
+#'   automatically.
 #' @param censor Logical; if \code{TRUE}, show censoring marks.
 #' @param break_time_by Optional numeric interval for x-axis and risk-table time
 #'   breaks. If \code{NULL}, breaks are chosen automatically.
@@ -63,6 +67,7 @@ km_plot <- function(data,
                     conf.int = TRUE,
                     risk_table = TRUE,
                     p_value = TRUE,
+                    p_value_position = NULL,
                     censor = TRUE,
                     break_time_by = NULL,
                     xlim = NULL,
@@ -85,6 +90,7 @@ km_plot <- function(data,
     conf.int = conf.int,
     risk_table = risk_table,
     p_value = p_value,
+    p_value_position = p_value_position,
     censor = censor,
     break_time_by = break_time_by,
     xlim = xlim,
@@ -129,7 +135,8 @@ km_plot <- function(data,
     legend_title = legend_title,
     palette = palette,
     base_size = base_size,
-    logrank_p = if (isTRUE(p_value)) logrank_p else NA_real_
+    logrank_p = if (isTRUE(p_value)) logrank_p else NA_real_,
+    p_value_position = p_value_position
   )
 
   out <- main_plot
@@ -155,8 +162,8 @@ km_plot <- function(data,
 #' @keywords internal
 #' @noRd
 .validate_km_inputs <- function(data, time, event, by, conf.int, risk_table,
-                                p_value, censor, break_time_by, xlim,
-                                base_size) {
+                                p_value, p_value_position, censor,
+                                break_time_by, xlim, base_size) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
   }
@@ -189,6 +196,13 @@ km_plot <- function(data,
   if (!is.null(xlim) &&
       (!is.numeric(xlim) || length(xlim) != 2L || anyNA(xlim) || xlim[1] >= xlim[2])) {
     stop("`xlim` must be NULL or a numeric vector of length 2.", call. = FALSE)
+  }
+  if (!is.null(p_value_position) &&
+      (!is.numeric(p_value_position) || length(p_value_position) != 2L ||
+       anyNA(p_value_position) || any(!is.finite(p_value_position)) ||
+       p_value_position[2] < 0 || p_value_position[2] > 1)) {
+    stop("`p_value_position` must be NULL or a numeric vector `c(x, y)` with y between 0 and 1.",
+         call. = FALSE)
   }
   if (!is.numeric(base_size) || length(base_size) != 1L || is.na(base_size) || base_size <= 0) {
     stop("`base_size` must be a positive number.", call. = FALSE)
@@ -307,6 +321,16 @@ km_plot <- function(data,
 
 #' @keywords internal
 #' @noRd
+.km_p_value_position <- function(plot_data, xlim = NULL, position = NULL) {
+  if (!is.null(position)) {
+    return(position)
+  }
+  xrng <- if (is.null(xlim)) range(plot_data$time, na.rm = TRUE) else xlim
+  c(xrng[1] + diff(xrng) * 0.05, 0.08)
+}
+
+#' @keywords internal
+#' @noRd
 .km_default_palette <- function(n) {
   cols <- c("#1F77B4", "#D55E00", "#009E73", "#CC79A7", "#0072B2", "#E69F00")
   rep(cols, length.out = n)
@@ -315,7 +339,8 @@ km_plot <- function(data,
 #' @keywords internal
 #' @noRd
 .km_main_plot <- function(plot_data, conf.int, censor, xlim, breaks, xlab, ylab,
-                          title, legend_title, palette, base_size, logrank_p) {
+                          title, legend_title, palette, base_size, logrank_p,
+                          p_value_position) {
   p <- ggplot2::ggplot(
     plot_data,
     ggplot2::aes(x = .data$time, y = .data$survival, color = .data$strata)
@@ -340,7 +365,6 @@ km_plot <- function(data,
     ggplot2::scale_x_continuous(breaks = breaks) +
     ggplot2::labs(
       title = title,
-      subtitle = .km_fmt_p(logrank_p),
       x = xlab,
       y = ylab,
       color = legend_title
@@ -356,6 +380,23 @@ km_plot <- function(data,
     if (nrow(cens)) {
       p <- p + ggplot2::geom_point(data = cens, shape = 3, size = 2, stroke = 0.8)
     }
+  }
+
+  p_label <- .km_fmt_p(logrank_p)
+  if (!is.null(p_label)) {
+    p_pos <- .km_p_value_position(plot_data, xlim = xlim, position = p_value_position)
+    p <- p +
+      ggplot2::annotate(
+        "text",
+        x = p_pos[1],
+        y = p_pos[2],
+        label = p_label,
+        hjust = 0,
+        vjust = 0,
+        size = base_size / 3.4,
+        fontface = "plain",
+        color = "black"
+      )
   }
 
   if (!is.null(palette)) {
