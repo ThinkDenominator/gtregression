@@ -156,6 +156,7 @@ reference:
       - save_table
       - save_docx
       - save_plot
+      - save_forest
 
   - title: "Object Helpers"
     desc: "Inspect and print objects returned by gtregression functions."

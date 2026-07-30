@@ -253,12 +253,14 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
     pos   <- match(key_l, key_m)
     est2 <- lo2 <- hi2 <- rep(NA_real_, nrow(lay))
     hit <- which(!is.na(pos))
+    has_adj_row <- !is.na(pos)
     est2[hit] <- m$estimate[pos[hit]]
     lo2 [hit] <- m$conf.low[pos[hit]]
     hi2 [hit] <- m$conf.high[pos[hit]]
-    est2[is_ref] <- ifelse(is.na(est2[is_ref]), est2[is_ref], ref_line)
-    lo2 [is_ref] <- ifelse(is.na(lo2 [is_ref]), lo2 [is_ref], ref_line)
-    hi2 [is_ref] <- ifelse(is.na(hi2 [is_ref]), hi2 [is_ref], ref_line)
+    adj_ref <- is_ref & has_adj_row
+    est2[adj_ref] <- ref_line
+    lo2 [adj_ref] <- ref_line
+    hi2 [adj_ref] <- ref_line
   }
 
   # Left table + optional desc merge
@@ -294,7 +296,7 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
     left[["  "]] <- forest_blank  # adj anchor
     ci2 <- fmt_ci(est2, lo2, hi2, digits)
     ci2[is_header | is_ref] <- ""              # <-- same here
-    ci2[is_ref] <- "Ref."
+    ci2[is_ref & has_adj_row] <- "Ref."
     left[[paste0("Adjusted ", eff2, " (95% CI)")]] <- ci2
   } else {
     left[[" "]] <- forest_blank

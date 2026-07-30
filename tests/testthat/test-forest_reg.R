@@ -40,6 +40,36 @@ test_that("forest_df builds univariate and adjusted forest data", {
   expect_true("Ref." %in% out[["Adjusted OR (95% CI)"]])
 })
 
+test_that("forest_df leaves adjusted reference rows blank for omitted variables", {
+  df <- birthwt_forest_data()
+
+  uni <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("race", "smoke", "ht"),
+    approach = logit
+  )
+  multi <- multi_reg(
+    df,
+    outcome = "low",
+    exposures = "smoke",
+    adjust_for = c("age", "lwt"),
+    approach = logit
+  )
+
+  out <- forest_df(uni = uni, multi = multi)
+  adj_col <- "Adjusted OR (95% CI)"
+
+  ht_header <- which(out$Characteristic == "ht")
+  smoke_header <- which(out$Characteristic == "smoke")
+
+  expect_equal(out[[adj_col]][ht_header + 1L], "")
+  expect_equal(out[[adj_col]][ht_header + 2L], "")
+  expect_equal(out[[adj_col]][smoke_header + 1L], "Ref.")
+  expect_match(out[[adj_col]][smoke_header + 2L], "\\(")
+  expect_true(all(is.na(attr(out, "est2")[c(ht_header + 1L, ht_header + 2L)])))
+})
+
 test_that("forest_df handles linear metadata and descriptive table merge", {
   df <- birthwt_forest_data()
 
