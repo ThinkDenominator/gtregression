@@ -53,7 +53,15 @@ flextable as a Word, PDF, or HTML file."></head><body>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">save_table</span><span class="op">(</span><span class="va">tbl</span>, filename <span class="op">=</span> <span class="st">"table"</span>, format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"docx"</span>, <span class="st">"pdf"</span>, <span class="st">"html"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">save_table</span><span class="op">(</span></span>
+<span>  <span class="va">tbl</span>,</span>
+<span>  filename <span class="op">=</span> <span class="st">"table"</span>,</span>
+<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"docx"</span>, <span class="st">"pdf"</span>, <span class="st">"html"</span><span class="op">)</span>,</span>
+<span>  orientation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"portrait"</span>, <span class="st">"landscape"</span><span class="op">)</span>,</span>
+<span>  fit_width <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  font_size <span class="op">=</span> <span class="fl">9</span>,</span>
+<span>  min_font_size <span class="op">=</span> <span class="fl">8</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -73,6 +81,28 @@ directory is supplied, the file is saved in <code><a href="https://rdrr.io/r/bas
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
 <dd><p>Output format. One of <code>"docx"</code>, <code>"pdf"</code>, or
 <code>"html"</code>.</p></dd>
+
+
+<dt id="arg-orientation">orientation<a class="anchor" aria-label="anchor" href="#arg-orientation"></a></dt>
+<dd><p>Word page orientation for DOCX output. One of
+<code>"auto"</code>, <code>"portrait"</code>, or <code>"landscape"</code>. With
+<code>"auto"</code>, wide tables are saved in landscape orientation before any
+font-size reduction is attempted.</p></dd>
+
+
+<dt id="arg-fit-width">fit_width<a class="anchor" aria-label="anchor" href="#arg-fit-width"></a></dt>
+<dd><p>Logical. If <code>TRUE</code>, try to fit flextable DOCX output
+within the selected Word page width. If <code>FALSE</code>, keep the natural
+autofit table width.</p></dd>
+
+
+<dt id="arg-font-size">font_size<a class="anchor" aria-label="anchor" href="#arg-font-size"></a></dt>
+<dd><p>Requested font size for flextable DOCX output.</p></dd>
+
+
+<dt id="arg-min-font-size">min_font_size<a class="anchor" aria-label="anchor" href="#arg-min-font-size"></a></dt>
+<dd><p>Smallest font size allowed when fitting wide flextable
+DOCX output. The font size is never reduced below this value.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -96,7 +126,21 @@ directory is supplied, the file is saved in <code><a href="https://rdrr.io/r/bas
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">save_table</span><span class="op">(</span><span class="va">tbl</span>, filename <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"table"</span><span class="op">)</span>, format <span class="op">=</span> <span class="st">"html"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table saved at: /tmp/RtmpQ59YAi/table1ac26cafd810.html</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Table saved at: /tmp/RtmpHE56Fn/table1a9e77ae5e7d.html</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Wide Word tables can be saved in landscape orientation.</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="fu">save_table</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">tbl</span>,</span></span>
+<span class="r-in"><span>  filename <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"table-wide"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  format <span class="op">=</span> <span class="st">"docx"</span>,</span></span>
+<span class="r-in"><span>  orientation <span class="op">=</span> <span class="st">"auto"</span>,</span></span>
+<span class="r-in"><span>  fit_width <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  font_size <span class="op">=</span> <span class="fl">9</span>,</span></span>
+<span class="r-in"><span>  min_font_size <span class="op">=</span> <span class="fl">8</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Table saved at: /tmp/RtmpHE56Fn/table-wide1a9e4a24846f.docx</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

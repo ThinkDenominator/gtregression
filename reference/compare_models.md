@@ -90,6 +90,9 @@ A `gtregression` object with:
 - `comparison_status`: whether models appear to use the same analysis
   sample
 
+- `comparison_warnings`: caution messages that are highlighted in
+  rendered tables when interpretation needs extra care
+
 ## Details
 
 `compare_models()` does not refit models and does not perform hidden
@@ -110,9 +113,10 @@ to the same analysis sample. `compare_models()` checks whether the
 fitted models appear to use the same analysis sample using retained
 model row identifiers when available; otherwise it compares N and event
 counts. AIC, BIC, log-likelihood, and likelihood-ratio statistics remain
-visible when samples differ, but the table footer warns that
-likelihood-based comparisons should then be interpreted descriptively
-rather than as formal model-selection evidence.
+visible when samples differ, but rendered tables promote the caution
+message visually before routine footnotes. Likelihood-based comparisons
+should then be interpreted descriptively rather than as formal
+model-selection evidence.
 
 ## Examples
 
