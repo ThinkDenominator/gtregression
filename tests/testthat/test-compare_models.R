@@ -84,6 +84,9 @@ test_that("compare_models flags different analysis samples without hiding statis
   expect_true(all(is.finite(res$table_body$logLik)))
   expect_true(is.finite(res$table_body$primary_estimate[2]))
   expect_true(is.finite(res$table_body$primary_pct_change[2]))
+  expect_true(length(res$comparison_warnings) >= 1)
+  expect_match(res$comparison_warnings[1], "Caution: Models were fitted to different analysis samples")
+  expect_equal(res$footnotes[1], res$comparison_warnings[1])
 })
 
 test_that("compare_models reports Cox events and concordance from cox_reg objects", {
@@ -148,6 +151,25 @@ test_that("compare_models supports list input and formatted tables", {
   expect_equal(res$table_body$model, c("base", "adjusted"))
   expect_true(all(is.na(res$table_body$LR_chisq)))
   expect_false("Events" %in% names(res$table_display))
+})
+
+test_that("compare_models renders caution notes prominently in flextable output", {
+  skip_if_not_installed("flextable")
+
+  df <- data.frame(
+    y = c(2.1, 3.4, 4.8, 6.2, 7.4, 8.9, 10.5, 11.7, 12.8, 14.1),
+    x1 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+    x2 = c(0, 1, 0, 1, NA, 0, 1, NA, 1, 0)
+  )
+
+  m0 <- multi_reg(data = df, outcome = y, exposures = x1, approach = linear)
+  m1 <- multi_reg(data = df, outcome = y, exposures = c(x1, x2), approach = linear)
+
+  res <- compare_models(m0, m1, primary_exposure = x1)
+
+  expect_s3_class(res$table, "flextable")
+  expect_match(res$table$footer$dataset$Model[1], "Caution: Models were fitted to different analysis samples")
+  expect_match(res$table$footer$dataset$Model[2], "Comparison status: Different analysis sample")
 })
 
 test_that("compare_models rejects raw fitted model objects", {

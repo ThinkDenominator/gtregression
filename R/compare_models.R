@@ -33,6 +33,8 @@
 #'   \item \code{models}: fitted models compared
 #'   \item \code{comparison_status}: whether models appear to use the same
 #'     analysis sample
+#'   \item \code{comparison_warnings}: caution messages that are highlighted
+#'     in rendered tables when interpretation needs extra care
 #' }
 #'
 #' @details
@@ -50,9 +52,9 @@
 #' models appear to use the same analysis sample using retained model row
 #' identifiers when available; otherwise it compares N and event counts. AIC,
 #' BIC, log-likelihood, and likelihood-ratio statistics remain visible when
-#' samples differ, but the table footer warns that likelihood-based comparisons
-#' should then be interpreted descriptively rather than as formal model-selection
-#' evidence.
+#' samples differ, but rendered tables promote the caution message visually
+#' before routine footnotes. Likelihood-based comparisons should then be
+#' interpreted descriptively rather than as formal model-selection evidence.
 #'
 #' @examples
 #' data("data_lungcancer", package = "gtregression")
@@ -138,6 +140,12 @@ compare_models <- function(...,
     p_digits = p_digits,
     primary_exposure = primary_exposure
   )
+  table_notes <- .compare_models_notes(
+    body = table_body,
+    nested = nested,
+    primary_exposure = primary_exposure,
+    comparison_status = comparison_status
+  )
 
   out <- list(
     table = NULL,
@@ -147,6 +155,8 @@ compare_models <- function(...,
     model_names = model_names,
     primary_exposure = primary_exposure,
     comparison_status = comparison_status,
+    comparison_warnings = table_notes$warnings,
+    footnotes = c(table_notes$warnings, table_notes$notes),
     format = format,
     source = "compare_models"
   )
@@ -159,7 +169,8 @@ compare_models <- function(...,
       theme = theme,
       nested = nested,
       primary_exposure = primary_exposure,
-      comparison_status = comparison_status
+      comparison_status = comparison_status,
+      table_notes = table_notes
     )
   }
 
@@ -661,52 +672,78 @@ compare_models <- function(...,
 
 #' @keywords internal
 #' @noRd
+.compare_models_notes <- function(body,
+                                  nested = TRUE,
+                                  primary_exposure = NULL,
+                                  comparison_status = NULL) {
+  notes <- c(
+    .compare_status_note(comparison_status),
+    "Compare prespecified candidate models; lower AIC or BIC indicates better relative fit among the compared models."
+  )
+
+  warnings <- character(0)
+
+  if (isFALSE(comparison_status$same_sample)) {
+    warnings <- c(
+      warnings,
+      paste0(
+        "Caution: Models were fitted to different analysis samples because of missing data or differing inclusion criteria. ",
+        "AIC, BIC, log-likelihood and likelihood-ratio statistics are presented for completeness but should not be interpreted as formal model-selection criteria across different datasets."
+      )
+    )
+  } else {
+    notes <- c(
+      notes,
+      "Models were fitted to the same analysis sample. AIC, BIC, log-likelihood and likelihood-ratio tests may be interpreted as formal model-comparison statistics when the models are nested as required."
+    )
+  }
+
+  notes <- c(
+    notes,
+    "Likelihood-ratio p-values are sequential and should be interpreted only for nested models fitted to the same analysis sample."
+  )
+
+  if (isTRUE(nested) && any(body$nested_comparison %in% FALSE)) {
+    warnings <- c(
+      warnings,
+      "Caution: One or more sequential model pairs do not appear to be nested based on their model terms; likelihood-ratio statistics for those comparisons should be interpreted with caution."
+    )
+  }
+
+  if (!is.null(primary_exposure) && any(is.finite(body$primary_estimate))) {
+    notes <- c(
+      notes,
+      "Primary estimate change is calculated on the coefficient/log-effect scale before exponentiation and can help assess robustness across candidate models."
+    )
+  }
+
+  list(
+    warnings = unique(warnings[nzchar(warnings)]),
+    notes = unique(notes[nzchar(notes)])
+  )
+}
+
+#' @keywords internal
+#' @noRd
 .build_compare_models_table <- function(display,
                                         body,
                                         format = c("flextable", "gt"),
                                         theme = c("minimal"),
                                         nested = TRUE,
                                         primary_exposure = NULL,
-                                        comparison_status = NULL) {
+                                        comparison_status = NULL,
+                                        table_notes = NULL) {
   format <- match.arg(format, c("flextable", "gt"))
-  note <- c(
-    .compare_status_note(comparison_status),
-    "Compare prespecified candidate models; lower AIC or BIC indicates better relative fit among the compared models."
-  )
-
-  if (isFALSE(comparison_status$same_sample)) {
-    note <- c(
-      note,
-      paste0(
-        "Models were fitted to different analysis samples because of missing data or differing inclusion criteria. ",
-        "AIC, BIC, log-likelihood and likelihood-ratio statistics are presented for completeness but should not be interpreted as formal model-selection criteria across different datasets."
-      )
-    )
-  } else {
-    note <- c(
-      note,
-      "Models were fitted to the same analysis sample. AIC, BIC, log-likelihood and likelihood-ratio tests may be interpreted as formal model-comparison statistics when the models are nested as required."
+  if (is.null(table_notes)) {
+    table_notes <- .compare_models_notes(
+      body = body,
+      nested = nested,
+      primary_exposure = primary_exposure,
+      comparison_status = comparison_status
     )
   }
-
-  note <- c(
-    note,
-    "Likelihood-ratio p-values are sequential and should be interpreted only for nested models fitted to the same analysis sample."
-  )
-
-  if (isTRUE(nested) && any(body$nested_comparison %in% FALSE)) {
-    note <- c(
-      note,
-      "One or more sequential model pairs do not appear to be nested based on their model terms; likelihood-ratio statistics for those comparisons should be interpreted with caution."
-    )
-  }
-
-  if (!is.null(primary_exposure) && any(is.finite(body$primary_estimate))) {
-    note <- c(
-      note,
-      "Primary estimate change is calculated on the coefficient/log-effect scale before exponentiation and can help assess robustness across candidate models."
-    )
-  }
+  warnings <- table_notes$warnings
+  notes <- table_notes$notes
 
   if (format == "gt") {
     tbl <- gt::gt(display) |>
@@ -716,9 +753,26 @@ compare_models <- function(...,
       gt::tab_style(
         style = gt::cell_text(weight = "bold"),
         locations = gt::cells_column_labels()
-      ) |>
-      gt::tab_source_note(gt::md(paste(note, collapse = "<br>"))) |>
-      .compact_gt_source_notes()
+      )
+
+    if (length(warnings)) {
+      warning_html <- paste(
+        paste0(
+          "<div style='background-color:#fff3cd; border-left:4px solid #b58105; ",
+          "padding:6px 8px; margin:2px 0; font-weight:700;'>",
+          warnings,
+          "</div>"
+        ),
+        collapse = ""
+      )
+      tbl <- gt::tab_source_note(tbl, gt::html(warning_html))
+    }
+
+    if (length(notes)) {
+      tbl <- gt::tab_source_note(tbl, gt::md(paste(notes, collapse = "<br>")))
+    }
+
+    tbl <- .compact_gt_source_notes(tbl)
 
     best_rows <- which(body$best_AIC | body$best_BIC)
     if (length(best_rows)) {
@@ -759,8 +813,18 @@ compare_models <- function(...,
   if ("compact" %in% theme) {
     ft <- flextable::padding(ft, padding = 2, part = "body")
   }
-  ft <- flextable::add_footer_lines(ft, values = note)
+  footer_lines <- c(warnings, notes)
+  ft <- flextable::add_footer_lines(ft, values = footer_lines)
+  if (length(warnings)) {
+    warning_rows <- seq_len(length(warnings))
+    ft <- flextable::bold(ft, i = warning_rows, bold = TRUE, part = "footer")
+    ft <- flextable::bg(ft, i = warning_rows, bg = "#fff3cd", part = "footer")
+    ft <- flextable::color(ft, i = warning_rows, color = "#5f4700", part = "footer")
+  }
   ft <- .compact_flex_footer(ft)
-  ft <- flextable::italic(ft, italic = TRUE, part = "footer")
+  note_rows <- if (length(notes)) seq(length(warnings) + 1L, length(footer_lines)) else integer(0)
+  if (length(note_rows)) {
+    ft <- flextable::italic(ft, i = note_rows, italic = TRUE, part = "footer")
+  }
   flextable::autofit(ft)
 }

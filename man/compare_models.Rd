@@ -54,6 +54,8 @@ A \code{gtregression} object with:
   \item \code{models}: fitted models compared
   \item \code{comparison_status}: whether models appear to use the same
     analysis sample
+  \item \code{comparison_warnings}: caution messages that are highlighted
+    in rendered tables when interpretation needs extra care
 }
 }
 \description{
@@ -77,9 +79,9 @@ the same analysis sample. \code{compare_models()} checks whether the fitted
 models appear to use the same analysis sample using retained model row
 identifiers when available; otherwise it compares N and event counts. AIC,
 BIC, log-likelihood, and likelihood-ratio statistics remain visible when
-samples differ, but the table footer warns that likelihood-based comparisons
-should then be interpreted descriptively rather than as formal model-selection
-evidence.
+samples differ, but rendered tables promote the caution message visually
+before routine footnotes. Likelihood-based comparisons should then be
+interpreted descriptively rather than as formal model-selection evidence.
 }
 \examples{
 data("data_lungcancer", package = "gtregression")

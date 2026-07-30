@@ -4,7 +4,15 @@
 \alias{save_table}
 \title{Save a single regression or summary table}
 \usage{
-save_table(tbl, filename = "table", format = c("docx", "pdf", "html"))
+save_table(
+  tbl,
+  filename = "table",
+  format = c("docx", "pdf", "html"),
+  orientation = c("auto", "portrait", "landscape"),
+  fit_width = TRUE,
+  font_size = 9,
+  min_font_size = 8
+)
 }
 \arguments{
 \item{tbl}{A \code{gtregression} object, \code{merged_table} object,
@@ -15,6 +23,20 @@ directory is supplied, the file is saved in \code{tempdir()}.}
 
 \item{format}{Output format. One of \code{"docx"}, \code{"pdf"}, or
 \code{"html"}.}
+
+\item{orientation}{Word page orientation for DOCX output. One of
+\code{"auto"}, \code{"portrait"}, or \code{"landscape"}. With
+\code{"auto"}, wide tables are saved in landscape orientation before any
+font-size reduction is attempted.}
+
+\item{fit_width}{Logical. If \code{TRUE}, try to fit flextable DOCX output
+within the selected Word page width. If \code{FALSE}, keep the natural
+autofit table width.}
+
+\item{font_size}{Requested font size for flextable DOCX output.}
+
+\item{min_font_size}{Smallest font size allowed when fitting wide flextable
+DOCX output. The font size is never reduced below this value.}
 }
 \value{
 Saves the file to disk. Invisibly returns the normalized file path.
@@ -38,4 +60,17 @@ tbl <- uni_reg(
 )
 
 save_table(tbl, filename = tempfile("table"), format = "html")
+
+# Wide Word tables can be saved in landscape orientation.
+\donttest{
+save_table(
+  tbl,
+  filename = tempfile("table-wide"),
+  format = "docx",
+  orientation = "auto",
+  fit_width = TRUE,
+  font_size = 9,
+  min_font_size = 8
+)
+}
 }

@@ -63,7 +63,15 @@ test_that("save_table writes flextable docx and html files", {
   file_docx <- file.path(tempdir(), paste0("gtregression-flex-", Sys.getpid(), ".docx"))
   file_html <- file.path(tempdir(), paste0("gtregression-flex-", Sys.getpid(), ".html"))
 
-  out_docx <- save_table(tbl, filename = file_docx, format = docx)
+  out_docx <- save_table(
+    tbl,
+    filename = file_docx,
+    format = docx,
+    orientation = auto,
+    fit_width = TRUE,
+    font_size = 9,
+    min_font_size = 8
+  )
   out_html <- save_table(tbl, filename = file_html, format = html)
 
   expect_true(file.exists(out_docx))
@@ -74,16 +82,49 @@ test_that("save_table writes flextable docx and html files", {
   unlink(c(out_docx, out_html))
 })
 
-test_that("docx flextables are constrained to requested page width", {
+test_that("docx flextables are fitted without unsafe font shrinking", {
   skip_if_not_installed("flextable")
 
   wide_df <- as.data.frame(matrix(seq_len(100), nrow = 5))
   ft <- flextable::autofit(flextable::flextable(wide_df))
-  fitted <- .fit_flextable_docx_width(ft, table_width = 6.5)
+  fitted <- .fit_flextable_docx_width(
+    ft,
+    table_width = 6.5,
+    fit_width = TRUE,
+    font_size = 9,
+    min_font_size = 8
+  )
+  unfitted <- .fit_flextable_docx_width(ft, table_width = NULL, font_size = 9)
+  natural <- .fit_flextable_docx_width(ft, table_width = 6.5, fit_width = FALSE)
 
   expect_lte(sum(flextable::flextable_dim(fitted)$widths), 6.5)
-  expect_identical(.fit_flextable_docx_width(ft, table_width = NULL), ft)
+  expect_s3_class(unfitted, "flextable")
+  expect_gt(sum(flextable::flextable_dim(natural)$widths),
+            sum(flextable::flextable_dim(fitted)$widths))
   expect_error(.fit_flextable_docx_width(ft, table_width = 0), "`table_width`")
+  expect_error(.fit_flextable_docx_width(ft, min_font_size = 10, font_size = 9),
+               "`min_font_size`")
+})
+
+test_that("docx orientation auto prefers landscape for wide flextables", {
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("officer")
+
+  wide_df <- as.data.frame(matrix(seq_len(80), nrow = 4))
+  names(wide_df) <- paste0("long_column_", seq_along(wide_df))
+  ft <- flextable::autofit(flextable::flextable(wide_df))
+  prepared <- .prepare_flextable_docx(
+    ft,
+    orientation = "auto",
+    fit_width = TRUE,
+    font_size = 9,
+    min_font_size = 8
+  )
+
+  expect_equal(prepared$orientation, "landscape")
+  expect_equal(prepared$page_width, 9)
+  expect_s3_class(prepared$table, "flextable")
+  expect_error(.prepare_flextable_docx(ft, fit_width = NA), "`fit_width`")
 })
 
 test_that("save_plot writes files and validates inputs", {

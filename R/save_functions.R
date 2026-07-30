@@ -52,21 +52,210 @@
   filename
 }
 
-#' Fit flextable output to a Word page width
+#' Validate DOCX table sizing options
 #' @keywords internal
 #' @noRd
-.fit_flextable_docx_width <- function(ft, table_width = 6.5) {
-  if (is.null(table_width)) {
+.validate_docx_table_sizing <- function(fit_width = TRUE,
+                                        font_size = 9,
+                                        min_font_size = 8) {
+  if (!is.logical(fit_width) || length(fit_width) != 1L || is.na(fit_width)) {
+    stop("`fit_width` must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (!is.numeric(font_size) || length(font_size) != 1L ||
+      is.na(font_size) || font_size <= 0) {
+    stop("`font_size` must be a single positive number.", call. = FALSE)
+  }
+  if (!is.numeric(min_font_size) || length(min_font_size) != 1L ||
+      is.na(min_font_size) || min_font_size <= 0) {
+    stop("`min_font_size` must be a single positive number.", call. = FALSE)
+  }
+  if (min_font_size > font_size) {
+    stop("`min_font_size` must be less than or equal to `font_size`.", call. = FALSE)
+  }
+
+  invisible(TRUE)
+}
+
+#' Measure a flextable width in inches
+#' @keywords internal
+#' @noRd
+.flextable_col_widths <- function(ft) {
+  widths <- ft$body$colwidths
+  if (is.null(widths)) {
+    return(NULL)
+  }
+  widths
+}
+
+#' Measure a flextable width in inches
+#' @keywords internal
+#' @noRd
+.flextable_width <- function(ft) {
+  widths <- .flextable_col_widths(ft)
+  if (is.null(widths)) {
+    dims <- tryCatch(flextable::flextable_dim(ft), error = function(e) NULL)
+    if (is.null(dims) || is.null(dims$widths)) {
+      return(NA_real_)
+    }
+    width <- sum(dims$widths, na.rm = TRUE)
+  } else {
+    width <- sum(widths, na.rm = TRUE)
+  }
+  if (!is.finite(width) || width <= 0) NA_real_ else width
+}
+
+#' Scale flextable columns to a target width without reducing font size
+#' @keywords internal
+#' @noRd
+.scale_flextable_width <- function(ft, table_width) {
+  widths <- .flextable_col_widths(ft)
+  if (is.null(widths)) {
     return(ft)
+  }
+
+  current_width <- sum(widths, na.rm = TRUE)
+  if (!is.finite(current_width) || current_width <= 0 ||
+      current_width <= table_width) {
+    return(ft)
+  }
+
+  scaled <- widths * (table_width / current_width)
+  col_keys <- names(scaled)
+  if (is.null(col_keys) || any(!nzchar(col_keys))) {
+    col_keys <- ft$col_keys
+  }
+  if (is.null(col_keys) || length(col_keys) != length(scaled)) {
+    return(ft)
+  }
+
+  out <- ft
+  for (i in seq_along(scaled)) {
+    out <- tryCatch(
+      flextable::width(out, j = col_keys[[i]], width = scaled[[i]]),
+      error = function(e) out
+    )
+  }
+  out
+}
+
+#' Fit flextable output to a Word page width without unsafe font shrinking
+#' @keywords internal
+#' @noRd
+.fit_flextable_docx_width <- function(ft,
+                                      table_width = 6.5,
+                                      fit_width = TRUE,
+                                      font_size = 9,
+                                      min_font_size = 8,
+                                      warn = TRUE) {
+  .validate_docx_table_sizing(
+    fit_width = fit_width,
+    font_size = font_size,
+    min_font_size = min_font_size
+  )
+  if (is.null(table_width)) {
+    return(flextable::autofit(flextable::fontsize(ft, size = font_size, part = "all")))
   }
   if (!is.numeric(table_width) || length(table_width) != 1L ||
       is.na(table_width) || table_width <= 0) {
     stop("`table_width` must be NULL or a single positive number.", call. = FALSE)
   }
 
-  tryCatch(
-    flextable::fit_to_width(ft, max_width = table_width),
-    error = function(e) ft
+  ft_requested <- flextable::autofit(flextable::fontsize(ft, size = font_size, part = "all"))
+  if (!isTRUE(fit_width)) {
+    return(ft_requested)
+  }
+
+  fitted <- .scale_flextable_width(ft_requested, table_width)
+  fitted_width <- .flextable_width(fitted)
+  if (is.finite(fitted_width) && fitted_width <= table_width) {
+    return(fitted)
+  }
+
+  if (font_size > min_font_size) {
+    for (size in seq(font_size - 1, min_font_size, by = -1)) {
+      candidate <- flextable::autofit(flextable::fontsize(ft, size = size, part = "all"))
+      candidate <- .scale_flextable_width(candidate, table_width)
+      candidate_width <- .flextable_width(candidate)
+      if (is.finite(candidate_width) && candidate_width <= table_width) {
+        return(candidate)
+      }
+    }
+  }
+
+  if (isTRUE(warn)) {
+    warning(
+      "The table is wider than the selected DOCX page width. ",
+      "Saving with flextable::autofit() at the requested font size instead of ",
+      "reducing below `min_font_size`. Consider landscape orientation, fewer columns, ",
+      "a smaller `font_size`, or `fit_width = FALSE`.",
+      call. = FALSE
+    )
+  }
+
+  ft_requested
+}
+
+#' Resolve DOCX orientation from table width
+#' @keywords internal
+#' @noRd
+.resolve_docx_orientation <- function(ft,
+                                      orientation = "auto",
+                                      portrait_width = 6.5,
+                                      landscape_width = 9,
+                                      wide_col_threshold = 6L) {
+  orientation <- match.arg(orientation, c("auto", "portrait", "landscape"))
+
+  if (!identical(orientation, "auto")) {
+    return(orientation)
+  }
+
+  measured_width <- .flextable_width(flextable::autofit(ft))
+  col_keys <- if (!is.null(ft$col_keys)) ft$col_keys else character(0)
+  n_cols <- length(col_keys)
+
+  if ((is.finite(measured_width) && measured_width > portrait_width) ||
+      n_cols > wide_col_threshold) {
+    return("landscape")
+  }
+
+  "portrait"
+}
+
+#' Prepare a flextable and Word section for DOCX export
+#' @keywords internal
+#' @noRd
+.prepare_flextable_docx <- function(ft,
+                                    orientation = c("auto", "portrait", "landscape"),
+                                    fit_width = TRUE,
+                                    font_size = 9,
+                                    min_font_size = 8) {
+  orientation <- match.arg(orientation)
+  .validate_docx_table_sizing(
+    fit_width = fit_width,
+    font_size = font_size,
+    min_font_size = min_font_size
+  )
+
+  resolved_orientation <- .resolve_docx_orientation(
+    ft = flextable::fontsize(ft, size = font_size, part = "all"),
+    orientation = orientation
+  )
+  page_width <- if (identical(resolved_orientation, "landscape")) 9 else 6.5
+  section <- officer::prop_section(
+    page_size = officer::page_size(orient = resolved_orientation)
+  )
+
+  list(
+    table = .fit_flextable_docx_width(
+      ft,
+      table_width = page_width,
+      fit_width = fit_width,
+      font_size = font_size,
+      min_font_size = min_font_size
+    ),
+    orientation = resolved_orientation,
+    page_width = page_width,
+    section = section
   )
 }
 
@@ -208,6 +397,16 @@
 #'   directory is supplied, the file is saved in \code{tempdir()}.
 #' @param format Output format. One of \code{"docx"}, \code{"pdf"}, or
 #'   \code{"html"}.
+#' @param orientation Word page orientation for DOCX output. One of
+#'   \code{"auto"}, \code{"portrait"}, or \code{"landscape"}. With
+#'   \code{"auto"}, wide tables are saved in landscape orientation before any
+#'   font-size reduction is attempted.
+#' @param fit_width Logical. If \code{TRUE}, try to fit flextable DOCX output
+#'   within the selected Word page width. If \code{FALSE}, keep the natural
+#'   autofit table width.
+#' @param font_size Requested font size for flextable DOCX output.
+#' @param min_font_size Smallest font size allowed when fitting wide flextable
+#'   DOCX output. The font size is never reduced below this value.
 #'
 #' @return Saves the file to disk. Invisibly returns the normalized file path.
 #'
@@ -226,12 +425,35 @@
 #' )
 #'
 #' save_table(tbl, filename = tempfile("table"), format = "html")
+#'
+#' # Wide Word tables can be saved in landscape orientation.
+#' \donttest{
+#' save_table(
+#'   tbl,
+#'   filename = tempfile("table-wide"),
+#'   format = "docx",
+#'   orientation = "auto",
+#'   fit_width = TRUE,
+#'   font_size = 9,
+#'   min_font_size = 8
+#' )
+#' }
 #' @export
 save_table <- function(tbl,
                        filename = "table",
-                       format = c("docx", "pdf", "html")) {
+                       format = c("docx", "pdf", "html"),
+                       orientation = c("auto", "portrait", "landscape"),
+                       fit_width = TRUE,
+                       font_size = 9,
+                       min_font_size = 8) {
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("docx", "pdf", "html"))
   format <- match.arg(format)
+  orientation <- .choice_arg(
+    substitute(orientation),
+    env = parent.frame(),
+    choices = c("auto", "portrait", "landscape")
+  )
+  orientation <- match.arg(orientation, c("auto", "portrait", "landscape"))
   filename <- .normalize_save_path(filename, format)
 
   obj <- .resolve_table_object(tbl)
@@ -248,8 +470,18 @@ save_table <- function(tbl,
     }
 
     if (identical(format, "docx")) {
-      obj <- .fit_flextable_docx_width(obj, table_width = 6.5)
-      flextable::save_as_docx(obj, path = filename)
+      docx <- .prepare_flextable_docx(
+        obj,
+        orientation = orientation,
+        fit_width = fit_width,
+        font_size = font_size,
+        min_font_size = min_font_size
+      )
+      flextable::save_as_docx(
+        docx$table,
+        path = filename,
+        pr_section = docx$section
+      )
     } else if (identical(format, "html")) {
       flextable::save_as_html(obj, path = filename)
     } else {
