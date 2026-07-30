@@ -236,7 +236,7 @@
       td_by_stratum = tds,
       variable_labels = variable_labels
     )
-    wide <- built$wide
+    wide <- .strata_add_survival_counts(built$wide, models)
     spanners <- built$spanners
     tbl <- if (format == "gt") {
       .build_gt_strata_wide_multi(wide, spanners, effect_label, theme, .stratified_survival_footnotes(
@@ -358,12 +358,22 @@
   }, integer(1))
   names(N_map) <- exposures
 
+  Events_map <- vapply(exposures, function(x) {
+    complete <- stats::complete.cases(dlev[, c(time, event, x), drop = FALSE])
+    if (!any(complete)) {
+      return(0L)
+    }
+    sum(.cox_event01(dlev[[event]][complete]) == 1L, na.rm = TRUE)
+  }, integer(1))
+  names(Events_map) <- exposures
+
   fmt_est_ci <- function(est, lo, hi, digits = 2) {
     f <- function(z) formatC(z, digits = digits, format = "f", big.mark = ",")
     paste0(f(est), " (", f(lo), "\u2013", f(hi), ")")
   }
 
   N_vec <- character(nrow(skeleton))
+  events_vec <- character(nrow(skeleton))
   eff_vec <- character(nrow(skeleton))
   p_vec <- character(nrow(skeleton))
 
@@ -374,6 +384,7 @@
 
     if (hdr) {
       N_vec[i] <- as.character(N_map[[ex]])
+      events_vec[i] <- as.character(Events_map[[ex]])
       if (!is_factor[[ex]]) {
         row <- td[td$exposure == ex & td$level == ex, , drop = FALSE]
         if (nrow(row)) {
@@ -395,7 +406,7 @@
     }
   }
 
-  list(N = N_vec, effect = eff_vec, pval = p_vec)
+  list(N = N_vec, Events = events_vec, effect = eff_vec, pval = p_vec)
 }
 
 #' Assemble wide display data for crude stratified survival models
@@ -431,6 +442,7 @@
       event = event
     )
     wide[[paste0("..N__", lev)]] <- cols$N
+    wide[[paste0("..Events__", lev)]] <- cols$Events
     wide[[paste0("..eff__", lev)]] <- cols$effect
     wide[[paste0("..p__", lev)]] <- cols$pval
   }
@@ -481,6 +493,83 @@
   }
 
   paste0(min(n_vals), "-", max(n_vals))
+}
+
+#' Add model N and event count columns to a stratified survival display table
+#' @keywords internal
+#' @noRd
+.strata_add_survival_counts <- function(wide, models_by_stratum) {
+  wide <- .strata_add_model_n(wide, models_by_stratum)
+
+  if (!length(models_by_stratum) || !"is_header" %in% names(wide)) {
+    return(wide)
+  }
+
+  row_exposure <- attr(wide, "row_exposure", exact = TRUE)
+  if (is.null(row_exposure)) {
+    return(wide)
+  }
+
+  is_header <- wide$is_header %in% TRUE
+
+  for (lev in names(models_by_stratum)) {
+    models <- models_by_stratum[[lev]]
+    if (!length(models)) {
+      next
+    }
+
+    events_vec <- character(nrow(wide))
+    model_names <- names(models)
+    has_single_model <- identical(model_names, "multivariable_model")
+
+    for (i in seq_len(nrow(wide))) {
+      if (!isTRUE(is_header[i])) {
+        next
+      }
+
+      fit <- if (has_single_model) {
+        models[["multivariable_model"]]
+      } else {
+        models[[row_exposure[i]]]
+      }
+
+      if (!is.null(fit)) {
+        events_vec[i] <- .strata_survival_event_count(fit)
+      }
+    }
+
+    wide[[paste0("..Events__", lev)]] <- events_vec
+  }
+
+  wide
+}
+
+#' Extract event counts from Cox or parametric survival fits
+#' @keywords internal
+#' @noRd
+.strata_survival_event_count <- function(fit) {
+  events <- NULL
+
+  if (inherits(fit, "coxph") && !is.null(fit$nevent)) {
+    events <- fit$nevent
+  }
+
+  if (is.null(events)) {
+    events <- attr(fit, "gtregression_events", exact = TRUE)
+  }
+
+  if (is.null(events)) {
+    y <- tryCatch(stats::model.response(stats::model.frame(fit)), error = function(e) NULL)
+    if (inherits(y, "Surv")) {
+      events <- sum(y[, ncol(y)] == 1L, na.rm = TRUE)
+    }
+  }
+
+  if (is.null(events) || !is.finite(as.numeric(events))) {
+    return("")
+  }
+
+  as.character(as.integer(events))
 }
 
 #' Bind model statistics with a stratum column

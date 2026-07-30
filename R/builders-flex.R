@@ -92,19 +92,12 @@
   if (!requireNamespace("flextable", quietly = TRUE))
     stop("Install 'flextable' or use format='gt'.", call. = FALSE)
 
-  block_ids <- unlist(lapply(seq_along(spanners), function(i) {
-    nm <- sub("^.*=\\s*", "", spanners[i])
-    c(paste0("..N__", nm), paste0("..eff__", nm), paste0("..p__", nm))
-  }))
-  out <- df[, c("Characteristic", block_ids), drop = FALSE]
-
-  sub_header <- c("Characteristic",
-                  unlist(rep(list(c("N", effect_label, "p-value")),
-                             length(spanners))))
+  spec <- .strata_display_spec(df, spanners, effect_label)
+  out <- df[, c("Characteristic", spec$ids), drop = FALSE]
 
   ft <- flextable::flextable(out)
-  ft <- flextable::set_header_labels(ft, values = setNames(sub_header, names(out)))
-  ft <- flextable::add_header_row(ft, values = c("", spanners), colwidths = c(1, rep(3, length(spanners))))
+  ft <- flextable::set_header_labels(ft, values = setNames(spec$labels, names(out)))
+  ft <- flextable::add_header_row(ft, values = c("", spanners), colwidths = c(1, spec$widths))
   ft <- flextable::bold(ft, part = "header", bold = TRUE)
   ft <- flextable::align(ft, j = "Characteristic", align = "left",  part = "all")
   ft <- flextable::align(ft, j = setdiff(names(out), "Characteristic"), align = "center", part = "all")
@@ -142,18 +135,12 @@
   if (!requireNamespace("flextable", quietly = TRUE))
     stop("Install 'flextable' or use format='gt'.", call. = FALSE)
 
-  block_ids <- unlist(lapply(spanners, function(s) {
-    nm <- sub("^.*=\\s*", "", s)
-    c(paste0("..eff__", nm), paste0("..p__", nm))
-  }))
-  out <- df[, c("Characteristic", block_ids), drop = FALSE]
-
-  sub_header <- c("Characteristic",
-                  unlist(rep(list(c(effect_label_adj, "p-value")), length(spanners))))
+  spec <- .strata_display_spec(df, spanners, effect_label_adj)
+  out <- df[, c("Characteristic", spec$ids), drop = FALSE]
 
   ft <- flextable::flextable(out)
-  ft <- flextable::set_header_labels(ft, values = setNames(sub_header, names(out)))
-  ft <- flextable::add_header_row(ft, values = c("", spanners), colwidths = c(1, rep(2, length(spanners))))
+  ft <- flextable::set_header_labels(ft, values = setNames(spec$labels, names(out)))
+  ft <- flextable::add_header_row(ft, values = c("", spanners), colwidths = c(1, spec$widths))
   ft <- flextable::bold(ft, part = "header", bold = TRUE)
   ft <- flextable::align(ft, j = "Characteristic", align = "left",  part = "all")
   ft <- flextable::align(ft, j = setdiff(names(out), "Characteristic"), align = "center", part = "all")

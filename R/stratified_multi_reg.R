@@ -2,7 +2,7 @@
 #'
 #' Fits multivariable regression models within each stratum and returns a
 #' unified wide table with one "Characteristic" column and, under bold
-#' spanners for each stratum, two columns: "Adjusted <effect>" and "p-value".
+#' spanners for each stratum, model N, "Adjusted <effect>", and "p-value".
 #'
 #' If \code{adjust_for = NULL}, all \code{exposures} are included in one
 #' multivariable model within each stratum. If \code{adjust_for} is supplied,
@@ -172,7 +172,7 @@ stratified_multi_reg <- function(data,
     tds,
     variable_labels = variable_labels
   )
-  wide <- built$wide
+  wide <- .strata_add_model_n(built$wide, models)
   spanners <- built$spanners
   eff_lab <- paste("Adjusted", .get_effect_label(approach))
 

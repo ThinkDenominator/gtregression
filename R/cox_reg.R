@@ -57,6 +57,11 @@
 #' The proportional hazards assumption should be assessed separately, for
 #' example with \code{check_ph()}.
 #'
+#' Stratified Cox tables include model \code{N} and event counts within each
+#' stratum. Crude stratified tables calculate these counts for each
+#' exposure-specific model; adjusted and multivariable stratified tables use the
+#' corresponding fitted model within each stratum.
+#'
 #' If exposure variables have a \code{"label"} attribute, for example from
 #' \code{labelled::var_label()}, those labels are used automatically in the
 #' displayed table.

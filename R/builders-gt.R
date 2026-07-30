@@ -104,18 +104,11 @@
   if (!requireNamespace("gt", quietly = TRUE))
     stop("Install 'gt' or use format='flextable'.", call. = FALSE)
 
-  block_ids <- unlist(lapply(seq_along(spanners), function(i) {
-    nm <- sub("^.*=\\s*", "", spanners[i])
-    c(paste0("..N__", nm), paste0("..eff__", nm), paste0("..p__", nm))
-  }))
-  out <- df[, c("Characteristic", block_ids), drop = FALSE]
-
-  sub_header <- c("Characteristic",
-                  unlist(rep(list(c("N", effect_label, "p-value")),
-                             length(spanners))))
+  spec <- .strata_display_spec(df, spanners, effect_label)
+  out <- df[, c("Characteristic", spec$ids), drop = FALSE]
 
   tb <- gt::gt(out) |>
-    gt::cols_label(.list = setNames(sub_header, names(out))) |>
+    gt::cols_label(.list = setNames(spec$labels, names(out))) |>
     gt::cols_align("left",   columns = "Characteristic") |>
     gt::cols_align("center", columns = setdiff(names(out), "Characteristic")) |>
     gt::tab_options(
@@ -129,12 +122,11 @@
   tb <- gt::tab_style(tb, gt::cell_text(weight = "bold"),
                       locations = gt::cells_column_labels())
 
-  # add spanners (3 columns each)
   start <- 2L
   for (i in seq_along(spanners)) {
-    cols <- names(out)[start:(start+2)]
+    cols <- names(out)[start:(start + spec$widths[i] - 1L)]
     tb <- gt::tab_spanner(tb, label = spanners[i], columns = cols)
-    start <- start + 3L
+    start <- start + spec$widths[i]
   }
   # bold spanners after creating them
   tb <- tryCatch(
@@ -170,17 +162,11 @@
   if (!requireNamespace("gt", quietly = TRUE))
     stop("Install 'gt' or use format='flextable'.", call. = FALSE)
 
-  block_ids <- unlist(lapply(spanners, function(s) {
-    nm <- sub("^.*=\\s*", "", s)
-    c(paste0("..eff__", nm), paste0("..p__", nm))
-  }))
-  out <- df[, c("Characteristic", block_ids), drop = FALSE]
-
-  sub_header <- c("Characteristic",
-                  unlist(rep(list(c(effect_label_adj, "p-value")), length(spanners))))
+  spec <- .strata_display_spec(df, spanners, effect_label_adj)
+  out <- df[, c("Characteristic", spec$ids), drop = FALSE]
 
   tb <- gt::gt(out) |>
-    gt::cols_label(.list = setNames(sub_header, names(out))) |>
+    gt::cols_label(.list = setNames(spec$labels, names(out))) |>
     gt::cols_align("left",   columns = "Characteristic") |>
     gt::cols_align("center", columns = setdiff(names(out), "Characteristic")) |>
     gt::tab_options(
@@ -195,9 +181,9 @@
 
   start <- 2L
   for (i in seq_along(spanners)) {
-    cols <- names(out)[start:(start+1)]
+    cols <- names(out)[start:(start + spec$widths[i] - 1L)]
     tb <- gt::tab_spanner(tb, label = spanners[i], columns = cols)
-    start <- start + 2L
+    start <- start + spec$widths[i]
   }
   tb <- tryCatch(
     gt::tab_style(tb, gt::cell_text(weight = "bold"),

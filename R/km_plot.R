@@ -29,6 +29,13 @@
 #' @param legend_title Optional legend title. If \code{NULL}, the labelled
 #'   \code{by} variable name is used.
 #' @param palette Optional character vector of colors for grouped curves.
+#' @param y_percent Logical; if \code{TRUE}, display survival probability as
+#'   percentages. If \code{FALSE}, display the raw 0 to 1 probability scale.
+#' @param theme Plot theme. One of \code{"classic"}, \code{"minimal"},
+#'   \code{"bw"}, \code{"light"}, or \code{"none"}. Quoted and bare values are
+#'   accepted.
+#' @param grid Logical; if \code{TRUE}, show major grid lines. The default is
+#'   \code{FALSE} for a cleaner publication-style Kaplan-Meier plot.
 #' @param base_size Base font size.
 #'
 #' @return A \code{ggplot2} object when \code{risk_table = FALSE}; otherwise a
@@ -57,7 +64,7 @@
 #'
 #' @importFrom survival Surv survfit survdiff
 #' @importFrom stats as.formula pchisq complete.cases
-#' @importFrom ggplot2 ggplot aes geom_step geom_point geom_text labs theme_minimal theme element_blank element_text scale_y_continuous scale_x_continuous coord_cartesian scale_color_manual guides guide_legend
+#' @importFrom ggplot2 ggplot aes geom_step geom_point geom_text labs theme_minimal theme_classic theme_bw theme_light theme_void theme element_blank element_text scale_y_continuous scale_x_continuous coord_cartesian scale_color_manual guides guide_legend
 #' @importFrom patchwork wrap_plots
 #' @export
 km_plot <- function(data,
@@ -76,11 +83,15 @@ km_plot <- function(data,
                     title = NULL,
                     legend_title = NULL,
                     palette = NULL,
+                    y_percent = TRUE,
+                    theme = "classic",
+                    grid = FALSE,
                     base_size = 13) {
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
   by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE)
+  theme <- .km_theme_arg(substitute(theme), env = parent.frame())
 
   .validate_km_inputs(
     data = data,
@@ -94,6 +105,9 @@ km_plot <- function(data,
     censor = censor,
     break_time_by = break_time_by,
     xlim = xlim,
+    y_percent = y_percent,
+    theme = theme,
+    grid = grid,
     base_size = base_size
   )
 
@@ -134,6 +148,9 @@ km_plot <- function(data,
     title = title,
     legend_title = legend_title,
     palette = palette,
+    y_percent = y_percent,
+    theme = theme,
+    grid = grid,
     base_size = base_size,
     logrank_p = if (isTRUE(p_value)) logrank_p else NA_real_,
     p_value_position = p_value_position
@@ -147,6 +164,8 @@ km_plot <- function(data,
       xlim = xlim,
       xlab = xlab,
       palette = palette,
+      theme = theme,
+      grid = grid,
       base_size = base_size
     )
     out <- patchwork::wrap_plots(main_plot, risk_plot, ncol = 1, heights = c(3, 1))
@@ -163,7 +182,9 @@ km_plot <- function(data,
 #' @noRd
 .validate_km_inputs <- function(data, time, event, by, conf.int, risk_table,
                                 p_value, p_value_position, censor,
-                                break_time_by, xlim, base_size) {
+                                break_time_by, xlim, y_percent = TRUE,
+                                theme = "classic", grid = FALSE,
+                                base_size) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
   }
@@ -182,11 +203,16 @@ km_plot <- function(data,
   if (any(data[[time]] < 0, na.rm = TRUE)) {
     stop("`time` must contain non-negative follow-up times.", call. = FALSE)
   }
-  for (arg in c("conf.int", "risk_table", "p_value", "censor")) {
+  for (arg in c("conf.int", "risk_table", "p_value", "censor", "y_percent", "grid")) {
     val <- get(arg)
     if (!is.logical(val) || length(val) != 1L || is.na(val)) {
       stop("`", arg, "` must be TRUE or FALSE.", call. = FALSE)
     }
+  }
+  if (!is.character(theme) || length(theme) != 1L ||
+      !theme %in% c("classic", "minimal", "bw", "light", "none")) {
+    stop("`theme` must be one of 'classic', 'minimal', 'bw', 'light', or 'none'.",
+         call. = FALSE)
   }
   if (!is.null(break_time_by) &&
       (!is.numeric(break_time_by) || length(break_time_by) != 1L ||
@@ -338,9 +364,42 @@ km_plot <- function(data,
 
 #' @keywords internal
 #' @noRd
+.km_theme_arg <- function(expr, env = parent.frame()) {
+  .choice_arg(
+    expr,
+    choices = c("classic", "minimal", "bw", "light", "none"),
+    env = env
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.km_plot_theme <- function(theme, base_size, grid = FALSE) {
+  p_theme <- switch(
+    theme,
+    classic = ggplot2::theme_classic(base_size = base_size),
+    minimal = ggplot2::theme_minimal(base_size = base_size),
+    bw = ggplot2::theme_bw(base_size = base_size),
+    light = ggplot2::theme_light(base_size = base_size),
+    none = ggplot2::theme_void(base_size = base_size)
+  )
+
+  if (!isTRUE(grid)) {
+    p_theme <- p_theme +
+      ggplot2::theme(
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank()
+      )
+  }
+
+  p_theme
+}
+
+#' @keywords internal
+#' @noRd
 .km_main_plot <- function(plot_data, conf.int, censor, xlim, breaks, xlab, ylab,
-                          title, legend_title, palette, base_size, logrank_p,
-                          p_value_position) {
+                          title, legend_title, palette, y_percent, theme, grid,
+                          base_size, logrank_p, p_value_position) {
   p <- ggplot2::ggplot(
     plot_data,
     ggplot2::aes(x = .data$time, y = .data$survival, color = .data$strata)
@@ -361,7 +420,9 @@ km_plot <- function(data,
 
   p <- p +
     ggplot2::geom_step(linewidth = 0.9) +
-    ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    ggplot2::scale_y_continuous(
+      labels = if (isTRUE(y_percent)) scales::percent_format(accuracy = 1) else ggplot2::waiver()
+    ) +
     ggplot2::scale_x_continuous(breaks = breaks) +
     ggplot2::labs(
       title = title,
@@ -369,7 +430,7 @@ km_plot <- function(data,
       y = ylab,
       color = legend_title
     ) +
-    ggplot2::theme_minimal(base_size = base_size) +
+    .km_plot_theme(theme, base_size = base_size, grid = grid) +
     ggplot2::theme(
       legend.position = if (length(unique(plot_data$strata)) > 1L) "bottom" else "none",
       plot.title = ggplot2::element_text(face = "bold")
@@ -411,7 +472,7 @@ km_plot <- function(data,
 
 #' @keywords internal
 #' @noRd
-.km_risk_plot <- function(risk_data, breaks, xlim, xlab, palette, base_size) {
+.km_risk_plot <- function(risk_data, breaks, xlim, xlab, palette, theme, grid, base_size) {
   p <- ggplot2::ggplot(
     risk_data,
     ggplot2::aes(x = .data$time, y = .data$strata, label = .data$n.risk,
@@ -420,7 +481,7 @@ km_plot <- function(data,
     ggplot2::geom_text(size = base_size / 4) +
     ggplot2::scale_x_continuous(breaks = breaks) +
     ggplot2::labs(x = xlab, y = "Number at risk") +
-    ggplot2::theme_minimal(base_size = base_size) +
+    .km_plot_theme(theme, base_size = base_size, grid = grid) +
     ggplot2::theme(
       legend.position = "none",
       panel.grid.major.y = ggplot2::element_blank(),

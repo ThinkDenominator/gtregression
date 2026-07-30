@@ -94,6 +94,37 @@ test_that("km_plot draws log-rank p-value inside the graph", {
   expect_equal(last_layer$y[1], 0.12)
 })
 
+test_that("km_plot supports clean themes and raw probability y-axis", {
+  skip_if_not_installed("survival")
+  skip_if_not_installed("ggplot2")
+
+  df <- lung_km_data()
+
+  res <- km_plot(
+    data = df,
+    time = time,
+    event = status,
+    risk_table = FALSE,
+    y_percent = FALSE,
+    theme = classic
+  )
+
+  expect_s3_class(res, "ggplot")
+  expect_s3_class(res$theme$panel.grid.major, "element_blank")
+  expect_s3_class(res$theme$panel.grid.minor, "element_blank")
+
+  res_grid <- km_plot(
+    data = df,
+    time = time,
+    event = status,
+    risk_table = FALSE,
+    theme = "minimal",
+    grid = TRUE
+  )
+
+  expect_s3_class(res_grid, "ggplot")
+})
+
 test_that("km_plot validates inputs", {
   skip_if_not_installed("survival")
 
@@ -136,5 +167,17 @@ test_that("km_plot validates inputs", {
   expect_error(
     km_plot(data = df, time = time, event = status, risk_table = NA),
     "`risk_table` must be"
+  )
+  expect_error(
+    km_plot(data = df, time = time, event = status, y_percent = NA),
+    "`y_percent` must be"
+  )
+  expect_error(
+    km_plot(data = df, time = time, event = status, grid = NA),
+    "`grid` must be"
+  )
+  expect_error(
+    km_plot(data = df, time = time, event = status, theme = ugly),
+    "`theme` must be"
   )
 })

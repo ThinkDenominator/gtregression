@@ -377,6 +377,7 @@ test_that("surv_reg supports stratified crude and adjusted survival tables", {
   expect_equal(crude$distribution, "weibull")
   expect_equal(crude$levels, c("Standard treatment", "Test treatment"))
   expect_true("..N__Standard treatment" %in% names(crude$table_display))
+  expect_true("..Events__Standard treatment" %in% names(crude$table_display))
   expect_true("..eff__Standard treatment" %in% names(crude$table_display))
   expect_named(crude$per_stratum, c("Standard treatment", "Test treatment"))
 
@@ -395,8 +396,9 @@ test_that("surv_reg supports stratified crude and adjusted survival tables", {
   expect_true(adjusted$adjusted_mode)
   expect_equal(adjusted$adjust_for, c("age", "karno"))
   expect_equal(adjusted$distribution, "lognormal")
+  expect_true("..N__Standard treatment" %in% names(adjusted$table_display))
+  expect_true("..Events__Standard treatment" %in% names(adjusted$table_display))
   expect_true("..eff__Standard treatment" %in% names(adjusted$table_display))
-  expect_false(any(grepl("^\\.\\.N__", names(adjusted$table_display))))
   expect_s3_class(adjusted$model_stats, "data.frame")
   expect_true(all(c("stratum", "model", "distribution", "AIC", "events", "n") %in%
                     names(adjusted$model_stats)))
@@ -422,6 +424,8 @@ test_that("surv_reg supports stratified multivariable survival tables", {
   expect_false(res$adjusted_mode)
   expect_named(res$models, c("Standard treatment", "Test treatment"))
   expect_named(res$models[["Standard treatment"]], "multivariable_model")
+  expect_true("..N__Standard treatment" %in% names(res$table_display))
+  expect_true("..Events__Standard treatment" %in% names(res$table_display))
   expect_true("..eff__Standard treatment" %in% names(res$table_display))
   expect_true(any(trimws(res$table_display$Characteristic) %in% c("Age", "age")))
 })

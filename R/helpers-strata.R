@@ -296,3 +296,87 @@
     spanners = paste0(stratifier, " = ", strata_names)
   )
 }
+
+#' Add model N columns to a stratified multivariable display table
+#' @keywords internal
+#' @noRd
+.strata_add_model_n <- function(wide, models_by_stratum) {
+  if (!length(models_by_stratum) || !"is_header" %in% names(wide)) {
+    return(wide)
+  }
+
+  row_exposure <- attr(wide, "row_exposure", exact = TRUE)
+  if (is.null(row_exposure)) {
+    return(wide)
+  }
+
+  is_header <- wide$is_header %in% TRUE
+
+  for (lev in names(models_by_stratum)) {
+    models <- models_by_stratum[[lev]]
+    if (!length(models)) {
+      next
+    }
+
+    n_vec <- character(nrow(wide))
+    model_names <- names(models)
+    has_single_model <- identical(model_names, "multivariable_model")
+
+    for (i in seq_len(nrow(wide))) {
+      if (!isTRUE(is_header[i])) {
+        next
+      }
+
+      fit <- if (has_single_model) {
+        models[["multivariable_model"]]
+      } else {
+        models[[row_exposure[i]]]
+      }
+
+      if (!is.null(fit)) {
+        n_vec[i] <- tryCatch(
+          as.character(as.integer(stats::nobs(fit))),
+          error = function(e) ""
+        )
+      }
+    }
+
+    wide[[paste0("..N__", lev)]] <- n_vec
+  }
+
+  wide
+}
+
+#' Describe visible columns for stratified table builders
+#' @keywords internal
+#' @noRd
+.strata_display_spec <- function(df, spanners, effect_label) {
+  block_ids <- character(0)
+  block_labels <- character(0)
+  widths <- integer(length(spanners))
+
+  for (i in seq_along(spanners)) {
+    nm <- sub("^.*=\\s*", "", spanners[i])
+    ids <- c(
+      paste0("..N__", nm),
+      paste0("..Events__", nm),
+      paste0("..eff__", nm),
+      paste0("..p__", nm)
+    )
+    labels <- c("N", "Events", effect_label, "p-value")
+    keep <- ids %in% names(df)
+
+    ids <- ids[keep]
+    labels <- labels[keep]
+    widths[i] <- length(ids)
+
+    block_ids <- c(block_ids, ids)
+    block_labels <- c(block_labels, labels)
+  }
+
+  list(
+    ids = block_ids,
+    labels = c("Characteristic", block_labels),
+    widths = widths
+  )
+}

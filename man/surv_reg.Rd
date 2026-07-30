@@ -111,6 +111,11 @@ Interaction terms specified via \code{interaction} are included using
 standard formula expansion (for example, \code{trt*prior}). Interaction
 effects are displayed as additional rows beneath the corresponding exposure.
 
+Stratified parametric survival tables include model \code{N} and event
+counts within each stratum. Crude stratified tables calculate these counts
+for each exposure-specific model; adjusted and multivariable stratified
+tables use the corresponding fitted model within each stratum.
+
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the
 displayed table.

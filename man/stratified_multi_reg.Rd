@@ -62,7 +62,7 @@ A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:
 \description{
 Fits multivariable regression models within each stratum and returns a
 unified wide table with one "Characteristic" column and, under bold
-spanners for each stratum, two columns: "Adjusted <effect>" and "p-value".
+spanners for each stratum, model N, "Adjusted <effect>", and "p-value".
 }
 \details{
 If \code{adjust_for = NULL}, all \code{exposures} are included in one

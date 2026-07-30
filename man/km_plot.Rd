@@ -21,6 +21,9 @@ km_plot(
   title = NULL,
   legend_title = NULL,
   palette = NULL,
+  y_percent = TRUE,
+  theme = "classic",
+  grid = FALSE,
   base_size = 13
 )
 }
@@ -65,6 +68,16 @@ breaks. If \code{NULL}, breaks are chosen automatically.}
 \code{by} variable name is used.}
 
 \item{palette}{Optional character vector of colors for grouped curves.}
+
+\item{y_percent}{Logical; if \code{TRUE}, display survival probability as
+percentages. If \code{FALSE}, display the raw 0 to 1 probability scale.}
+
+\item{theme}{Plot theme. One of \code{"classic"}, \code{"minimal"},
+\code{"bw"}, \code{"light"}, or \code{"none"}. Quoted and bare values are
+accepted.}
+
+\item{grid}{Logical; if \code{TRUE}, show major grid lines. The default is
+\code{FALSE} for a cleaner publication-style Kaplan-Meier plot.}
 
 \item{base_size}{Base font size.}
 }
