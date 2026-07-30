@@ -160,6 +160,11 @@ standard formula expansion (for example, `trt*prior`). Interaction
 effects are displayed as additional rows beneath the corresponding
 exposure.
 
+Stratified parametric survival tables include model `N` and event counts
+within each stratum. Crude stratified tables calculate these counts for
+each exposure-specific model; adjusted and multivariable stratified
+tables use the corresponding fitted model within each stratum.
+
 If exposure variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
 those labels are used automatically in the displayed table.

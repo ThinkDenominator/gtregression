@@ -23,6 +23,9 @@ km_plot(
   title = NULL,
   legend_title = NULL,
   palette = NULL,
+  y_percent = TRUE,
+  theme = "classic",
+  grid = FALSE,
   base_size = 13
 )
 ```
@@ -96,6 +99,21 @@ km_plot(
 - palette:
 
   Optional character vector of colors for grouped curves.
+
+- y_percent:
+
+  Logical; if `TRUE`, display survival probability as percentages. If
+  `FALSE`, display the raw 0 to 1 probability scale.
+
+- theme:
+
+  Plot theme. One of `"classic"`, `"minimal"`, `"bw"`, `"light"`, or
+  `"none"`. Quoted and bare values are accepted.
+
+- grid:
+
+  Logical; if `TRUE`, show major grid lines. The default is `FALSE` for
+  a cleaner publication-style Kaplan-Meier plot.
 
 - base_size:
 

@@ -131,26 +131,26 @@ strata_full <- stratified_multi_reg(
 strata_full$table
 ```
 
-|  | race = White |  | race = Black |  | race = Other |  |
-|----|----|----|----|----|----|----|
-| Characteristic | Adjusted OR (95% CI) | p-value | Adjusted OR (95% CI) | p-value | Adjusted OR (95% CI) | p-value |
-| Maternal age | 0.97 (0.86–1.08) | 0.548 | 0.87 (0.64–1.19) | 0.391 | 0.93 (0.81–1.07) | 0.305 |
-| Maternal weight | 0.99 (0.97–1.01) | 0.333 | 0.97 (0.94–1.01) | 0.136 | 0.97 (0.94–1.00) | 0.074 |
-| Smoking during pregnancy |  |  |  |  |  |  |
-|  No | Ref. |  | Ref. |  | Ref. |  |
-|  Yes | 3.35 (0.94–12.02) | 0.063 | 16.50 (0.91–298.21) | 0.058 | 0.81 (0.17–3.85) | 0.794 |
-| Hypertension |  |  |  |  |  |  |
-|  No | Ref. |  | Ref. |  | Ref. |  |
-|  Yes | 3.43 (0.39–30.08) | 0.265 | 85.06 (0.60–11,959.18) | 0.078 | 6.71 (0.52–86.08) | 0.143 |
-| Uterine irritability |  |  |  |  |  |  |
-|  No | Ref. |  | Ref. |  | Ref. |  |
-|  Yes | 1.02 (0.22–4.73) | 0.978 | 67.61 (1.42–3,225.31) | 0.033 | 2.60 (0.65–10.43) | 0.176 |
-| Previous preterm labour |  |  |  |  |  |  |
-|  No | Ref. |  | Ref. |  | Ref. |  |
-|  Yes | 4.68 (1.17–18.72) | 0.029 | 4.87 (0.11–208.59) | 0.409 | 4.13 (0.91–18.77) | 0.066 |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |
-| Ref. = reference category. |  |  |  |  |  |  |
-| Complete observations included by race stratum: White: N = 96; Black: N = 26; Other: N = 67 |  |  |  |  |  |  |
+|  | race = White |  |  | race = Black |  |  | race = Other |  |  |
+|----|----|----|----|----|----|----|----|----|----|
+| Characteristic | N | Adjusted OR (95% CI) | p-value | N | Adjusted OR (95% CI) | p-value | N | Adjusted OR (95% CI) | p-value |
+| Maternal age | 96 | 0.97 (0.86–1.08) | 0.548 | 26 | 0.87 (0.64–1.19) | 0.391 | 67 | 0.93 (0.81–1.07) | 0.305 |
+| Maternal weight | 96 | 0.99 (0.97–1.01) | 0.333 | 26 | 0.97 (0.94–1.01) | 0.136 | 67 | 0.97 (0.94–1.00) | 0.074 |
+| Smoking during pregnancy | 96 |  |  | 26 |  |  | 67 |  |  |
+|  No |  | Ref. |  |  | Ref. |  |  | Ref. |  |
+|  Yes |  | 3.35 (0.94–12.02) | 0.063 |  | 16.50 (0.91–298.21) | 0.058 |  | 0.81 (0.17–3.85) | 0.794 |
+| Hypertension | 96 |  |  | 26 |  |  | 67 |  |  |
+|  No |  | Ref. |  |  | Ref. |  |  | Ref. |  |
+|  Yes |  | 3.43 (0.39–30.08) | 0.265 |  | 85.06 (0.60–11,959.18) | 0.078 |  | 6.71 (0.52–86.08) | 0.143 |
+| Uterine irritability | 96 |  |  | 26 |  |  | 67 |  |  |
+|  No |  | Ref. |  |  | Ref. |  |  | Ref. |  |
+|  Yes |  | 1.02 (0.22–4.73) | 0.978 |  | 67.61 (1.42–3,225.31) | 0.033 |  | 2.60 (0.65–10.43) | 0.176 |
+| Previous preterm labour | 96 |  |  | 26 |  |  | 67 |  |  |
+|  No |  | Ref. |  |  | Ref. |  |  | Ref. |  |
+|  Yes |  | 4.68 (1.17–18.72) | 0.029 |  | 4.87 (0.11–208.59) | 0.409 |  | 4.13 (0.91–18.77) | 0.066 |
+| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |  |  |
+| Ref. = reference category. |  |  |  |  |  |  |  |  |  |
+| Complete observations included by race stratum: White: N = 96; Black: N = 26; Other: N = 67 |  |  |  |  |  |  |  |  |  |
 
 ## Exposure-Specific Adjusted Models by Stratum
 
@@ -174,25 +174,25 @@ strata_multi <- stratified_multi_reg(
 strata_multi$table
 ```
 
-|  | race = White |  | race = Black |  | race = Other |  |
-|----|----|----|----|----|----|----|
-| Characteristic | Adjusted OR (95% CI) | p-value | Adjusted OR (95% CI) | p-value | Adjusted OR (95% CI) | p-value |
-| Smoking during pregnancy |  |  |  |  |  |  |
-|  No | Ref. |  | Ref. |  | Ref. |  |
-|  Yes | 4.97 (1.47–16.80) | 0.010 | 2.96 (0.48–18.32) | 0.243 | 1.23 (0.32–4.80) | 0.762 |
-| Hypertension |  |  |  |  |  |  |
-|  No | Ref. |  | Ref. |  | Ref. |  |
-|  Yes | 3.72 (0.45–30.67) | 0.222 | 5.71 (0.27–121.78) | 0.264 | 7.93 (0.66–95.10) | 0.102 |
-| Uterine irritability |  |  |  |  |  |  |
-|  No | Ref. |  | Ref. |  | Ref. |  |
-|  Yes | 1.59 (0.43–5.96) | 0.488 | 4.49 (0.28–72.28) | 0.289 | 2.68 (0.72–10.05) | 0.143 |
-| Previous preterm labour |  |  |  |  |  |  |
-|  No | Ref. |  | Ref. |  | Ref. |  |
-|  Yes | 6.26 (1.77–22.16) | 0.004 | 0.96 (0.09–9.85) | 0.973 | 5.55 (1.31–23.56) | 0.020 |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |
-| Ref. = reference category. |  |  |  |  |  |  |
-| Adjusted for age and lwt |  |  |  |  |  |  |
-| Complete observations included by race stratum: White: N = 96; Black: N = 96; Other: N = 96; White: N = 96; Black: N = 26; Other: N = 26; White: N = 26; Black: N = 26; Other: N = 67; White: N = 67; Black: N = 67; Other: N = 67 |  |  |  |  |  |  |
+|  | race = White |  |  | race = Black |  |  | race = Other |  |  |
+|----|----|----|----|----|----|----|----|----|----|
+| Characteristic | N | Adjusted OR (95% CI) | p-value | N | Adjusted OR (95% CI) | p-value | N | Adjusted OR (95% CI) | p-value |
+| Smoking during pregnancy | 96 |  |  | 26 |  |  | 67 |  |  |
+|  No |  | Ref. |  |  | Ref. |  |  | Ref. |  |
+|  Yes |  | 4.97 (1.47–16.80) | 0.010 |  | 2.96 (0.48–18.32) | 0.243 |  | 1.23 (0.32–4.80) | 0.762 |
+| Hypertension | 96 |  |  | 26 |  |  | 67 |  |  |
+|  No |  | Ref. |  |  | Ref. |  |  | Ref. |  |
+|  Yes |  | 3.72 (0.45–30.67) | 0.222 |  | 5.71 (0.27–121.78) | 0.264 |  | 7.93 (0.66–95.10) | 0.102 |
+| Uterine irritability | 96 |  |  | 26 |  |  | 67 |  |  |
+|  No |  | Ref. |  |  | Ref. |  |  | Ref. |  |
+|  Yes |  | 1.59 (0.43–5.96) | 0.488 |  | 4.49 (0.28–72.28) | 0.289 |  | 2.68 (0.72–10.05) | 0.143 |
+| Previous preterm labour | 96 |  |  | 26 |  |  | 67 |  |  |
+|  No |  | Ref. |  |  | Ref. |  |  | Ref. |  |
+|  Yes |  | 6.26 (1.77–22.16) | 0.004 |  | 0.96 (0.09–9.85) | 0.973 |  | 5.55 (1.31–23.56) | 0.020 |
+| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |  |  |
+| Ref. = reference category. |  |  |  |  |  |  |  |  |  |
+| Adjusted for age and lwt |  |  |  |  |  |  |  |  |  |
+| Complete observations included by race stratum: White: N = 96; Black: N = 96; Other: N = 96; White: N = 96; Black: N = 26; Other: N = 26; White: N = 26; Black: N = 26; Other: N = 67; White: N = 67; Black: N = 67; Other: N = 67 |  |  |  |  |  |  |  |  |  |
 
 If a stratum cannot fit a model, the function skips that stratum with a
 warning and continues. This is intentional: sparse strata are common in

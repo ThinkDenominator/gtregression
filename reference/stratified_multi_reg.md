@@ -2,7 +2,7 @@
 
 Fits multivariable regression models within each stratum and returns a
 unified wide table with one "Characteristic" column and, under bold
-spanners for each stratum, two columns: "Adjusted \<effect\>" and
+spanners for each stratum, model N, "Adjusted \<effect\>", and
 "p-value".
 
 ## Usage

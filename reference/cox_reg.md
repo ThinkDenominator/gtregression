@@ -152,6 +152,11 @@ The proportional hazards assumption should be assessed separately, for
 example with
 [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md).
 
+Stratified Cox tables include model `N` and event counts within each
+stratum. Crude stratified tables calculate these counts for each
+exposure-specific model; adjusted and multivariable stratified tables
+use the corresponding fitted model within each stratum.
+
 If exposure variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
 those labels are used automatically in the displayed table.

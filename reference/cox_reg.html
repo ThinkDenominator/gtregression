@@ -186,6 +186,10 @@ standard formula expansion (for example, <code>trt*prior</code>). Interaction
 effects are displayed as additional rows beneath the corresponding exposure.</p>
 <p>The proportional hazards assumption should be assessed separately, for
 example with <code><a href="check_ph.html">check_ph()</a></code>.</p>
+<p>Stratified Cox tables include model <code>N</code> and event counts within each
+stratum. Crude stratified tables calculate these counts for each
+exposure-specific model; adjusted and multivariable stratified tables use the
+corresponding fitted model within each stratum.</p>
 <p>If exposure variables have a <code>"label"</code> attribute, for example from
 <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>, those labels are used automatically in the
 displayed table.</p>
