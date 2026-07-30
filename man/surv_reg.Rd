@@ -10,6 +10,7 @@ surv_reg(
   event,
   exposures,
   adjust_for = NULL,
+  interaction = NULL,
   multivariable = FALSE,
   multivariate = NULL,
   distribution = "weibull",
@@ -34,6 +35,12 @@ are recommended in scripts, and bare names are also accepted.}
 
 \item{adjust_for}{Optional character vector of adjustment variables. When
 supplied, one adjusted model is fitted per exposure.}
+
+\item{interaction}{Optional character scalar specifying one interaction term
+using standard formula syntax, e.g. \code{"trt*prior"}. Quoted and bare
+interaction syntax are accepted. In exposure-by-exposure mode, supply a
+single exposure; in \code{multivariable = TRUE} mode, the interaction is
+added to the single multivariable model.}
 
 \item{multivariable}{Logical; if \code{FALSE} (default), the current
 exposure-by-exposure workflow is used. If \code{TRUE}, one multivariable
@@ -68,7 +75,7 @@ A list of class \code{c("gtregression","surv_reg", ...)} with elements:
   \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
   otherwise \code{NULL}.}
   \item{variable_labels}{Named character vector of display labels.}
-  \item{time,event,distribution,approach,format,source,adjust_for,exposures}{Metadata fields.}
+  \item{time,event,distribution,approach,format,source,adjust_for,exposures,interaction}{Metadata fields.}
 }
 }
 \description{
@@ -92,6 +99,10 @@ Since these estimates are adjusted for the other variables in the same model,
 the table reports \code{Adjusted Time Ratio (95\% CI)}. The
 \code{adjust_for} argument is not used in this mode; include every variable
 that belongs in the model inside \code{exposures}.
+
+Interaction terms specified via \code{interaction} are included using
+standard formula expansion (for example, \code{trt*prior}). Interaction
+effects are displayed as additional rows beneath the corresponding exposure.
 
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the
@@ -118,6 +129,17 @@ surv_reg(
   exposures = c(trt, celltype, prior),
   adjust_for = c(age, karno),
   distribution = lognormal
+)
+
+# Interaction in an adjusted exposure model
+surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior,
+  distribution = weibull
 )
 
 surv_reg(

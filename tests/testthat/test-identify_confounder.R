@@ -12,6 +12,17 @@ birthwt_confounder_data <- function() {
     )
 }
 
+lung_confounder_data <- function() {
+  data("data_lungcancer", package = "gtregression")
+
+  data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+    )
+}
+
 test_that("identify_confounder returns a focused summary for multiple pairs", {
   df <- birthwt_confounder_data()
 
@@ -188,6 +199,48 @@ test_that("identify_confounder supports additional model approaches", {
     approach = poisson
   )
   expect_true(is.numeric(poisson_result$crude))
+})
+
+test_that("identify_confounder supports Cox and parametric survival approaches", {
+  skip_if_not_installed("survival")
+
+  df <- lung_confounder_data()
+
+  cox_result <- identify_confounder(
+    data = df,
+    time = time,
+    event = status,
+    exposure = trt,
+    potential_confounder = prior,
+    approach = cox,
+    method = change
+  )
+
+  direct_cox <- survival::coxph(
+    survival::Surv(time, status) ~ trt,
+    data = stats::na.omit(df[, c("time", "status", "trt")])
+  )
+
+  expect_s3_class(cox_result, "identify_confounder_result")
+  expect_equal(cox_result$summary$crude_est, unname(round(exp(stats::coef(direct_cox)[1]), 3)))
+  expect_equal(cox_result$mh_status, "MH is available only for binary outcome models.")
+  expect_true(is.numeric(cox_result$adjusted))
+  expect_true(is.numeric(cox_result$interaction_p) || is.na(cox_result$interaction_p))
+
+  surv_result <- identify_confounder(
+    data = df,
+    time = "time",
+    event = "status",
+    exposure = "trt",
+    potential_confounder = "prior",
+    approach = surv,
+    distribution = weibull
+  )
+
+  expect_s3_class(surv_result, "identify_confounder_result")
+  expect_true(is.numeric(surv_result$crude))
+  expect_true(is.numeric(surv_result$adjusted))
+  expect_equal(surv_result$mh_status, "MH is available only for binary outcome models.")
 })
 
 test_that("identify_confounder reports effect modification when estimate spread is large", {

@@ -20,11 +20,13 @@
                   "multi_reg" = c("logit", "logbinomial", "poisson",
                                   "robpoisson", "linear", "negbin", "firth"),
                   "interaction_models" = c("logit", "logbinomial", "poisson",
-                                           "robpoisson", "negbin", "linear"),
+                                           "robpoisson", "negbin", "linear",
+                                           "cox", "survreg"),
                   "check_convergence" = c("logit", "logbinomial", "poisson",
                                           "robpoisson", "negbin"),
                   "identify_confounder" = c("logit", "logbinomial", "poisson",
-                                            "robpoisson", "negbin", "linear"),
+                                            "robpoisson", "negbin", "linear",
+                                            "cox", "survreg"),
                   "select_models" = c("logit", "logbinomial", "poisson",
                                       "robpoisson", "negbin", "linear",
                                       "cox", "survreg"),
@@ -380,4 +382,69 @@
   }
 
   data_clean
+}
+
+#' Validate and split an interaction term
+#'
+#' @keywords internal
+#' @noRd
+.validate_interaction_term <- function(data,
+                                       exposures,
+                                       interaction = NULL,
+                                       adjusted_mode = FALSE,
+                                       exposure_by_exposure = FALSE) {
+  if (is.null(interaction) || !length(interaction)) {
+    return(character(0))
+  }
+
+  if (!is.character(interaction) || length(interaction) != 1L) {
+    stop(
+      "`interaction` must be a single character string such as 'bmi*sex'.",
+      call. = FALSE
+    )
+  }
+
+  if (grepl(":", interaction, fixed = TRUE)) {
+    stop(
+      "Use standard interaction syntax with '*', for example 'bmi*sex', not ':'.",
+      call. = FALSE
+    )
+  }
+
+  if (!grepl("\\*", interaction)) {
+    stop(
+      "`interaction` must contain '*', for example 'bmi*sex'.",
+      call. = FALSE
+    )
+  }
+
+  interaction_vars <- trimws(unlist(strsplit(interaction, "\\*")))
+  interaction_vars <- interaction_vars[nzchar(interaction_vars)]
+
+  if (length(interaction_vars) != 2L) {
+    stop(
+      "`interaction` must contain exactly two variables, e.g. 'bmi*sex'.",
+      call. = FALSE
+    )
+  }
+
+  if (!all(interaction_vars %in% names(data))) {
+    stop(
+      "One or more variables in `interaction` were not found in the dataset.",
+      call. = FALSE
+    )
+  }
+
+  if ((adjusted_mode || exposure_by_exposure) && length(exposures) != 1L) {
+    stop(
+      "When `interaction` is supplied in exposure-by-exposure mode, please provide a single exposure or set `multivariable = TRUE`.",
+      call. = FALSE
+    )
+  }
+
+  if (!any(exposures %in% interaction_vars)) {
+    stop("The exposure must be part of the interaction term.", call. = FALSE)
+  }
+
+  interaction_vars
 }

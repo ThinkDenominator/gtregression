@@ -6,11 +6,14 @@
 \usage{
 interaction_models(
   data,
-  outcome,
+  outcome = NULL,
   exposure,
   covariates = NULL,
   effect_modifier,
   approach = "logit",
+  time = NULL,
+  event = NULL,
+  distribution = "weibull",
   test = c("LRT", "Wald"),
   alpha = 0.05,
   verbose = FALSE,
@@ -20,7 +23,10 @@ interaction_models(
 \arguments{
 \item{data}{A data frame containing all required variables.}
 
-\item{outcome}{Outcome variable name. Quoted and bare names are accepted.}
+\item{outcome}{Outcome variable name. Quoted and bare names are accepted.
+Required for ordinary regression approaches. Leave unset for Cox and
+parametric survival approaches and supply \code{time} and \code{event}
+instead.}
 
 \item{exposure}{Main exposure variable name. Quoted and bare names are
 accepted.}
@@ -33,7 +39,17 @@ Quoted and bare names are accepted.}
 
 \item{approach}{Regression approach. One of \code{"logit"},
 \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
-\code{"negbin"}, or \code{"linear"}.}
+\code{"negbin"}, \code{"linear"}, \code{"cox"}, or
+\code{"survreg"}.}
+
+\item{time}{Survival time variable name for \code{approach = "cox"} or
+\code{approach = "survreg"}. Quoted and bare names are accepted.}
+
+\item{event}{Event indicator variable name for survival approaches.}
+
+\item{distribution}{Parametric survival distribution for
+\code{approach = "survreg"}. One of \code{"weibull"},
+\code{"exponential"}, \code{"lognormal"}, or \code{"loglogistic"}.}
 
 \item{test}{Statistical test for model comparison. One of \code{"LRT"} or
 \code{"Wald"}.}
@@ -64,6 +80,42 @@ is not used here because this function tests an explicit interaction term in
 a regression model. For broader screening of candidate confounders or effect
 modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 \code{\link{identify_confounder}()}.
+}
+\examples{
+birthwt_data <- data_birthwt |>
+  dplyr::mutate(
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other"))
+  )
+
+interaction_models(
+  data = birthwt_data,
+  outcome = low,
+  exposure = smoke,
+  effect_modifier = race,
+  covariates = c(age, lwt),
+  approach = logit
+)
+
+lung_data <- data_lungcancer |>
+  dplyr::mutate(
+    trt = factor(trt, levels = c(1, 2),
+                 labels = c("Standard treatment", "Test treatment")),
+    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+  )
+
+interaction_models(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposure = trt,
+  effect_modifier = prior,
+  covariates = c(age, karno),
+  approach = cox
+)
+
 }
 \seealso{
 \code{\link{identify_confounder}()} for broader confounding and

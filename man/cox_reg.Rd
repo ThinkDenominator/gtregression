@@ -10,6 +10,7 @@ cox_reg(
   event,
   exposures,
   adjust_for = NULL,
+  interaction = NULL,
   multivariable = FALSE,
   multivariate = NULL,
   format = c("flextable", "gt"),
@@ -33,6 +34,12 @@ are recommended in scripts, and bare names are also accepted.}
 
 \item{adjust_for}{Optional character vector of adjustment variables. When
 supplied, one adjusted Cox model is fitted per exposure.}
+
+\item{interaction}{Optional character scalar specifying one interaction term
+using standard formula syntax, e.g. \code{"trt*prior"}. Quoted and bare
+interaction syntax are accepted. In exposure-by-exposure mode, supply a
+single exposure; in \code{multivariable = TRUE} mode, the interaction is
+added to the single multivariable model.}
 
 \item{multivariable}{Logical; if \code{FALSE} (default), the current
 exposure-by-exposure workflow is used. If \code{TRUE}, one multivariable
@@ -61,7 +68,7 @@ A list of class \code{c("gtregression","cox_reg", ...)} with elements:
   \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
   otherwise \code{NULL}.}
   \item{variable_labels}{Named character vector of display labels.}
-  \item{time,event,approach,format,source,adjust_for,exposures}{Metadata fields.}
+  \item{time,event,approach,format,source,adjust_for,exposures,interaction}{Metadata fields.}
 }
 }
 \description{
@@ -81,6 +88,10 @@ the multivariable workflow used by \code{multi_reg()}. The
 that belongs in the model inside \code{exposures}. Since these estimates are
 adjusted for the other variables in the same model, the table reports
 \code{Adjusted HR (95\% CI)}.
+
+Interaction terms specified via \code{interaction} are included using
+standard formula expansion (for example, \code{trt*prior}). Interaction
+effects are displayed as additional rows beneath the corresponding exposure.
 
 The proportional hazards assumption should be assessed separately, for
 example with \code{check_ph()}.
@@ -109,6 +120,16 @@ cox_reg(
   event = status,
   exposures = c(trt, celltype, prior),
   adjust_for = c(age, karno)
+)
+
+# Interaction in an adjusted exposure model
+cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior
 )
 
 cox_reg(

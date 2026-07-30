@@ -103,6 +103,55 @@ test_that("save_plot writes files and validates inputs", {
   unlink(out)
 })
 
+test_that("save_forest writes forest outputs and validates inputs", {
+  skip_if_not_installed("forestploter")
+
+  df <- birthwt_save_data()
+  uni <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("age", "smoke", "ht"),
+    approach = logit
+  )
+  multi <- multi_reg(
+    df,
+    outcome = "low",
+    exposures = c("smoke", "ht"),
+    adjust_for = "age",
+    approach = logit
+  )
+  forest <- forest_reg(uni = uni, multi = multi, quiet = TRUE)
+
+  file_pdf <- file.path(tempdir(), paste0("gtregression-forest-", Sys.getpid()))
+  file_png <- file.path(tempdir(), paste0("gtregression-forest-", Sys.getpid(), "-png"))
+  file_bare <- paste0("gtregression-forest-temp-", Sys.getpid())
+
+  out_pdf <- save_forest(forest, filename = file_pdf, format = pdf,
+                         width = 7, height = 5, padding = 0.1)
+  out_png <- save_forest(forest, filename = file_png, format = png,
+                         width = 7, height = 5, dpi = 72)
+  out_bare <- save_forest(forest, filename = file_bare, format = pdf,
+                          width = 7, height = 5)
+
+  expect_true(file.exists(out_pdf))
+  expect_true(file.exists(out_png))
+  expect_true(file.exists(out_bare))
+  expect_match(out_pdf, "\\.pdf$")
+  expect_match(out_png, "\\.png$")
+  expect_equal(normalizePath(dirname(out_bare)), normalizePath(tempdir()))
+
+  expect_error(save_plot(forest), "Use `save_forest\\(\\)`")
+  expect_error(save_forest(mtcars), "`forest` must be")
+  expect_error(save_forest(forest, width = 0), "`width` must be")
+  expect_error(save_forest(forest, height = NA_real_), "`height` must be")
+  expect_error(save_forest(forest, scale = 0), "`scale` must be")
+  expect_error(save_forest(forest, padding = -1), "`padding` must be")
+  expect_error(save_forest(forest, padding = 3, width = 4, height = 4), "`padding` is too large")
+  expect_error(save_forest(forest, dpi = -1), "`dpi` must be")
+
+  unlink(c(out_pdf, out_png, out_bare))
+})
+
 test_that("save_docx accepts single flextable table and single plot", {
   skip_if_not_installed("officer")
   skip_if_not_installed("flextable")

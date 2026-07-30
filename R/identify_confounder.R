@@ -2,10 +2,13 @@
 #' @keywords internal
 #' @noRd
 .identify_one_confounder <- function(data,
-                                     outcome,
+                                     outcome = NULL,
                                      exposure,
                                      candidate,
                                      approach = "logit",
+                                     time = NULL,
+                                     event = NULL,
+                                     distribution = "weibull",
                                      method = "change",
                                      threshold = 10,
                                      emm_threshold = 10,
@@ -14,18 +17,37 @@
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
-    choices = c("logit","logbinomial","poisson","robpoisson","negbin","linear")
+    choices = c("logit","logbinomial","poisson","robpoisson","negbin","linear",
+                "cox","surv","survreg")
   )
   approach <- .normalize_approach(approach)
+  is_survival <- approach %in% c("cox", "survreg")
   method <- .choice_arg(substitute(method), env = parent.frame(), choices = c("change", "mh", "both"))
   emm_test <- .choice_arg(substitute(emm_test), env = parent.frame(), choices = c("both", "estimate", "interaction"))
   method <- match.arg(method, c("change", "mh", "both"))
   emm_test <- match.arg(emm_test, c("both", "estimate", "interaction"))
 
-  .validate_outcome_by_approach(data[[outcome]], approach)
-
-  vars_needed <- unique(c(outcome, exposure, candidate))
-  dat <- stats::na.omit(data[, vars_needed, drop = FALSE])
+  if (is_survival) {
+    if (is.null(time) || is.null(event)) {
+      stop("`time` and `event` are required when `approach` is cox or survreg.", call. = FALSE)
+    }
+    .validate_cox_inputs(
+      data = data,
+      time = time,
+      event = event,
+      exposures = unique(c(exposure, candidate)),
+      adjust_for = NULL
+    )
+    vars_needed <- unique(c(time, event, exposure, candidate))
+    dat <- stats::na.omit(data[, vars_needed, drop = FALSE])
+    dat[[event]] <- .cox_event01(dat[[event]])
+    response <- paste0("survival::Surv(", .surv_bt(time), ", ", .surv_bt(event), ")")
+  } else {
+    .validate_outcome_by_approach(data[[outcome]], approach)
+    vars_needed <- unique(c(outcome, exposure, candidate))
+    dat <- stats::na.omit(data[, vars_needed, drop = FALSE])
+    response <- .surv_bt(outcome)
+  }
 
   if (nrow(dat) == 0) {
     stop("No complete cases available for analysis.", call. = FALSE)
@@ -49,6 +71,8 @@
       "poisson" = glm(formula, data = data, family = poisson("log")),
       "negbin" = MASS::glm.nb(formula, data = data),
       "linear" = lm(formula, data = data),
+      "cox" = survival::coxph(formula, data = data, model = TRUE),
+      "survreg" = survival::survreg(formula, data = data, dist = distribution, model = TRUE),
       "robpoisson" = risks::riskratio(
         formula = formula,
         data = data,
@@ -65,6 +89,13 @@
       if (!length(idx)) return(NA_real_)
       est <- unname(coefs[idx[1]])
       return(if (approach == "linear") est else exp(est))
+    }
+
+    if (inherits(model, c("coxph", "survreg"))) {
+      coefs <- stats::coef(model)
+      idx <- grep(paste0("^", exposure), names(coefs))
+      if (!length(idx)) return(NA_real_)
+      return(exp(unname(coefs[idx[1]])))
     }
 
     if (inherits(model, "riskratio")) {
@@ -86,8 +117,9 @@
     )
   }
 
-  # crude model
-  crude_formula <- stats::as.formula(paste(outcome, "~", exposure))
+  crude_formula <- stats::as.formula(
+    paste(response, "~", .survival_rhs(exposure))
+  )
   crude_model <- safe_fit(crude_formula, dat, approach)
   crude_est <- if (!is.null(crude_model)) {
     extract_estimate(crude_model, exposure, approach)
@@ -97,7 +129,7 @@
 
   # adjusted model
   adj_formula <- stats::as.formula(
-    paste(outcome, "~", paste(c(exposure, candidate), collapse = " + "))
+    paste(response, "~", .survival_rhs(c(exposure, candidate)))
   )
   adj_model <- safe_fit(adj_formula, dat, approach)
   adj_est <- if (!is.null(adj_model)) {
@@ -187,15 +219,15 @@
   emm_by_interaction <- NA
 
   int_formula <- stats::as.formula(
-    paste(outcome, "~", paste(c(exposure, candidate, paste0(exposure, "*", candidate)), collapse = " + "))
+    paste(response, "~", .survival_rhs(c(exposure, candidate), paste0(exposure, "*", candidate)))
   )
 
   int_model <- safe_fit(int_formula, dat, approach)
 
   if (!is.null(adj_model) &&
       !is.null(int_model) &&
-      inherits(adj_model, c("glm", "lm")) &&
-      inherits(int_model, c("glm", "lm"))) {
+      inherits(adj_model, c("glm", "lm", "coxph", "survreg")) &&
+      inherits(int_model, c("glm", "lm", "coxph", "survreg"))) {
     lr <- tryCatch(
       suppressWarnings(stats::anova(adj_model, int_model, test = "LRT")),
       error = function(e) NULL
@@ -492,6 +524,9 @@
 #'
 #' @param data A data frame.
 #' @param outcome Outcome variable name. Quoted and bare names are accepted.
+#'   Required for ordinary regression approaches. Leave unset for Cox and
+#'   parametric survival approaches and supply \code{time} and \code{event}
+#'   instead.
 #' @param exposure Exposure variable name(s). Can be a character scalar or
 #'   vector. Quoted names are recommended in scripts, and bare names are also
 #'   accepted.
@@ -500,7 +535,16 @@
 #'   in scripts, and bare names are also accepted.
 #' @param approach Regression approach. One of \code{"logit"},
 #'   \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
-#'   \code{"linear"}, or \code{"negbin"}.
+#'   \code{"linear"}, \code{"negbin"}, \code{"cox"}, or
+#'   \code{"survreg"}.
+#' @param time Survival time variable name for \code{approach = "cox"} or
+#'   \code{approach = "survreg"}. Quoted and bare names are accepted.
+#' @param event Event indicator variable name for survival approaches. Values
+#'   may be coded as 0/1, 1/2, logical, or a two-level factor/character
+#'   variable.
+#' @param distribution Parametric survival distribution for
+#'   \code{approach = "survreg"}. One of \code{"weibull"},
+#'   \code{"exponential"}, \code{"lognormal"}, or \code{"loglogistic"}.
 #' @param method Confounding assessment method. One of \code{"change"},
 #'   \code{"mh"}, or \code{"both"}. \code{"change"} compares crude and
 #'   adjusted model estimates. \code{"mh"} compares crude and
@@ -528,12 +572,49 @@
 #' @seealso \code{\link{interaction_models}()} for focused model comparison of
 #'   a planned interaction term.
 #'
+#' @examples
+#' birthwt_data <- data_birthwt |>
+#'   dplyr::mutate(
+#'     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     race = factor(race, levels = c(1, 2, 3),
+#'                   labels = c("White", "Black", "Other"))
+#'   )
+#'
+#' identify_confounder(
+#'   data = birthwt_data,
+#'   outcome = low,
+#'   exposure = smoke,
+#'   potential_confounder = race,
+#'   approach = logit
+#' )
+#'
+#' lung_data <- data_lungcancer |>
+#'   dplyr::mutate(
+#'     trt = factor(trt, levels = c(1, 2),
+#'                  labels = c("Standard treatment", "Test treatment")),
+#'     prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+#'   )
+#'
+#' identify_confounder(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposure = trt,
+#'   potential_confounder = prior,
+#'   approach = cox
+#' )
+#'
+#' @importFrom survival coxph survreg Surv
 #' @export
 identify_confounder <- function(data,
-                                outcome,
+                                outcome = NULL,
                                 exposure,
                                 potential_confounder,
                                 approach = "logit",
+                                time = NULL,
+                                event = NULL,
+                                distribution = "weibull",
                                 method = "change",
                                 threshold = 10,
                                 emm_threshold = 10,
@@ -542,16 +623,42 @@ identify_confounder <- function(data,
                                 format = c("flextable", "gt"),
                                 theme = c("minimal")) {
 
-  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  outcome <- if (missing(outcome) || identical(substitute(outcome), quote(NULL))) {
+    NULL
+  } else {
+    .vars_arg(substitute(outcome), env = parent.frame())
+  }
   exposure <- .vars_arg(substitute(exposure), env = parent.frame())
   potential_confounder <- .vars_arg(substitute(potential_confounder), env = parent.frame())
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
-    choices = c("logit","logbinomial","poisson","robpoisson","negbin","linear")
+    choices = c("logit","logbinomial","poisson","robpoisson","negbin","linear",
+                "cox","surv","survreg")
   )
   approach <- .normalize_approach(approach)
   .validate_approach(approach, context = "identify_confounder")
+  is_survival <- approach %in% c("cox", "survreg")
+  time <- if (missing(time) || identical(substitute(time), quote(NULL))) {
+    NULL
+  } else {
+    .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
+  }
+  event <- if (missing(event) || identical(substitute(event), quote(NULL))) {
+    NULL
+  } else {
+    .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
+  }
+  distribution <- if (identical(approach, "survreg")) {
+    .surv_distribution_arg(
+      substitute(distribution),
+      env = parent.frame(),
+      multiple = FALSE,
+      arg = "distribution"
+    )
+  } else {
+    "weibull"
+  }
   method <- .choice_arg(substitute(method), env = parent.frame(), choices = c("change", "mh", "both"))
   emm_test <- .choice_arg(substitute(emm_test), env = parent.frame(), choices = c("interaction", "both", "estimate"))
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
@@ -566,12 +673,16 @@ identify_confounder <- function(data,
     stop("`data` must be a data.frame.", call. = FALSE)
   }
 
-  if (!is.character(outcome) || length(outcome) != 1L) {
+  if (!is_survival && (!is.character(outcome) || length(outcome) != 1L)) {
     stop("`outcome` must be a single character string.", call. = FALSE)
   }
 
-  if (!outcome %in% names(data)) {
+  if (!is_survival && !outcome %in% names(data)) {
     stop("Outcome variable not found in the dataset.", call. = FALSE)
+  }
+
+  if (is_survival && (is.null(time) || is.null(event))) {
+    stop("`time` and `event` are required when `approach` is cox or survreg.", call. = FALSE)
   }
 
   if (!is.character(exposure) || length(exposure) < 1L) {
@@ -648,6 +759,9 @@ identify_confounder <- function(data,
       exposure = exp_i,
       candidate = cand_i,
       approach = approach,
+      time = time,
+      event = event,
+      distribution = distribution,
       method = method,
       threshold = threshold,
       emm_threshold = emm_threshold,

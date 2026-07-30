@@ -86,6 +86,47 @@ utils::globalVariables(c(
   out
 }
 
+#' Normalize quoted or bare interaction arguments
+#'
+#' @keywords internal
+#' @noRd
+.interaction_arg <- function(expr, env = parent.frame(), allow_null = TRUE) {
+  if (identical(expr, quote(NULL))) {
+    if (allow_null) {
+      return(NULL)
+    }
+    stop("`interaction` cannot be NULL.", call. = FALSE)
+  }
+
+  if (is.character(expr)) {
+    out <- expr
+  } else if (is.symbol(expr)) {
+    nm <- as.character(expr)
+    if (exists(nm, envir = env, inherits = TRUE)) {
+      out <- get(nm, envir = env, inherits = TRUE)
+    } else {
+      out <- nm
+    }
+  } else if (is.call(expr)) {
+    if (as.character(expr[[1L]]) %in% c("*", ":")) {
+      out <- paste(gsub("`", "", vapply(as.list(expr)[-1L], deparse, character(1)), fixed = TRUE),
+                   collapse = as.character(expr[[1L]]))
+    } else {
+      out <- eval(expr, envir = env)
+    }
+  } else {
+    out <- eval(expr, envir = env)
+  }
+
+  if (is.null(out) && allow_null) {
+    return(NULL)
+  }
+  if (!is.character(out) || length(out) != 1L || is.na(out) || !nzchar(out)) {
+    stop("`interaction` must be a single character string such as 'bmi*sex'.", call. = FALSE)
+  }
+  gsub("\\s+", "", out)
+}
+
 #' Normalize regression approach spellings
 #'
 #' @keywords internal
@@ -93,6 +134,7 @@ utils::globalVariables(c(
 .normalize_approach <- function(approach) {
   approach <- tolower(as.character(approach))
   approach[approach == "log-binomial"] <- "logbinomial"
+  approach[approach %in% c("surv", "survival", "surv_reg")] <- "survreg"
   approach
 }
 

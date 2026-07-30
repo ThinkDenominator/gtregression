@@ -6,10 +6,13 @@
 \usage{
 identify_confounder(
   data,
-  outcome,
+  outcome = NULL,
   exposure,
   potential_confounder,
   approach = "logit",
+  time = NULL,
+  event = NULL,
+  distribution = "weibull",
   method = "change",
   threshold = 10,
   emm_threshold = 10,
@@ -22,7 +25,10 @@ identify_confounder(
 \arguments{
 \item{data}{A data frame.}
 
-\item{outcome}{Outcome variable name. Quoted and bare names are accepted.}
+\item{outcome}{Outcome variable name. Quoted and bare names are accepted.
+Required for ordinary regression approaches. Leave unset for Cox and
+parametric survival approaches and supply \code{time} and \code{event}
+instead.}
 
 \item{exposure}{Exposure variable name(s). Can be a character scalar or
 vector. Quoted names are recommended in scripts, and bare names are also
@@ -34,7 +40,19 @@ in scripts, and bare names are also accepted.}
 
 \item{approach}{Regression approach. One of \code{"logit"},
 \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
-\code{"linear"}, or \code{"negbin"}.}
+\code{"linear"}, \code{"negbin"}, \code{"cox"}, or
+\code{"survreg"}.}
+
+\item{time}{Survival time variable name for \code{approach = "cox"} or
+\code{approach = "survreg"}. Quoted and bare names are accepted.}
+
+\item{event}{Event indicator variable name for survival approaches. Values
+may be coded as 0/1, 1/2, logical, or a two-level factor/character
+variable.}
+
+\item{distribution}{Parametric survival distribution for
+\code{approach = "survreg"}. One of \code{"weibull"},
+\code{"exponential"}, \code{"lognormal"}, or \code{"loglogistic"}.}
 
 \item{method}{Confounding assessment method. One of \code{"change"},
 \code{"mh"}, or \code{"both"}. \code{"change"} compares crude and
@@ -86,6 +104,40 @@ Use this function when you want to screen one or more candidate variables and
 organise crude, adjusted, Mantel-Haenszel, and effect-modification signals in
 one place. For a focused comparison of models with and without a planned
 exposure-by-modifier interaction term, use \code{\link{interaction_models}()}.
+}
+\examples{
+birthwt_data <- data_birthwt |>
+  dplyr::mutate(
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other"))
+  )
+
+identify_confounder(
+  data = birthwt_data,
+  outcome = low,
+  exposure = smoke,
+  potential_confounder = race,
+  approach = logit
+)
+
+lung_data <- data_lungcancer |>
+  dplyr::mutate(
+    trt = factor(trt, levels = c(1, 2),
+                 labels = c("Standard treatment", "Test treatment")),
+    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+  )
+
+identify_confounder(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposure = trt,
+  potential_confounder = prior,
+  approach = cox
+)
+
 }
 \seealso{
 \code{\link{interaction_models}()} for focused model comparison of

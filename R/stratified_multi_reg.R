@@ -90,6 +90,7 @@ stratified_multi_reg <- function(data,
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
   stratifier <- .vars_arg(substitute(stratifier), env = parent.frame())
   adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  interaction <- .interaction_arg(substitute(interaction), env = parent.frame(), allow_null = TRUE)
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),

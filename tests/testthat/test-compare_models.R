@@ -26,11 +26,64 @@ test_that("compare_models reports multi_reg statistics without refitting", {
   expect_equal(res$table_body$AIC, c(stats::AIC(fit0), stats::AIC(fit1)))
   expect_equal(res$table_body$BIC, c(stats::BIC(fit0), stats::BIC(fit1)))
   expect_equal(res$table_body$logLik, c(as.numeric(stats::logLik(fit0)), as.numeric(stats::logLik(fit1))))
+  expect_equal(res$comparison_status$status, "Same analysis sample")
+  expect_equal(unique(res$table_body$comparison_status), "Same analysis sample")
+  expect_true(res$table_body$nested_comparison[2])
   expect_true(is.na(res$table_body$LR_chisq[1]))
   expect_true(is.finite(res$table_body$LR_chisq[2]))
   expect_equal(sum(res$table_body$best_AIC), 1)
   expect_true("Best AIC" %in% names(res$table_display))
   expect_true("Primary estimate" %in% names(res$table_display))
+})
+
+test_that("compare_models uses object names by default", {
+  df <- data.frame(
+    y = c(0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0),
+    x1 = c(1, 2, 1, 3, 4, 2, 5, 1, 4, 2, 3, 5),
+    x2 = factor(c("A", "B", "A", "B", "B", "A", "B", "A", "B", "A", "A", "B"))
+  )
+
+  m0 <- multi_reg(data = df, outcome = y, exposures = x1, approach = logit)
+  m1 <- multi_reg(data = df, outcome = y, exposures = c(x1, x2), approach = logit)
+
+  default_names <- compare_models(m0, m1, format = tibble)
+  explicit_names <- compare_models(
+    m0,
+    m1,
+    model_names = c("Clinical", "Clinical plus group"),
+    format = tibble
+  )
+
+  expect_equal(default_names$table_body$model, c("m0", "m1"))
+  expect_equal(explicit_names$table_body$model, c("Clinical", "Clinical plus group"))
+})
+
+test_that("compare_models flags different analysis samples without hiding statistics", {
+  df <- data.frame(
+    y = c(2.1, 3.4, 4.8, 6.2, 7.4, 8.9, 10.5, 11.7, 12.8, 14.1),
+    x1 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+    x2 = c(0, 1, 0, 1, NA, 0, 1, NA, 1, 0)
+  )
+
+  m0 <- multi_reg(data = df, outcome = y, exposures = x1, approach = linear)
+  m1 <- multi_reg(data = df, outcome = y, exposures = c(x1, x2), approach = linear)
+
+  res <- compare_models(
+    m0,
+    m1,
+    primary_exposure = x1,
+    format = tibble
+  )
+
+  expect_equal(res$comparison_status$status, "Different analysis sample")
+  expect_equal(unique(res$table_body$comparison_status), "Different analysis sample")
+  expect_true(res$table_body$nested_comparison[2])
+  expect_true(length(unique(res$table_body$n)) > 1)
+  expect_true(all(is.finite(res$table_body$AIC)))
+  expect_true(all(is.finite(res$table_body$BIC)))
+  expect_true(all(is.finite(res$table_body$logLik)))
+  expect_true(is.finite(res$table_body$primary_estimate[2]))
+  expect_true(is.finite(res$table_body$primary_pct_change[2]))
 })
 
 test_that("compare_models reports Cox events and concordance from cox_reg objects", {

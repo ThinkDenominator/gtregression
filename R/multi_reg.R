@@ -97,6 +97,7 @@ multi_reg <- function(data,
   outcome <- .vars_arg(substitute(outcome), env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
   adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  interaction <- .interaction_arg(substitute(interaction), env = parent.frame(), allow_null = TRUE)
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),

@@ -70,6 +70,90 @@
   )
 }
 
+#' Resolve a forest plot object for saving
+#' @keywords internal
+#' @noRd
+.resolve_forest_object <- function(forest) {
+  if (inherits(forest, "gtregression_forest") && !is.null(forest[["plot"]])) {
+    return(forest[["plot"]])
+  }
+
+  if (inherits(forest, c("forestplot", "gtable", "gTree", "grob"))) {
+    return(forest)
+  }
+
+  stop(
+    "`forest` must be a forest_reg() object or a compatible forestploter/grid object.",
+    call. = FALSE
+  )
+}
+
+#' Estimate a practical export canvas for forest plots
+#' @keywords internal
+#' @noRd
+.forest_export_dimensions <- function(forest, width = NULL, height = NULL, scale = 1) {
+  if (!is.numeric(scale) || length(scale) != 1L || is.na(scale) || scale <= 0) {
+    stop("`scale` must be a single positive number.", call. = FALSE)
+  }
+  if (!is.null(width) &&
+      (!is.numeric(width) || length(width) != 1L || is.na(width) || width <= 0)) {
+    stop("`width` must be NULL or a single positive number.", call. = FALSE)
+  }
+  if (!is.null(height) &&
+      (!is.numeric(height) || length(height) != 1L || is.na(height) || height <= 0)) {
+    stop("`height` must be NULL or a single positive number.", call. = FALSE)
+  }
+
+  if (is.null(width) || is.null(height)) {
+    plot_data <- if (inherits(forest, "gtregression_forest")) forest[["data"]] else NULL
+
+    if (is.data.frame(plot_data) && nrow(plot_data) > 0L) {
+      n_rows <- nrow(plot_data)
+      n_cols <- ncol(plot_data)
+      n_ci_cols <- sum(grepl("^\\s+$", names(plot_data)))
+      longest_label <- if ("Characteristic" %in% names(plot_data)) {
+        max(nchar(as.character(plot_data$Characteristic)), na.rm = TRUE)
+      } else {
+        20
+      }
+      if (!is.finite(longest_label)) longest_label <- 20
+
+      auto_width <- 3.4 + (0.95 * n_cols) + (1.4 * n_ci_cols) +
+        (0.035 * min(longest_label, 60))
+      auto_height <- 1.2 + (0.32 * n_rows)
+    } else {
+      auto_width <- 10
+      auto_height <- 7
+    }
+
+    if (is.null(width)) width <- auto_width
+    if (is.null(height)) height <- auto_height
+  }
+
+  list(width = width * scale, height = height * scale)
+}
+
+#' Draw a forest plot on the active graphics device
+#' @keywords internal
+#' @noRd
+.draw_forest_export <- function(plot, padding = 0.25) {
+  if (!is.numeric(padding) || length(padding) != 1L ||
+      is.na(padding) || padding < 0) {
+    stop("`padding` must be a single non-negative number.", call. = FALSE)
+  }
+
+  grid::grid.newpage()
+  if (padding > 0) {
+    grid::pushViewport(grid::viewport(
+      width = grid::unit(1, "npc") - grid::unit(2 * padding, "in"),
+      height = grid::unit(1, "npc") - grid::unit(2 * padding, "in")
+    ))
+    on.exit(grid::popViewport(), add = TRUE)
+  }
+  grid::grid.draw(plot)
+  invisible(plot)
+}
+
 # -------------------------------------------------------------------
 # save_table
 # -------------------------------------------------------------------
@@ -178,6 +262,9 @@ save_plot <- function(plot,
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("png", "pdf", "jpg"))
   format <- match.arg(format)
 
+  if (inherits(plot, "gtregression_forest")) {
+    stop("Use `save_forest()` to save forest_reg() outputs.", call. = FALSE)
+  }
   if (!inherits(plot, "ggplot")) {
     stop("`plot` must be a ggplot2 object.", call. = FALSE)
   }
@@ -203,6 +290,115 @@ save_plot <- function(plot,
   )
 
   message("Plot saved at: ", normalizePath(filename))
+  invisible(normalizePath(filename))
+}
+
+# -------------------------------------------------------------------
+# save_forest
+# -------------------------------------------------------------------
+
+#' Save a forest_reg() output
+#'
+#' Saves a \code{forest_reg()} output, or a compatible
+#' \pkg{forestploter}/grid object, to a fixed graphics device. This is useful
+#' when the RStudio Viewer or operating-system graphics device crops wide forest
+#' plots or compresses forest columns.
+#'
+#' @param forest A \code{gtregression_forest} object returned by
+#'   \code{forest_reg()}, or a compatible \pkg{forestploter}/grid object.
+#' @param filename File name for the output, with or without extension. If no
+#'   directory is supplied, the file is saved in \code{tempdir()}.
+#' @param format Output format. One of \code{"pdf"}, \code{"png"},
+#'   \code{"tiff"}, or \code{"jpg"}.
+#' @param width,height Optional export width and height in inches. If either is
+#'   \code{NULL}, a practical default is estimated from the number of rows and
+#'   columns in the \code{forest_reg()} output.
+#' @param scale Positive multiplier applied to the export width and height. This
+#'   is a quick way to make a large forest plot roomier.
+#' @param padding White space around the forest plot in inches.
+#' @param dpi Resolution for raster formats.
+#'
+#' @return Saves the file to disk. Invisibly returns the normalized file path.
+#'
+#' @examples
+#' birthwt_data <- data_birthwt |>
+#'   transform(
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+#'     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+#'   )
+#'
+#' uni_or <- uni_reg(
+#'   birthwt_data,
+#'   outcome = "low",
+#'   exposures = c("age", "smoke", "ht"),
+#'   approach = "logit"
+#' )
+#'
+#' forest <- forest_reg(uni = uni_or)
+#' save_forest(forest, filename = tempfile("forest"), format = "pdf")
+#'
+#' # For large forest plots, increase width, height, scale, or padding.
+#' save_forest(
+#'   forest,
+#'   filename = tempfile("forest-wide"),
+#'   format = "png",
+#'   width = 12,
+#'   height = 8,
+#'   padding = 0.35,
+#'   dpi = 300
+#' )
+#' @export
+#' @importFrom grid grid.newpage grid.draw pushViewport popViewport viewport unit
+save_forest <- function(forest,
+                        filename = "forest",
+                        format = c("pdf", "png", "tiff", "jpg"),
+                        width = NULL,
+                        height = NULL,
+                        scale = 1,
+                        padding = 0.25,
+                        dpi = 300) {
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("pdf", "png", "tiff", "jpg"))
+  format <- match.arg(format)
+
+  if (!is.numeric(padding) || length(padding) != 1L ||
+      is.na(padding) || padding < 0) {
+    stop("`padding` must be a single non-negative number.", call. = FALSE)
+  }
+  if (!is.numeric(dpi) || length(dpi) != 1L || is.na(dpi) || dpi <= 0) {
+    stop("`dpi` must be a single positive number.", call. = FALSE)
+  }
+
+  plot <- .resolve_forest_object(forest)
+  dims <- .forest_export_dimensions(forest, width = width, height = height, scale = scale)
+  width <- dims$width
+  height <- dims$height
+
+  if (padding * 2 >= min(width, height)) {
+    stop("`padding` is too large for the requested export width/height.", call. = FALSE)
+  }
+
+  filename <- .normalize_save_path(filename, format)
+
+  device_open <- FALSE
+  if (identical(format, "pdf")) {
+    grDevices::pdf(filename, width = width, height = height, onefile = FALSE)
+  } else if (identical(format, "png")) {
+    grDevices::png(filename, width = width, height = height, units = "in", res = dpi)
+  } else if (identical(format, "jpg")) {
+    grDevices::jpeg(filename, width = width, height = height, units = "in", res = dpi)
+  } else {
+    grDevices::tiff(filename, width = width, height = height, units = "in",
+                    res = dpi, compression = "lzw")
+  }
+  device_open <- TRUE
+  on.exit(if (device_open) grDevices::dev.off(), add = TRUE)
+
+  .draw_forest_export(plot, padding = padding)
+  grDevices::dev.off()
+  device_open <- FALSE
+
+  message("Forest plot saved at: ", normalizePath(filename))
   invisible(normalizePath(filename))
 }
 

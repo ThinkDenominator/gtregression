@@ -614,6 +614,84 @@ surv_reg(
 )
 
 
+## 14A. Parametric survival interaction term ---------------------------------
+
+## Question:
+## Does the treatment time ratio differ according to prior therapy?
+##
+## This mirrors cox_reg() and multi_reg(): use interaction = exposure*modifier.
+## In the exposure-by-exposure workflow, keep exposures to the single exposure
+## being interpreted. The table should read Adjusted Time Ratio (95% CI).
+
+surv_interaction <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior,
+  distribution = weibull,
+  model_stats = TRUE
+)
+
+surv_interaction
+surv_interaction$table_body
+surv_interaction$model_stats
+
+## In a single multivariable parametric survival model, the exposure list
+## defines the whole model and the interaction is added to that one model.
+surv_full_interaction <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  interaction = "trt*prior",
+  distribution = lognormal,
+  multivariable = TRUE
+)
+
+surv_full_interaction
+
+
+## 14B. Parametric survival confounding and interaction screening -------------
+
+## These checks mirror the Cox workflow, but the estimates are time-ratio
+## style because surv_reg() uses parametric accelerated failure time models.
+
+aft_conf_prior <- identify_confounder(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposure = trt,
+  potential_confounder = prior,
+  approach = surv,
+  distribution = weibull,
+  method = change,
+  format = gt
+)
+
+aft_conf_prior
+aft_conf_prior$table
+aft_conf_prior$summary
+
+aft_interaction_screen <- interaction_models(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposure = trt,
+  effect_modifier = prior,
+  covariates = c(age, karno),
+  approach = surv,
+  distribution = weibull,
+  test = LRT,
+  format = gt
+)
+
+aft_interaction_screen$table
+aft_interaction_screen$p_value
+aft_interaction_screen$interaction_terms
+
+
 ## 15. Compare prespecified parametric survival models ------------------------
 
 ## surv_model_compare() compares distributions for one formula.

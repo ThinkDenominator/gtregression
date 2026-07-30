@@ -554,6 +554,81 @@ cox_reg(
 )
 
 
+## 14A. Cox interaction term --------------------------------------------------
+
+## Question:
+## Does the treatment HR differ according to prior therapy?
+##
+## Use interaction = exposure*modifier, the same style used in multi_reg().
+## In the default exposure-by-exposure workflow, keep exposures to the single
+## exposure being interpreted. The table should still read Adjusted HR (95% CI).
+
+cox_interaction <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior,
+  model_stats = TRUE
+)
+
+cox_interaction
+cox_interaction$table_body
+cox_interaction$model_stats
+
+## In a single multivariable Cox model, the exposure list defines the whole
+## model and the interaction is added to that one model.
+cox_full_interaction <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  interaction = "trt*prior",
+  multivariable = TRUE
+)
+
+cox_full_interaction
+
+
+## 14B. Cox confounding and interaction screening ----------------------------
+
+## These are screening tools, not substitutes for clinical reasoning or DAGs.
+## The important consistency point is that survival models use time + event,
+## while the rest of the API keeps the same bare-name style.
+
+cox_conf_prior <- identify_confounder(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposure = trt,
+  potential_confounder = prior,
+  approach = cox,
+  method = change,
+  format = gt
+)
+
+cox_conf_prior
+cox_conf_prior$table
+cox_conf_prior$summary
+
+cox_interaction_screen <- interaction_models(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposure = trt,
+  effect_modifier = prior,
+  covariates = c(age, karno),
+  approach = cox,
+  test = LRT,
+  format = gt
+)
+
+cox_interaction_screen$table
+cox_interaction_screen$p_value
+cox_interaction_screen$interaction_terms
+
+
 ## 15. Check proportional hazards assumption ----------------------------------
 
 ## Cox HRs assume the hazard ratio is reasonably constant over follow-up time.

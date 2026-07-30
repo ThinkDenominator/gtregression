@@ -241,6 +241,16 @@ better relative fit among the compared models. When `primary_exposure` is
 supplied, the table also tracks that effect estimate and the percentage change
 across models.
 
+`compare_models()` automatically checks whether the candidate models appear to
+use the same analysis sample. It uses retained row identifiers when the fitted
+model stores them; otherwise it compares N and event counts. If the models use
+different complete-case samples, the table still displays AIC, BIC,
+log-likelihood, and likelihood-ratio statistics for transparency, but the footer
+warns that these values should not be interpreted as formal model-selection
+criteria across different datasets. In that situation, use the primary exposure
+estimate, percentage change, confidence intervals, and clinical or
+epidemiological reasoning to judge robustness.
+
 For Cox and parametric survival models, fit the candidate models with `cox_reg()`
 or `surv_reg()` first. `compare_models()` then keeps survival-specific columns
 such as events and Cox concordance.

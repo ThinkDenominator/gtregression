@@ -233,6 +233,22 @@ lung_adj_hr$table
 lung_adj_hr$model_stats
 ```
 
+Use `interaction = exposure*modifier` for planned effect modification. In the
+default exposure-by-exposure workflow, provide one exposure.
+
+```{r cox-interaction, message=FALSE, warning=FALSE}
+cox_interaction <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior
+)
+
+cox_interaction$table
+```
+
 ## Parametric Survival Models
 
 `surv_reg()` uses the same `time`, `event`, `exposures`, and `adjust_for`
@@ -268,6 +284,20 @@ lung_adj_time_ratio <- surv_reg(
 
 lung_adj_time_ratio$table
 lung_adj_time_ratio$model_stats
+```
+
+```{r surv-interaction, message=FALSE, warning=FALSE}
+surv_interaction <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior,
+  distribution = weibull
+)
+
+surv_interaction$table
 ```
 
 ## Continuous Outcomes

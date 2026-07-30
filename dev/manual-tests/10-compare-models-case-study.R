@@ -7,7 +7,9 @@
 ## is not stepwise selection. The candidate models are fitted first with multi_reg(),
 ## cox_reg(), or surv_reg(), then compare_models() summarises AIC, BIC,
 ## log-likelihood, likelihood-ratio tests, sample size, and the change in a
-## primary exposure estimate.
+## primary exposure estimate. It also tells you whether candidate models were
+## fitted to the same analysis sample, which matters when missing values differ
+## across variables.
 ##
 ## How to use:
 ## Run this script section by section. Inspect the table output and then inspect
@@ -101,6 +103,7 @@ logit_compare <- compare_models(
 
 logit_compare
 logit_compare$table_body
+logit_compare$comparison_status
 
 ## A formatted gt table should also render.
 compare_models(
@@ -114,7 +117,54 @@ compare_models(
 )
 
 
-## 3. Linear regression model comparison -------------------------------------
+## 3. Different analysis samples ---------------------------------------------
+
+## Real-world issue:
+## A sensitivity model may include a variable with missing values. In that case
+## the fitted models can use different complete-case samples. compare_models()
+## should still show AIC, BIC, log-likelihood, and the primary exposure estimate,
+## but it should clearly warn that likelihood-based comparisons are descriptive
+## rather than formal model-selection evidence across different datasets.
+
+birthwt_missing <- birthwt_data
+birthwt_missing$race[seq(1, nrow(birthwt_missing), by = 7)] <- NA
+
+logit_same_sample <- multi_reg(
+  data = birthwt_missing,
+  outcome = low,
+  exposures = c(smoke, age, lwt),
+  approach = logit
+)
+
+logit_different_sample <- multi_reg(
+  data = birthwt_missing,
+  outcome = low,
+  exposures = c(smoke, age, lwt, race),
+  approach = logit
+)
+
+sample_compare <- compare_models(
+  logit_same_sample,
+  logit_different_sample,
+  model_names = c("Clinical model", "Clinical model + race"),
+  primary_exposure = smoke
+)
+
+sample_compare
+sample_compare$comparison_status
+sample_compare$table_body[, c(
+  "model",
+  "n",
+  "AIC",
+  "BIC",
+  "logLik",
+  "primary_estimate",
+  "primary_pct_change",
+  "comparison_status"
+)]
+
+
+## 4. Linear regression model comparison -------------------------------------
 
 ## Question:
 ## For birth weight as a continuous outcome, does adding clinical risk factors
@@ -169,7 +219,7 @@ compare_models(
 )
 
 
-## 4. Cox regression model comparison ----------------------------------------
+## 5. Cox regression model comparison ----------------------------------------
 
 ## Question:
 ## In lung cancer survival, does adding age, performance score, cell type, and
@@ -225,7 +275,7 @@ cox_compare$table_body$AIC[1]
 stats::AIC(cox_m0$models[[1]])
 
 
-## 5. Parametric survival model comparison -----------------------------------
+## 6. Parametric survival model comparison -----------------------------------
 
 ## Question:
 ## For a Weibull accelerated failure time model, what happens when we add the
@@ -273,7 +323,7 @@ aft_compare
 aft_compare$table_body
 
 
-## 6. Final checklist ---------------------------------------------------------
+## 7. Final checklist ---------------------------------------------------------
 
 ## Things to confirm manually:
 ## - compare_models() accepts separate gtregression model objects.
@@ -287,4 +337,6 @@ aft_compare$table_body
 ## - Best AIC and Best BIC identify better-fitting candidate models.
 ## - primary_exposure reports the selected estimate and percentage change.
 ## - nested = FALSE suppresses likelihood-ratio comparison columns.
+## - $comparison_status says whether models used the same analysis sample.
+## - Different analysis samples keep all statistics visible but warn the user.
 ## - The function compares models stored inside gtregression objects; it should not refit them.

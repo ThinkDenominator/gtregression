@@ -52,6 +52,8 @@ A \code{gtregression} object with:
   \item \code{table_body}: raw comparison statistics
   \item \code{table_display}: formatted display data
   \item \code{models}: fitted models compared
+  \item \code{comparison_status}: whether models appear to use the same
+    analysis sample
 }
 }
 \description{
@@ -71,8 +73,13 @@ selection: compare candidate models first, then choose the final model using
 clinical, epidemiological, and statistical judgement.
 
 Likelihood-ratio p-values are meaningful only for nested models fitted to
-the same analysis sample. If the models are not nested, or if model sample
-sizes differ, use AIC/BIC and subject-matter reasoning instead.
+the same analysis sample. \code{compare_models()} checks whether the fitted
+models appear to use the same analysis sample using retained model row
+identifiers when available; otherwise it compares N and event counts. AIC,
+BIC, log-likelihood, and likelihood-ratio statistics remain visible when
+samples differ, but the table footer warns that likelihood-based comparisons
+should then be interpreted descriptively rather than as formal model-selection
+evidence.
 }
 \examples{
 data("data_lungcancer", package = "gtregression")
@@ -92,6 +99,12 @@ cox_2 <- cox_reg(
   event = status,
   exposures = trt,
   adjust_for = c(age, karno)
+)
+
+compare_models(
+  cox_1,
+  cox_2,
+  primary_exposure = trt
 )
 
 compare_models(

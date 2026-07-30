@@ -13,6 +13,11 @@
 #'   are recommended in scripts, and bare names are also accepted.
 #' @param adjust_for Optional character vector of adjustment variables. When
 #'   supplied, one adjusted Cox model is fitted per exposure.
+#' @param interaction Optional character scalar specifying one interaction term
+#'   using standard formula syntax, e.g. \code{"trt*prior"}. Quoted and bare
+#'   interaction syntax are accepted. In exposure-by-exposure mode, supply a
+#'   single exposure; in \code{multivariable = TRUE} mode, the interaction is
+#'   added to the single multivariable model.
 #' @param multivariable Logical; if \code{FALSE} (default), the current
 #'   exposure-by-exposure workflow is used. If \code{TRUE}, one multivariable
 #'   Cox model is fitted using all variables in \code{exposures}, and all
@@ -40,6 +45,10 @@
 #' adjusted for the other variables in the same model, the table reports
 #' \code{Adjusted HR (95\% CI)}.
 #'
+#' Interaction terms specified via \code{interaction} are included using
+#' standard formula expansion (for example, \code{trt*prior}). Interaction
+#' effects are displayed as additional rows beneath the corresponding exposure.
+#'
 #' The proportional hazards assumption should be assessed separately, for
 #' example with \code{check_ph()}.
 #'
@@ -57,7 +66,7 @@
 #'   \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
 #'   otherwise \code{NULL}.}
 #'   \item{variable_labels}{Named character vector of display labels.}
-#'   \item{time,event,approach,format,source,adjust_for,exposures}{Metadata fields.}
+#'   \item{time,event,approach,format,source,adjust_for,exposures,interaction}{Metadata fields.}
 #' }
 #'
 #' @examples
@@ -80,6 +89,16 @@
 #'   event = status,
 #'   exposures = c(trt, celltype, prior),
 #'   adjust_for = c(age, karno)
+#' )
+#'
+#' # Interaction in an adjusted exposure model
+#' cox_reg(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposures = trt,
+#'   adjust_for = c(age, karno),
+#'   interaction = trt*prior
 #' )
 #'
 #' cox_reg(
@@ -106,6 +125,7 @@ cox_reg <- function(data,
                     event,
                     exposures,
                     adjust_for = NULL,
+                    interaction = NULL,
                     multivariable = FALSE,
                     multivariate = NULL,
                     format = c("flextable", "gt"),
@@ -116,6 +136,7 @@ cox_reg <- function(data,
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
   adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  interaction <- .interaction_arg(substitute(interaction), env = parent.frame(), allow_null = TRUE)
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
 
@@ -152,6 +173,7 @@ cox_reg <- function(data,
     event = event,
     exposures = exposures,
     adjust_for = adjust_for,
+    interaction = interaction,
     multivariable = multivariable
   )
 
@@ -171,6 +193,7 @@ cox_reg <- function(data,
     if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
     if (adjusted_mode) .adjustment_note(adjust_for) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
+    if (!is.null(interaction)) .interaction_note(interaction) else NULL,
     paste0(
       "Event variable: ", event,
       " (1 = event, 0 = censored after internal coding)."
@@ -199,7 +222,8 @@ cox_reg <- function(data,
     adjusted_mode = adjusted_mode,
     multivariable = isTRUE(multivariable),
     adjust_for = if (adjusted_mode) unique(adjust_for) else NULL,
-    exposures = unique(exposures)
+    exposures = unique(exposures),
+    interaction = interaction
   )
 
   class(res) <- c("gtregression", "cox_reg", fmt_class, class(res))
@@ -208,20 +232,35 @@ cox_reg <- function(data,
 
 #' @keywords internal
 #' @noRd
-.run_cox_core <- function(data, time, event, exposures, adjust_for = NULL, multivariable = FALSE) {
-  data_valid <- .validate_cox_inputs(data, time, event, exposures, adjust_for)
+.run_cox_core <- function(data,
+                          time,
+                          event,
+                          exposures,
+                          adjust_for = NULL,
+                          interaction = NULL,
+                          multivariable = FALSE) {
+  data_valid <- .validate_cox_inputs(
+    data,
+    time,
+    event,
+    exposures,
+    adjust_for,
+    interaction = interaction,
+    multivariable = multivariable
+  )
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
+  interaction_vars <- .interaction_vars(interaction)
 
   if (isTRUE(multivariable)) {
-    predictors <- unique(exposures)
+    predictors <- unique(c(exposures, interaction_vars))
     data_model <- .cox_model_data(data_valid, time, event, predictors)
-    fit <- .fit_cox_model(data_model, time, event, predictors)
+    fit <- .fit_cox_model(data_model, time, event, predictors, interaction = interaction)
 
     if (is.null(fit)) {
       stop("Cox model fitting failed for the multivariable model.", call. = FALSE)
     }
 
-    td_list <- lapply(predictors, function(exposure) .tidy_cox(fit, exposure))
+    td_list <- lapply(unique(exposures), function(exposure) .tidy_cox(fit, exposure, interaction = interaction))
     td_list <- Filter(Negate(is.null), td_list)
     if (!length(td_list)) {
       stop("No estimable Cox coefficients for the multivariable model.", call. = FALSE)
@@ -243,15 +282,15 @@ cox_reg <- function(data,
 
   for (i in seq_along(exposures)) {
     exposure <- exposures[i]
-    predictors <- if (adjusted_mode) c(exposure, adjust_for) else exposure
+    predictors <- unique(c(if (adjusted_mode) c(exposure, adjust_for) else exposure, interaction_vars))
     data_model <- .cox_model_data(data_valid, time, event, predictors)
-    fit <- .fit_cox_model(data_model, time, event, predictors)
+    fit <- .fit_cox_model(data_model, time, event, predictors, interaction = interaction)
 
     if (is.null(fit)) {
       stop("Cox model fitting failed for exposure '", exposure, "'.", call. = FALSE)
     }
 
-    td <- .tidy_cox(fit, exposure)
+    td <- .tidy_cox(fit, exposure, interaction = interaction)
     if (is.null(td) || !nrow(td)) {
       stop("No estimable Cox coefficients for exposure '", exposure, "'.", call. = FALSE)
     }
@@ -294,7 +333,13 @@ cox_reg <- function(data,
 
 #' @keywords internal
 #' @noRd
-.validate_cox_inputs <- function(data, time, event, exposures, adjust_for = NULL) {
+.validate_cox_inputs <- function(data,
+                                 time,
+                                 event,
+                                 exposures,
+                                 adjust_for = NULL,
+                                 interaction = NULL,
+                                 multivariable = FALSE) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
   }
@@ -329,6 +374,14 @@ cox_reg <- function(data,
     adjust_for <- NULL
   }
 
+  interaction_vars <- .validate_interaction_term(
+    data = data,
+    exposures = exposures,
+    interaction = interaction,
+    adjusted_mode = adjusted_mode,
+    exposure_by_exposure = !isTRUE(multivariable)
+  )
+
   if (!is.numeric(data[[time]])) {
     stop("`time` must be numeric.", call. = FALSE)
   }
@@ -347,7 +400,7 @@ cox_reg <- function(data,
     stop("`event` must include at least one censored observation.", call. = FALSE)
   }
 
-  .validate_exposures(data_valid, unique(c(exposures, adjust_for)))
+  .validate_exposures(data_valid, unique(c(exposures, adjust_for, interaction_vars)))
   data_valid
 }
 
@@ -403,9 +456,9 @@ cox_reg <- function(data,
 
 #' @keywords internal
 #' @noRd
-.fit_cox_model <- function(data, time, event, predictors) {
-  bt <- function(x) paste0("`", gsub("`", "", x, fixed = TRUE), "`")
-  rhs <- paste(bt(predictors), collapse = " + ")
+.fit_cox_model <- function(data, time, event, predictors, interaction = NULL) {
+  bt <- .surv_bt
+  rhs <- .survival_rhs(predictors, interaction)
   fml <- stats::as.formula(paste0("survival::Surv(", bt(time), ", ", bt(event), ") ~ ", rhs))
 
   tryCatch(
@@ -419,7 +472,7 @@ cox_reg <- function(data,
 
 #' @keywords internal
 #' @noRd
-.tidy_cox <- function(fit, exposure) {
+.tidy_cox <- function(fit, exposure, interaction = NULL) {
   smry <- summary(fit)
   coefs <- smry$coefficients
   if (is.null(coefs) || nrow(coefs) == 0) {
@@ -431,8 +484,15 @@ cox_reg <- function(data,
   is_exposure_term <- function(term, exposure) {
     term_clean <- gsub("`", "", term, fixed = TRUE)
     exp_clean <- gsub("`", "", exposure, fixed = TRUE)
-    identical(term_clean, exp_clean) ||
-      (startsWith(term_clean, exp_clean) && !grepl(":", term_clean, fixed = TRUE))
+    if (identical(term_clean, exp_clean) ||
+        (startsWith(term_clean, exp_clean) && !grepl(":", term_clean, fixed = TRUE))) {
+      return(TRUE)
+    }
+    if (grepl(":", term_clean, fixed = TRUE) && !is.null(interaction)) {
+      parts <- strsplit(term_clean, ":", fixed = TRUE)[[1]]
+      return(any(startsWith(parts, exp_clean) | parts == exp_clean))
+    }
+    FALSE
   }
 
   clean_level <- function(term, exposure) {
@@ -440,6 +500,9 @@ cox_reg <- function(data,
     exp_clean <- gsub("`", "", exposure, fixed = TRUE)
     if (identical(term_clean, exp_clean)) {
       return(exp_clean)
+    }
+    if (grepl(":", term_clean, fixed = TRUE)) {
+      return(paste(strsplit(term_clean, ":", fixed = TRUE)[[1]], collapse = " x "))
     }
     lvl <- sub(paste0("^", exp_clean), "", term_clean)
     if (identical(lvl, "")) exp_clean else lvl
@@ -496,6 +559,45 @@ cox_reg <- function(data,
     return(rbind(ref_row, df_nonref))
   }
   if (!is.null(ref_row)) ref_row else df_nonref
+}
+
+#' @keywords internal
+#' @noRd
+.surv_bt <- function(x) {
+  paste0("`", gsub("`", "", x, fixed = TRUE), "`")
+}
+
+#' @keywords internal
+#' @noRd
+.interaction_vars <- function(interaction) {
+  if (is.null(interaction) || !length(interaction)) {
+    return(character(0))
+  }
+  vars <- trimws(unlist(strsplit(interaction, "\\*")))
+  vars[nzchar(vars)]
+}
+
+#' @keywords internal
+#' @noRd
+.interaction_formula_term <- function(interaction) {
+  vars <- .interaction_vars(interaction)
+  if (!length(vars)) {
+    return(NULL)
+  }
+  paste(.surv_bt(vars), collapse = " * ")
+}
+
+#' @keywords internal
+#' @noRd
+.survival_rhs <- function(predictors, interaction = NULL) {
+  terms <- if (length(predictors)) .surv_bt(predictors) else character(0)
+  if (!is.null(interaction)) {
+    terms <- c(terms, .interaction_formula_term(interaction))
+  }
+  if (!length(terms)) {
+    return("1")
+  }
+  paste(unique(terms), collapse = " + ")
 }
 
 #' @keywords internal

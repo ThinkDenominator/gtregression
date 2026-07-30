@@ -13,6 +13,11 @@
 #'   are recommended in scripts, and bare names are also accepted.
 #' @param adjust_for Optional character vector of adjustment variables. When
 #'   supplied, one adjusted model is fitted per exposure.
+#' @param interaction Optional character scalar specifying one interaction term
+#'   using standard formula syntax, e.g. \code{"trt*prior"}. Quoted and bare
+#'   interaction syntax are accepted. In exposure-by-exposure mode, supply a
+#'   single exposure; in \code{multivariable = TRUE} mode, the interaction is
+#'   added to the single multivariable model.
 #' @param multivariable Logical; if \code{FALSE} (default), the current
 #'   exposure-by-exposure workflow is used. If \code{TRUE}, one multivariable
 #'   parametric survival model is fitted using all variables in
@@ -49,6 +54,10 @@
 #' \code{adjust_for} argument is not used in this mode; include every variable
 #' that belongs in the model inside \code{exposures}.
 #'
+#' Interaction terms specified via \code{interaction} are included using
+#' standard formula expansion (for example, \code{trt*prior}). Interaction
+#' effects are displayed as additional rows beneath the corresponding exposure.
+#'
 #' If exposure variables have a \code{"label"} attribute, for example from
 #' \code{labelled::var_label()}, those labels are used automatically in the
 #' displayed table.
@@ -63,7 +72,7 @@
 #'   \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
 #'   otherwise \code{NULL}.}
 #'   \item{variable_labels}{Named character vector of display labels.}
-#'   \item{time,event,distribution,approach,format,source,adjust_for,exposures}{Metadata fields.}
+#'   \item{time,event,distribution,approach,format,source,adjust_for,exposures,interaction}{Metadata fields.}
 #' }
 #'
 #' @examples
@@ -87,6 +96,17 @@
 #'   exposures = c(trt, celltype, prior),
 #'   adjust_for = c(age, karno),
 #'   distribution = lognormal
+#' )
+#'
+#' # Interaction in an adjusted exposure model
+#' surv_reg(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposures = trt,
+#'   adjust_for = c(age, karno),
+#'   interaction = trt*prior,
+#'   distribution = weibull
 #' )
 #'
 #' surv_reg(
@@ -114,6 +134,7 @@ surv_reg <- function(data,
                      event,
                      exposures,
                      adjust_for = NULL,
+                     interaction = NULL,
                      multivariable = FALSE,
                      multivariate = NULL,
                      distribution = "weibull",
@@ -125,6 +146,7 @@ surv_reg <- function(data,
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
   adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  interaction <- .interaction_arg(substitute(interaction), env = parent.frame(), allow_null = TRUE)
   distribution <- .surv_distribution_arg(
     substitute(distribution),
     env = parent.frame(),
@@ -167,6 +189,7 @@ surv_reg <- function(data,
     event = event,
     exposures = exposures,
     adjust_for = adjust_for,
+    interaction = interaction,
     multivariable = multivariable,
     distribution = distribution
   )
@@ -193,6 +216,7 @@ surv_reg <- function(data,
     if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
     if (adjusted_mode) .adjustment_note(adjust_for) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
+    if (!is.null(interaction)) .interaction_note(interaction) else NULL,
     paste0(
       "Event variable: ", event,
       " (1 = event, 0 = censored after internal coding)."
@@ -222,7 +246,8 @@ surv_reg <- function(data,
     adjusted_mode = adjusted_mode,
     multivariable = isTRUE(multivariable),
     adjust_for = if (adjusted_mode) unique(adjust_for) else NULL,
-    exposures = unique(exposures)
+    exposures = unique(exposures),
+    interaction = interaction
   )
 
   class(res) <- c("gtregression", "surv_reg", fmt_class, class(res))
@@ -236,21 +261,31 @@ surv_reg <- function(data,
                            event,
                            exposures,
                            adjust_for = NULL,
+                           interaction = NULL,
                            multivariable = FALSE,
                            distribution = "weibull") {
-  data_valid <- .validate_cox_inputs(data, time, event, exposures, adjust_for)
+  data_valid <- .validate_cox_inputs(
+    data,
+    time,
+    event,
+    exposures,
+    adjust_for,
+    interaction = interaction,
+    multivariable = multivariable
+  )
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
+  interaction_vars <- .interaction_vars(interaction)
 
   if (isTRUE(multivariable)) {
-    predictors <- unique(exposures)
+    predictors <- unique(c(exposures, interaction_vars))
     data_model <- .surv_model_data(data_valid, time, event, predictors)
-    fit <- .fit_surv_model(data_model, time, event, predictors, distribution)
+    fit <- .fit_surv_model(data_model, time, event, predictors, distribution, interaction = interaction)
 
     if (is.null(fit)) {
       stop("Parametric survival model fitting failed for the multivariable model.", call. = FALSE)
     }
 
-    td_list <- lapply(predictors, function(exposure) .tidy_survreg(fit, exposure))
+    td_list <- lapply(unique(exposures), function(exposure) .tidy_survreg(fit, exposure, interaction = interaction))
     td_list <- Filter(Negate(is.null), td_list)
     if (!length(td_list)) {
       stop("No estimable survival coefficients for the multivariable model.", call. = FALSE)
@@ -272,15 +307,15 @@ surv_reg <- function(data,
 
   for (i in seq_along(exposures)) {
     exposure <- exposures[i]
-    predictors <- if (adjusted_mode) c(exposure, adjust_for) else exposure
+    predictors <- unique(c(if (adjusted_mode) c(exposure, adjust_for) else exposure, interaction_vars))
     data_model <- .surv_model_data(data_valid, time, event, predictors)
-    fit <- .fit_surv_model(data_model, time, event, predictors, distribution)
+    fit <- .fit_surv_model(data_model, time, event, predictors, distribution, interaction = interaction)
 
     if (is.null(fit)) {
       stop("Parametric survival model fitting failed for exposure '", exposure, "'.", call. = FALSE)
     }
 
-    td <- .tidy_survreg(fit, exposure)
+    td <- .tidy_survreg(fit, exposure, interaction = interaction)
     if (is.null(td) || !nrow(td)) {
       stop("No estimable survival coefficients for exposure '", exposure, "'.", call. = FALSE)
     }
@@ -321,9 +356,9 @@ surv_reg <- function(data,
 
 #' @keywords internal
 #' @noRd
-.fit_surv_model <- function(data, time, event, predictors, distribution) {
-  bt <- function(x) paste0("`", gsub("`", "", x, fixed = TRUE), "`")
-  rhs <- if (length(predictors)) paste(bt(predictors), collapse = " + ") else "1"
+.fit_surv_model <- function(data, time, event, predictors, distribution, interaction = NULL) {
+  bt <- .surv_bt
+  rhs <- .survival_rhs(predictors, interaction)
   fml <- stats::as.formula(paste0("survival::Surv(", bt(time), ", ", bt(event), ") ~ ", rhs))
 
   tryCatch(
@@ -342,7 +377,7 @@ surv_reg <- function(data,
 
 #' @keywords internal
 #' @noRd
-.tidy_survreg <- function(fit, exposure) {
+.tidy_survreg <- function(fit, exposure, interaction = NULL) {
   smry <- summary(fit)
   coefs <- smry$table
   if (is.null(coefs) || nrow(coefs) == 0) {
@@ -356,7 +391,12 @@ surv_reg <- function(data,
   keep <- rn_clean != "(Intercept)" &
     rn_clean != "Log(scale)" &
     (rn_clean == exposure_clean |
-       (startsWith(rn_clean, exposure_clean) & !grepl(":", rn_clean, fixed = TRUE)))
+       (startsWith(rn_clean, exposure_clean) & !grepl(":", rn_clean, fixed = TRUE)) |
+       (!is.null(interaction) &
+          grepl(":", rn_clean, fixed = TRUE) &
+          vapply(strsplit(rn_clean, ":", fixed = TRUE),
+                 function(parts) any(startsWith(parts, exposure_clean) | parts == exposure_clean),
+                 logical(1))))
   idx <- which(keep)
 
   df_nonref <- NULL
@@ -367,9 +407,13 @@ surv_reg <- function(data,
     p <- if (length(p_col)) coefs[idx, p_col[1]] else NA_real_
     z <- stats::qnorm(0.975)
 
-    levels_out <- rn_clean[idx]
-    levels_out <- sub(paste0("^", exposure_clean), "", levels_out)
-    levels_out[levels_out == ""] <- exposure
+    levels_out <- vapply(rn_clean[idx], function(term) {
+      if (grepl(":", term, fixed = TRUE)) {
+        return(paste(strsplit(term, ":", fixed = TRUE)[[1]], collapse = " x "))
+      }
+      lvl <- sub(paste0("^", exposure_clean), "", term)
+      if (identical(lvl, "")) exposure else lvl
+    }, character(1))
 
     df_nonref <- data.frame(
       exposure = exposure,

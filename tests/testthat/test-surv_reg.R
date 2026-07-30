@@ -103,6 +103,77 @@ test_that("surv_reg supports a single multivariable parametric survival model", 
   expect_true(all(c("trt", "celltype", "prior", "age", "karno") %in% res$table_body$exposure))
 })
 
+test_that("surv_reg supports interaction terms", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+
+  adjusted <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = trt,
+    adjust_for = c(age, karno),
+    interaction = trt*prior,
+    distribution = weibull
+  )
+
+  direct_adjusted <- survival::survreg(
+    survival::Surv(time, status) ~ trt + age + karno + prior + trt:prior,
+    data = df,
+    dist = "weibull",
+    model = TRUE
+  )
+
+  expect_equal(adjusted$interaction, "trt*prior")
+  expect_true("Adjusted Time Ratio (95% CI)" %in% names(adjusted$table_display))
+  expect_true(any(grepl(" x ", adjusted$table_body$level, fixed = TRUE)))
+  expect_equal(stats::coef(adjusted$models$trt), stats::coef(direct_adjusted), tolerance = 1e-8)
+
+  multivariable <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, age, karno),
+    interaction = "trt*prior",
+    distribution = lognormal,
+    multivariable = TRUE
+  )
+
+  direct_multi <- survival::survreg(
+    survival::Surv(time, status) ~ trt + age + karno + prior + trt:prior,
+    data = df,
+    dist = "lognormal",
+    model = TRUE
+  )
+
+  expect_true(multivariable$multivariable)
+  expect_equal(multivariable$interaction, "trt*prior")
+  expect_true(any(grepl(":", names(stats::coef(multivariable$models$multivariable_model)), fixed = TRUE)))
+  expect_equal(stats::coef(multivariable$models$multivariable_model), stats::coef(direct_multi), tolerance = 1e-8)
+
+  expect_error(
+    surv_reg(
+      data = df,
+      time = time,
+      event = status,
+      exposures = c(trt, prior),
+      interaction = trt:prior
+    ),
+    "Use standard interaction syntax with"
+  )
+  expect_error(
+    surv_reg(
+      data = df,
+      time = time,
+      event = status,
+      exposures = c(trt, prior),
+      interaction = trt*prior
+    ),
+    "exposure-by-exposure mode"
+  )
+})
+
 test_that("surv_reg accepts multivariate alias for multivariable mode", {
   skip_if_not_installed("survival")
 

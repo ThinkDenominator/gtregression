@@ -31,6 +31,8 @@
 #'   \item \code{table_body}: raw comparison statistics
 #'   \item \code{table_display}: formatted display data
 #'   \item \code{models}: fitted models compared
+#'   \item \code{comparison_status}: whether models appear to use the same
+#'     analysis sample
 #' }
 #'
 #' @details
@@ -44,8 +46,13 @@
 #' clinical, epidemiological, and statistical judgement.
 #'
 #' Likelihood-ratio p-values are meaningful only for nested models fitted to
-#' the same analysis sample. If the models are not nested, or if model sample
-#' sizes differ, use AIC/BIC and subject-matter reasoning instead.
+#' the same analysis sample. \code{compare_models()} checks whether the fitted
+#' models appear to use the same analysis sample using retained model row
+#' identifiers when available; otherwise it compares N and event counts. AIC,
+#' BIC, log-likelihood, and likelihood-ratio statistics remain visible when
+#' samples differ, but the table footer warns that likelihood-based comparisons
+#' should then be interpreted descriptively rather than as formal model-selection
+#' evidence.
 #'
 #' @examples
 #' data("data_lungcancer", package = "gtregression")
@@ -70,6 +77,12 @@
 #' compare_models(
 #'   cox_1,
 #'   cox_2,
+#'   primary_exposure = trt
+#' )
+#'
+#' compare_models(
+#'   cox_1,
+#'   cox_2,
 #'   model_names = c("Treatment only", "Treatment + age + performance"),
 #'   primary_exposure = trt
 #' )
@@ -84,6 +97,7 @@ compare_models <- function(...,
                            p_digits = 3,
                            format = c("flextable", "gt", "tibble"),
                            theme = c("minimal")) {
+  input_names <- .compare_models_input_names(substitute(list(...)))
   models <- .compare_models_list(...)
   if (length(models) < 2L) {
     stop("Supply at least two gtregression model objects to compare.", call. = FALSE)
@@ -105,7 +119,7 @@ compare_models <- function(...,
     allow_null = TRUE
   )
 
-  model_names <- .compare_model_names(models, model_names)
+  model_names <- .compare_model_names(models, model_names, input_names = input_names)
   names(models) <- model_names
 
   table_body <- .compare_models_body(
@@ -114,6 +128,9 @@ compare_models <- function(...,
     primary_exposure = primary_exposure,
     exponentiate = exponentiate
   )
+  comparison_status <- .compare_models_status(models, table_body)
+  table_body$comparison_status <- comparison_status$status
+  table_body$comparison_status_detail <- comparison_status$detail
 
   table_display <- .compare_models_display(
     table_body,
@@ -129,6 +146,7 @@ compare_models <- function(...,
     models = models,
     model_names = model_names,
     primary_exposure = primary_exposure,
+    comparison_status = comparison_status,
     format = format,
     source = "compare_models"
   )
@@ -140,12 +158,45 @@ compare_models <- function(...,
       format = format,
       theme = theme,
       nested = nested,
-      primary_exposure = primary_exposure
+      primary_exposure = primary_exposure,
+      comparison_status = comparison_status
     )
   }
 
   class(out) <- c("gtregression", "compare_models")
   out
+}
+
+#' @keywords internal
+#' @noRd
+.compare_models_input_names <- function(expr) {
+  exprs <- as.list(expr)[-1L]
+  if (!length(exprs)) {
+    return(character(0))
+  }
+
+  explicit <- names(exprs)
+  if (is.null(explicit)) {
+    explicit <- rep("", length(exprs))
+  }
+
+  if (length(exprs) == 1L && identical(explicit, "")) {
+    return(character(0))
+  }
+
+  labels <- vapply(seq_along(exprs), function(i) {
+    if (nzchar(explicit[i])) {
+      return(explicit[i])
+    }
+
+    if (is.symbol(exprs[[i]])) {
+      return(as.character(exprs[[i]]))
+    }
+
+    ""
+  }, character(1))
+
+  labels
 }
 
 #' @keywords internal
@@ -223,7 +274,7 @@ compare_models <- function(...,
 
 #' @keywords internal
 #' @noRd
-.compare_model_names <- function(models, model_names = NULL) {
+.compare_model_names <- function(models, model_names = NULL, input_names = NULL) {
   if (!is.null(model_names)) {
     if (!is.character(model_names) || length(model_names) != length(models)) {
       stop("`model_names` must be a character vector with one name per model.", call. = FALSE)
@@ -234,6 +285,10 @@ compare_models <- function(...,
   nm <- names(models)
   if (!is.null(nm) && all(nzchar(nm))) {
     return(nm)
+  }
+
+  if (!is.null(input_names) && length(input_names) == length(models) && all(nzchar(input_names))) {
+    return(input_names)
   }
 
   paste("Model", seq_along(models))
@@ -265,6 +320,7 @@ compare_models <- function(...,
       LR_chisq = NA_real_,
       LR_df = NA_real_,
       p.value = NA_real_,
+      nested_comparison = NA,
       concordance = .compare_model_concordance(fit),
       primary_term = primary$term,
       primary_log_estimate = primary$log_estimate,
@@ -278,6 +334,7 @@ compare_models <- function(...,
 
   if (isTRUE(nested) && nrow(out) > 1L) {
     for (i in 2:nrow(out)) {
+      out$nested_comparison[i] <- .compare_models_nested_pair(models[[i - 1L]], models[[i]])
       lr <- 2 * (out$logLik[i] - out$logLik[i - 1L])
       df <- out$parameters[i] - out$parameters[i - 1L]
       if (is.finite(lr) && is.finite(df) && lr >= 0 && df > 0) {
@@ -297,6 +354,98 @@ compare_models <- function(...,
   out$best_BIC <- is.finite(out$BIC) & out$BIC == min(out$BIC, na.rm = TRUE)
 
   out
+}
+
+#' @keywords internal
+#' @noRd
+.compare_models_nested_pair <- function(smaller, larger) {
+  small_terms <- .compare_model_terms(smaller)
+  large_terms <- .compare_model_terms(larger)
+
+  if (is.null(small_terms) || is.null(large_terms)) {
+    return(NA)
+  }
+
+  all(small_terms %in% large_terms)
+}
+
+#' @keywords internal
+#' @noRd
+.compare_model_terms <- function(model) {
+  out <- tryCatch(attr(stats::terms(model), "term.labels"), error = function(e) NULL)
+  if (is.null(out)) {
+    return(NULL)
+  }
+  as.character(out)
+}
+
+#' @keywords internal
+#' @noRd
+.compare_models_status <- function(models, table_body) {
+  rows <- lapply(models, .compare_model_rows)
+  have_rows <- vapply(rows, function(x) length(x) > 0L, logical(1))
+
+  same_rows <- NA
+  if (all(have_rows) && length(rows) > 1L) {
+    first_rows <- rows[[1L]]
+    same_rows <- all(vapply(rows[-1L], identical, logical(1), y = first_rows))
+  }
+
+  same_n <- length(unique(table_body$n[is.finite(table_body$n)])) <= 1L
+  finite_events <- table_body$events[is.finite(table_body$events)]
+  same_events <- !length(finite_events) || length(unique(finite_events)) <= 1L
+
+  same_sample <- if (!is.na(same_rows)) {
+    same_rows
+  } else {
+    same_n && same_events
+  }
+
+  if (isTRUE(same_sample)) {
+    detail <- if (!is.na(same_rows)) {
+      "Same analysis sample; assessed using retained model row identifiers."
+    } else {
+      "Same analysis sample; assessed using N and event counts because retained row identifiers were unavailable."
+    }
+
+    return(list(
+      status = "Same analysis sample",
+      same_sample = TRUE,
+      row_check_available = all(have_rows),
+      detail = detail
+    ))
+  }
+
+  detail <- if (!is.na(same_rows)) {
+    "Different analysis sample; retained model row identifiers differed between models."
+  } else {
+    "Different analysis sample; N or event counts differed between models."
+  }
+
+  list(
+    status = "Different analysis sample",
+    same_sample = FALSE,
+    row_check_available = all(have_rows),
+    detail = detail
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.compare_model_rows <- function(model) {
+  mf <- tryCatch(stats::model.frame(model), error = function(e) NULL)
+  rn <- if (!is.null(mf)) rownames(mf) else NULL
+  if (!is.null(rn) && length(rn)) {
+    return(as.character(rn))
+  }
+
+  stored <- tryCatch(model$model, error = function(e) NULL)
+  rn <- if (!is.null(stored)) rownames(stored) else NULL
+  if (!is.null(rn) && length(rn)) {
+    return(as.character(rn))
+  }
+
+  character(0)
 }
 
 #' @keywords internal
@@ -497,22 +646,65 @@ compare_models <- function(...,
 
 #' @keywords internal
 #' @noRd
+.compare_status_note <- function(comparison_status = NULL) {
+  if (is.null(comparison_status) || is.null(comparison_status$status)) {
+    return("Comparison status: not assessed.")
+  }
+
+  paste0(
+    "Comparison status: ",
+    comparison_status$status,
+    ". ",
+    comparison_status$detail
+  )
+}
+
+#' @keywords internal
+#' @noRd
 .build_compare_models_table <- function(display,
                                         body,
                                         format = c("flextable", "gt"),
                                         theme = c("minimal"),
                                         nested = TRUE,
-                                        primary_exposure = NULL) {
+                                        primary_exposure = NULL,
+                                        comparison_status = NULL) {
   format <- match.arg(format, c("flextable", "gt"))
   note <- c(
-    "Compare prespecified candidate models; lower AIC or BIC indicates better relative fit among the compared models.",
+    .compare_status_note(comparison_status),
+    "Compare prespecified candidate models; lower AIC or BIC indicates better relative fit among the compared models."
+  )
+
+  if (isFALSE(comparison_status$same_sample)) {
+    note <- c(
+      note,
+      paste0(
+        "Models were fitted to different analysis samples because of missing data or differing inclusion criteria. ",
+        "AIC, BIC, log-likelihood and likelihood-ratio statistics are presented for completeness but should not be interpreted as formal model-selection criteria across different datasets."
+      )
+    )
+  } else {
+    note <- c(
+      note,
+      "Models were fitted to the same analysis sample. AIC, BIC, log-likelihood and likelihood-ratio tests may be interpreted as formal model-comparison statistics when the models are nested as required."
+    )
+  }
+
+  note <- c(
+    note,
     "Likelihood-ratio p-values are sequential and should be interpreted only for nested models fitted to the same analysis sample."
   )
+
+  if (isTRUE(nested) && any(body$nested_comparison %in% FALSE)) {
+    note <- c(
+      note,
+      "One or more sequential model pairs do not appear to be nested based on their model terms; likelihood-ratio statistics for those comparisons should be interpreted with caution."
+    )
+  }
 
   if (!is.null(primary_exposure) && any(is.finite(body$primary_estimate))) {
     note <- c(
       note,
-      "Primary estimate change is calculated on the coefficient/log-effect scale before exponentiation."
+      "Primary estimate change is calculated on the coefficient/log-effect scale before exponentiation and can help assess robustness across candidate models."
     )
   }
 

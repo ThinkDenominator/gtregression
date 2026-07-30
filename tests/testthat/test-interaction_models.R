@@ -11,6 +11,17 @@ birthwt_interaction_data <- function() {
     )
 }
 
+lung_interaction_data <- function() {
+  data("data_lungcancer", package = "gtregression")
+
+  data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+    )
+}
+
 test_that("interaction_models returns focused result for logit LRT", {
   df <- birthwt_interaction_data()
 
@@ -163,6 +174,50 @@ test_that("interaction_models supports poisson and negative binomial models", {
   expect_s3_class(nb$model_no_interaction, "negbin")
   expect_true(is.numeric(pois$p_value) || is.na(pois$p_value))
   expect_true(is.numeric(nb$p_value) || is.na(nb$p_value))
+})
+
+test_that("interaction_models supports Cox and parametric survival models", {
+  skip_if_not_installed("survival")
+
+  df <- lung_interaction_data()
+
+  cox_result <- interaction_models(
+    data = df,
+    time = time,
+    event = status,
+    exposure = trt,
+    effect_modifier = prior,
+    covariates = c(age, karno),
+    approach = cox,
+    test = LRT,
+    format = tibble
+  )
+
+  expect_s3_class(cox_result, "interaction_models_result")
+  expect_s3_class(cox_result$model_no_interaction, "coxph")
+  expect_s3_class(cox_result$model_with_interaction, "coxph")
+  expect_equal(cox_result$summary$approach, "cox")
+  expect_equal(cox_result$summary$outcome, "time/status")
+  expect_true(length(cox_result$interaction_terms) >= 1)
+  expect_true(is.numeric(cox_result$p_value) || is.na(cox_result$p_value))
+
+  surv_result <- interaction_models(
+    data = df,
+    time = "time",
+    event = "status",
+    exposure = "trt",
+    effect_modifier = "prior",
+    covariates = c("age", "karno"),
+    approach = surv,
+    distribution = weibull,
+    test = LRT,
+    format = tibble
+  )
+
+  expect_s3_class(surv_result$model_no_interaction, "survreg")
+  expect_s3_class(surv_result$model_with_interaction, "survreg")
+  expect_equal(surv_result$summary$approach, "survreg")
+  expect_true(is.numeric(surv_result$p_value) || is.na(surv_result$p_value))
 })
 
 test_that("interaction_models classifies detected interactions using alpha", {

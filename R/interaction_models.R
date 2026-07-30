@@ -14,6 +14,9 @@
 #'
 #' @param data A data frame containing all required variables.
 #' @param outcome Outcome variable name. Quoted and bare names are accepted.
+#'   Required for ordinary regression approaches. Leave unset for Cox and
+#'   parametric survival approaches and supply \code{time} and \code{event}
+#'   instead.
 #' @param exposure Main exposure variable name. Quoted and bare names are
 #'   accepted.
 #' @param covariates Optional character vector of additional covariates. Quoted
@@ -22,7 +25,14 @@
 #'   Quoted and bare names are accepted.
 #' @param approach Regression approach. One of \code{"logit"},
 #'   \code{"logbinomial"}, \code{"poisson"}, \code{"robpoisson"},
-#'   \code{"negbin"}, or \code{"linear"}.
+#'   \code{"negbin"}, \code{"linear"}, \code{"cox"}, or
+#'   \code{"survreg"}.
+#' @param time Survival time variable name for \code{approach = "cox"} or
+#'   \code{approach = "survreg"}. Quoted and bare names are accepted.
+#' @param event Event indicator variable name for survival approaches.
+#' @param distribution Parametric survival distribution for
+#'   \code{approach = "survreg"}. One of \code{"weibull"},
+#'   \code{"exponential"}, \code{"lognormal"}, or \code{"loglogistic"}.
 #' @param test Statistical test for model comparison. One of \code{"LRT"} or
 #'   \code{"Wald"}.
 #' @param alpha Significance threshold used to classify the interaction result.
@@ -35,17 +45,56 @@
 #'   one-row summary tibble. When \code{format} is \code{"gt"} or
 #'   \code{"flextable"}, the list also includes \code{table}.
 #'
+#' @examples
+#' birthwt_data <- data_birthwt |>
+#'   dplyr::mutate(
+#'     low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+#'     smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+#'     race = factor(race, levels = c(1, 2, 3),
+#'                   labels = c("White", "Black", "Other"))
+#'   )
+#'
+#' interaction_models(
+#'   data = birthwt_data,
+#'   outcome = low,
+#'   exposure = smoke,
+#'   effect_modifier = race,
+#'   covariates = c(age, lwt),
+#'   approach = logit
+#' )
+#'
+#' lung_data <- data_lungcancer |>
+#'   dplyr::mutate(
+#'     trt = factor(trt, levels = c(1, 2),
+#'                  labels = c("Standard treatment", "Test treatment")),
+#'     prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+#'   )
+#'
+#' interaction_models(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposure = trt,
+#'   effect_modifier = prior,
+#'   covariates = c(age, karno),
+#'   approach = cox
+#' )
+#'
 #' @importFrom stats glm anova binomial coef lm poisson reformulate terms
+#' @importFrom survival coxph survreg Surv
 #' @importFrom MASS glm.nb
 #' @seealso \code{\link{identify_confounder}()} for broader confounding and
 #'   effect-modification screening.
 #' @export
 interaction_models <- function(data,
-                               outcome,
+                               outcome = NULL,
                                exposure,
                                covariates = NULL,
                                effect_modifier,
                                approach = "logit",
+                               time = NULL,
+                               event = NULL,
+                               distribution = "weibull",
                                test = c("LRT", "Wald"),
                                alpha = 0.05,
                                verbose = FALSE,
@@ -53,14 +102,14 @@ interaction_models <- function(data,
   if (!is.data.frame(data)) {
     stop("`data` must be a data frame.", call. = FALSE)
   }
-  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  outcome <- if (missing(outcome) || identical(substitute(outcome), quote(NULL))) {
+    NULL
+  } else {
+    .vars_arg(substitute(outcome), env = parent.frame())
+  }
   exposure <- .vars_arg(substitute(exposure), env = parent.frame())
   covariates <- .vars_arg(substitute(covariates), env = parent.frame(), allow_null = TRUE)
   effect_modifier <- .vars_arg(substitute(effect_modifier), env = parent.frame())
-  if (!is.character(outcome) || length(outcome) != 1L ||
-      is.na(outcome) || !nzchar(outcome)) {
-    stop("`outcome` must be a single character variable name.", call. = FALSE)
-  }
   if (!is.character(exposure) || length(exposure) != 1L ||
       is.na(exposure) || !nzchar(exposure)) {
     stop("`exposure` must be a single character variable name.", call. = FALSE)
@@ -87,10 +136,37 @@ interaction_models <- function(data,
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
-    choices = c("logit", "logbinomial", "poisson", "robpoisson", "negbin", "linear")
+    choices = c("logit", "logbinomial", "poisson", "robpoisson", "negbin",
+                "linear", "cox", "surv", "survreg")
   )
   approach <- .normalize_approach(approach)
   .validate_approach(approach, context = "interaction_models")
+  is_survival <- approach %in% c("cox", "survreg")
+  if (!is_survival &&
+      (!is.character(outcome) || length(outcome) != 1L ||
+       is.na(outcome) || !nzchar(outcome))) {
+    stop("`outcome` must be a single character variable name.", call. = FALSE)
+  }
+  time <- if (missing(time) || identical(substitute(time), quote(NULL))) {
+    NULL
+  } else {
+    .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
+  }
+  event <- if (missing(event) || identical(substitute(event), quote(NULL))) {
+    NULL
+  } else {
+    .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
+  }
+  distribution <- if (identical(approach, "survreg")) {
+    .surv_distribution_arg(
+      substitute(distribution),
+      env = parent.frame(),
+      multiple = FALSE,
+      arg = "distribution"
+    )
+  } else {
+    "weibull"
+  }
 
   test <- .choice_arg(
     substitute(test),
@@ -106,18 +182,40 @@ interaction_models <- function(data,
   )
   format <- match.arg(format, c("flextable", "gt", "tibble"))
 
-  needed <- unique(c(outcome, exposure, effect_modifier, covariates))
+  if (is_survival && (is.null(time) || is.null(event))) {
+    stop("`time` and `event` are required when `approach` is cox or survreg.", call. = FALSE)
+  }
+
+  needed <- if (is_survival) {
+    unique(c(time, event, exposure, effect_modifier, covariates))
+  } else {
+    unique(c(outcome, exposure, effect_modifier, covariates))
+  }
   missing_vars <- setdiff(needed, names(data))
   if (length(missing_vars)) {
     stop("Variables not found: ", paste(missing_vars, collapse = ", "),
          call. = FALSE)
   }
 
-  .validate_outcome_by_approach(data[[outcome]], approach)
+  if (!is_survival) {
+    .validate_outcome_by_approach(data[[outcome]], approach)
+  } else {
+    .validate_cox_inputs(
+      data = data,
+      time = time,
+      event = event,
+      exposures = unique(c(exposure, effect_modifier, covariates)),
+      adjust_for = NULL
+    )
+  }
 
   model_data <- stats::na.omit(data[, needed, drop = FALSE])
   if (nrow(model_data) == 0L) {
     stop("No complete cases available for model fitting.", call. = FALSE)
+  }
+
+  if (is_survival) {
+    model_data[[event]] <- .cox_event01(model_data[[event]])
   }
 
   if (approach == "robpoisson" &&
@@ -130,11 +228,21 @@ interaction_models <- function(data,
 
   base_terms <- unique(c(exposure, effect_modifier, covariates))
   interaction_term <- paste0(exposure, ":", effect_modifier)
-  base_formula <- stats::reformulate(base_terms, response = outcome)
-  interaction_formula <- stats::reformulate(
-    unique(c(base_terms, interaction_term)),
-    response = outcome
-  )
+  if (is_survival) {
+    response <- paste0("survival::Surv(", .surv_bt(time), ", ", .surv_bt(event), ")")
+    base_formula <- stats::as.formula(
+      paste(response, "~", .survival_rhs(base_terms))
+    )
+    interaction_formula <- stats::as.formula(
+      paste(response, "~", .survival_rhs(base_terms, paste0(exposure, "*", effect_modifier)))
+    )
+  } else {
+    base_formula <- stats::reformulate(base_terms, response = outcome)
+    interaction_formula <- stats::reformulate(
+      unique(c(base_terms, interaction_term)),
+      response = outcome
+    )
+  }
 
   fit_model <- function(formula) {
     switch(
@@ -149,6 +257,8 @@ interaction_models <- function(data,
                                 family = stats::poisson("log")),
       "negbin" = MASS::glm.nb(formula, data = model_data),
       "linear" = stats::lm(formula, data = model_data),
+      "cox" = survival::coxph(formula, data = model_data, model = TRUE),
+      "survreg" = survival::survreg(formula, data = model_data, dist = distribution, model = TRUE),
       stop("Unsupported regression approach.", call. = FALSE)
     )
   }
@@ -209,7 +319,7 @@ interaction_models <- function(data,
   }
 
   summary <- tibble::tibble(
-    outcome = outcome,
+    outcome = if (is_survival) paste0(time, "/", event) else outcome,
     exposure = exposure,
     effect_modifier = effect_modifier,
     approach = approach,
@@ -358,6 +468,9 @@ interaction_models <- function(data,
       error = function(e) NULL
     )
     p_value <- .interaction_extract_lrt_p(comp)
+    if (is.na(p_value)) {
+      p_value <- .interaction_lrt_from_loglik(model1, model2)
+    }
     return(list(
       comparison = comp,
       p_value = p_value,
@@ -392,6 +505,20 @@ interaction_models <- function(data,
     return(NA_real_)
   }
   suppressWarnings(as.numeric(comp[[cols[[1]]]][2]))
+}
+
+.interaction_lrt_from_loglik <- function(model1, model2) {
+  ll1 <- tryCatch(stats::logLik(model1), error = function(e) NULL)
+  ll2 <- tryCatch(stats::logLik(model2), error = function(e) NULL)
+  if (is.null(ll1) || is.null(ll2)) {
+    return(NA_real_)
+  }
+  df <- attr(ll2, "df") - attr(ll1, "df")
+  chisq <- 2 * (as.numeric(ll2) - as.numeric(ll1))
+  if (!is.finite(df) || !is.finite(chisq) || df <= 0 || chisq < 0) {
+    return(NA_real_)
+  }
+  stats::pchisq(chisq, df = df, lower.tail = FALSE)
 }
 
 .interaction_terms <- function(model, interaction_term) {

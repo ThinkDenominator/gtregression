@@ -149,6 +149,23 @@ cox_adjusted <- cox_reg(
 cox_adjusted$table
 ```
 
+Planned interactions use the same `interaction = exposure*modifier` grammar as
+`multi_reg()`. In the default exposure-by-exposure workflow, supply the single
+exposure you want to interpret.
+
+```{r surv-cox-interaction, message=FALSE, warning=FALSE}
+cox_interaction <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior
+)
+
+cox_interaction$table
+```
+
 Check the proportional hazards assumption before treating Cox hazard ratios as
 final.
 
@@ -210,6 +227,23 @@ surv_adjusted <- surv_reg(
 
 surv_adjusted$table
 surv_adjusted$model_stats
+```
+
+Parametric survival models use the same interaction grammar and display
+Adjusted Time Ratio (95% CI) when adjustment or multivariable modelling is used.
+
+```{r surv-parametric-interaction, message=FALSE, warning=FALSE}
+surv_interaction <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior,
+  distribution = loglogistic
+)
+
+surv_interaction$table
 ```
 
 ## 6. Predict Survival Probabilities
