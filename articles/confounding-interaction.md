@@ -160,6 +160,66 @@ interaction_check$table
 | low | smoke | race | logit | Likelihood Ratio Test | 0.319 | 0.050 | No | No interaction | No statistical evidence of interaction between smoke and race at alpha = 0.05. |
 | Screening aid only; interaction decisions should be interpreted with subject-matter knowledge, study design, and stratum-specific estimates. |  |  |  |  |  |  |  |  |  |
 
+## Survival Confounding and Interaction
+
+The same grammar works for survival models. For `cox` and
+`surv`/`survreg`, use `time` and `event` instead of `outcome`. Cox
+models report hazard-ratio style estimates; parametric survival models
+report time-ratio style estimates. Mantel-Haenszel screening is for
+binary outcome settings, so survival examples use model-based
+change-in-estimate and interaction checks.
+
+``` r
+
+lung_data <- data_lungcancer |>
+  dplyr::mutate(
+    trt = factor(trt, levels = c(1, 2),
+                 labels = c("Standard treatment", "Test treatment")),
+    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+  )
+
+survival_confounder <- identify_confounder(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposure = trt,
+  potential_confounder = prior,
+  approach = cox,
+  method = change,
+  format = gt
+)
+
+survival_confounder$table
+```
+
+| Exposure | Candidate | Crude estimate | Adjusted estimate | MH estimate | % change model | % change MH | Confounder? | Interaction p | Effect modifier? | Decision | Recommendation |
+|----|----|----|----|----|----|----|----|----|----|----|----|
+| trt | prior | 1.018 | 1.026 |  | 0.84 |  | No |  | No | No evidence | No clear statistical evidence to include prior as a confounder. |
+| Screening aid only; use DAGs, subject-matter knowledge, and study design to decide confounding and effect modification. |  |  |  |  |  |  |  |  |  |  |  |
+
+``` r
+
+survival_interaction <- interaction_models(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposure = trt,
+  effect_modifier = prior,
+  covariates = c(age, karno),
+  approach = cox,
+  test = LRT,
+  format = gt
+)
+
+survival_interaction$table
+```
+
+| Interaction screening |  |  |  |  |  |  |  |  |  |
+|----|----|----|----|----|----|----|----|----|----|
+| Outcome | Exposure | Effect modifier | Approach | Test | p-value | Alpha | Interaction? | Decision | Interpretation |
+| time/status | trt | prior | cox | Likelihood Ratio Test | 0.068 | 0.050 | No | No interaction | No statistical evidence of interaction between trt and prior at alpha = 0.05. |
+| Screening aid only; interaction decisions should be interpreted with subject-matter knowledge, study design, and stratum-specific estimates. |  |  |  |  |  |  |  |  |  |
+
 ## Causal Mediation
 
 [`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md)

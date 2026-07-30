@@ -11,6 +11,7 @@ surv_reg(
   event,
   exposures,
   adjust_for = NULL,
+  interaction = NULL,
   multivariable = FALSE,
   multivariate = NULL,
   distribution = "weibull",
@@ -47,6 +48,14 @@ surv_reg(
 
   Optional character vector of adjustment variables. When supplied, one
   adjusted model is fitted per exposure.
+
+- interaction:
+
+  Optional character scalar specifying one interaction term using
+  standard formula syntax, e.g. `"trt*prior"`. Quoted and bare
+  interaction syntax are accepted. In exposure-by-exposure mode, supply
+  a single exposure; in `multivariable = TRUE` mode, the interaction is
+  added to the single multivariable model.
 
 - multivariable:
 
@@ -112,7 +121,7 @@ A list of class `c("gtregression","surv_reg", ...)` with elements:
 
   Named character vector of display labels.
 
-- time,event,distribution,approach,format,source,adjust_for,exposures:
+- time,event,distribution,approach,format,source,adjust_for,exposures,interaction:
 
   Metadata fields.
 
@@ -136,6 +145,11 @@ Since these estimates are adjusted for the other variables in the same
 model, the table reports `Adjusted Time Ratio (95% CI)`. The
 `adjust_for` argument is not used in this mode; include every variable
 that belongs in the model inside `exposures`.
+
+Interaction terms specified via `interaction` are included using
+standard formula expansion (for example, `trt*prior`). Interaction
+effects are displayed as additional rows beneath the corresponding
+exposure.
 
 If exposure variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
@@ -164,6 +178,17 @@ surv_reg(
   exposures = c(trt, celltype, prior),
   adjust_for = c(age, karno),
   distribution = lognormal
+)
+
+# Interaction in an adjusted exposure model
+surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior,
+  distribution = weibull
 )
 
 surv_reg(

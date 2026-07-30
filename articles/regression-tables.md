@@ -417,6 +417,35 @@ lung_adj_hr$model_stats
     ## 2 celltype 961.0882 975.3484 -475.5441   0.7349500    128 137
     ## 3    prior 974.7459 983.3019 -484.3729   0.7134257    128 137
 
+Use `interaction = exposure*modifier` for planned effect modification.
+In the default exposure-by-exposure workflow, provide one exposure.
+
+``` r
+
+cox_interaction <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior
+)
+
+cox_interaction$table
+```
+
+| Characteristic | Adjusted HR (95% CI) | p-value |
+|----|----|----|
+| Treatment group |  |  |
+| Standard treatment | Ref. |  |
+|  Test treatment | 1.52 (0.98–2.36) | 0.061 |
+|  trtTest treatment x priorYes | 0.47 (0.21–1.06) | 0.070 |
+| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |
+| Ref. = reference category. |  |  |
+| Adjusted for age and karno |  |  |
+| Model includes interaction term: trt\*prior |  |  |
+| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
+
 ## Parametric Survival Models
 
 [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
@@ -503,6 +532,34 @@ lung_adj_time_ratio$model_stats
     ## 1      trt    lognormal 1451.264 1465.864 -720.6318 1.110644    128 137
     ## 2 celltype    lognormal 1444.379 1464.819 -715.1894 1.064351    128 137
     ## 3    prior    lognormal 1451.768 1466.368 -720.8840 1.112741    128 137
+
+``` r
+
+surv_interaction <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior,
+  distribution = weibull
+)
+
+surv_interaction$table
+```
+
+| Characteristic | Adjusted Time Ratio (95% CI) | p-value |
+|----|----|----|
+| Treatment group |  |  |
+| Standard treatment | Ref. |  |
+|  Test treatment | 0.68 (0.44–1.04) | 0.073 |
+|  trtTest treatment x priorYes | 2.29 (1.03–5.09) | 0.042 |
+| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |
+| Distribution: weibull. |  |  |
+| Ref. = reference category. |  |  |
+| Adjusted for age and karno |  |  |
+| Model includes interaction term: trt\*prior |  |  |
+| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
 
 ## Continuous Outcomes
 

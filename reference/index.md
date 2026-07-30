@@ -113,6 +113,8 @@ Polish tables, combine outputs, and save tables, plots, or Word reports.
   : Save multiple tables and plots to a Word document
 - [`save_plot()`](https://thinkdenominator.github.io/gtregression/reference/save_plot.md)
   : Save a single plot
+- [`save_forest()`](https://thinkdenominator.github.io/gtregression/reference/save_forest.md)
+  : Save a forest_reg() output
 
 ## Object Helpers
 

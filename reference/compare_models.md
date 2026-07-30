@@ -87,6 +87,9 @@ A `gtregression` object with:
 
 - `models`: fitted models compared
 
+- `comparison_status`: whether models appear to use the same analysis
+  sample
+
 ## Details
 
 `compare_models()` does not refit models and does not perform hidden
@@ -103,8 +106,13 @@ candidate models first, then choose the final model using clinical,
 epidemiological, and statistical judgement.
 
 Likelihood-ratio p-values are meaningful only for nested models fitted
-to the same analysis sample. If the models are not nested, or if model
-sample sizes differ, use AIC/BIC and subject-matter reasoning instead.
+to the same analysis sample. `compare_models()` checks whether the
+fitted models appear to use the same analysis sample using retained
+model row identifiers when available; otherwise it compares N and event
+counts. AIC, BIC, log-likelihood, and likelihood-ratio statistics remain
+visible when samples differ, but the table footer warns that
+likelihood-based comparisons should then be interpreted descriptively
+rather than as formal model-selection evidence.
 
 ## Examples
 
@@ -126,6 +134,12 @@ cox_2 <- cox_reg(
   event = status,
   exposures = trt,
   adjust_for = c(age, karno)
+)
+
+compare_models(
+  cox_1,
+  cox_2,
+  primary_exposure = trt
 )
 
 compare_models(

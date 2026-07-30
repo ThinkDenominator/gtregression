@@ -61,11 +61,14 @@ interaction.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">interaction_models</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">outcome</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">exposure</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">effect_modifier</span>,</span>
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
+<span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  event <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  distribution <span class="op">=</span> <span class="st">"weibull"</span>,</span>
 <span>  test <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"LRT"</span>, <span class="st">"Wald"</span><span class="op">)</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -82,7 +85,10 @@ interaction.</p>
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
-<dd><p>Outcome variable name. Quoted and bare names are accepted.</p></dd>
+<dd><p>Outcome variable name. Quoted and bare names are accepted.
+Required for ordinary regression approaches. Leave unset for Cox and
+parametric survival approaches and supply <code>time</code> and <code>event</code>
+instead.</p></dd>
 
 
 <dt id="arg-exposure">exposure<a class="anchor" aria-label="anchor" href="#arg-exposure"></a></dt>
@@ -103,7 +109,23 @@ Quoted and bare names are accepted.</p></dd>
 <dt id="arg-approach">approach<a class="anchor" aria-label="anchor" href="#arg-approach"></a></dt>
 <dd><p>Regression approach. One of <code>"logit"</code>,
 <code>"logbinomial"</code>, <code>"poisson"</code>, <code>"robpoisson"</code>,
-<code>"negbin"</code>, or <code>"linear"</code>.</p></dd>
+<code>"negbin"</code>, <code>"linear"</code>, <code>"cox"</code>, or
+<code>"survreg"</code>.</p></dd>
+
+
+<dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
+<dd><p>Survival time variable name for <code>approach = "cox"</code> or
+<code>approach = "survreg"</code>. Quoted and bare names are accepted.</p></dd>
+
+
+<dt id="arg-event">event<a class="anchor" aria-label="anchor" href="#arg-event"></a></dt>
+<dd><p>Event indicator variable name for survival approaches.</p></dd>
+
+
+<dt id="arg-distribution">distribution<a class="anchor" aria-label="anchor" href="#arg-distribution"></a></dt>
+<dd><p>Parametric survival distribution for
+<code>approach = "survreg"</code>. One of <code>"weibull"</code>,
+<code>"exponential"</code>, <code>"lognormal"</code>, or <code>"loglogistic"</code>.</p></dd>
 
 
 <dt id="arg-test">test<a class="anchor" aria-label="anchor" href="#arg-test"></a></dt>
@@ -146,6 +168,224 @@ modifiers, including Mantel-Haenszel-supported checks when appropriate, use
   effect-modification screening.</p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">birthwt_data</span> <span class="op">&lt;-</span> <span class="va">data_birthwt</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">low</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Normal BW"</span>, <span class="st">"Low BW"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    smoke <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">smoke</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    race <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">race</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"White"</span>, <span class="st">"Black"</span>, <span class="st">"Other"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">interaction_models</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span></span>
+<span class="r-in"><span>  outcome <span class="op">=</span> <span class="va">low</span>,</span></span>
+<span class="r-in"><span>  exposure <span class="op">=</span> <span class="va">smoke</span>,</span></span>
+<span class="r-in"><span>  effect_modifier <span class="op">=</span> <span class="va">race</span>,</span></span>
+<span class="r-in"><span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">lwt</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  approach <span class="op">=</span> <span class="va">logit</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   outcome exposure effect_modifier approach test   p_value alpha has_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> low     smoke    race            logit    Likel…   0.319  0.05 FALSE          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: decision &lt;chr&gt;, interpretation &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $model_no_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Call:  stats::glm(formula = formula, family = stats::binomial("logit"), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     data = model_data)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)     smokeYes    raceBlack    raceOther          age          lwt  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0.33245      1.05444      1.23167      0.94326     -0.02248     -0.01253  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Degrees of Freedom: 188 Total (i.e. Null);  183 Residual</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Null Deviance:	    234.7 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual Deviance: 214.6 	AIC: 226.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $model_with_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Call:  stats::glm(formula = formula, family = stats::binomial("logit"), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     data = model_data)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        (Intercept)            smokeYes           raceBlack           raceOther  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           -0.18086             1.56250             1.51167             1.47279  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                age                 lwt  smokeYes:raceBlack  smokeYes:raceOther  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           -0.01986            -0.01189            -0.29633            -1.31147  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Degrees of Freedom: 188 Total (i.e. Null);  181 Residual</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Null Deviance:	    234.7 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual Deviance: 212.3 	AIC: 228.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $robust_no_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $robust_with_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $formula_no_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> low ~ smoke + race + age + lwt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55b664516f30&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $formula_with_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> low ~ smoke + race + age + lwt + smoke:race</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55b664516f30&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $interaction_terms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "smokeYes:raceBlack" "smokeYes:raceOther"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $comparison</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Analysis of Deviance Table</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model 1: low ~ smoke + race + age + lwt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model 2: low ~ smoke + race + age + lwt + smoke:race</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Resid. Df Resid. Dev Df Deviance Pr(&gt;Chi)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       183     214.58                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       181     212.29  2   2.2829   0.3194</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $p_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3193602</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $alpha</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $has_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $decision</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "no_interaction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $interpretation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No statistical evidence of interaction between smoke and race at alpha = 0.05."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $test</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Likelihood Ratio Test"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $approach</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "logit"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $source</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interaction_models"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $table</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interaction_models_result" "list"                     </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">lung_data</span> <span class="op">&lt;-</span> <span class="va">data_lungcancer</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    trt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">trt</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                 labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Standard treatment"</span>, <span class="st">"Test treatment"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">prior</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">interaction_models</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span></span>
+<span class="r-in"><span>  time <span class="op">=</span> <span class="va">time</span>,</span></span>
+<span class="r-in"><span>  event <span class="op">=</span> <span class="va">status</span>,</span></span>
+<span class="r-in"><span>  exposure <span class="op">=</span> <span class="va">trt</span>,</span></span>
+<span class="r-in"><span>  effect_modifier <span class="op">=</span> <span class="va">prior</span>,</span></span>
+<span class="r-in"><span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">karno</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  approach <span class="op">=</span> <span class="va">cox</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   outcome  exposure effect_modifier approach test  p_value alpha has_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> time/st… trt      prior           cox      Like…  0.068<span style="text-decoration: underline;">3</span>  0.05 FALSE          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: decision &lt;chr&gt;, interpretation &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $model_no_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> survival::coxph(formula = formula, data = model_data, model = TRUE)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        coef exp(coef)  se(coef)      z        p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> trtTest treatment  0.193793  1.213846  0.186309  1.040    0.298</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> priorYes          -0.060857  0.940958  0.202705 -0.300    0.764</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> age               -0.004033  0.995975  0.009202 -0.438    0.661</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> karno             -0.034266  0.966314  0.005253 -6.523 6.89e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Likelihood ratio test=43.23  on 4 df, p=9.257e-09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> n= 137, number of events= 128 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $model_with_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> survival::coxph(formula = formula, data = model_data, model = TRUE)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                 coef exp(coef)  se(coef)      z       p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> trtTest treatment           0.420717  1.523053  0.224505  1.874  0.0609</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> priorYes                    0.305208  1.356907  0.275497  1.108  0.2679</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> age                        -0.008447  0.991589  0.009468 -0.892  0.3723</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> karno                      -0.034908  0.965694  0.005317 -6.565 5.2e-11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> trtTest treatment:priorYes -0.757259  0.468950  0.417582 -1.813  0.0698</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Likelihood ratio test=46.56  on 5 df, p=6.999e-09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> n= 137, number of events= 128 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $robust_no_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $robust_with_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $formula_no_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> survival::Surv(time, status) ~ trt + prior + age + karno</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55b6697690e8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $formula_with_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> survival::Surv(time, status) ~ trt + prior + age + karno + trt * </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     prior</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55b6697690e8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $interaction_terms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "trtTest treatment:priorYes"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $comparison</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Analysis of Deviance Table</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Cox model: response is  survival::Surv(time, status)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Model 1: ~ trt + prior + age + karno</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Model 2: ~ trt + prior + age + karno + trt * prior</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    loglik  Chisq Df Pr(&gt;|Chi|)  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -483.83                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -482.17 3.3227  1    0.06833 .</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $p_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.06832996</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $alpha</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $has_interaction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $decision</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "no_interaction"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $interpretation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No statistical evidence of interaction between trt and prior at alpha = 0.05."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $test</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Likelihood Ratio Test"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $approach</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cox"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $source</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interaction_models"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $table</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interaction_models_result" "list"                     </span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

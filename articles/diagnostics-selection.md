@@ -73,7 +73,7 @@ check_convergence(
 | smoke + ht + ui + ptl_cat | logbinomial | No |  |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-674cbaaa quarto-disable-processing="true"}
+Convergence check {.table .cl-ed9c2f72 quarto-disable-processing="true"}
 
 ## Collinearity Screening
 
@@ -878,7 +878,7 @@ compare_models(
     ##   </tbody>
     ##   <tfoot>
     ##     <tr class="gt_sourcenotes">
-    ##       <td class="gt_sourcenote" colspan="13"><span class='gt_from_md'>Compare prespecified candidate models; lower AIC or BIC indicates better relative fit among the compared models.<br>Likelihood-ratio p-values are sequential and should be interpreted only for nested models fitted to the same analysis sample.<br>Primary estimate change is calculated on the coefficient/log-effect scale before exponentiation.</span></td>
+    ##       <td class="gt_sourcenote" colspan="13"><span class='gt_from_md'>Comparison status: Same analysis sample. Same analysis sample; assessed using retained model row identifiers.<br>Compare prespecified candidate models; lower AIC or BIC indicates better relative fit among the compared models.<br>Models were fitted to the same analysis sample. AIC, BIC, log-likelihood and likelihood-ratio tests may be interpreted as formal model-comparison statistics when the models are nested as required.<br>Likelihood-ratio p-values are sequential and should be interpreted only for nested models fitted to the same analysis sample.<br>Primary estimate change is calculated on the coefficient/log-effect scale before exponentiation and can help assess robustness across candidate models.</span></td>
     ##     </tr>
     ##   </tfoot>
     ## </table>
@@ -889,6 +889,18 @@ likelihood-ratio comparisons when `nested = TRUE`. Lower AIC or BIC
 identifies better relative fit among the compared models. When
 `primary_exposure` is supplied, the table also tracks that effect
 estimate and the percentage change across models.
+
+[`compare_models()`](https://thinkdenominator.github.io/gtregression/reference/compare_models.md)
+automatically checks whether the candidate models appear to use the same
+analysis sample. It uses retained row identifiers when the fitted model
+stores them; otherwise it compares N and event counts. If the models use
+different complete-case samples, the table still displays AIC, BIC,
+log-likelihood, and likelihood-ratio statistics for transparency, but
+the footer warns that these values should not be interpreted as formal
+model-selection criteria across different datasets. In that situation,
+use the primary exposure estimate, percentage change, confidence
+intervals, and clinical or epidemiological reasoning to judge
+robustness.
 
 For Cox and parametric survival models, fit the candidate models with
 [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
@@ -1456,7 +1468,7 @@ compare_models(
     ##   </tbody>
     ##   <tfoot>
     ##     <tr class="gt_sourcenotes">
-    ##       <td class="gt_sourcenote" colspan="15"><span class='gt_from_md'>Compare prespecified candidate models; lower AIC or BIC indicates better relative fit among the compared models.<br>Likelihood-ratio p-values are sequential and should be interpreted only for nested models fitted to the same analysis sample.<br>Primary estimate change is calculated on the coefficient/log-effect scale before exponentiation.</span></td>
+    ##       <td class="gt_sourcenote" colspan="15"><span class='gt_from_md'>Comparison status: Same analysis sample. Same analysis sample; assessed using retained model row identifiers.<br>Compare prespecified candidate models; lower AIC or BIC indicates better relative fit among the compared models.<br>Models were fitted to the same analysis sample. AIC, BIC, log-likelihood and likelihood-ratio tests may be interpreted as formal model-comparison statistics when the models are nested as required.<br>Likelihood-ratio p-values are sequential and should be interpreted only for nested models fitted to the same analysis sample.<br>Primary estimate change is calculated on the coefficient/log-effect scale before exponentiation and can help assess robustness across candidate models.</span></td>
     ##     </tr>
     ##   </tfoot>
     ## </table>

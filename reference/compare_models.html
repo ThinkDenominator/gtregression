@@ -128,6 +128,8 @@ default, while linear models are not.</p></dd>
 <li><p><code>table_body</code>: raw comparison statistics</p></li>
 <li><p><code>table_display</code>: formatted display data</p></li>
 <li><p><code>models</code>: fitted models compared</p></li>
+<li><p><code>comparison_status</code>: whether models appear to use the same
+    analysis sample</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -140,8 +142,13 @@ the model already fitted by <code><a href="multi_reg.html">multi_reg()</a></code
 selection: compare candidate models first, then choose the final model using
 clinical, epidemiological, and statistical judgement.</p>
 <p>Likelihood-ratio p-values are meaningful only for nested models fitted to
-the same analysis sample. If the models are not nested, or if model sample
-sizes differ, use AIC/BIC and subject-matter reasoning instead.</p>
+the same analysis sample. <code>compare_models()</code> checks whether the fitted
+models appear to use the same analysis sample using retained model row
+identifiers when available; otherwise it compares N and event counts. AIC,
+BIC, log-likelihood, and likelihood-ratio statistics remain visible when
+samples differ, but the table footer warns that likelihood-based comparisons
+should then be interpreted descriptively rather than as formal model-selection
+evidence.</p>
     </div>
 
     <div class="section level2">
@@ -163,6 +170,12 @@ sizes differ, use AIC/BIC and subject-matter reasoning instead.</p>
 <span class="r-in"><span>  event <span class="op">=</span> <span class="va">status</span>,</span></span>
 <span class="r-in"><span>  exposures <span class="op">=</span> <span class="va">trt</span>,</span></span>
 <span class="r-in"><span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">karno</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">cox_1</span>,</span></span>
+<span class="r-in"><span>  <span class="va">cox_2</span>,</span></span>
+<span class="r-in"><span>  primary_exposure <span class="op">=</span> <span class="va">trt</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span></span></span>

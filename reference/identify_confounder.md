@@ -8,10 +8,13 @@ effect modifiers for one or more exposures.
 ``` r
 identify_confounder(
   data,
-  outcome,
+  outcome = NULL,
   exposure,
   potential_confounder,
   approach = "logit",
+  time = NULL,
+  event = NULL,
+  distribution = "weibull",
   method = "change",
   threshold = 10,
   emm_threshold = 10,
@@ -30,7 +33,9 @@ identify_confounder(
 
 - outcome:
 
-  Outcome variable name. Quoted and bare names are accepted.
+  Outcome variable name. Quoted and bare names are accepted. Required
+  for ordinary regression approaches. Leave unset for Cox and parametric
+  survival approaches and supply `time` and `event` instead.
 
 - exposure:
 
@@ -46,7 +51,22 @@ identify_confounder(
 - approach:
 
   Regression approach. One of `"logit"`, `"logbinomial"`, `"poisson"`,
-  `"robpoisson"`, `"linear"`, or `"negbin"`.
+  `"robpoisson"`, `"linear"`, `"negbin"`, `"cox"`, or `"survreg"`.
+
+- time:
+
+  Survival time variable name for `approach = "cox"` or
+  `approach = "survreg"`. Quoted and bare names are accepted.
+
+- event:
+
+  Event indicator variable name for survival approaches. Values may be
+  coded as 0/1, 1/2, logical, or a two-level factor/character variable.
+
+- distribution:
+
+  Parametric survival distribution for `approach = "survreg"`. One of
+  `"weibull"`, `"exponential"`, `"lognormal"`, or `"loglogistic"`.
 
 - method:
 
@@ -120,3 +140,59 @@ use
 
 [`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md)
 for focused model comparison of a planned interaction term.
+
+## Examples
+
+``` r
+birthwt_data <- data_birthwt |>
+  dplyr::mutate(
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other"))
+  )
+
+identify_confounder(
+  data = birthwt_data,
+  outcome = low,
+  exposure = smoke,
+  potential_confounder = race,
+  approach = logit
+)
+#> Confounder and effect-modifier screening
+#> # A tibble: 1 × 13
+#>   exposure candidate crude_est adjusted_est mh_est percent_change
+#>   <chr>    <chr>         <dbl>        <dbl>  <dbl>          <dbl>
+#> 1 smoke    race           2.02         3.05   3.09           51.0
+#> # ℹ 7 more variables: percent_change_model <dbl>, percent_change_mh <dbl>,
+#> #   is_confounder <lgl>, interaction_p <dbl>, is_effect_modifier <lgl>,
+#> #   decision <chr>, recommendation <chr>
+#> 
+#> Use `$table` for the formatted display table.
+
+lung_data <- data_lungcancer |>
+  dplyr::mutate(
+    trt = factor(trt, levels = c(1, 2),
+                 labels = c("Standard treatment", "Test treatment")),
+    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+  )
+
+identify_confounder(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposure = trt,
+  potential_confounder = prior,
+  approach = cox
+)
+#> Confounder and effect-modifier screening
+#> # A tibble: 1 × 13
+#>   exposure candidate crude_est adjusted_est mh_est percent_change
+#>   <chr>    <chr>         <dbl>        <dbl>  <dbl>          <dbl>
+#> 1 trt      prior          1.02         1.03     NA           0.84
+#> # ℹ 7 more variables: percent_change_model <dbl>, percent_change_mh <dbl>,
+#> #   is_confounder <lgl>, interaction_p <dbl>, is_effect_modifier <lgl>,
+#> #   decision <chr>, recommendation <chr>
+#> 
+#> Use `$table` for the formatted display table.
+```

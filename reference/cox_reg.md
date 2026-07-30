@@ -11,6 +11,7 @@ cox_reg(
   event,
   exposures,
   adjust_for = NULL,
+  interaction = NULL,
   multivariable = FALSE,
   multivariate = NULL,
   format = c("flextable", "gt"),
@@ -46,6 +47,14 @@ cox_reg(
 
   Optional character vector of adjustment variables. When supplied, one
   adjusted Cox model is fitted per exposure.
+
+- interaction:
+
+  Optional character scalar specifying one interaction term using
+  standard formula syntax, e.g. `"trt*prior"`. Quoted and bare
+  interaction syntax are accepted. In exposure-by-exposure mode, supply
+  a single exposure; in `multivariable = TRUE` mode, the interaction is
+  added to the single multivariable model.
 
 - multivariable:
 
@@ -104,7 +113,7 @@ A list of class `c("gtregression","cox_reg", ...)` with elements:
 
   Named character vector of display labels.
 
-- time,event,approach,format,source,adjust_for,exposures:
+- time,event,approach,format,source,adjust_for,exposures,interaction:
 
   Metadata fields.
 
@@ -124,6 +133,11 @@ The `adjust_for` argument is not used in this mode; include every
 variable that belongs in the model inside `exposures`. Since these
 estimates are adjusted for the other variables in the same model, the
 table reports `Adjusted HR (95% CI)`.
+
+Interaction terms specified via `interaction` are included using
+standard formula expansion (for example, `trt*prior`). Interaction
+effects are displayed as additional rows beneath the corresponding
+exposure.
 
 The proportional hazards assumption should be assessed separately, for
 example with
@@ -155,6 +169,16 @@ cox_reg(
   event = status,
   exposures = c(trt, celltype, prior),
   adjust_for = c(age, karno)
+)
+
+# Interaction in an adjusted exposure model
+cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno),
+  interaction = trt*prior
 )
 
 cox_reg(
