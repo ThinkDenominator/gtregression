@@ -11,6 +11,7 @@ cox_reg(
   event,
   exposures,
   adjust_for = NULL,
+  stratifier = NULL,
   interaction = NULL,
   multivariable = FALSE,
   multivariate = NULL,
@@ -47,6 +48,14 @@ cox_reg(
 
   Optional character vector of adjustment variables. When supplied, one
   adjusted Cox model is fitted per exposure.
+
+- stratifier:
+
+  Optional single stratifying variable. When supplied, stratum-specific
+  Cox tables are produced using the same crude, adjusted, or
+  multivariable workflow requested by the other arguments. The
+  stratifier cannot also be used as the time, event, exposure,
+  adjustment, or interaction variable.
 
 - interaction:
 

@@ -61,6 +61,7 @@ censoring marks, a log-rank p-value, and a number-at-risk table.</p>
 <span>  conf.int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  risk_table <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  p_value <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  p_value_position <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  censor <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  break_time_by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -109,6 +110,13 @@ the curve.</p></dd>
 <dt id="arg-p-value">p_value<a class="anchor" aria-label="anchor" href="#arg-p-value"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, show the log-rank p-value when
 <code>by</code> is supplied.</p></dd>
+
+
+<dt id="arg-p-value-position">p_value_position<a class="anchor" aria-label="anchor" href="#arg-p-value-position"></a></dt>
+<dd><p>Optional numeric vector of length 2 giving the
+<code>x</code> and <code>y</code> coordinates for the log-rank p-value inside the
+plotting panel. If <code>NULL</code>, a lower-left position is chosen
+automatically.</p></dd>
 
 
 <dt id="arg-censor">censor<a class="anchor" aria-label="anchor" href="#arg-censor"></a></dt>

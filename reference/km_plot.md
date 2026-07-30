@@ -14,6 +14,7 @@ km_plot(
   conf.int = TRUE,
   risk_table = TRUE,
   p_value = TRUE,
+  p_value_position = NULL,
   censor = TRUE,
   break_time_by = NULL,
   xlim = NULL,
@@ -59,6 +60,12 @@ km_plot(
 - p_value:
 
   Logical; if `TRUE`, show the log-rank p-value when `by` is supplied.
+
+- p_value_position:
+
+  Optional numeric vector of length 2 giving the `x` and `y` coordinates
+  for the log-rank p-value inside the plotting panel. If `NULL`, a
+  lower-left position is chosen automatically.
 
 - censor:
 

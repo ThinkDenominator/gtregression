@@ -358,21 +358,21 @@ lung_hr <- cox_reg(
 lung_hr$table
 ```
 
-| Characteristic | HR (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 1.02 (0.71–1.45) | 0.922 |
-| Cancer cell type |  |  |
-| squamous | Ref. |  |
-|  smallcell | 2.72 (1.66–4.47) | \<0.001 |
-|  adeno | 3.15 (1.77–5.59) | \<0.001 |
-|  large | 1.26 (0.73–2.17) | 0.407 |
-| Karnofsky performance score | 0.97 (0.96–0.98) | \<0.001 |
-| Age | 1.01 (0.99–1.03) | 0.433 |
-| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
+| Characteristic | N | HR (95% CI) | p-value |
+|----|----|----|----|
+| Treatment group | 137 |  |  |
+| Standard treatment |  | Ref. |  |
+|  Test treatment |  | 1.02 (0.71–1.45) | 0.922 |
+| Cancer cell type | 137 |  |  |
+| squamous |  | Ref. |  |
+|  smallcell |  | 2.72 (1.66–4.47) | \<0.001 |
+|  adeno |  | 3.15 (1.77–5.59) | \<0.001 |
+|  large |  | 1.26 (0.73–2.17) | 0.407 |
+| Karnofsky performance score | 137 | 0.97 (0.96–0.98) | \<0.001 |
+| Age | 137 | 1.01 (0.99–1.03) | 0.433 |
+| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |  |
+| Ref. = reference category. |  |  |  |
+| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |  |
 
 ``` r
 
@@ -471,22 +471,22 @@ lung_time_ratio <- surv_reg(
 lung_time_ratio$table
 ```
 
-| Characteristic | Time Ratio (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 1.05 (0.70–1.58) | 0.818 |
-| Cancer cell type |  |  |
-| squamous | Ref. |  |
-|  smallcell | 0.34 (0.21–0.54) | \<0.001 |
-|  adeno | 0.30 (0.17–0.51) | \<0.001 |
-|  large | 0.77 (0.45–1.32) | 0.339 |
-| Karnofsky performance score | 1.04 (1.03–1.05) | \<0.001 |
-| Age | 0.99 (0.97–1.01) | 0.284 |
-| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |
-| Distribution: weibull. |  |  |
-| Ref. = reference category. |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
+| Characteristic | N | Time Ratio (95% CI) | p-value |
+|----|----|----|----|
+| Treatment group | 137 |  |  |
+| Standard treatment |  | Ref. |  |
+|  Test treatment |  | 1.05 (0.70–1.58) | 0.818 |
+| Cancer cell type | 137 |  |  |
+| squamous |  | Ref. |  |
+|  smallcell |  | 0.34 (0.21–0.54) | \<0.001 |
+|  adeno |  | 0.30 (0.17–0.51) | \<0.001 |
+|  large |  | 0.77 (0.45–1.32) | 0.339 |
+| Karnofsky performance score | 137 | 1.04 (1.03–1.05) | \<0.001 |
+| Age | 137 | 0.99 (0.97–1.01) | 0.284 |
+| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |  |
+| Distribution: weibull. |  |  |  |
+| Ref. = reference category. |  |  |  |
+| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |  |
 
 ``` r
 

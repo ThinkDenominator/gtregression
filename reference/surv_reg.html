@@ -56,6 +56,7 @@
 <span>  <span class="va">event</span>,</span>
 <span>  <span class="va">exposures</span>,</span>
 <span>  adjust_for <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  stratifier <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  interaction <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  multivariable <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  multivariate <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -94,6 +95,14 @@ are recommended in scripts, and bare names are also accepted.</p></dd>
 <dt id="arg-adjust-for">adjust_for<a class="anchor" aria-label="anchor" href="#arg-adjust-for"></a></dt>
 <dd><p>Optional character vector of adjustment variables. When
 supplied, one adjusted model is fitted per exposure.</p></dd>
+
+
+<dt id="arg-stratifier">stratifier<a class="anchor" aria-label="anchor" href="#arg-stratifier"></a></dt>
+<dd><p>Optional single stratifying variable. When supplied,
+stratum-specific parametric survival tables are produced using the same
+crude, adjusted, or multivariable workflow requested by the other
+arguments. The stratifier cannot also be used as the time, event,
+exposure, adjustment, or interaction variable.</p></dd>
 
 
 <dt id="arg-interaction">interaction<a class="anchor" aria-label="anchor" href="#arg-interaction"></a></dt>

@@ -16,6 +16,7 @@ save_forest(
   width = NULL,
   height = NULL,
   scale = 1,
+  auto_size = TRUE,
   padding = 0.25,
   dpi = 300
 )
@@ -41,8 +42,10 @@ save_forest(
 
 - width, height:
 
-  Optional export width and height in inches. If either is `NULL`, a
-  practical default is estimated from the number of rows and columns in
+  Optional export width and height in inches. If either is `NULL` and
+  `auto_size = TRUE`, the size is measured from the intrinsic
+  forestploter gtable dimensions. If measurement is not possible, a
+  practical fallback is estimated from the number of rows and columns in
   the
   [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
   output.
@@ -51,6 +54,12 @@ save_forest(
 
   Positive multiplier applied to the export width and height. This is a
   quick way to make a large forest plot roomier.
+
+- auto_size:
+
+  Logical. If `TRUE`, measure the intrinsic forest plot size when
+  `width` or `height` is not supplied. If `FALSE`, use the fallback
+  row/column-based sizing.
 
 - padding:
 
@@ -83,17 +92,16 @@ uni_or <- uni_reg(
 
 forest <- forest_reg(uni = uni_or)
 save_forest(forest, filename = tempfile("forest"), format = "pdf")
-#> Forest plot saved at: /tmp/RtmpIYQ9jJ/forest19797db33fe9.pdf
+#> Forest plot saved at: /tmp/Rtmpvko02f/forest1a682f718c60.pdf
 
 # For large forest plots, increase width, height, scale, or padding.
 save_forest(
   forest,
   filename = tempfile("forest-wide"),
   format = "png",
-  width = 12,
-  height = 8,
+  scale = 1.2,
   padding = 0.35,
   dpi = 300
 )
-#> Forest plot saved at: /tmp/RtmpIYQ9jJ/forest-wide197954b621c.png
+#> Forest plot saved at: /tmp/Rtmpvko02f/forest-wide1a6865ec61e2.png
 ```
