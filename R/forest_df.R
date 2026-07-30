@@ -219,24 +219,25 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
   u$is_cont <- (u$exposure == u$level)
   blocks <- list()
 
-  if (any(u$is_cont)) {
-    cu <- u[u$is_cont, , drop = FALSE]
-    cu$..row_type <- "level"
-    cu$..label    <- cu$exposure
-    blocks[[length(blocks)+1]] <- cu
-  }
-  for (ex in unique(u$exposure[!u$is_cont])) {
-    df  <- u[!u$is_cont & u$exposure == ex, , drop=FALSE]
-    hdr <- df[1, , drop=FALSE]
-    hdr$level      <- ex
-    hdr$estimate   <- hdr$conf.low <- hdr$conf.high <- hdr$p.value <- NA_real_
-    hdr$ref        <- FALSE
-    hdr$..row_type <- "header"
-    hdr$..label    <- ex
-    df$..row_type  <- "level"
-    df$..label     <- paste0("  ", df$level)
-    blocks[[length(blocks)+1]] <- hdr
-    blocks[[length(blocks)+1]] <- df
+  for (ex in unique(u$exposure)) {
+    df <- u[u$exposure == ex, , drop = FALSE]
+
+    if (all(df$is_cont)) {
+      df$..row_type <- "level"
+      df$..label <- df$exposure
+      blocks[[length(blocks) + 1L]] <- df
+    } else {
+      hdr <- df[1, , drop = FALSE]
+      hdr$level <- ex
+      hdr$estimate <- hdr$conf.low <- hdr$conf.high <- hdr$p.value <- NA_real_
+      hdr$ref <- FALSE
+      hdr$..row_type <- "header"
+      hdr$..label <- ex
+      df$..row_type <- "level"
+      df$..label <- paste0("  ", df$level)
+      blocks[[length(blocks) + 1L]] <- hdr
+      blocks[[length(blocks) + 1L]] <- df
+    }
   }
   lay <- dplyr::bind_rows(blocks)
 

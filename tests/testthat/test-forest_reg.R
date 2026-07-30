@@ -70,6 +70,30 @@ test_that("forest_df leaves adjusted reference rows blank for omitted variables"
   expect_true(all(is.na(attr(out, "est2")[c(ht_header + 1L, ht_header + 2L)])))
 })
 
+test_that("forest_df preserves regression table exposure order", {
+  df <- birthwt_forest_data()
+
+  uni <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("smoke", "age", "race", "lwt", "ht"),
+    approach = logit
+  )
+
+  out <- forest_df(uni)
+
+  expect_equal(
+    out$Characteristic,
+    c(
+      "smoke", "  No", "  Yes",
+      "age",
+      "race", "  White", "  Black", "  Other",
+      "lwt",
+      "ht", "  No", "  Yes"
+    )
+  )
+})
+
 test_that("forest_df handles linear metadata and descriptive table merge", {
   df <- birthwt_forest_data()
 
