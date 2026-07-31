@@ -22,6 +22,8 @@ test_that("compare_models reports multi_reg statistics without refitting", {
   expect_s3_class(res, "compare_models")
   expect_null(res$table)
   expect_equal(res$table_body$model, c("Clinical score", "Clinical score + group"))
+  expect_equal(res$table_body$model_terms, c("x1", "x1 + x2"))
+  expect_equal(res$table_display$Variables, c("x1", "x1 + x2"))
   expect_equal(res$table_body$n, c(stats::nobs(fit0), stats::nobs(fit1)))
   expect_equal(res$table_body$AIC, c(stats::AIC(fit0), stats::AIC(fit1)))
   expect_equal(res$table_body$BIC, c(stats::BIC(fit0), stats::BIC(fit1)))
@@ -33,6 +35,7 @@ test_that("compare_models reports multi_reg statistics without refitting", {
   expect_true(is.finite(res$table_body$LR_chisq[2]))
   expect_equal(sum(res$table_body$best_AIC), 1)
   expect_true("Best AIC" %in% names(res$table_display))
+  expect_true("Variables" %in% names(res$table_display))
   expect_true("Primary estimate" %in% names(res$table_display))
 })
 
@@ -113,6 +116,8 @@ test_that("compare_models reports Cox events and concordance from cox_reg object
   )
 
   expect_equal(res$table_body$n, c(fit0$n, fit1$n))
+  expect_equal(res$table_body$model_terms, c("trt", "trt + age + karno"))
+  expect_false(any(grepl("Surv", res$table_display$Variables, fixed = TRUE)))
   expect_equal(res$table_body$events, c(fit0$nevent, fit1$nevent))
   expect_equal(res$table_body$AIC, c(stats::AIC(fit0), stats::AIC(fit1)))
   expect_equal(res$table_body$BIC, c(stats::BIC(fit0), stats::BIC(fit1)))
@@ -172,6 +177,26 @@ test_that("compare_models renders caution notes prominently in flextable output"
   expect_match(res$table$footer$dataset$Model[2], "Comparison status: Different analysis sample")
 })
 
+test_that("compare_models renders caution notes without raw HTML in gt output", {
+  skip_if_not_installed("gt")
+
+  df <- data.frame(
+    y = c(2.1, 3.4, 4.8, 6.2, 7.4, 8.9, 10.5, 11.7, 12.8, 14.1),
+    x1 = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+    x2 = c(0, 1, 0, 1, NA, 0, 1, NA, 1, 0)
+  )
+
+  m0 <- multi_reg(data = df, outcome = y, exposures = x1, approach = linear)
+  m1 <- multi_reg(data = df, outcome = y, exposures = c(x1, x2), approach = linear)
+
+  res <- compare_models(m0, m1, primary_exposure = x1, format = gt)
+  source_notes <- unlist(res$table$`_source_notes`, recursive = TRUE, use.names = FALSE)
+
+  expect_true(any(grepl("Caution: Models were fitted", source_notes, fixed = TRUE)))
+  expect_false(any(grepl("<div", source_notes, fixed = TRUE)))
+  expect_false(any(grepl("background-color", source_notes, fixed = TRUE)))
+})
+
 test_that("compare_models rejects raw fitted model objects", {
   df <- data.frame(
     y = c(2, 3, 5, 6, 8, 9, 11, 12),
@@ -214,6 +239,7 @@ test_that("compare_models supports multivariable Cox and parametric survival out
   cox_res <- compare_models(cox_m0, cox_m1, primary_exposure = trt, format = tibble)
 
   expect_equal(cox_res$table_body$model_type, c("Cox regression", "Cox regression"))
+  expect_equal(cox_res$table_body$model_terms, c("trt", "trt + age + karno + celltype + prior"))
   expect_equal(cox_res$table_body$events, c(cox_m0$models[[1]]$nevent, cox_m1$models[[1]]$nevent))
   expect_true(is.finite(cox_res$table_body$primary_estimate[2]))
 
@@ -235,6 +261,7 @@ test_that("compare_models supports multivariable Cox and parametric survival out
   aft_res <- compare_models(aft_m0, aft_m1, primary_exposure = trt, format = tibble)
 
   expect_equal(aft_res$table_body$model_type, c("Parametric survival", "Parametric survival"))
+  expect_equal(aft_res$table_body$model_terms, c("trt", "trt + age + karno + celltype + prior"))
   expect_equal(aft_res$table_body$events, c(128, 128))
   expect_true(is.finite(aft_res$table_body$primary_estimate[2]))
 })

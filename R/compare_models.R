@@ -235,6 +235,10 @@ compare_models <- function(...,
   }
 
   models <- lapply(inputs, .compare_extract_model)
+  model_terms <- Map(.compare_gtregression_terms, inputs, models)
+  for (i in seq_along(models)) {
+    attr(models[[i]], "gtregression_model_terms") <- model_terms[[i]]
+  }
 
   invalid <- vapply(models, function(x) !.is_compare_fitted_model(x), logical(1))
   if (any(invalid)) {
@@ -322,6 +326,7 @@ compare_models <- function(...,
       model = names(models)[i],
       model_type = type,
       formula = .compare_model_formula(fit),
+      model_terms = .compare_model_terms_label(fit),
       n = .compare_model_n(fit),
       events = .compare_model_events(fit),
       parameters = .safe_numeric(attr(ll, "df", exact = TRUE)),
@@ -388,6 +393,47 @@ compare_models <- function(...,
     return(NULL)
   }
   as.character(out)
+}
+
+#' @keywords internal
+#' @noRd
+.gtregression_terms_label <- function(vars) {
+  vars <- unique(as.character(vars))
+  vars <- vars[!is.na(vars) & nzchar(vars)]
+  if (!length(vars)) {
+    return("Intercept only")
+  }
+  paste(vars, collapse = " + ")
+}
+
+#' @keywords internal
+#' @noRd
+.compare_gtregression_terms <- function(x, fit) {
+  terms <- character(0)
+  if (.is_compare_gtregression_model(x)) {
+    terms <- c(terms, x$exposures)
+    if (isTRUE(x$adjusted_mode)) {
+      terms <- c(terms, x$adjust_for)
+    }
+    terms <- c(terms, x$interaction)
+  }
+
+  if (!length(terms)) {
+    terms <- .compare_model_terms(fit)
+  }
+
+  .gtregression_terms_label(terms)
+}
+
+#' @keywords internal
+#' @noRd
+.compare_model_terms_label <- function(model) {
+  stored <- attr(model, "gtregression_model_terms", exact = TRUE)
+  if (!is.null(stored) && length(stored) == 1L && nzchar(stored)) {
+    return(stored)
+  }
+
+  .gtregression_terms_label(.compare_model_terms(model))
 }
 
 #' @keywords internal
@@ -589,6 +635,7 @@ compare_models <- function(...,
                                     primary_exposure = NULL) {
   display <- data.frame(
     Model = table_body$model,
+    Variables = table_body$model_terms,
     N = .fmt_count(table_body$n),
     Parameters = .fmt_count(table_body$parameters),
     AIC = .fmt_num_compare(table_body$AIC, digits),
@@ -605,9 +652,9 @@ compare_models <- function(...,
 
   if (any(is.finite(table_body$events))) {
     display <- data.frame(
-      display[, c("Model", "N"), drop = FALSE],
+      display[, c("Model", "Variables", "N"), drop = FALSE],
       Events = .fmt_count(table_body$events),
-      display[, setdiff(names(display), c("Model", "N")), drop = FALSE],
+      display[, setdiff(names(display), c("Model", "Variables", "N")), drop = FALSE],
       check.names = FALSE
     )
   }
@@ -748,24 +795,16 @@ compare_models <- function(...,
   if (format == "gt") {
     tbl <- gt::gt(display) |>
       gt::tab_header(title = "Model comparison") |>
-      gt::cols_align(align = "left", columns = "Model") |>
-      gt::cols_align(align = "center", columns = setdiff(names(display), "Model")) |>
+      gt::cols_align(align = "left", columns = c("Model", "Variables")) |>
+      gt::cols_align(align = "center", columns = setdiff(names(display), c("Model", "Variables"))) |>
       gt::tab_style(
         style = gt::cell_text(weight = "bold"),
         locations = gt::cells_column_labels()
       )
 
     if (length(warnings)) {
-      warning_html <- paste(
-        paste0(
-          "<div style='background-color:#fff3cd; border-left:4px solid #b58105; ",
-          "padding:6px 8px; margin:2px 0; font-weight:700;'>",
-          warnings,
-          "</div>"
-        ),
-        collapse = ""
-      )
-      tbl <- gt::tab_source_note(tbl, gt::html(warning_html))
+      warning_md <- paste(paste0("**", warnings, "**"), collapse = "<br>")
+      tbl <- gt::tab_source_note(tbl, gt::md(warning_md))
     }
 
     if (length(notes)) {
@@ -797,8 +836,8 @@ compare_models <- function(...,
 
   ft <- flextable::flextable(display)
   ft <- flextable::set_caption(ft, caption = "Model comparison")
-  ft <- flextable::align(ft, j = "Model", align = "left", part = "all")
-  ft <- flextable::align(ft, j = setdiff(names(display), "Model"), align = "center", part = "all")
+  ft <- flextable::align(ft, j = c("Model", "Variables"), align = "left", part = "all")
+  ft <- flextable::align(ft, j = setdiff(names(display), c("Model", "Variables")), align = "center", part = "all")
   ft <- flextable::bold(ft, part = "header", bold = TRUE)
   if ("header_shaded" %in% theme) {
     ft <- flextable::bg(ft, part = "header", bg = "#f6f8fa")

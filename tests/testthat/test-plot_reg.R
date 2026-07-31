@@ -124,6 +124,7 @@ test_that("plot_reg handles reference rows, ordering, significance, and x limits
 
   expect_true(any(grepl("(Ref.)", p_ref$data$label_clean, fixed = TRUE)))
   expect_false(any(grepl("(Ref.)", p_no_ref$data$label_clean, fixed = TRUE)))
+  expect_equal(p_ref$data$exposure[p_ref$data$is_header], c("smoke", "ht", "age"))
   expect_equal(p_ref$labels$caption, "Ref. = reference category.")
   expect_null(p_no_ref$labels$caption)
   expect_true("smoke" %in% p_no_ref$data$label)

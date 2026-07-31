@@ -30,7 +30,7 @@ test_that("select_models works for logit approaches and all directions", {
     expect_s3_class(result$results_table, "tbl_df")
     expect_s3_class(result$best_model, "glm")
     expect_true(all(c("model_id", "formula", "n_predictors", "AIC", "BIC",
-                      "logLik", "deviance", "selected_vars") %in%
+                      "logLik", "deviance", "model_terms", "selected_vars") %in%
                       names(result$results_table)))
     expect_equal(length(result$all_models), nrow(result$results_table))
     expect_equal(
@@ -78,6 +78,7 @@ test_that("select_models works for linear regression and returns adjusted R-squa
 
   expect_s3_class(result$best_model, "lm")
   expect_true("adj_r2" %in% names(result$results_table))
+  expect_true("model_terms" %in% names(result$results_table))
   expect_false("selected_vars" %in% names(result$results_table))
   expect_true(all(is.finite(result$results_table$adj_r2)))
 })
@@ -152,6 +153,9 @@ test_that("select_models supports Cox and parametric survival approaches", {
   expect_s3_class(surv_sel$table, "gt_tbl")
   expect_true(all(c("distribution", "scale", "events", "selected_vars") %in%
                     names(surv_sel$results_table)))
+  expect_false("formula" %in% names(surv_sel$table$`_data`))
+  expect_true("model_terms" %in% names(surv_sel$table$`_data`))
+  expect_false(any(grepl("Surv", surv_sel$table$`_data`$model_terms, fixed = TRUE)))
   expect_true(all(surv_sel$results_table$distribution == "lognormal"))
   expect_true(all(is.finite(surv_sel$results_table$AIC)))
 
@@ -274,6 +278,10 @@ test_that("select_models can add gt and flextable viewing tables", {
   expect_s3_class(gt_result$results_table, "tbl_df")
   expect_s3_class(gt_result$table, "gt_tbl")
   expect_s3_class(ft_result$table, "flextable")
+  expect_false("formula" %in% names(gt_result$table$`_data`))
+  expect_true("model_terms" %in% names(gt_result$table$`_data`))
+  expect_false("formula" %in% names(ft_result$table$body$dataset))
+  expect_true("model_terms" %in% names(ft_result$table$body$dataset))
   expect_equal(
     gt_result$table$`_formats`[[1]]$func$default(c(FALSE, TRUE, FALSE)),
     c("No", "Yes", "No")

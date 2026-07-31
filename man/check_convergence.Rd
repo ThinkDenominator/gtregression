@@ -69,7 +69,8 @@ if (requireNamespace("gtregression", quietly = TRUE)) {
     data = data_PimaIndiansDiabetes,
     exposures = c("age", "mass"),
     outcome = "diabetes",
-    approach = "logit"
+    approach = "logit",
+    format = "tibble"
   )
 
   check_convergence(
@@ -77,7 +78,8 @@ if (requireNamespace("gtregression", quietly = TRUE)) {
     exposures = c("age", "mass"),
     outcome = "diabetes",
     approach = "logit",
-    multivariate = TRUE
+    multivariate = TRUE,
+    format = "gt"
   )
 }
 }

@@ -24,10 +24,25 @@
 #' @param break_time_by Optional numeric interval for x-axis and risk-table time
 #'   breaks. If \code{NULL}, breaks are chosen automatically.
 #' @param xlim Optional numeric vector of length 2 specifying x-axis limits.
+#' @param ylim Optional numeric vector of length 2 specifying y-axis limits.
+#'   Values may be supplied on the survival-probability scale
+#'   (for example \code{c(0.5, 1)}) or, when \code{y_percent = TRUE}, on the
+#'   percentage scale (for example \code{c(50, 100)}).
 #' @param xlab,ylab Axis labels.
 #' @param title Optional plot title.
+#' @param subtitle Optional plot subtitle.
+#' @param caption Optional plot caption.
+#' @param title_size Optional numeric title font size. If \code{NULL}, ggplot2's
+#'   theme default is used.
+#' @param title_face Font face for the title. One of \code{"plain"},
+#'   \code{"bold"}, \code{"italic"}, or \code{"bold.italic"}. Quoted and bare
+#'   values are accepted.
 #' @param legend_title Optional legend title. If \code{NULL}, the labelled
 #'   \code{by} variable name is used.
+#' @param legend_position Legend position. One of \code{"bottom"}, \code{"top"},
+#'   \code{"right"}, \code{"left"}, or \code{"none"}. If \code{NULL}, grouped
+#'   plots use \code{"bottom"} and ungrouped plots hide the legend. Quoted and
+#'   bare values are accepted.
 #' @param palette Optional character vector of colors for grouped curves.
 #' @param y_percent Logical; if \code{TRUE}, display survival probability as
 #'   percentages. If \code{FALSE}, display the raw 0 to 1 probability scale.
@@ -59,12 +74,16 @@
 #'   time = time,
 #'   event = status,
 #'   by = trt,
-#'   break_time_by = 200
+#'   break_time_by = 200,
+#'   ylim = c(50, 100),
+#'   title = "A. Treatment group",
+#'   title_size = 11,
+#'   legend_position = "none"
 #' )
 #'
 #' @importFrom survival Surv survfit survdiff
 #' @importFrom stats as.formula pchisq complete.cases
-#' @importFrom ggplot2 ggplot aes geom_step geom_point geom_text labs theme_minimal theme_classic theme_bw theme_light theme_void theme element_blank element_text scale_y_continuous scale_x_continuous coord_cartesian scale_color_manual guides guide_legend
+#' @importFrom ggplot2 ggplot aes geom_ribbon geom_step geom_point geom_text labs theme_minimal theme_classic theme_bw theme_light theme_void theme element_blank element_text scale_y_continuous scale_x_continuous coord_cartesian scale_color_manual scale_fill_manual guides guide_legend
 #' @importFrom patchwork wrap_plots
 #' @export
 km_plot <- function(data,
@@ -78,10 +97,16 @@ km_plot <- function(data,
                     censor = TRUE,
                     break_time_by = NULL,
                     xlim = NULL,
+                    ylim = NULL,
                     xlab = "Time",
                     ylab = "Survival probability",
                     title = NULL,
+                    subtitle = NULL,
+                    caption = NULL,
+                    title_size = NULL,
+                    title_face = "bold",
                     legend_title = NULL,
+                    legend_position = NULL,
                     palette = NULL,
                     y_percent = TRUE,
                     theme = "classic",
@@ -92,6 +117,8 @@ km_plot <- function(data,
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
   by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE)
   theme <- .km_theme_arg(substitute(theme), env = parent.frame())
+  title_face <- .km_title_face_arg(substitute(title_face), env = parent.frame())
+  legend_position <- .km_legend_position_arg(substitute(legend_position), env = parent.frame())
 
   .validate_km_inputs(
     data = data,
@@ -105,8 +132,15 @@ km_plot <- function(data,
     censor = censor,
     break_time_by = break_time_by,
     xlim = xlim,
+    ylim = ylim,
     y_percent = y_percent,
     theme = theme,
+    title = title,
+    subtitle = subtitle,
+    caption = caption,
+    title_size = title_size,
+    title_face = title_face,
+    legend_position = legend_position,
     grid = grid,
     base_size = base_size
   )
@@ -126,6 +160,7 @@ km_plot <- function(data,
   risk_breaks <- .km_time_breaks(data_clean[[time]], break_time_by, xlim)
   risk_data <- .km_risk_table(fit, risk_breaks)
   logrank_p <- .km_logrank_p(data_clean, time, event, by)
+  ylim <- .km_normalize_ylim(ylim, y_percent = y_percent)
 
   strata_count <- length(unique(plot_data$strata))
   if (is.null(palette)) {
@@ -142,11 +177,17 @@ km_plot <- function(data,
     conf.int = conf.int,
     censor = censor,
     xlim = xlim,
+    ylim = ylim,
     breaks = risk_breaks,
     xlab = xlab,
     ylab = ylab,
     title = title,
+    subtitle = subtitle,
+    caption = caption,
+    title_size = title_size,
+    title_face = title_face,
     legend_title = legend_title,
+    legend_position = legend_position,
     palette = palette,
     y_percent = y_percent,
     theme = theme,
@@ -182,8 +223,11 @@ km_plot <- function(data,
 #' @noRd
 .validate_km_inputs <- function(data, time, event, by, conf.int, risk_table,
                                 p_value, p_value_position, censor,
-                                break_time_by, xlim, y_percent = TRUE,
-                                theme = "classic", grid = FALSE,
+                                break_time_by, xlim, ylim, y_percent = TRUE,
+                                theme = "classic", title = NULL,
+                                subtitle = NULL, caption = NULL,
+                                title_size = NULL, title_face = "bold",
+                                legend_position = NULL, grid = FALSE,
                                 base_size) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
@@ -214,6 +258,28 @@ km_plot <- function(data,
     stop("`theme` must be one of 'classic', 'minimal', 'bw', 'light', or 'none'.",
          call. = FALSE)
   }
+  for (arg in c("title", "subtitle", "caption")) {
+    val <- get(arg)
+    if (!is.null(val) && (!is.character(val) || length(val) != 1L || is.na(val))) {
+      stop("`", arg, "` must be NULL or a single character string.", call. = FALSE)
+    }
+  }
+  if (!is.null(title_size) &&
+      (!is.numeric(title_size) || length(title_size) != 1L ||
+       is.na(title_size) || title_size <= 0)) {
+    stop("`title_size` must be NULL or a positive number.", call. = FALSE)
+  }
+  if (!is.character(title_face) || length(title_face) != 1L ||
+      !title_face %in% c("plain", "bold", "italic", "bold.italic")) {
+    stop("`title_face` must be one of 'plain', 'bold', 'italic', or 'bold.italic'.",
+         call. = FALSE)
+  }
+  if (!is.null(legend_position) &&
+      (!is.character(legend_position) || length(legend_position) != 1L ||
+       !legend_position %in% c("bottom", "top", "right", "left", "none"))) {
+    stop("`legend_position` must be NULL or one of 'bottom', 'top', 'right', 'left', or 'none'.",
+         call. = FALSE)
+  }
   if (!is.null(break_time_by) &&
       (!is.numeric(break_time_by) || length(break_time_by) != 1L ||
        is.na(break_time_by) || break_time_by <= 0)) {
@@ -223,6 +289,7 @@ km_plot <- function(data,
       (!is.numeric(xlim) || length(xlim) != 2L || anyNA(xlim) || xlim[1] >= xlim[2])) {
     stop("`xlim` must be NULL or a numeric vector of length 2.", call. = FALSE)
   }
+  .km_normalize_ylim(ylim, y_percent = y_percent)
   if (!is.null(p_value_position) &&
       (!is.numeric(p_value_position) || length(p_value_position) != 2L ||
        anyNA(p_value_position) || any(!is.finite(p_value_position)) ||
@@ -247,6 +314,28 @@ km_plot <- function(data,
     stop("`by` must contain at least two non-missing groups.", call. = FALSE)
   }
   invisible(TRUE)
+}
+
+#' @keywords internal
+#' @noRd
+.km_normalize_ylim <- function(ylim = NULL, y_percent = TRUE) {
+  if (is.null(ylim)) {
+    return(c(0, 1))
+  }
+  if (!is.numeric(ylim) || length(ylim) != 2L || anyNA(ylim) ||
+      any(!is.finite(ylim)) || ylim[1] >= ylim[2]) {
+    stop("`ylim` must be NULL or a numeric vector of length 2.", call. = FALSE)
+  }
+
+  out <- ylim
+  if (isTRUE(y_percent) && max(out) > 1) {
+    out <- out / 100
+  }
+  if (out[1] < 0 || out[2] > 1) {
+    stop("`ylim` must be within 0 to 1, or within 0 to 100 when `y_percent = TRUE`.",
+         call. = FALSE)
+  }
+  out
 }
 
 #' @keywords internal
@@ -347,12 +436,13 @@ km_plot <- function(data,
 
 #' @keywords internal
 #' @noRd
-.km_p_value_position <- function(plot_data, xlim = NULL, position = NULL) {
+.km_p_value_position <- function(plot_data, xlim = NULL, ylim = NULL, position = NULL) {
   if (!is.null(position)) {
     return(position)
   }
   xrng <- if (is.null(xlim)) range(plot_data$time, na.rm = TRUE) else xlim
-  c(xrng[1] + diff(xrng) * 0.05, 0.08)
+  yrng <- if (is.null(ylim)) c(0, 1) else ylim
+  c(xrng[1] + diff(xrng) * 0.05, yrng[1] + diff(yrng) * 0.08)
 }
 
 #' @keywords internal
@@ -370,6 +460,41 @@ km_plot <- function(data,
     choices = c("classic", "minimal", "bw", "light", "none"),
     env = env
   )
+}
+
+#' @keywords internal
+#' @noRd
+.km_title_face_arg <- function(expr, env = parent.frame()) {
+  .choice_arg(
+    expr,
+    choices = c("plain", "bold", "italic", "bold.italic"),
+    env = env
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.km_legend_position_arg <- function(expr, env = parent.frame()) {
+  if (identical(expr, quote(NULL))) {
+    return(NULL)
+  }
+  .choice_arg(
+    expr,
+    choices = c("bottom", "top", "right", "left", "none"),
+    env = env
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.km_resolve_legend_position <- function(plot_data, legend_position = NULL) {
+  if (!is.null(legend_position)) {
+    return(legend_position)
+  }
+  if (length(unique(plot_data$strata)) > 1L) {
+    return("bottom")
+  }
+  "none"
 }
 
 #' @keywords internal
@@ -397,8 +522,9 @@ km_plot <- function(data,
 
 #' @keywords internal
 #' @noRd
-.km_main_plot <- function(plot_data, conf.int, censor, xlim, breaks, xlab, ylab,
-                          title, legend_title, palette, y_percent, theme, grid,
+.km_main_plot <- function(plot_data, conf.int, censor, xlim, ylim, breaks, xlab, ylab,
+                          title, subtitle, caption, title_size, title_face,
+                          legend_title, legend_position, palette, y_percent, theme, grid,
                           base_size, logrank_p, p_value_position) {
   p <- ggplot2::ggplot(
     plot_data,
@@ -412,10 +538,12 @@ km_plot <- function(data,
       drop = FALSE
     ]
     p <- p +
-      ggplot2::geom_step(data = ci_data, ggplot2::aes(y = .data$conf.low), linewidth = 0.4,
-                         linetype = "dashed", alpha = 0.45) +
-      ggplot2::geom_step(data = ci_data, ggplot2::aes(y = .data$conf.high), linewidth = 0.4,
-                         linetype = "dashed", alpha = 0.45)
+      ggplot2::geom_ribbon(
+        data = ci_data,
+        ggplot2::aes(ymin = .data$conf.low, ymax = .data$conf.high, fill = .data$strata),
+        alpha = 0.18,
+        color = NA
+      )
   }
 
   p <- p +
@@ -426,14 +554,16 @@ km_plot <- function(data,
     ggplot2::scale_x_continuous(breaks = breaks) +
     ggplot2::labs(
       title = title,
+      subtitle = subtitle,
+      caption = caption,
       x = xlab,
       y = ylab,
       color = legend_title
     ) +
     .km_plot_theme(theme, base_size = base_size, grid = grid) +
     ggplot2::theme(
-      legend.position = if (length(unique(plot_data$strata)) > 1L) "bottom" else "none",
-      plot.title = ggplot2::element_text(face = "bold")
+      legend.position = .km_resolve_legend_position(plot_data, legend_position),
+      plot.title = ggplot2::element_text(face = title_face, size = title_size)
     )
 
   if (isTRUE(censor)) {
@@ -445,7 +575,12 @@ km_plot <- function(data,
 
   p_label <- .km_fmt_p(logrank_p)
   if (!is.null(p_label)) {
-    p_pos <- .km_p_value_position(plot_data, xlim = xlim, position = p_value_position)
+    p_pos <- .km_p_value_position(
+      plot_data,
+      xlim = xlim,
+      ylim = ylim,
+      position = p_value_position
+    )
     p <- p +
       ggplot2::annotate(
         "text",
@@ -462,10 +597,13 @@ km_plot <- function(data,
 
   if (!is.null(palette)) {
     levs <- levels(plot_data$strata)
-    p <- p + ggplot2::scale_color_manual(values = stats::setNames(palette[seq_along(levs)], levs))
+    pal <- stats::setNames(palette[seq_along(levs)], levs)
+    p <- p +
+      ggplot2::scale_color_manual(values = pal) +
+      ggplot2::scale_fill_manual(values = pal, guide = "none")
   }
 
-  p <- p + ggplot2::coord_cartesian(xlim = xlim, ylim = c(0, 1))
+  p <- p + ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
 
   p
 }

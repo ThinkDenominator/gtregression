@@ -221,7 +221,7 @@ logit_m2 <- multi_reg(
   approach = logit
 )
 
-compare_models(
+logit_model_comparison <- compare_models(
   logit_m0,
   logit_m1,
   logit_m2,
@@ -233,6 +233,8 @@ compare_models(
   primary_exposure = smoke,
   format = gt
 )
+
+logit_model_comparison$table
 ```
 
 The table reports N, number of parameters, AIC, BIC, log-likelihood, and
@@ -279,7 +281,7 @@ cox_m2 <- cox_reg(
   multivariable = TRUE
 )
 
-compare_models(
+cox_model_comparison <- compare_models(
   list(
     "Treatment only" = cox_m0,
     "Add age and performance" = cox_m1,
@@ -288,6 +290,8 @@ compare_models(
   primary_exposure = trt,
   format = gt
 )
+
+cox_model_comparison$table
 ```
 
 `select_models()` compares candidate models step by step. It is useful for

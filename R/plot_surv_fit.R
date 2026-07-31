@@ -249,6 +249,7 @@ plot_surv_fit <- function(data,
     censor = FALSE,
     break_time_by = break_time_by,
     xlim = xlim,
+    ylim = NULL,
     base_size = base_size
   )
 

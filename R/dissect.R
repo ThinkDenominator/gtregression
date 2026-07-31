@@ -16,11 +16,11 @@
 #' @export
 #'
 #' @examples
-#' dissect(data_birthwt)
+#' dissect(data_birthwt, format = "tibble")
 #' dissect(data_birthwt, format = "gt")
 #'
 #' # Print notes that help interpret the data structure
-#' dissect(data_birthwt, verbose = TRUE)
+#' dissect(data_birthwt, verbose = TRUE, format = "tibble")
 dissect <- function(data, verbose = FALSE, format = c("flextable", "gt", "tibble")) {
   if (!is.data.frame(data)) {
     stop("The input to `dissect()` must be a data frame. ",

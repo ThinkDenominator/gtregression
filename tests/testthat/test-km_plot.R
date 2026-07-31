@@ -73,6 +73,33 @@ test_that("km_plot builds without dropping confidence interval rows", {
   expect_warning(ggplot2::ggplot_build(res), NA)
 })
 
+test_that("km_plot supports y-axis limits and shaded confidence intervals", {
+  skip_if_not_installed("survival")
+  skip_if_not_installed("ggplot2")
+
+  df <- lung_km_data()
+
+  res <- km_plot(
+    data = df,
+    time = time,
+    event = status,
+    by = trt,
+    risk_table = FALSE,
+    ylim = c(50, 100),
+    conf.int = TRUE
+  )
+
+  expect_s3_class(res, "ggplot")
+  expect_equal(.km_normalize_ylim(c(50, 100), y_percent = TRUE), c(0.5, 1))
+  expect_equal(.km_normalize_ylim(c(0.5, 1), y_percent = FALSE), c(0.5, 1))
+  expect_true(any(vapply(
+    res$layers,
+    function(layer) inherits(layer$geom, "GeomRibbon"),
+    logical(1)
+  )))
+  expect_warning(ggplot2::ggplot_build(res), NA)
+})
+
 test_that("km_plot draws log-rank p-value inside the graph", {
   skip_if_not_installed("survival")
   skip_if_not_installed("ggplot2")
@@ -125,6 +152,35 @@ test_that("km_plot supports clean themes and raw probability y-axis", {
   expect_s3_class(res_grid, "ggplot")
 })
 
+test_that("km_plot supports publication panel styling controls", {
+  skip_if_not_installed("survival")
+  skip_if_not_installed("ggplot2")
+
+  df <- lung_km_data()
+
+  res <- km_plot(
+    data = df,
+    time = time,
+    event = status,
+    by = trt,
+    risk_table = FALSE,
+    title = "A. Treatment group",
+    subtitle = "Lung cancer trial",
+    caption = "Log-rank test shown inside the panel.",
+    title_size = 10,
+    title_face = plain,
+    legend_position = none
+  )
+
+  expect_s3_class(res, "ggplot")
+  expect_equal(res$labels$title, "A. Treatment group")
+  expect_equal(res$labels$subtitle, "Lung cancer trial")
+  expect_equal(res$labels$caption, "Log-rank test shown inside the panel.")
+  expect_equal(res$theme$plot.title$size, 10)
+  expect_equal(res$theme$plot.title$face, "plain")
+  expect_equal(res$theme$legend.position, "none")
+})
+
 test_that("km_plot validates inputs", {
   skip_if_not_installed("survival")
 
@@ -161,8 +217,32 @@ test_that("km_plot validates inputs", {
     "`xlim` must be"
   )
   expect_error(
+    km_plot(data = df, time = time, event = status, ylim = c(100, 50)),
+    "`ylim` must be"
+  )
+  expect_error(
+    km_plot(data = df, time = time, event = status, ylim = c(-10, 100)),
+    "`ylim` must be"
+  )
+  expect_error(
     km_plot(data = df, time = time, event = status, p_value_position = c(10, 2)),
     "`p_value_position` must be"
+  )
+  expect_error(
+    km_plot(data = df, time = time, event = status, title = c("A", "B")),
+    "`title` must be"
+  )
+  expect_error(
+    km_plot(data = df, time = time, event = status, title_size = 0),
+    "`title_size` must be"
+  )
+  expect_error(
+    km_plot(data = df, time = time, event = status, title_face = heavy),
+    "`title_face` must be"
+  )
+  expect_error(
+    km_plot(data = df, time = time, event = status, legend_position = middle),
+    "`legend_position` must be"
   )
   expect_error(
     km_plot(data = df, time = time, event = status, risk_table = NA),

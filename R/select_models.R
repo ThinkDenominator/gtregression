@@ -196,6 +196,7 @@ select_models <- function(data, outcome, exposures, approach = "logit",
     out <- tibble::tibble(
       model_id = model_id,
       formula = attr(model, "formula_str"),
+      model_terms = .gtregression_terms_label(vars),
       n_predictors = length(vars),
       AIC = stats::AIC(model),
       BIC = stats::BIC(model),
@@ -332,6 +333,7 @@ select_models <- function(data, outcome, exposures, approach = "logit",
       deviance = round(.data$deviance, 2),
       best = .data$AIC == min(.data$AIC, na.rm = TRUE)
     )
+  display <- display[, setdiff(names(display), c("formula", "selected_vars")), drop = FALSE]
 
   if ("adj_r2" %in% names(display)) {
     display <- dplyr::mutate(display, adj_r2 = round(.data$adj_r2, 3))
@@ -340,15 +342,14 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   if (format == "gt") {
     labels <- c(
       model_id = "Model",
-      formula = "Formula",
+      model_terms = "Selected variables",
       n_predictors = "Predictors",
       logLik = "Log-likelihood",
-      selected_vars = "Selected variables",
       adj_r2 = "Adjusted R-squared",
       best = "Best AIC"
     )
     labels <- labels[names(labels) %in% names(display)]
-    left_cols <- intersect(c("formula", "selected_vars"), names(display))
+    left_cols <- intersect("model_terms", names(display))
 
     tbl <- gt::gt(display) |>
       gt::tab_header(title = "Stepwise model selection")
@@ -381,11 +382,11 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   display$best <- ifelse(display$best, "Yes", "No")
   ft <- flextable::flextable(display)
   ft <- flextable::set_caption(ft, caption = "Stepwise model selection")
-  left_cols <- intersect(c("formula", "selected_vars"), names(display))
+  left_cols <- intersect("model_terms", names(display))
   ft <- flextable::align(ft, j = left_cols, align = "left", part = "all")
   ft <- flextable::align(
     ft,
-    j = setdiff(names(display), c("formula", "selected_vars")),
+    j = setdiff(names(display), "model_terms"),
     align = "center",
     part = "all"
   )

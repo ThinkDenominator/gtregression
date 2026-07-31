@@ -63,7 +63,10 @@ lung_summary$table
 ## 2. Show Observed Survival
 
 Use `km_plot()` for the Kaplan-Meier curve. Add `risk_table = TRUE` when the
-number at risk should appear under the curve.
+number at risk should appear under the curve. When survival remains high, use
+`ylim` to focus the y-axis, for example `ylim = c(50, 100)` with the default
+percentage scale. Confidence intervals are shown as shaded bands when
+`conf.int = TRUE`.
 
 ```{r surv-km-plot, message=FALSE, warning=FALSE}
 km_curve <- km_plot(
@@ -72,10 +75,51 @@ km_curve <- km_plot(
   event = status,
   by = trt,
   break_time_by = 200,
+  ylim = c(50, 100),
   title = "Kaplan-Meier Survival by Treatment"
 )
 
 km_curve
+```
+
+For multi-panel publication figures, make each Kaplan-Meier plot lighter and
+let `patchwork` arrange the panels. A common pattern is to remove the risk table,
+use short panel titles, reduce `title_size`, and collect legends across panels.
+
+```{r surv-km-panel, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+km_trt_panel <- km_plot(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = trt,
+  risk_table = FALSE,
+  break_time_by = 200,
+  ylim = c(50, 100),
+  title = "A. Treatment group",
+  title_size = 10,
+  title_face = plain,
+  legend_position = bottom,
+  base_size = 10
+)
+
+km_prior_panel <- km_plot(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = prior,
+  risk_table = FALSE,
+  break_time_by = 200,
+  ylim = c(50, 100),
+  title = "B. Prior therapy",
+  title_size = 10,
+  title_face = plain,
+  legend_position = bottom,
+  base_size = 10
+)
+
+patchwork::wrap_plots(km_trt_panel, km_prior_panel, ncol = 2) +
+  patchwork::plot_layout(guides = "collect") &
+  ggplot2::theme(legend.position = "bottom")
 ```
 
 Use table summaries when readers need exact survival values.

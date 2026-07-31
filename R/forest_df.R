@@ -11,7 +11,12 @@
 
   hdr <- if ("is_header" %in% names(td)) as.logical(td$is_header) else rep(FALSE, nrow(td))
 
-  expo <- NULL
+  expo <- attr(td, "row_exposure", exact = TRUE)
+  if (!is.null(expo) && length(expo) == nrow(td)) {
+    expo <- as.character(expo)
+  } else {
+    expo <- NULL
+  }
   if (is.data.frame(tb) && all(c("var", "type") %in% names(tb))) {
     skeleton <- do.call(rbind, lapply(unique(tb$var), function(var) {
       x <- tb[tb$var == var, , drop = FALSE]
@@ -55,10 +60,15 @@
   ddf <- if (is.list(desc) && !is.null(desc$table_display)) .df_from_desc(desc) else desc
   stopifnot(is.data.frame(ddf), all(c("Characteristic","exposure") %in% names(ddf)))
 
+  left$..forest_desc_order <- seq_len(nrow(left))
   joined <- dplyr::left_join(left, ddf, by = c("exposure","Characteristic"))
+  joined <- joined[order(joined$..forest_desc_order), , drop = FALSE]
   desc_cols <- setdiff(names(ddf), c("Characteristic", "exposure"))
   desc_cols <- desc_cols[desc_cols %in% names(joined)]
-  if (!length(desc_cols)) return(joined)
+  if (!length(desc_cols)) {
+    joined$..forest_desc_order <- NULL
+    return(joined)
+  }
 
   fallback <- ddf[!duplicated(ddf$exposure), c("exposure", desc_cols), drop = FALSE]
   fallback <- fallback[match(joined$exposure, fallback$exposure), , drop = FALSE]
@@ -72,6 +82,7 @@
     joined[[col]][idx] <- fallback_value[idx]
   }
 
+  joined$..forest_desc_order <- NULL
   joined
 }
 
@@ -249,6 +260,7 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
     }
   }
   lay <- dplyr::bind_rows(blocks)
+  lay$..row_order <- seq_len(nrow(lay))
 
   # Reference rows lie on ref_line (text "Ref." added later)
   is_ref <- lay$ref & lay$..row_type == "level"
@@ -282,11 +294,13 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
   left <- data.frame(
     Characteristic   = lay$..label,
     exposure         = lay$exposure,
+    ..row_order      = lay$..row_order,
     stringsAsFactors = FALSE
   )
   if (!is.null(desc)) {
     left <- .merge_forest_desc(left, desc)
   }
+  left <- left[order(left$..row_order), , drop = FALSE]
   label_idx <- lay$..row_type == "header" | (lay$exposure == lay$level)
   left$Characteristic[label_idx] <- vapply(
     lay$exposure[label_idx],
@@ -318,7 +332,7 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
 
 
   # Remove helper join key from visible cols
-  left <- left[, setdiff(names(left), "exposure"), drop = FALSE]
+  left <- left[, setdiff(names(left), c("exposure", "..row_order")), drop = FALSE]
 
   # Standard errors (not for display)
   is_header <- lay$..row_type == "header"

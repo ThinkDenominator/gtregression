@@ -106,6 +106,6 @@ displayed as additional rows beneath the corresponding exposure.
 endometrial_data <- data_endometrial
 endometrial_data$HG <- factor(endometrial_data$HG, levels = c(0, 1))
 endometrial_data$NV <- factor(endometrial_data$NV, levels = c(0, 1))
-multi_reg(endometrial_data, HG, c(NV, PI, EH), approach = firth)$table
+multi_reg(endometrial_data, HG, c(NV, PI, EH), approach = firth, format = gt)$table
 
 }

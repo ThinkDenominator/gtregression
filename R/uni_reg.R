@@ -54,13 +54,14 @@
 #'   uni_reg(d, "am", c("mpg","cyl"), approach = "logit", format = "gt")$table
 #' }
 #' if (requireNamespace("flextable", quietly = TRUE)) {
-#'   uni_reg(d, "am", c("mpg","cyl"), approach = "logit", format = "flextable")$table
+#'   ft <- uni_reg(d, "am", c("mpg","cyl"), approach = "logit", format = "flextable")
+#'   class(ft$table)
 #' }
 #'
 #' endometrial_data <- data_endometrial
 #' endometrial_data$HG <- factor(endometrial_data$HG, levels = c(0, 1))
 #' endometrial_data$NV <- factor(endometrial_data$NV, levels = c(0, 1))
-#' uni_reg(endometrial_data, HG, c(NV, PI, EH), approach = firth)$table
+#' uni_reg(endometrial_data, HG, c(NV, PI, EH), approach = firth, format = gt)$table
 #'
 #' @importFrom stats qnorm residuals
 #' @export

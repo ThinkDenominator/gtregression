@@ -35,6 +35,24 @@ test_that("uni_reg returns a gtregression object for binary logistic models", {
                         fixed = TRUE)))
 })
 
+test_that("uni_reg publication table preserves user exposure order", {
+  df <- mtcars
+  df$am <- as.integer(df$am)
+  df$cyl <- factor(df$cyl)
+  exposures <- c("hp", "cyl", "mpg")
+
+  res <- uni_reg(
+    data = df,
+    outcome = "am",
+    exposures = exposures,
+    approach = logit
+  )
+
+  headers <- res$table_display$Characteristic[res$table_display$is_header]
+  expect_equal(headers, exposures)
+  expect_equal(unique(res$table_body$exposure), exposures)
+})
+
 test_that("uni_reg optionally returns model-fit statistics", {
   df <- mtcars
   df$am <- as.integer(df$am)

@@ -62,16 +62,17 @@ test_that("merge_tables combines native gtregression objects", {
 test_that("merge_tables aligns univariable and adjusted multivariable tables", {
   df <- birthwt_merge_data()
 
+  exposures <- c("ui", "smoke", "ht")
   uni_tbl <- uni_reg(
     data = df,
     outcome = "low",
-    exposures = c("smoke", "ht", "ui"),
+    exposures = exposures,
     approach = logit
   )
   multi_tbl <- multi_reg(
     data = df,
     outcome = "low",
-    exposures = c("smoke", "ht", "ui"),
+    exposures = exposures,
     adjust_for = c("age", "lwt"),
     approach = logit
   )
@@ -83,6 +84,10 @@ test_that("merge_tables aligns univariable and adjusted multivariable tables", {
   expect_true(any(trimws(merged$table_display$Characteristic) == "Yes"))
   expect_true(any(grepl("Adjusted.OR", names(merged$table_display), fixed = TRUE)))
   expect_true(any(grepl("Adjusted for age and lwt", merged$footnotes, fixed = TRUE)))
+  expect_equal(
+    trimws(merged$table_display$Characteristic[merged$table_display$is_header]),
+    exposures
+  )
 })
 
 test_that("merge_tables supports three-table merges and default spanners", {

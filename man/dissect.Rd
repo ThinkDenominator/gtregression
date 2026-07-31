@@ -26,9 +26,9 @@ Returns a tidy summary of each variable's structure, missingness, uniqueness,
 and suitability for use in regression models.
 }
 \examples{
-dissect(data_birthwt)
+dissect(data_birthwt, format = "tibble")
 dissect(data_birthwt, format = "gt")
 
 # Print notes that help interpret the data structure
-dissect(data_birthwt, verbose = TRUE)
+dissect(data_birthwt, verbose = TRUE, format = "tibble")
 }

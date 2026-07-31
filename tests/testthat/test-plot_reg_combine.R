@@ -13,7 +13,7 @@ birthwt_plot_combine_data <- function() {
 
 test_that("plot_reg_combine returns patchwork for current regression objects", {
   df <- birthwt_plot_combine_data()
-  exposures <- c("age", "lwt", "smoke", "ht", "ui")
+  exposures <- c("smoke", "age", "ht", "lwt", "ui")
 
   tbl_uni <- uni_reg(df, outcome = "low", exposures = exposures, approach = logit)
   tbl_multi <- multi_reg(df, outcome = "low", exposures = exposures, approach = logit)
@@ -22,6 +22,8 @@ test_that("plot_reg_combine returns patchwork for current regression objects", {
 
   expect_s3_class(p, "patchwork")
   expect_equal(p$patches$annotation$caption, "Ref. = reference category.")
+  expect_equal(p[[1]]$data$exposure[p[[1]]$data$is_header], exposures)
+  expect_equal(p[[2]]$data$exposure[p[[2]]$data$is_header], exposures)
 })
 
 test_that("plot_reg_combine supports multi_reg adjust_for mode", {

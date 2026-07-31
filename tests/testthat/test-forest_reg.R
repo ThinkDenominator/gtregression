@@ -94,6 +94,36 @@ test_that("forest_df preserves regression table exposure order", {
   )
 })
 
+test_that("forest_df preserves exposure order after descriptive and adjusted merges", {
+  df <- birthwt_forest_data()
+  exposures <- c("smoke", "age", "race", "lwt", "ht")
+
+  desc <- descriptive_table(
+    data = df,
+    exposures = exposures,
+    by = "low",
+    percent = column
+  )
+  uni <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = exposures,
+    approach = logit
+  )
+  multi <- multi_reg(
+    df,
+    outcome = "low",
+    exposures = c("ht", "smoke"),
+    adjust_for = c("age", "lwt"),
+    approach = logit
+  )
+
+  out <- forest_df(uni, multi, desc = desc)
+  headers <- trimws(out$Characteristic[!startsWith(out$Characteristic, "  ")])
+
+  expect_equal(headers, exposures)
+})
+
 test_that("forest_df handles linear metadata and descriptive table merge", {
   df <- birthwt_forest_data()
 

@@ -71,7 +71,8 @@
 #'   outcome = "low",
 #'   exposures = c("age", "lwt", "smoke"),
 #'   stratifier = "race",
-#'   approach = "logit"
+#'   approach = "logit",
+#'   format = "gt"
 #' )
 #'
 #' stratified_uni$table

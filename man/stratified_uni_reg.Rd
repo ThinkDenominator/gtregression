@@ -94,7 +94,8 @@ stratified_uni <- stratified_uni_reg(
   outcome = "low",
   exposures = c("age", "lwt", "smoke"),
   stratifier = "race",
-  approach = "logit"
+  approach = "logit",
+  format = "gt"
 )
 
 stratified_uni$table

@@ -64,6 +64,31 @@ test_that("multi_reg returns a gtregression object for default logit models", {
   expect_true("Regression diagnostics available only for 'linear' models." %in% res$reg_check)
 })
 
+test_that("multi_reg publication table preserves user exposure order", {
+  df <- birthwt_multi_data()
+  exposures <- c("smoke", "age", "ht", "race", "lwt")
+
+  res <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = exposures,
+    approach = logit
+  )
+
+  headers <- res$table_display$Characteristic[res$table_display$is_header]
+  expect_equal(headers, exposures)
+  expect_equal(unique(res$table_body$exposure), exposures)
+
+  adjusted <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("ht", "smoke", "ui"),
+    adjust_for = c("age", "lwt"),
+    approach = logit
+  )
+  expect_equal(unique(adjusted$table_body$exposure), c("ht", "smoke", "ui"))
+})
+
 test_that("multi_reg optionally returns model-fit statistics", {
   df <- birthwt_multi_data()
 

@@ -16,10 +16,16 @@ km_plot(
   censor = TRUE,
   break_time_by = NULL,
   xlim = NULL,
+  ylim = NULL,
   xlab = "Time",
   ylab = "Survival probability",
   title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  title_size = NULL,
+  title_face = "bold",
   legend_title = NULL,
+  legend_position = NULL,
   palette = NULL,
   y_percent = TRUE,
   theme = "classic",
@@ -60,12 +66,33 @@ breaks. If \code{NULL}, breaks are chosen automatically.}
 
 \item{xlim}{Optional numeric vector of length 2 specifying x-axis limits.}
 
+\item{ylim}{Optional numeric vector of length 2 specifying y-axis limits.
+Values may be supplied on the survival-probability scale
+(for example \code{c(0.5, 1)}) or, when \code{y_percent = TRUE}, on the
+percentage scale (for example \code{c(50, 100)}).}
+
 \item{xlab, ylab}{Axis labels.}
 
 \item{title}{Optional plot title.}
 
+\item{subtitle}{Optional plot subtitle.}
+
+\item{caption}{Optional plot caption.}
+
+\item{title_size}{Optional numeric title font size. If \code{NULL}, ggplot2's
+theme default is used.}
+
+\item{title_face}{Font face for the title. One of \code{"plain"},
+\code{"bold"}, \code{"italic"}, or \code{"bold.italic"}. Quoted and bare
+values are accepted.}
+
 \item{legend_title}{Optional legend title. If \code{NULL}, the labelled
 \code{by} variable name is used.}
+
+\item{legend_position}{Legend position. One of \code{"bottom"}, \code{"top"},
+\code{"right"}, \code{"left"}, or \code{"none"}. If \code{NULL}, grouped
+plots use \code{"bottom"} and ungrouped plots hide the legend. Quoted and
+bare values are accepted.}
 
 \item{palette}{Optional character vector of colors for grouped curves.}
 
@@ -107,7 +134,11 @@ km_plot(
   time = time,
   event = status,
   by = trt,
-  break_time_by = 200
+  break_time_by = 200,
+  ylim = c(50, 100),
+  title = "A. Treatment group",
+  title_size = 11,
+  legend_position = "none"
 )
 
 }

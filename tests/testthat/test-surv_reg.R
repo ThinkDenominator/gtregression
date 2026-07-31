@@ -38,6 +38,10 @@ test_that("surv_reg returns crude time-ratio tables", {
   expect_true("Treatment group" %in% res$table_display$Characteristic)
   expect_true("Ref." %in% res$table_display[["Time Ratio (95% CI)"]])
   expect_null(res$model_stats)
+  expect_equal(
+    attr(res$table_display, "row_exposure")[res$table_display$is_header],
+    c("trt", "celltype", "karno")
+  )
 })
 
 test_that("surv_reg crude tables display survival complete-case N consistently", {
@@ -128,6 +132,10 @@ test_that("surv_reg supports a single multivariable parametric survival model", 
   expect_equal(res$model_stats$model, "multivariable_model")
   expect_true("Adjusted Time Ratio (95% CI)" %in% names(res$table_display))
   expect_true(all(c("trt", "celltype", "prior", "age", "karno") %in% res$table_body$exposure))
+  expect_equal(
+    attr(res$table_display, "row_exposure")[res$table_display$is_header],
+    c("trt", "celltype", "prior", "age", "karno")
+  )
 })
 
 test_that("surv_reg supports interaction terms", {
