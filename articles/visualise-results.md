@@ -79,7 +79,8 @@ birthwt_multi <- multi_reg(
 lung_data <- data_lungcancer |>
   mutate(
     trt = factor(trt, levels = c(1, 2),
-                 labels = c("Standard treatment", "Test treatment"))
+                 labels = c("Standard treatment", "Test treatment")),
+    prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
   )
 
 lung_surv <- surv_reg(
@@ -98,6 +99,9 @@ lung_surv <- surv_reg(
 gives the survival curve before regression modelling. Use it to show the
 observed survival experience by group, with optional confidence
 intervals, censoring marks, log-rank p-value, and number-at-risk table.
+If the curves sit near the top of the graph, use `ylim = c(50, 100)` on
+the default percentage scale, or `ylim = c(0.5, 1)` when
+`y_percent = FALSE`.
 
 ``` r
 
@@ -107,11 +111,51 @@ km_plot(
   event = status,
   by = trt,
   break_time_by = 200,
+  ylim = c(50, 100),
   title = "Kaplan-Meier Survival by Treatment"
 )
 ```
 
 ![](visualise-results_files/figure-html/km-plot-1.png)
+
+When preparing a multi-panel figure, use compact titles and control the
+legend directly. The result remains a normal ggplot object when
+`risk_table = FALSE`, so it can be combined with `patchwork`.
+
+``` r
+
+km_treatment <- km_plot(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = trt,
+  risk_table = FALSE,
+  title = "A. Treatment",
+  title_size = 10,
+  title_face = plain,
+  legend_position = bottom,
+  base_size = 10
+)
+
+km_prior <- km_plot(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = prior,
+  risk_table = FALSE,
+  title = "B. Prior therapy",
+  title_size = 10,
+  title_face = plain,
+  legend_position = bottom,
+  base_size = 10
+)
+
+patchwork::wrap_plots(km_treatment, km_prior, ncol = 2) +
+  patchwork::plot_layout(guides = "collect") &
+  ggplot2::theme(legend.position = "bottom")
+```
+
+![](visualise-results_files/figure-html/km-panel-plot-1.png)
 
 ## Risk Table
 

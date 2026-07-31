@@ -18,10 +18,16 @@ km_plot(
   censor = TRUE,
   break_time_by = NULL,
   xlim = NULL,
+  ylim = NULL,
   xlab = "Time",
   ylab = "Survival probability",
   title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  title_size = NULL,
+  title_face = "bold",
   legend_title = NULL,
+  legend_position = NULL,
   palette = NULL,
   y_percent = TRUE,
   theme = "classic",
@@ -83,6 +89,13 @@ km_plot(
 
   Optional numeric vector of length 2 specifying x-axis limits.
 
+- ylim:
+
+  Optional numeric vector of length 2 specifying y-axis limits. Values
+  may be supplied on the survival-probability scale (for example
+  `c(0.5, 1)`) or, when `y_percent = TRUE`, on the percentage scale (for
+  example `c(50, 100)`).
+
 - xlab, ylab:
 
   Axis labels.
@@ -91,10 +104,34 @@ km_plot(
 
   Optional plot title.
 
+- subtitle:
+
+  Optional plot subtitle.
+
+- caption:
+
+  Optional plot caption.
+
+- title_size:
+
+  Optional numeric title font size. If `NULL`, ggplot2's theme default
+  is used.
+
+- title_face:
+
+  Font face for the title. One of `"plain"`, `"bold"`, `"italic"`, or
+  `"bold.italic"`. Quoted and bare values are accepted.
+
 - legend_title:
 
   Optional legend title. If `NULL`, the labelled `by` variable name is
   used.
+
+- legend_position:
+
+  Legend position. One of `"bottom"`, `"top"`, `"right"`, `"left"`, or
+  `"none"`. If `NULL`, grouped plots use `"bottom"` and ungrouped plots
+  hide the legend. Quoted and bare values are accepted.
 
 - palette:
 
@@ -144,7 +181,11 @@ km_plot(
   time = time,
   event = status,
   by = trt,
-  break_time_by = 200
+  break_time_by = 200,
+  ylim = c(50, 100),
+  title = "A. Treatment group",
+  title_size = 11,
+  legend_position = "none"
 )
 
 ```

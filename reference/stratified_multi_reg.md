@@ -134,7 +134,8 @@ stratified_multi <- stratified_multi_reg(
   outcome = "low",
   exposures = c("age", "lwt", "smoke", "ht"),
   stratifier = "race",
-  approach = "logit"
+  approach = "logit",
+  format = "gt"
 )
 #> Running stratified multivariable regression by: race
 #>   > Stratum: race = White
@@ -147,7 +148,8 @@ stratified_adjusted <- stratified_multi_reg(
   exposures = c("smoke", "ht", "ui"),
   stratifier = "race",
   adjust_for = c("age", "lwt"),
-  approach = "logit"
+  approach = "logit",
+  format = "gt"
 )
 #> Running stratified multivariable regression by: race
 #>   > Stratum: race = White

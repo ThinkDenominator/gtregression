@@ -65,10 +65,16 @@ censoring marks, a log-rank p-value, and a number-at-risk table.</p>
 <span>  censor <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  break_time_by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ylim <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Time"</span>,</span>
 <span>  ylab <span class="op">=</span> <span class="st">"Survival probability"</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  caption <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  title_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  title_face <span class="op">=</span> <span class="st">"bold"</span>,</span>
 <span>  legend_title <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  legend_position <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  palette <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  y_percent <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  theme <span class="op">=</span> <span class="st">"classic"</span>,</span>
@@ -135,6 +141,13 @@ breaks. If <code>NULL</code>, breaks are chosen automatically.</p></dd>
 <dd><p>Optional numeric vector of length 2 specifying x-axis limits.</p></dd>
 
 
+<dt id="arg-ylim">ylim<a class="anchor" aria-label="anchor" href="#arg-ylim"></a></dt>
+<dd><p>Optional numeric vector of length 2 specifying y-axis limits.
+Values may be supplied on the survival-probability scale
+(for example <code>c(0.5, 1)</code>) or, when <code>y_percent = TRUE</code>, on the
+percentage scale (for example <code>c(50, 100)</code>).</p></dd>
+
+
 <dt id="arg-xlab-ylab">xlab, ylab<a class="anchor" aria-label="anchor" href="#arg-xlab-ylab"></a></dt>
 <dd><p>Axis labels.</p></dd>
 
@@ -143,9 +156,35 @@ breaks. If <code>NULL</code>, breaks are chosen automatically.</p></dd>
 <dd><p>Optional plot title.</p></dd>
 
 
+<dt id="arg-subtitle">subtitle<a class="anchor" aria-label="anchor" href="#arg-subtitle"></a></dt>
+<dd><p>Optional plot subtitle.</p></dd>
+
+
+<dt id="arg-caption">caption<a class="anchor" aria-label="anchor" href="#arg-caption"></a></dt>
+<dd><p>Optional plot caption.</p></dd>
+
+
+<dt id="arg-title-size">title_size<a class="anchor" aria-label="anchor" href="#arg-title-size"></a></dt>
+<dd><p>Optional numeric title font size. If <code>NULL</code>, ggplot2's
+theme default is used.</p></dd>
+
+
+<dt id="arg-title-face">title_face<a class="anchor" aria-label="anchor" href="#arg-title-face"></a></dt>
+<dd><p>Font face for the title. One of <code>"plain"</code>,
+<code>"bold"</code>, <code>"italic"</code>, or <code>"bold.italic"</code>. Quoted and bare
+values are accepted.</p></dd>
+
+
 <dt id="arg-legend-title">legend_title<a class="anchor" aria-label="anchor" href="#arg-legend-title"></a></dt>
 <dd><p>Optional legend title. If <code>NULL</code>, the labelled
 <code>by</code> variable name is used.</p></dd>
+
+
+<dt id="arg-legend-position">legend_position<a class="anchor" aria-label="anchor" href="#arg-legend-position"></a></dt>
+<dd><p>Legend position. One of <code>"bottom"</code>, <code>"top"</code>,
+<code>"right"</code>, <code>"left"</code>, or <code>"none"</code>. If <code>NULL</code>, grouped
+plots use <code>"bottom"</code> and ungrouped plots hide the legend. Quoted and
+bare values are accepted.</p></dd>
 
 
 <dt id="arg-palette">palette<a class="anchor" aria-label="anchor" href="#arg-palette"></a></dt>
@@ -198,7 +237,11 @@ accepted.</p></dd>
 <span class="r-in"><span>  time <span class="op">=</span> <span class="va">time</span>,</span></span>
 <span class="r-in"><span>  event <span class="op">=</span> <span class="va">status</span>,</span></span>
 <span class="r-in"><span>  by <span class="op">=</span> <span class="va">trt</span>,</span></span>
-<span class="r-in"><span>  break_time_by <span class="op">=</span> <span class="fl">200</span></span></span>
+<span class="r-in"><span>  break_time_by <span class="op">=</span> <span class="fl">200</span>,</span></span>
+<span class="r-in"><span>  ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">100</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  title <span class="op">=</span> <span class="st">"A. Treatment group"</span>,</span></span>
+<span class="r-in"><span>  title_size <span class="op">=</span> <span class="fl">11</span>,</span></span>
+<span class="r-in"><span>  legend_position <span class="op">=</span> <span class="st">"none"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="km_plot-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>

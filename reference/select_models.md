@@ -99,12 +99,12 @@ stepwise <- select_models(
   direction = "forward"
 )
 stepwise$results_table
-#> # A tibble: 3 × 8
-#>   model_id formula           n_predictors   AIC   BIC logLik  deviance adj_r2
-#>      <int> <chr>                    <int> <dbl> <dbl>  <dbl>     <dbl>  <dbl>
-#> 1        1 bwt ~ 1                      0 3031. 3038. -1514. 99969656. 0     
-#> 2        2 bwt ~ smoke                  1 3026. 3036. -1510. 96343710. 0.0311
-#> 3        3 bwt ~ smoke + lwt            2 3022. 3035. -1507. 93194298. 0.0578
+#> # A tibble: 3 × 9
+#>   model_id formula   model_terms n_predictors   AIC   BIC logLik deviance adj_r2
+#>      <int> <chr>     <chr>              <int> <dbl> <dbl>  <dbl>    <dbl>  <dbl>
+#> 1        1 bwt ~ 1   Intercept …            0 3031. 3038. -1514.  1.000e8 0     
+#> 2        2 bwt ~ sm… smoke                  1 3026. 3036. -1510.  9.63 e7 0.0311
+#> 3        3 bwt ~ sm… smoke + lwt            2 3022. 3035. -1507.  9.32 e7 0.0578
 stepwise$best_model
 #> 
 #> Call:

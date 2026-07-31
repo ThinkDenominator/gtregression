@@ -79,7 +79,10 @@ lung_summary$table
 Use
 [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md)
 for the Kaplan-Meier curve. Add `risk_table = TRUE` when the number at
-risk should appear under the curve.
+risk should appear under the curve. When survival remains high, use
+`ylim` to focus the y-axis, for example `ylim = c(50, 100)` with the
+default percentage scale. Confidence intervals are shown as shaded bands
+when `conf.int = TRUE`.
 
 ``` r
 
@@ -89,6 +92,7 @@ km_curve <- km_plot(
   event = status,
   by = trt,
   break_time_by = 200,
+  ylim = c(50, 100),
   title = "Kaplan-Meier Survival by Treatment"
 )
 
@@ -96,6 +100,50 @@ km_curve
 ```
 
 ![](survival-analysis_files/figure-html/surv-km-plot-1.png)
+
+For multi-panel publication figures, make each Kaplan-Meier plot lighter
+and let `patchwork` arrange the panels. A common pattern is to remove
+the risk table, use short panel titles, reduce `title_size`, and collect
+legends across panels.
+
+``` r
+
+km_trt_panel <- km_plot(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = trt,
+  risk_table = FALSE,
+  break_time_by = 200,
+  ylim = c(50, 100),
+  title = "A. Treatment group",
+  title_size = 10,
+  title_face = plain,
+  legend_position = bottom,
+  base_size = 10
+)
+
+km_prior_panel <- km_plot(
+  data = lung_data,
+  time = time,
+  event = status,
+  by = prior,
+  risk_table = FALSE,
+  break_time_by = 200,
+  ylim = c(50, 100),
+  title = "B. Prior therapy",
+  title_size = 10,
+  title_face = plain,
+  legend_position = bottom,
+  base_size = 10
+)
+
+patchwork::wrap_plots(km_trt_panel, km_prior_panel, ncol = 2) +
+  patchwork::plot_layout(guides = "collect") &
+  ggplot2::theme(legend.position = "bottom")
+```
+
+![](survival-analysis_files/figure-html/surv-km-panel-1.png)
 
 Use table summaries when readers need exact survival values.
 
@@ -115,7 +163,7 @@ survival_summary(
 | Test treatment | 68 | 64 | 4 | 52.5 (44.0-95.0) |
 | Median survival is estimated using Kaplan-Meier methods. Not reached means survival did not fall to 50% during observed follow-up. |  |  |  |  |
 
-Kaplan-Meier survival summary {.table .cl-db4e2fa4
+Kaplan-Meier survival summary {.table .cl-3225622e
 quarto-disable-processing="true"}
 
 ``` r
@@ -139,7 +187,7 @@ survival_prob(
 | Test treatment | 365.0 | 6 | 7 | 1 | 11.0% (5.3%-22.7%) |
 | Survival probabilities are estimated using Kaplan-Meier methods. Events and censored counts are interval counts up to each requested time point. |  |  |  |  |  |
 
-Kaplan-Meier survival probabilities {.table .cl-db6f0e22
+Kaplan-Meier survival probabilities {.table .cl-3246d350
 quarto-disable-processing="true"}
 
 [`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md)
@@ -165,7 +213,7 @@ rmst_table(
 | Difference (Test treatment - Standard treatment) | 365.0 |  |  |  | -6.6 (-45.3-32.2) | 0.740 |
 | RMST is restricted mean survival time up to tau. For two groups, the difference is the second group minus the first group. |  |  |  |  |  |  |
 
-Restricted mean survival time {.table .cl-db99c3c4
+Restricted mean survival time {.table .cl-326fdafc
 quarto-disable-processing="true"}
 
 ## 3. Compare Survival Curves
@@ -190,7 +238,7 @@ logrank_test(
 | Test treatment | 68 | 64 | 63.50 |
 | Log-rank test: chi-square = 0.01, df = 1, p-value = 0.928. This compares survival curves; use cox_reg() when a hazard ratio is needed. |  |  |  |
 
-Log-rank test {.table .cl-dbbdd14c quarto-disable-processing="true"}
+Log-rank test {.table .cl-3293b490 quarto-disable-processing="true"}
 
 ## 4. Fit Cox Regression
 
@@ -312,7 +360,7 @@ surv_model_compare(
 | weibull | 1,449.11 | 1,475.39 | -715.55 | 0.93 | 137 | 128 | No | No |
 | Lower AIC or BIC indicates better relative fit among the compared distributions. Use model fit statistics with clinical judgment and visual checks. |  |  |  |  |  |  |  |  |
 
-Parametric survival model comparison {.table .cl-dc84a916
+Parametric survival model comparison {.table .cl-335979b4
 quarto-disable-processing="true"}
 
 ``` r
@@ -443,7 +491,7 @@ surv_predict(
 | 1 | Test treatment | 60 | 70 | 365.0 | 11.1% | loglogistic |
 | Model-based predictions from a parametric survival regression model. Distribution: loglogistic. Predictions depend on the supplied profile and model specification. |  |  |  |  |  |  |
 
-Predicted survival probabilities {.table .cl-dd64ba24
+Predicted survival probabilities {.table .cl-342dc520
 quarto-disable-processing="true"}
 
 ## 7. Visualise And Export Model Results
