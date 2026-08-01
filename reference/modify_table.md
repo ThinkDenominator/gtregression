@@ -3,6 +3,9 @@
 Works with objects created by this package (class `"gtregression"`):
 [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md),
 [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
+[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
+[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md),
+stratified regression outputs,
 [`descriptive_table()`](https://thinkdenominator.github.io/gtregression/reference/descriptive_table.md),
 and
 [`merge_tables()`](https://thinkdenominator.github.io/gtregression/reference/merge_tables.md).
@@ -61,8 +64,10 @@ modify_table(
 
 - remove_N:
 
-  Logical; if `TRUE`, drops the `N` column for univariate package
-  tables.
+  Logical; if `TRUE`, drops displayed `N` columns from univariable and
+  stratified package tables. For stratified survival outputs, event
+  columns are retained unless the original table was created with
+  `show_sample = "none"`.
 
 - remove_N_obs:
 

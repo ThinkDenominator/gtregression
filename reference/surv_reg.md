@@ -18,6 +18,7 @@ surv_reg(
   distribution = "weibull",
   format = c("flextable", "gt"),
   theme = c("minimal"),
+  show_sample = "events",
   model_stats = FALSE
 )
 ```
@@ -93,6 +94,13 @@ surv_reg(
 
   Table styling preset.
 
+- show_sample:
+
+  For stratified parametric survival tables, controls which sample-size
+  columns are shown in the publication table. One of `"events"`
+  (default), `"n"`, `"both"`, or `"none"`. Model statistics, when
+  requested, still retain both N and event counts.
+
 - model_stats:
 
   Logical; if `TRUE`, extract model-fit statistics including AIC, BIC,
@@ -160,10 +168,12 @@ standard formula expansion (for example, `trt*prior`). Interaction
 effects are displayed as additional rows beneath the corresponding
 exposure.
 
-Stratified parametric survival tables include model `N` and event counts
-within each stratum. Crude stratified tables calculate these counts for
-each exposure-specific model; adjusted and multivariable stratified
-tables use the corresponding fitted model within each stratum.
+Stratified parametric survival tables show event counts by default. Use
+`show_sample = "n"`, `show_sample = "both"`, or `show_sample = "none"`
+to control the displayed sample columns. Crude stratified tables
+calculate these counts for each exposure-specific model; adjusted and
+multivariable stratified tables use the corresponding fitted model
+within each stratum.
 
 If exposure variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),

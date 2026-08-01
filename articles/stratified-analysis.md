@@ -198,6 +198,26 @@ If a stratum cannot fit a model, the function skips that stratum with a
 warning and continues. This is intentional: sparse strata are common in
 real data, and one small subgroup should not erase the whole analysis.
 
+## Forest Plot by Stratum
+
+[`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
+can also prepare one stratified regression object for
+[`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md).
+Stratum headers are kept in the plot so readers can scan each subgroup
+separately.
+
+``` r
+
+strata_forest_data <- forest_df(strata_multi)
+
+forest_reg(
+  strata_forest_data,
+  ci_col_width = 18
+)
+```
+
+![](stratified-analysis_files/figure-html/strata-forest-1.png)
+
 ## What To Inspect
 
 - `$table`: rendered side-by-side table.

@@ -43,10 +43,22 @@
   for parametric survival regression using `time`, `event`, `exposures`,
   optional `adjust_for`, and a selectable survival distribution,
   returning time-ratio tables.
+- Added stratified Cox and parametric survival workflows through the
+  `stratifier` argument in
+  [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+  and
+  [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md),
+  with stratum-specific N, event counts, and formatted regression
+  tables.
 - Added
   [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md)
   for Kaplan-Meier survival curves with optional confidence intervals,
   censoring marks, log-rank p-values, and number-at-risk tables.
+- Added more publication controls to
+  [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md),
+  including y-axis limits, percentage-scale display, optional grid
+  removal, theme selection, confidence interval styling, and
+  title/subtitle sizing for patchwork-style figure panels.
 - Added
   [`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md)
   for standalone Kaplan-Meier risk tables at requested follow-up times,
@@ -107,6 +119,18 @@
 - Added `data_diabetes_mediation`, a health-related diabetes teaching
   dataset for practicing obesity, glucose, and diabetes mediation
   workflows.
+- Added
+  [`compare_models()`](https://thinkdenominator.github.io/gtregression/reference/compare_models.md)
+  for publication-ready comparison of fitted gtregression model outputs,
+  including AIC, BIC, log-likelihood, likelihood ratio statistics,
+  primary exposure estimates, percent change, analysis-sample checks,
+  and highlighted best-fit summaries.
+- Added
+  [`save_forest()`](https://thinkdenominator.github.io/gtregression/reference/save_forest.md)
+  for exporting
+  [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
+  outputs with reproducible sizing across graphics devices and operating
+  systems.
 - Added automatic support for variable label attributes, including
   labels set with
   [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
@@ -159,6 +183,13 @@
   [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
   support for descriptive summaries combined with univariable and
   multivariable regression outputs.
+- Improved
+  [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
+  and
+  [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
+  support for stratified regression outputs, including one-object
+  stratified forest plots with highlighted stratum headers and preserved
+  row order.
 - Improved downstream survival support so
   [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
   and
@@ -172,6 +203,23 @@
   [`modify_table()`](https://thinkdenominator.github.io/gtregression/reference/modify_table.md),
   and
   [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md).
+- Improved
+  [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+  and
+  [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+  consistency with the rest of the package: both now support single
+  multivariable models, adjusted exposure workflows, interaction terms,
+  stratified workflows, and coherent table labels.
+- Improved
+  [`compare_models()`](https://thinkdenominator.github.io/gtregression/reference/compare_models.md)
+  output so user-supplied or object-derived model names are displayed
+  instead of generic model labels, and context-aware warnings
+  distinguish same-sample comparisons from different-sample comparisons.
+- Improved
+  [`save_table()`](https://thinkdenominator.github.io/gtregression/reference/save_table.md)
+  handling for wide Word tables by preferring landscape orientation
+  before reducing font size, respecting minimum font sizes, and allowing
+  users to turn width fitting off.
 - Improved table footer and source-note spacing across formatted tables
   so abbreviations, adjustment notes, and caveats render more compactly
   in flextable, gt, Word, and pkgdown outputs.
@@ -207,6 +255,20 @@
 - Fixed save functions so files are written to a temporary directory
   when users do not provide an explicit destination, supporting
   CRAN-safe examples and tests.
+- Fixed univariable Cox regression preprocessing so each exposure is
+  fitted on complete cases for `time`, `event`, and the current exposure
+  rather than using a single complete-case dataset across all exposures.
+- Fixed Cox and parametric survival validation so zero follow-up times
+  are allowed when accepted by the underlying `survival` model
+  functions, while negative follow-up times remain invalid.
+- Fixed regression and publication-ready outputs so user-supplied
+  variable order is preserved rather than alphabetically reordered.
+- Fixed forest plot merging so adjusted reference rows are left blank
+  for variables that were not included in the adjusted model.
+- Fixed
+  [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
+  row-order handling after joins and merges so forest plots follow the
+  same display order as the source regression table.
 
 ## gtregression 1.0.0
 

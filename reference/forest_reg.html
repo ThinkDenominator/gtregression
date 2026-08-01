@@ -75,6 +75,8 @@ table-style forest plot while leaving axis and interval drawing to
 <span>  ticks_at <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ticks_digits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  style_strata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  strata_fill <span class="op">=</span> <span class="st">"#EAF2F1"</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -135,6 +137,16 @@ columns, specifying x-axis tick positions. If <code>NULL</code>,
 <dd><p>Optional numeric vector of length 2, or length-2 list for two
 effect columns, specifying x-axis limits. If <code>NULL</code>,
 <code><a href="https://rdrr.io/pkg/forestploter/man/forest.html" class="external-link">forestploter::forest()</a></code> chooses the default limits.</p></dd>
+
+
+<dt id="arg-style-strata">style_strata<a class="anchor" aria-label="anchor" href="#arg-style-strata"></a></dt>
+<dd><p>Logical. When <code>TRUE</code>, stratum header rows created
+by <code><a href="forest_df.html">forest_df()</a></code> from a stratified regression object are shown in bold
+with a subtle background shade.</p></dd>
+
+
+<dt id="arg-strata-fill">strata_fill<a class="anchor" aria-label="anchor" href="#arg-strata-fill"></a></dt>
+<dd><p>Character. Fill color used for styled stratum header rows.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -211,7 +223,7 @@ effect columns, specifying x-axis limits. If <code>NULL</code>,
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Rubeshkumar Polani, Salin K Eliyas, Manikandanesan Sakthivel, Yuvaraj Krishnamoorthy, Marie Gilbert Majella.</p>
+  <p>Developed by Rubeshkumar Polani, Salin K Eliyas, Manikandanesan Sakthivel, Mogan Kaviprawin, Yuvaraj Krishnamoorthy, Marie Gilbert Majella.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -146,11 +146,14 @@ clinical, epidemiological, and statistical judgement.</p>
 <p>Likelihood-ratio p-values are meaningful only for nested models fitted to
 the same analysis sample. <code>compare_models()</code> checks whether the fitted
 models appear to use the same analysis sample using retained model row
-identifiers when available; otherwise it compares N and event counts. AIC,
-BIC, log-likelihood, and likelihood-ratio statistics remain visible when
-samples differ, but rendered tables promote the caution message visually
-before routine footnotes. Likelihood-based comparisons should then be
-interpreted descriptively rather than as formal model-selection evidence.</p>
+identifiers when available; otherwise it compares N and event counts. It
+also checks whether sequential model pairs appear to be nested when
+<code>nested = TRUE</code>. Rendered warnings are context-aware: no warning about
+different analysis samples is shown when the compared models use the same
+observations, and no nested-model warning is shown when sequential models
+appear nested. AIC, BIC, log-likelihood, and likelihood-ratio statistics
+remain visible when warnings are needed, but should then be interpreted with
+the displayed caution.</p>
     </div>
 
     <div class="section level2">
@@ -194,7 +197,7 @@ interpreted descriptively rather than as formal model-selection evidence.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Rubeshkumar Polani, Salin K Eliyas, Manikandanesan Sakthivel, Yuvaraj Krishnamoorthy, Marie Gilbert Majella.</p>
+  <p>Developed by Rubeshkumar Polani, Salin K Eliyas, Manikandanesan Sakthivel, Mogan Kaviprawin, Yuvaraj Krishnamoorthy, Marie Gilbert Majella.</p>
 </div>
 
 <div class="pkgdown-footer-right">

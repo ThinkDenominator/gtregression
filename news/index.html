@@ -56,7 +56,9 @@
 <li>Added <code>data_endometrial</code>, a classic endometrial cancer dataset with a separation pattern, for teaching and testing Firth logistic regression.</li>
 <li>Added <code><a href="../reference/cox_reg.html">cox_reg()</a></code> for Cox proportional hazards regression using <code>time</code>, <code>event</code>, <code>exposures</code>, and optional <code>adjust_for</code>, returning HR and adjusted HR tables.</li>
 <li>Added <code><a href="../reference/surv_reg.html">surv_reg()</a></code> for parametric survival regression using <code>time</code>, <code>event</code>, <code>exposures</code>, optional <code>adjust_for</code>, and a selectable survival distribution, returning time-ratio tables.</li>
+<li>Added stratified Cox and parametric survival workflows through the <code>stratifier</code> argument in <code><a href="../reference/cox_reg.html">cox_reg()</a></code> and <code><a href="../reference/surv_reg.html">surv_reg()</a></code>, with stratum-specific N, event counts, and formatted regression tables.</li>
 <li>Added <code><a href="../reference/km_plot.html">km_plot()</a></code> for Kaplan-Meier survival curves with optional confidence intervals, censoring marks, log-rank p-values, and number-at-risk tables.</li>
+<li>Added more publication controls to <code><a href="../reference/km_plot.html">km_plot()</a></code>, including y-axis limits, percentage-scale display, optional grid removal, theme selection, confidence interval styling, and title/subtitle sizing for patchwork-style figure panels.</li>
 <li>Added <code><a href="../reference/km_risk_table.html">km_risk_table()</a></code> for standalone Kaplan-Meier risk tables at requested follow-up times, with at-risk, event, and censored counts.</li>
 <li>Added <code><a href="../reference/rmst_table.html">rmst_table()</a></code> for restricted mean survival time summaries up to a chosen follow-up time, with optional two-group RMST difference.</li>
 <li>Added <code><a href="../reference/surv_model_compare.html">surv_model_compare()</a></code> for comparing candidate parametric survival distributions by AIC, BIC, log-likelihood, scale, events, and N.</li>
@@ -71,6 +73,8 @@
 <li>Added <code><a href="../reference/mediation_analysis.html">mediation_analysis()</a></code> for regression-based mediation analysis with formatted direct, indirect, total, and proportion mediated tables.</li>
 <li>Added <code><a href="../reference/plot_mediation.html">plot_mediation()</a></code> for drawing a mediation path diagram from <code><a href="../reference/mediation_analysis.html">mediation_analysis()</a></code> outputs.</li>
 <li>Added <code>data_diabetes_mediation</code>, a health-related diabetes teaching dataset for practicing obesity, glucose, and diabetes mediation workflows.</li>
+<li>Added <code><a href="../reference/compare_models.html">compare_models()</a></code> for publication-ready comparison of fitted gtregression model outputs, including AIC, BIC, log-likelihood, likelihood ratio statistics, primary exposure estimates, percent change, analysis-sample checks, and highlighted best-fit summaries.</li>
+<li>Added <code><a href="../reference/save_forest.html">save_forest()</a></code> for exporting <code><a href="../reference/forest_reg.html">forest_reg()</a></code> outputs with reproducible sizing across graphics devices and operating systems.</li>
 <li>Added automatic support for variable label attributes, including labels set with <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code>, across descriptive, regression, stratified, merged, plotted, and forest-style outputs.</li>
 <li>Added formatted display outputs for diagnostic and review functions including <code><a href="../reference/dissect.html">dissect()</a></code>, <code><a href="../reference/select_models.html">select_models()</a></code>, <code><a href="../reference/interaction_models.html">interaction_models()</a></code>, and <code><a href="../reference/identify_confounder.html">identify_confounder()</a></code>.</li>
 <li>Added Mantel-Haenszel comparison support to <code><a href="../reference/identify_confounder.html">identify_confounder()</a></code> to support confounding assessment alongside crude and adjusted model comparisons.</li>
@@ -84,7 +88,11 @@
 <li>Improved <code><a href="../reference/merge_tables.html">merge_tables()</a></code> so descriptive, crude, and adjusted tables can be combined more reliably, including when visible variable labels differ between input tables.</li>
 <li>Improved <code><a href="../reference/modify_table.html">modify_table()</a></code> so merged tables retain clean headers, spanners, and footnotes after relabelling.</li>
 <li>Improved <code><a href="../reference/forest_df.html">forest_df()</a></code> and <code><a href="../reference/forest_reg.html">forest_reg()</a></code> support for descriptive summaries combined with univariable and multivariable regression outputs.</li>
+<li>Improved <code><a href="../reference/forest_df.html">forest_df()</a></code> and <code><a href="../reference/forest_reg.html">forest_reg()</a></code> support for stratified regression outputs, including one-object stratified forest plots with highlighted stratum headers and preserved row order.</li>
 <li>Improved downstream survival support so <code><a href="../reference/cox_reg.html">cox_reg()</a></code> and <code><a href="../reference/surv_reg.html">surv_reg()</a></code> outputs work with <code><a href="../reference/plot_reg.html">plot_reg()</a></code>, <code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code>, <code><a href="../reference/forest_df.html">forest_df()</a></code>, <code><a href="../reference/forest_reg.html">forest_reg()</a></code>, <code><a href="../reference/merge_tables.html">merge_tables()</a></code>, <code><a href="../reference/modify_table.html">modify_table()</a></code>, and <code><a href="../reference/select_models.html">select_models()</a></code>.</li>
+<li>Improved <code><a href="../reference/cox_reg.html">cox_reg()</a></code> and <code><a href="../reference/surv_reg.html">surv_reg()</a></code> consistency with the rest of the package: both now support single multivariable models, adjusted exposure workflows, interaction terms, stratified workflows, and coherent table labels.</li>
+<li>Improved <code><a href="../reference/compare_models.html">compare_models()</a></code> output so user-supplied or object-derived model names are displayed instead of generic model labels, and context-aware warnings distinguish same-sample comparisons from different-sample comparisons.</li>
+<li>Improved <code><a href="../reference/save_table.html">save_table()</a></code> handling for wide Word tables by preferring landscape orientation before reducing font size, respecting minimum font sizes, and allowing users to turn width fitting off.</li>
 <li>Improved table footer and source-note spacing across formatted tables so abbreviations, adjustment notes, and caveats render more compactly in flextable, gt, Word, and pkgdown outputs.</li>
 <li>Improved Word export so flextable outputs are fitted to a standard Word page width by default, with <code>save_docx(table_width = ...)</code> available for custom document layouts.</li>
 <li>Improved <code><a href="../reference/select_models.html">select_models()</a></code> output so formatted tables clearly report the model selection direction used.</li>
@@ -98,6 +106,11 @@
 <li>Fixed <code><a href="../reference/check_convergence.html">check_convergence()</a></code> so failed multivariable model fits return a clear non-converged table rather than failing during table formatting.</li>
 <li>Fixed pkgdown reference metadata for internal print methods.</li>
 <li>Fixed save functions so files are written to a temporary directory when users do not provide an explicit destination, supporting CRAN-safe examples and tests.</li>
+<li>Fixed univariable Cox regression preprocessing so each exposure is fitted on complete cases for <code>time</code>, <code>event</code>, and the current exposure rather than using a single complete-case dataset across all exposures.</li>
+<li>Fixed Cox and parametric survival validation so zero follow-up times are allowed when accepted by the underlying <code>survival</code> model functions, while negative follow-up times remain invalid.</li>
+<li>Fixed regression and publication-ready outputs so user-supplied variable order is preserved rather than alphabetically reordered.</li>
+<li>Fixed forest plot merging so adjusted reference rows are left blank for variables that were not included in the adjusted model.</li>
+<li>Fixed <code><a href="../reference/forest_df.html">forest_df()</a></code> row-order handling after joins and merges so forest plots follow the same display order as the source regression table.</li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -113,7 +126,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Rubeshkumar Polani, Salin K Eliyas, Manikandanesan Sakthivel, Yuvaraj Krishnamoorthy, Marie Gilbert Majella.</p>
+  <p>Developed by Rubeshkumar Polani, Salin K Eliyas, Manikandanesan Sakthivel, Mogan Kaviprawin, Yuvaraj Krishnamoorthy, Marie Gilbert Majella.</p>
 </div>
 
 <div class="pkgdown-footer-right">

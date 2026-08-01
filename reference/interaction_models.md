@@ -171,11 +171,11 @@ interaction_models(
 #> 
 #> $formula_no_interaction
 #> low ~ smoke + race + age + lwt
-#> <environment: 0x561c5f271640>
+#> <environment: 0x55a4340ae5a8>
 #> 
 #> $formula_with_interaction
 #> low ~ smoke + race + age + lwt + smoke:race
-#> <environment: 0x561c5f271640>
+#> <environment: 0x55a4340ae5a8>
 #> 
 #> $interaction_terms
 #> [1] "smokeYes:raceBlack" "smokeYes:raceOther"
@@ -276,12 +276,12 @@ interaction_models(
 #> 
 #> $formula_no_interaction
 #> survival::Surv(time, status) ~ trt + prior + age + karno
-#> <environment: 0x561c63360ed8>
+#> <environment: 0x55a42f897f50>
 #> 
 #> $formula_with_interaction
 #> survival::Surv(time, status) ~ trt + prior + age + karno + trt * 
 #>     prior
-#> <environment: 0x561c63360ed8>
+#> <environment: 0x55a42f897f50>
 #> 
 #> $interaction_terms
 #> [1] "trtTest treatment:priorYes"

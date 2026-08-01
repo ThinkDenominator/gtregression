@@ -24,6 +24,8 @@ forest_reg(
   ticks_at = NULL,
   ticks_digits = NULL,
   xlim = NULL,
+  style_strata = TRUE,
+  strata_fill = "#EAF2F1",
   ...
 )
 ```
@@ -90,6 +92,17 @@ forest_reg(
   columns, specifying x-axis limits. If `NULL`,
   [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html)
   chooses the default limits.
+
+- style_strata:
+
+  Logical. When `TRUE`, stratum header rows created by
+  [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
+  from a stratified regression object are shown in bold with a subtle
+  background shade.
+
+- strata_fill:
+
+  Character. Fill color used for styled stratum header rows.
 
 - ...:
 

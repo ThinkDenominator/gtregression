@@ -8,7 +8,10 @@ from
 and optionally
 [`descriptive_table()`](https://thinkdenominator.github.io/gtregression/reference/descriptive_table.md)
 objects. This function is useful when users want to inspect, edit, or
-reuse the exact data that will be passed to the forest plot.
+reuse the exact data that will be passed to the forest plot. Stratified
+regression objects are also supported when supplied one at a time; the
+returned data frame is grouped by stratum and can be passed directly to
+[`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md).
 
 ## Usage
 
