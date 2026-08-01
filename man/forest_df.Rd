@@ -26,7 +26,9 @@ A data frame with display columns, formatted effect-size columns,
 Creates the tabular input used by \code{forest_reg()} from \code{uni_reg()},
 \code{multi_reg()}, and optionally \code{descriptive_table()} objects. This
 function is useful when users want to inspect, edit, or reuse the exact data
-that will be passed to the forest plot.
+that will be passed to the forest plot. Stratified regression objects are
+also supported when supplied one at a time; the returned data frame is grouped
+by stratum and can be passed directly to \code{forest_reg()}.
 }
 \examples{
 birthwt_data <- data_birthwt |>

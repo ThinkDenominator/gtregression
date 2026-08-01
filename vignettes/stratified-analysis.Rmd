@@ -115,6 +115,21 @@ If a stratum cannot fit a model, the function skips that stratum with a warning
 and continues. This is intentional: sparse strata are common in real data, and
 one small subgroup should not erase the whole analysis.
 
+## Forest Plot by Stratum
+
+`forest_df()` can also prepare one stratified regression object for
+`forest_reg()`. Stratum headers are kept in the plot so readers can scan each
+subgroup separately.
+
+```{r strata-forest, message=FALSE, warning=FALSE, fig.width=8, fig.height=7}
+strata_forest_data <- forest_df(strata_multi)
+
+forest_reg(
+  strata_forest_data,
+  ci_col_width = 18
+)
+```
+
 ## What To Inspect
 
 - `$table`: rendered side-by-side table.

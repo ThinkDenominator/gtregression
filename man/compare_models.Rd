@@ -77,11 +77,14 @@ clinical, epidemiological, and statistical judgement.
 Likelihood-ratio p-values are meaningful only for nested models fitted to
 the same analysis sample. \code{compare_models()} checks whether the fitted
 models appear to use the same analysis sample using retained model row
-identifiers when available; otherwise it compares N and event counts. AIC,
-BIC, log-likelihood, and likelihood-ratio statistics remain visible when
-samples differ, but rendered tables promote the caution message visually
-before routine footnotes. Likelihood-based comparisons should then be
-interpreted descriptively rather than as formal model-selection evidence.
+identifiers when available; otherwise it compares N and event counts. It
+also checks whether sequential model pairs appear to be nested when
+\code{nested = TRUE}. Rendered warnings are context-aware: no warning about
+different analysis samples is shown when the compared models use the same
+observations, and no nested-model warning is shown when sequential models
+appear nested. AIC, BIC, log-likelihood, and likelihood-ratio statistics
+remain visible when warnings are needed, but should then be interpreted with
+the displayed caution.
 }
 \examples{
 data("data_lungcancer", package = "gtregression")

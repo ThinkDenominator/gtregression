@@ -38,8 +38,10 @@ such as \code{estimate}, \code{p.value}, and \code{N} are also accepted.}
 
 \item{bold_levels}{Logical; bold factor level rows in the body.}
 
-\item{remove_N}{Logical; if \code{TRUE}, drops the \code{N} column for
-univariate package tables.}
+\item{remove_N}{Logical; if \code{TRUE}, drops displayed \code{N} columns
+from univariable and stratified package tables. For stratified survival
+outputs, event columns are retained unless the original table was created
+with \code{show_sample = "none"}.}
 
 \item{remove_N_obs}{Logical; if \code{TRUE}, suppresses multivariable
 complete-case footnote.}
@@ -54,8 +56,9 @@ The modified table object (same class as input).
 }
 \description{
 Works with objects created by this package (class \code{"gtregression"}):
-\code{uni_reg()}, \code{multi_reg()}, \code{descriptive_table()},
-and \code{merge_tables()}.
+\code{uni_reg()}, \code{multi_reg()}, \code{cox_reg()}, \code{surv_reg()},
+stratified regression outputs, \code{descriptive_table()}, and
+\code{merge_tables()}.
 No \pkg{gtsummary} dependency or fallback.
 }
 \examples{

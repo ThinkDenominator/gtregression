@@ -16,6 +16,7 @@ cox_reg(
   multivariate = NULL,
   format = c("flextable", "gt"),
   theme = c("minimal"),
+  show_sample = "events",
   model_stats = FALSE
 )
 }
@@ -61,6 +62,11 @@ accepted for convenience; \code{multivariable} is used internally.}
 
 \item{theme}{Table styling preset.}
 
+\item{show_sample}{For stratified Cox tables, controls which sample-size
+columns are shown in the publication table. One of \code{"events"}
+(default), \code{"n"}, \code{"both"}, or \code{"none"}. Model statistics,
+when requested, still retain both N and event counts.}
+
 \item{model_stats}{Logical; if \code{TRUE}, extract model-fit statistics
 including AIC, BIC, log-likelihood, concordance, number of events, and N.}
 }
@@ -103,10 +109,12 @@ effects are displayed as additional rows beneath the corresponding exposure.
 The proportional hazards assumption should be assessed separately, for
 example with \code{check_ph()}.
 
-Stratified Cox tables include model \code{N} and event counts within each
-stratum. Crude stratified tables calculate these counts for each
-exposure-specific model; adjusted and multivariable stratified tables use the
-corresponding fitted model within each stratum.
+Stratified Cox tables show event counts by default. Use
+\code{show_sample = "n"}, \code{show_sample = "both"}, or
+\code{show_sample = "none"} to control the displayed sample columns. Crude
+stratified tables calculate these counts for each exposure-specific model;
+adjusted and multivariable stratified tables use the corresponding fitted
+model within each stratum.
 
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the

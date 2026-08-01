@@ -17,6 +17,8 @@ forest_reg(
   ticks_at = NULL,
   ticks_digits = NULL,
   xlim = NULL,
+  style_strata = TRUE,
+  strata_fill = "#EAF2F1",
   ...
 )
 }
@@ -54,6 +56,12 @@ columns, specifying x-axis tick positions. If \code{NULL},
 \item{xlim}{Optional numeric vector of length 2, or length-2 list for two
 effect columns, specifying x-axis limits. If \code{NULL},
 \code{forestploter::forest()} chooses the default limits.}
+
+\item{style_strata}{Logical. When \code{TRUE}, stratum header rows created
+by \code{forest_df()} from a stratified regression object are shown in bold
+with a subtle background shade.}
+
+\item{strata_fill}{Character. Fill color used for styled stratum header rows.}
 
 \item{...}{Passed to \code{forestploter::forest()}. Common options include
 \code{title} and \code{footnote}.}

@@ -10,6 +10,20 @@ birthwt_modify_data <- function() {
     )
 }
 
+lung_modify_data <- function() {
+  data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes")),
+      celltype = factor(
+        celltype,
+        levels = c("squamous", "smallcell", "adeno", "large"),
+        labels = c("Squamous", "Small cell", "Adenocarcinoma", "Large cell")
+      )
+    )
+}
+
 test_that("modify_table updates package-native univariable gt tables", {
   df <- birthwt_modify_data()
 
@@ -87,6 +101,118 @@ test_that("modify_table works for adjusted multivariable tables and footnote opt
   expect_true(any(grepl("Adjusted model", keep_notes$footnotes, fixed = TRUE)))
   expect_false(any(grepl("OR = Odds Ratio", drop_notes$footnotes, fixed = TRUE)))
   expect_false(any(grepl("complete observations included", drop_notes$footnotes, fixed = TRUE)))
+})
+
+test_that("modify_table works for Cox and survival regression tables", {
+  skip_if_not_installed("survival")
+  skip_if_not_installed("flextable")
+
+  df <- lung_modify_data()
+
+  cox_tbl <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior),
+    adjust_for = c(age, karno),
+    format = gt
+  )
+  cox_mod <- modify_table(
+    cox_tbl,
+    variable_labels = c(trt = "Treatment group", celltype = "Cancer cell type"),
+    header_labels = c(estimate = "Adjusted HR", p.value = "P")
+  )
+
+  aft_tbl <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(trt, celltype, prior),
+    adjust_for = c(age, karno),
+    distribution = weibull,
+    format = flextable
+  )
+  aft_mod <- modify_table(
+    aft_tbl,
+    variable_labels = c(trt = "Treatment group", celltype = "Cancer cell type"),
+    header_labels = c(estimate = "Adjusted time ratio", p.value = "P")
+  )
+
+  expect_s3_class(cox_mod, "cox_reg")
+  expect_s3_class(cox_mod$table, "gt_tbl")
+  expect_true("Treatment group" %in% cox_mod$table_display$Characteristic)
+  expect_true("Cancer cell type" %in% cox_mod$table_display$Characteristic)
+  expect_s3_class(aft_mod, "surv_reg")
+  expect_s3_class(aft_mod$table, "flextable")
+  expect_true("Treatment group" %in% aft_mod$table_display$Characteristic)
+  expect_true("Cancer cell type" %in% aft_mod$table_display$Characteristic)
+})
+
+test_that("modify_table preserves stratified Cox sample-column controls", {
+  skip_if_not_installed("survival")
+
+  df <- lung_modify_data()
+
+  tbl <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, prior),
+    stratifier = trt,
+    show_sample = both,
+    format = gt
+  )
+
+  modified <- modify_table(
+    tbl,
+    variable_labels = c(celltype = "Cancer cell type", prior = "Prior therapy"),
+    header_labels = c(estimate = "Crude HR"),
+    remove_N = TRUE,
+    caveat = "Stratified Cox table."
+  )
+
+  expect_s3_class(modified, "stratified_cox_reg")
+  expect_s3_class(modified$table, "gt_tbl")
+  expect_false(any(startsWith(names(modified$table_display), "..N__")))
+  expect_true(any(startsWith(names(modified$table_display), "..Events__")))
+  expect_true("Cancer cell type" %in% modified$table_display$Characteristic)
+  expect_true(any(grepl("Stratified Cox table", modified$footnotes, fixed = TRUE)))
+  expect_error(
+    modify_table(tbl, header_labels = c(p.value = "P")),
+    "columns not found in the stratified table"
+  )
+})
+
+test_that("modify_table preserves stratified survival sample-column controls", {
+  skip_if_not_installed("survival")
+  skip_if_not_installed("flextable")
+
+  df <- lung_modify_data()
+
+  tbl <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(celltype, prior),
+    adjust_for = c(age, karno),
+    stratifier = trt,
+    distribution = weibull,
+    show_sample = both,
+    format = flextable
+  )
+
+  modified <- modify_table(
+    tbl,
+    variable_labels = c(celltype = "Cancer cell type", prior = "Prior therapy"),
+    header_labels = c(estimate = "Adjusted time ratio"),
+    remove_N = TRUE
+  )
+
+  expect_s3_class(modified, "stratified_surv_reg")
+  expect_s3_class(modified$table, "flextable")
+  expect_false(any(startsWith(names(modified$table_display), "..N__")))
+  expect_true(any(startsWith(names(modified$table_display), "..Events__")))
+  expect_true("Cancer cell type" %in% modified$table_display$Characteristic)
 })
 
 test_that("modify_table works for descriptive and merged tables", {

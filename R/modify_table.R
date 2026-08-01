@@ -120,6 +120,121 @@
   out
 }
 
+#' Drop display columns while preserving row metadata
+#' @keywords internal
+#' @noRd
+.drop_display_columns <- function(display_df, cols) {
+  cols <- intersect(cols, names(display_df))
+  if (!length(cols)) {
+    return(display_df)
+  }
+
+  out <- display_df[, setdiff(names(display_df), cols), drop = FALSE]
+  attr(out, "row_exposure") <- attr(display_df, "row_exposure", exact = TRUE)
+  attr(out, "variable_labels") <- attr(display_df, "variable_labels", exact = TRUE)
+  out
+}
+
+#' Check for stratified regression output classes
+#' @keywords internal
+#' @noRd
+.is_stratified_regression_output <- function(tbl) {
+  inherits(tbl, "stratified_uni_reg") ||
+    inherits(tbl, "stratified_multi_reg") ||
+    inherits(tbl, "stratified_cox_reg") ||
+    inherits(tbl, "stratified_surv_reg")
+}
+
+#' Pull a shared stratified effect label from header aliases
+#' @keywords internal
+#' @noRd
+.stratified_effect_label <- function(header_labels, default) {
+  if (is.null(header_labels)) {
+    return(default)
+  }
+
+  allowed <- c("estimate", default)
+  bad <- setdiff(names(header_labels), allowed)
+  if (length(bad)) {
+    stop(
+      "`header_labels` contains columns not found in the stratified table: ",
+      paste(bad, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  if ("estimate" %in% names(header_labels)) {
+    return(unname(header_labels[["estimate"]]))
+  }
+  if (default %in% names(header_labels)) {
+    return(unname(header_labels[[default]]))
+  }
+
+  default
+}
+
+#' Rebuild a modified stratified table with the original strata builders
+#' @keywords internal
+#' @noRd
+.rebuild_modified_stratified_table <- function(tbl, display_df, footnotes, header_labels = NULL) {
+  if (!.is_stratified_regression_output(tbl)) {
+    return(NULL)
+  }
+
+  spanners <- paste0(tbl$by, " = ", tbl$levels)
+  theme <- if (!is.null(tbl$theme)) tbl$theme else "minimal"
+  format <- tolower(tbl$format)
+
+  if (inherits(tbl, "stratified_uni_reg")) {
+    effect_label <- .stratified_effect_label(header_labels, .get_effect_label(tbl$approach))
+    if (identical(format, "gt")) {
+      return(.build_gt_strata_wide_uni(display_df, spanners, effect_label, theme, footnotes))
+    }
+    return(.build_flex_strata_wide_uni(display_df, spanners, effect_label, theme, footnotes))
+  }
+
+  if (inherits(tbl, "stratified_multi_reg")) {
+    effect_label <- .stratified_effect_label(
+      header_labels,
+      paste("Adjusted", .get_effect_label(tbl$approach))
+    )
+    if (identical(format, "gt")) {
+      return(.build_gt_strata_wide_multi(display_df, spanners, effect_label, theme, footnotes))
+    }
+    return(.build_flex_strata_wide_multi(display_df, spanners, effect_label, theme, footnotes))
+  }
+
+  if (inherits(tbl, "stratified_cox_reg")) {
+    effect_label <- .stratified_effect_label(header_labels, if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
+      "Adjusted HR (95% CI)"
+    } else {
+      "HR (95% CI)"
+    })
+    builder <- if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
+      if (identical(format, "gt")) .build_gt_strata_wide_multi else .build_flex_strata_wide_multi
+    } else {
+      if (identical(format, "gt")) .build_gt_strata_wide_uni else .build_flex_strata_wide_uni
+    }
+    return(builder(display_df, spanners, effect_label, theme, footnotes))
+  }
+
+  if (inherits(tbl, "stratified_surv_reg")) {
+    effect_label <- .stratified_effect_label(header_labels, if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
+      "Adjusted Time Ratio (95% CI)"
+    } else {
+      "Time Ratio (95% CI)"
+    })
+    builder <- if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
+      if (identical(format, "gt")) .build_gt_strata_wide_multi else .build_flex_strata_wide_multi
+    } else {
+      if (identical(format, "gt")) .build_gt_strata_wide_uni else .build_flex_strata_wide_uni
+    }
+    return(builder(display_df, spanners, effect_label, theme, footnotes))
+  }
+
+  NULL
+}
+
 #' Validate logical scalar inputs
 #' @keywords internal
 #' @noRd
@@ -134,8 +249,9 @@
 #' Modify Regression/Descriptive Tables (labels, headers, caption, notes)
 #'
 #' Works with objects created by this package (class \code{"gtregression"}):
-#' \code{uni_reg()}, \code{multi_reg()}, \code{descriptive_table()},
-#' and \code{merge_tables()}.
+#' \code{uni_reg()}, \code{multi_reg()}, \code{cox_reg()}, \code{surv_reg()},
+#' stratified regression outputs, \code{descriptive_table()}, and
+#' \code{merge_tables()}.
 #' No \pkg{gtsummary} dependency or fallback.
 #'
 #' @param gt_table Table object produced by this package (must contain
@@ -150,8 +266,10 @@
 #' @param caption Optional caption/title.
 #' @param bold_labels Logical; bold variable (header) rows in the body.
 #' @param bold_levels Logical; bold factor level rows in the body.
-#' @param remove_N Logical; if \code{TRUE}, drops the \code{N} column for
-#'   univariate package tables.
+#' @param remove_N Logical; if \code{TRUE}, drops displayed \code{N} columns
+#'   from univariable and stratified package tables. For stratified survival
+#'   outputs, event columns are retained unless the original table was created
+#'   with \code{show_sample = "none"}.
 #' @param remove_N_obs Logical; if \code{TRUE}, suppresses multivariable
 #'   complete-case footnote.
 #' @param remove_abbreviations Logical; if \code{TRUE}, removes the
@@ -224,11 +342,17 @@ modify_table <- function(gt_table,
     level_labels    = level_labels
   )
 
-  header_labels <- .normalize_header_labels(header_labels, tbl$table_display, tbl$approach)
+  # --------- optionally drop N columns ----------
+  if (isTRUE(remove_N)) {
+    n_cols <- names(tbl$table_display)[
+      names(tbl$table_display) == "N" |
+        startsWith(names(tbl$table_display), "..N__")
+    ]
+    tbl$table_display <- .drop_display_columns(tbl$table_display, n_cols)
+  }
 
-  # --------- optionally drop N column (for uni tables) ----------
-  if (isTRUE(remove_N) && "N" %in% names(tbl$table_display)) {
-    tbl$table_display$N <- NULL
+  if (!.is_stratified_regression_output(tbl)) {
+    header_labels <- .normalize_header_labels(header_labels, tbl$table_display, tbl$approach)
   }
 
   # --------- collect/compose footnotes ----------
@@ -448,7 +572,10 @@ modify_table <- function(gt_table,
   }
 
   # --------- rebuild rendered table ----------
-  if (identical(tolower(tbl$format), "gt") || inherits(tbl$table, "gt_tbl")) {
+  strata_table <- .rebuild_modified_stratified_table(tbl, tbl$table_display, footnotes, header_labels)
+  if (!is.null(strata_table)) {
+    tbl$table <- strata_table
+  } else if (identical(tolower(tbl$format), "gt") || inherits(tbl$table, "gt_tbl")) {
     tbl$table <- .build_pkg_gt(tbl$table_display, header_labels, footnotes)
   } else if (identical(tolower(tbl$format), "flextable") || inherits(tbl$table, "flextable")) {
     tbl$table <- .build_pkg_flex(tbl$table_display, header_labels, footnotes)

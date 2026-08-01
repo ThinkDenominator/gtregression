@@ -30,6 +30,10 @@
 #' @param xlim Optional numeric vector of length 2, or length-2 list for two
 #'   effect columns, specifying x-axis limits. If \code{NULL},
 #'   \code{forestploter::forest()} chooses the default limits.
+#' @param style_strata Logical. When \code{TRUE}, stratum header rows created
+#'   by \code{forest_df()} from a stratified regression object are shown in bold
+#'   with a subtle background shade.
+#' @param strata_fill Character. Fill color used for styled stratum header rows.
 #' @param ... Passed to \code{forestploter::forest()}. Common options include
 #'   \code{title} and \code{footnote}.
 #'
@@ -93,6 +97,8 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
                        ticks_at = NULL,
                        ticks_digits = NULL,
                        xlim = NULL,
+                       style_strata = TRUE,
+                       strata_fill = "#EAF2F1",
                        ...) {
 
   side <- .choice_arg(substitute(side), env = parent.frame(), choices = c("right", "left"))
@@ -153,6 +159,12 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
     stop("`ticks_digits` must be NULL or a single non-negative number.", call. = FALSE)
   }
   if (!is.null(ticks_digits)) ticks_digits <- as.integer(ticks_digits)
+  if (!is.logical(style_strata) || length(style_strata) != 1L || is.na(style_strata)) {
+    stop("`style_strata` must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (!is.character(strata_fill) || length(strata_fill) != 1L || is.na(strata_fill)) {
+    stop("`strata_fill` must be a single character color.", call. = FALSE)
+  }
 
   # build df if needed
   if (is.null(df)) {
@@ -279,13 +291,57 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
 
   plt <- if (quiet) suppressWarnings(draw()) else draw()
 
+  strata_rows <- .forest_stratum_rows(df_plot, meta)
+  if (isTRUE(style_strata) && length(strata_rows)) {
+    plt <- .forest_style_stratum_rows(
+      plot = plt,
+      rows = strata_rows,
+      cols = seq_along(df_plot),
+      fill = strata_fill
+    )
+  }
+
   meta$ticks_at <- ticks_at
   meta$ticks_digits <- ticks_digits
   meta$xlim <- xlim
   meta$ci_col_width <- ci_col_width
+  meta$strata_rows <- strata_rows
+  meta$style_strata <- style_strata
+  meta$strata_fill <- strata_fill
 
   structure(list(plot = plt, data = df_plot, input_data = df, meta = meta),
             class = c("gtregression_forest", "list"))
+}
+
+.forest_stratum_rows <- function(df_plot, meta) {
+  if (!isTRUE(meta$stratified) || is.null(meta$stratifier) || is.null(meta$strata)) {
+    return(integer())
+  }
+
+  labels <- paste0(meta$stratifier, " = ", meta$strata)
+  which(df_plot$Characteristic %in% labels)
+}
+
+.forest_style_stratum_rows <- function(plot, rows, cols, fill) {
+  for (row in rows) {
+    plot <- forestploter::edit_plot(
+      plot,
+      row = row,
+      col = cols,
+      part = "body",
+      which = "background",
+      gp = grid::gpar(fill = fill, col = NA)
+    )
+    plot <- forestploter::edit_plot(
+      plot,
+      row = row,
+      col = cols,
+      part = "body",
+      which = "text",
+      gp = grid::gpar(fontface = "bold")
+    )
+  }
+  plot
 }
 
 #' @export

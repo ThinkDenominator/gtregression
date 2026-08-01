@@ -394,6 +394,111 @@ test_that("forest_df recognises survival multivariable outputs as adjusted", {
   expect_false("Time Ratio (95% CI)" %in% names(surv_only))
 })
 
+test_that("forest_df builds grouped data for stratified regression outputs", {
+  df <- birthwt_forest_data()
+
+  strat_uni <- stratified_uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "smoke", "ht"),
+    stratifier = "race",
+    approach = logit
+  )
+  strat_multi <- stratified_multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht"),
+    stratifier = "race",
+    approach = logit
+  )
+
+  uni_out <- forest_df(strat_uni)
+  multi_out <- forest_df(strat_multi)
+
+  expect_s3_class(uni_out, "data.frame")
+  expect_true("OR (95% CI)" %in% names(uni_out))
+  expect_equal(length(attr(uni_out, "est")), nrow(uni_out))
+  expect_true(any(uni_out$Characteristic == "race = White"))
+  expect_true(any(uni_out$Characteristic == "race = Black"))
+  expect_equal(attr(uni_out, "forest_meta")$stratifier, "race")
+
+  uni_plot <- forest_reg(uni_out, quiet = TRUE)
+  expect_s3_class(uni_plot, "gtregression_forest")
+  expect_equal(
+    uni_plot$meta$strata_rows,
+    which(uni_plot$data$Characteristic %in% c("race = White", "race = Black", "race = Other"))
+  )
+  expect_true(uni_plot$meta$style_strata)
+
+  plain_plot <- forest_reg(uni_out, style_strata = FALSE, quiet = TRUE)
+  expect_false(plain_plot$meta$style_strata)
+  expect_equal(plain_plot$meta$strata_rows, uni_plot$meta$strata_rows)
+
+  expect_s3_class(multi_out, "data.frame")
+  expect_true("Adjusted OR (95% CI)" %in% names(multi_out))
+  expect_false("OR (95% CI)" %in% names(multi_out))
+  expect_equal(length(attr(multi_out, "est")), nrow(multi_out))
+  expect_equal(attr(multi_out, "forest_meta")$strata, c("White", "Black", "Other"))
+
+  expect_error(
+    forest_df(strat_uni, multi = strat_multi),
+    "one stratified regression object"
+  )
+})
+
+test_that("forest_df builds grouped data for stratified Cox and surv outputs", {
+  skip_if_not_installed("survival")
+
+  df <- data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+    )
+
+  cox_strat <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(age, prior),
+    stratifier = trt
+  )
+  cox_adjusted_strat <- cox_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = prior,
+    adjust_for = c(age, karno),
+    stratifier = trt
+  )
+  surv_strat <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = c(age, prior),
+    stratifier = trt
+  )
+
+  cox_out <- forest_df(cox_strat)
+  cox_adjusted_out <- forest_df(cox_adjusted_strat)
+  surv_out <- forest_df(surv_strat)
+
+  expect_true("HR (95% CI)" %in% names(cox_out))
+  expect_true("Adjusted HR (95% CI)" %in% names(cox_adjusted_out))
+  expect_true("Time Ratio (95% CI)" %in% names(surv_out))
+  expect_equal(length(attr(cox_out, "est")), nrow(cox_out))
+  expect_equal(length(attr(cox_adjusted_out, "est")), nrow(cox_adjusted_out))
+  expect_equal(length(attr(surv_out, "est")), nrow(surv_out))
+  expect_equal(attr(cox_out, "forest_meta")$x_trans, "log")
+  expect_equal(attr(surv_out, "forest_meta")$stratifier, "trt")
+  cox_plot <- forest_reg(cox_out, quiet = TRUE)
+  expect_s3_class(cox_plot, "gtregression_forest")
+  expect_equal(
+    cox_plot$meta$strata_rows,
+    which(cox_plot$data$Characteristic %in% c("trt = Standard treatment", "trt = Test treatment"))
+  )
+})
+
 test_that("forest_reg leaves default axis ticks to forestploter and respects overrides", {
   skip_if_not_installed("forestploter")
 
@@ -450,6 +555,14 @@ test_that("forest_reg validates missing inputs", {
   expect_error(
     forest_reg(df = data.frame(Characteristic = "x"), xlim = c(1, 1)),
     "`xlim` must be"
+  )
+  expect_error(
+    forest_reg(df = data.frame(Characteristic = "x"), style_strata = NA),
+    "`style_strata` must be"
+  )
+  expect_error(
+    forest_reg(df = data.frame(Characteristic = "x"), strata_fill = NA_character_),
+    "`strata_fill` must be"
   )
 })
 

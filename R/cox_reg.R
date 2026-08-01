@@ -32,6 +32,10 @@
 #' @param format Output table format; one of \code{"flextable"} (default) or
 #'   \code{"gt"}.
 #' @param theme Table styling preset.
+#' @param show_sample For stratified Cox tables, controls which sample-size
+#'   columns are shown in the publication table. One of \code{"events"}
+#'   (default), \code{"n"}, \code{"both"}, or \code{"none"}. Model statistics,
+#'   when requested, still retain both N and event counts.
 #' @param model_stats Logical; if \code{TRUE}, extract model-fit statistics
 #'   including AIC, BIC, log-likelihood, concordance, number of events, and N.
 #'
@@ -57,10 +61,12 @@
 #' The proportional hazards assumption should be assessed separately, for
 #' example with \code{check_ph()}.
 #'
-#' Stratified Cox tables include model \code{N} and event counts within each
-#' stratum. Crude stratified tables calculate these counts for each
-#' exposure-specific model; adjusted and multivariable stratified tables use the
-#' corresponding fitted model within each stratum.
+#' Stratified Cox tables show event counts by default. Use
+#' \code{show_sample = "n"}, \code{show_sample = "both"}, or
+#' \code{show_sample = "none"} to control the displayed sample columns. Crude
+#' stratified tables calculate these counts for each exposure-specific model;
+#' adjusted and multivariable stratified tables use the corresponding fitted
+#' model within each stratum.
 #'
 #' If exposure variables have a \code{"label"} attribute, for example from
 #' \code{labelled::var_label()}, those labels are used automatically in the
@@ -141,6 +147,7 @@ cox_reg <- function(data,
                     multivariate = NULL,
                     format = c("flextable", "gt"),
                     theme = c("minimal"),
+                    show_sample = "events",
                     model_stats = FALSE) {
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
@@ -155,6 +162,11 @@ cox_reg <- function(data,
   interaction <- .interaction_arg(substitute(interaction), env = parent.frame(), allow_null = TRUE)
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
+  show_sample <- .choice_arg(
+    substitute(show_sample),
+    env = parent.frame(),
+    choices = c("events", "n", "both", "none")
+  )
 
   if (!is.logical(model_stats) || length(model_stats) != 1L || is.na(model_stats)) {
     stop("`model_stats` must be TRUE or FALSE.", call. = FALSE)
@@ -179,6 +191,11 @@ cox_reg <- function(data,
   }
 
   format <- match.arg(format, c("flextable", "gt"))
+  show_sample_choices <- c("events", "n", "both", "none")
+  if (!is.character(show_sample) || length(show_sample) != 1L || !show_sample %in% show_sample_choices) {
+    stop("`show_sample` must be one of 'events', 'n', 'both', or 'none'.", call. = FALSE)
+  }
+  show_sample <- match.arg(show_sample, show_sample_choices)
   theme <- .resolve_theme(theme)
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
   fmt_class <- if (format == "gt") "gt_cox" else "ft_cox"
@@ -205,6 +222,7 @@ cox_reg <- function(data,
       multivariable = multivariable,
       format = format,
       theme = theme,
+      show_sample = show_sample,
       model_stats = model_stats,
       fmt_class = fmt_class
     ))

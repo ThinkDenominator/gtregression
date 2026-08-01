@@ -508,6 +508,19 @@ stratified_multi_reg(
   approach = "logit"
 )
 
+## Forest plot by stratum:
+## forest_df() accepts one stratified regression object at a time. The stratum
+## headers are shaded in forest_reg(), which makes it easier to scan the race
+## groups without confusing them with ordinary predictor rows.
+strat_forest_data <- forest_df(strat_multi)
+View(strat_forest_data)
+
+forest_reg(strat_forest_data)
+
+## If a reviewer needs more room for the confidence intervals, widen the CI
+## plotting column without changing the underlying estimates.
+forest_reg(strat_forest_data, ci_col_width = 24)
+
 
 ## 11. Model checks and selection --------------------------------------------
 

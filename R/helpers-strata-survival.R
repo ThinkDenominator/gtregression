@@ -57,6 +57,7 @@
                                     multivariable = FALSE,
                                     format = "flextable",
                                     theme = "minimal",
+                                    show_sample = "events",
                                     model_stats = FALSE,
                                     fmt_class = "ft_cox") {
   .run_stratified_survival_reg(
@@ -70,6 +71,7 @@
     multivariable = multivariable,
     format = format,
     theme = theme,
+    show_sample = show_sample,
     model_stats = model_stats,
     fmt_class = fmt_class,
     approach = "cox",
@@ -100,6 +102,7 @@
                                      distribution = "weibull",
                                      format = "flextable",
                                      theme = "minimal",
+                                     show_sample = "events",
                                      model_stats = FALSE,
                                      fmt_class = "ft_surv") {
   run_core <- function(data, time, event, exposures, adjust_for, interaction, multivariable) {
@@ -126,6 +129,7 @@
     multivariable = multivariable,
     format = format,
     theme = theme,
+    show_sample = show_sample,
     model_stats = model_stats,
     fmt_class = fmt_class,
     approach = "survreg",
@@ -156,6 +160,7 @@
                                          multivariable = FALSE,
                                          format = "flextable",
                                          theme = "minimal",
+                                         show_sample = "events",
                                          model_stats = FALSE,
                                          fmt_class,
                                          approach,
@@ -236,7 +241,10 @@
       td_by_stratum = tds,
       variable_labels = variable_labels
     )
-    wide <- .strata_add_survival_counts(built$wide, models)
+    wide <- .strata_filter_survival_sample_cols(
+      .strata_add_survival_counts(built$wide, models),
+      show_sample = show_sample
+    )
     spanners <- built$spanners
     tbl <- if (format == "gt") {
       .build_gt_strata_wide_multi(wide, spanners, effect_label, theme, .stratified_survival_footnotes(
@@ -249,6 +257,7 @@
         interaction = interaction,
         stratifier = stratifier,
         n_by_stratum = n_by_stratum,
+        show_sample = show_sample,
         extra_footnotes = extra_footnotes
       ))
     } else {
@@ -262,6 +271,7 @@
         interaction = interaction,
         stratifier = stratifier,
         n_by_stratum = n_by_stratum,
+        show_sample = show_sample,
         extra_footnotes = extra_footnotes
       ))
     }
@@ -276,7 +286,7 @@
       per_stratum = per_for_uni,
       variable_labels = variable_labels
     )
-    wide <- built$wide
+    wide <- .strata_filter_survival_sample_cols(built$wide, show_sample = show_sample)
     spanners <- built$spanners
     tbl <- if (format == "gt") {
       .build_gt_strata_wide_uni(wide, spanners, effect_label, theme, .stratified_survival_footnotes(
@@ -289,6 +299,7 @@
         interaction = interaction,
         stratifier = stratifier,
         n_by_stratum = n_by_stratum,
+        show_sample = show_sample,
         extra_footnotes = extra_footnotes
       ))
     } else {
@@ -302,6 +313,7 @@
         interaction = interaction,
         stratifier = stratifier,
         n_by_stratum = n_by_stratum,
+        show_sample = show_sample,
         extra_footnotes = extra_footnotes
       ))
     }
@@ -330,6 +342,7 @@
     format = format,
     source = source,
     stratified = TRUE,
+    show_sample = show_sample,
     adjusted_mode = adjusted_mode,
     multivariable = isTRUE(multivariable),
     adjust_for = if (adjusted_mode) unique(adjust_for) else NULL,
@@ -462,6 +475,7 @@
                                            interaction = NULL,
                                            stratifier,
                                            n_by_stratum,
+                                           show_sample = "events",
                                            extra_footnotes = NULL) {
   c(
     .abbrev_note(approach),
@@ -470,8 +484,55 @@
     if (isTRUE(adjusted_mode)) .adjustment_note(adjust_for) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
-    .n_note_multi_strata(stratifier, n_by_stratum),
+    .stratified_survival_sample_note(stratifier, n_by_stratum, show_sample),
     paste0("Event variable: ", event, " (1 = event, 0 = censored after internal coding).")
+  )
+}
+
+#' Keep only requested sample columns in stratified survival display tables
+#' @keywords internal
+#' @noRd
+.strata_filter_survival_sample_cols <- function(wide, show_sample = "events") {
+  if (!show_sample %in% c("events", "n", "both", "none")) {
+    stop("`show_sample` must be one of 'events', 'n', 'both', or 'none'.", call. = FALSE)
+  }
+
+  drop_prefix <- switch(
+    show_sample,
+    events = "..N__",
+    n = "..Events__",
+    both = character(0),
+    none = c("..N__", "..Events__")
+  )
+
+  if (!length(drop_prefix)) {
+    return(wide)
+  }
+
+  keep <- !Reduce(`|`, lapply(drop_prefix, function(prefix) startsWith(names(wide), prefix)))
+  out <- wide[, keep, drop = FALSE]
+  attr(out, "row_exposure") <- attr(wide, "row_exposure", exact = TRUE)
+  attr(out, "variable_labels") <- attr(wide, "variable_labels", exact = TRUE)
+  out
+}
+
+#' Footnote matching the displayed sample columns in stratified survival tables
+#' @keywords internal
+#' @noRd
+.stratified_survival_sample_note <- function(stratifier, n_by_stratum, show_sample) {
+  if (identical(show_sample, "none")) {
+    return(NULL)
+  }
+
+  event_note <- "Events are event counts in each stratum-specific model."
+  n_note <- .n_note_multi_strata(stratifier, n_by_stratum)
+
+  switch(
+    show_sample,
+    events = event_note,
+    n = n_note,
+    both = c(n_note, event_note),
+    NULL
   )
 }
 

@@ -116,12 +116,132 @@
   list(uni = got_uni, multi = got_multi, desc = got_desc)
 }
 
+.is_stratified_forest_input <- function(x) {
+  inherits(x, "gtregression") &&
+    !is.null(x$per_stratum) &&
+    any(c(
+      "stratified_uni_reg",
+      "stratified_multi_reg",
+      "stratified_cox_reg",
+      "stratified_surv_reg"
+    ) %in% class(x))
+}
+
+.forest_or <- function(a, b) {
+  if (!is.null(a)) a else b
+}
+
+.forest_stratum_object <- function(parent, x) {
+  if (inherits(x, "gtregression")) {
+    return(x)
+  }
+
+  out <- x
+  out$approach <- parent$approach
+  out$variable_labels <- parent$variable_labels
+  out$adjusted_mode <- .forest_or(parent$adjusted_mode, x$adjusted_mode)
+  out$multivariable <- .forest_or(parent$multivariable, x$multivariable)
+
+  if (inherits(parent, "stratified_multi_reg")) {
+    class(out) <- c("gtregression", "multi_reg", "gt_multi", class(out))
+  } else if (inherits(parent, "stratified_cox_reg")) {
+    class(out) <- c("gtregression", "cox_reg", "gt_cox", class(out))
+  } else if (inherits(parent, "stratified_surv_reg")) {
+    class(out) <- c("gtregression", "surv_reg", "gt_surv", class(out))
+  }
+
+  out
+}
+
+.forest_add_stratum_header <- function(df, label) {
+  header <- df[1, , drop = FALSE]
+  for (col in names(header)) {
+    if (is.numeric(header[[col]])) {
+      header[[col]] <- NA_real_
+    } else {
+      header[[col]] <- ""
+    }
+  }
+  header$Characteristic <- label
+
+  out <- rbind(header, df)
+  rownames(out) <- NULL
+
+  for (nm in c("est", "lo", "hi", "est2", "lo2", "hi2")) {
+    vals <- attr(df, nm, exact = TRUE)
+    if (!is.null(vals)) {
+      attr(out, nm) <- c(NA_real_, vals)
+    }
+  }
+  attr(out, "forest_meta") <- attr(df, "forest_meta", exact = TRUE)
+  out
+}
+
+.forest_bind_strata <- function(parts) {
+  all_cols <- unique(unlist(lapply(parts, names), use.names = FALSE))
+  meta <- attr(parts[[1]], "forest_meta", exact = TRUE)
+  attr_values <- lapply(c("est", "lo", "hi", "est2", "lo2", "hi2"), function(nm) {
+    unlist(lapply(parts, function(x) attr(x, nm, exact = TRUE)), use.names = FALSE)
+  })
+  names(attr_values) <- c("est", "lo", "hi", "est2", "lo2", "hi2")
+
+  parts <- lapply(parts, function(x) {
+    missing <- setdiff(all_cols, names(x))
+    for (col in missing) {
+      x[[col]] <- if (grepl("^se_", col)) NA_real_ else ""
+    }
+    x[, all_cols, drop = FALSE]
+  })
+
+  out <- do.call(rbind, parts)
+  rownames(out) <- NULL
+
+  for (nm in c("est", "lo", "hi", "est2", "lo2", "hi2")) {
+    vals <- attr_values[[nm]]
+    if (length(vals)) {
+      attr(out, nm) <- vals
+    }
+  }
+
+  attr(out, "forest_meta") <- meta
+  out
+}
+
+.forest_df_from_stratified <- function(x, digits = 2) {
+  strata <- x$per_stratum
+  if (!length(strata)) {
+    stop("`stratified` regression objects must contain at least one stratum.", call. = FALSE)
+  }
+
+  labels <- names(strata)
+  if (is.null(labels) || any(!nzchar(labels))) {
+    labels <- paste0("Stratum ", seq_along(strata))
+  }
+
+  stratifier <- .forest_or(x$by, "Stratum")
+  parts <- Map(function(item, label) {
+    stratum_object <- .forest_stratum_object(x, item)
+    forest_part <- forest_df(stratum_object, digits = digits)
+    .forest_add_stratum_header(forest_part, paste0(stratifier, " = ", label))
+  }, strata, labels)
+
+  out <- .forest_bind_strata(parts)
+  meta <- .forest_or(attr(out, "forest_meta", exact = TRUE), list())
+  meta$stratified <- TRUE
+  meta$stratifier <- stratifier
+  meta$strata <- labels
+  attr(out, "forest_meta") <- meta
+  out
+}
+
 #' Build a compatible data frame for forest plots
 #'
 #' Creates the tabular input used by \code{forest_reg()} from \code{uni_reg()},
 #' \code{multi_reg()}, and optionally \code{descriptive_table()} objects. This
 #' function is useful when users want to inspect, edit, or reuse the exact data
-#' that will be passed to the forest plot.
+#' that will be passed to the forest plot. Stratified regression objects are
+#' also supported when supplied one at a time; the returned data frame is grouped
+#' by stratum and can be passed directly to \code{forest_reg()}.
 #'
 #' @param uni A \code{gtregression} object from \code{uni_reg()}. If
 #'   \code{multi} is supplied without \code{uni}, the multivariable object is
@@ -165,13 +285,18 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
   }
   digits <- as.integer(digits)
 
-  for (obj in list(uni, multi, desc)) {
-    if (inherits(obj, "gtregression") && isTRUE(obj$stratified)) {
+  inputs_raw <- list(uni = uni, multi = multi, desc = desc)
+  supplied <- Filter(Negate(is.null), inputs_raw)
+  stratified_inputs <- Filter(.is_stratified_forest_input, supplied)
+  if (length(stratified_inputs)) {
+    if (length(stratified_inputs) > 1L || length(supplied) > 1L) {
       stop(
-        "forest_df() does not support stratified regression objects yet.",
+        "forest_df() supports one stratified regression object at a time. ",
+        "Do not combine stratified objects with `multi`, `desc`, or another stratified object.",
         call. = FALSE
       )
     }
+    return(.forest_df_from_stratified(stratified_inputs[[1]], digits = digits))
   }
 
   `%||%`   <- function(a,b) if (!is.null(a)) a else b

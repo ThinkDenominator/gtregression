@@ -17,6 +17,7 @@ surv_reg(
   distribution = "weibull",
   format = c("flextable", "gt"),
   theme = c("minimal"),
+  show_sample = "events",
   model_stats = FALSE
 )
 }
@@ -68,6 +69,11 @@ accepted.}
 
 \item{theme}{Table styling preset.}
 
+\item{show_sample}{For stratified parametric survival tables, controls which
+sample-size columns are shown in the publication table. One of
+\code{"events"} (default), \code{"n"}, \code{"both"}, or \code{"none"}.
+Model statistics, when requested, still retain both N and event counts.}
+
 \item{model_stats}{Logical; if \code{TRUE}, extract model-fit statistics
 including AIC, BIC, log-likelihood, scale, number of events, and N.}
 }
@@ -111,10 +117,12 @@ Interaction terms specified via \code{interaction} are included using
 standard formula expansion (for example, \code{trt*prior}). Interaction
 effects are displayed as additional rows beneath the corresponding exposure.
 
-Stratified parametric survival tables include model \code{N} and event
-counts within each stratum. Crude stratified tables calculate these counts
-for each exposure-specific model; adjusted and multivariable stratified
-tables use the corresponding fitted model within each stratum.
+Stratified parametric survival tables show event counts by default. Use
+\code{show_sample = "n"}, \code{show_sample = "both"}, or
+\code{show_sample = "none"} to control the displayed sample columns. Crude
+stratified tables calculate these counts for each exposure-specific model;
+adjusted and multivariable stratified tables use the corresponding fitted
+model within each stratum.
 
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the

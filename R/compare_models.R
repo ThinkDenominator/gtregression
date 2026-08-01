@@ -50,11 +50,14 @@
 #' Likelihood-ratio p-values are meaningful only for nested models fitted to
 #' the same analysis sample. \code{compare_models()} checks whether the fitted
 #' models appear to use the same analysis sample using retained model row
-#' identifiers when available; otherwise it compares N and event counts. AIC,
-#' BIC, log-likelihood, and likelihood-ratio statistics remain visible when
-#' samples differ, but rendered tables promote the caution message visually
-#' before routine footnotes. Likelihood-based comparisons should then be
-#' interpreted descriptively rather than as formal model-selection evidence.
+#' identifiers when available; otherwise it compares N and event counts. It
+#' also checks whether sequential model pairs appear to be nested when
+#' \code{nested = TRUE}. Rendered warnings are context-aware: no warning about
+#' different analysis samples is shown when the compared models use the same
+#' observations, and no nested-model warning is shown when sequential models
+#' appear nested. AIC, BIC, log-likelihood, and likelihood-ratio statistics
+#' remain visible when warnings are needed, but should then be interpreted with
+#' the displayed caution.
 #'
 #' @examples
 #' data("data_lungcancer", package = "gtregression")
@@ -719,22 +722,42 @@ compare_models <- function(...,
 
 #' @keywords internal
 #' @noRd
+.compare_nested_status_note <- function(body, nested = TRUE) {
+  if (!isTRUE(nested)) {
+    return("Nested-model status: not assessed because `nested = FALSE`.")
+  }
+
+  checked <- body$nested_comparison[!is.na(body$nested_comparison)]
+  if (!length(checked)) {
+    return("Nested-model status: not assessed for the first model.")
+  }
+
+  if (any(checked %in% FALSE)) {
+    return("Nested-model status: one or more sequential model comparisons are not nested.")
+  }
+
+  "Nested-model status: sequential models are nested."
+}
+
+#' @keywords internal
+#' @noRd
 .compare_models_notes <- function(body,
                                   nested = TRUE,
                                   primary_exposure = NULL,
                                   comparison_status = NULL) {
   notes <- c(
     .compare_status_note(comparison_status),
+    .compare_nested_status_note(body, nested = nested),
     "Compare prespecified candidate models; lower AIC or BIC indicates better relative fit among the compared models."
   )
 
   warnings <- character(0)
 
-  if (isFALSE(comparison_status$same_sample)) {
+  if (!is.null(comparison_status) && isFALSE(comparison_status$same_sample)) {
     warnings <- c(
       warnings,
       paste0(
-        "Caution: Models were fitted to different analysis samples because of missing data or differing inclusion criteria. ",
+        "Different analysis sample: Models were fitted to different analysis samples because of missing data or differing inclusion criteria. ",
         "AIC, BIC, log-likelihood and likelihood-ratio statistics are presented for completeness but should not be interpreted as formal model-selection criteria across different datasets."
       )
     )
@@ -745,15 +768,10 @@ compare_models <- function(...,
     )
   }
 
-  notes <- c(
-    notes,
-    "Likelihood-ratio p-values are sequential and should be interpreted only for nested models fitted to the same analysis sample."
-  )
-
   if (isTRUE(nested) && any(body$nested_comparison %in% FALSE)) {
     warnings <- c(
       warnings,
-      "Caution: One or more sequential model pairs do not appear to be nested based on their model terms; likelihood-ratio statistics for those comparisons should be interpreted with caution."
+      "Non-nested comparison: Likelihood-ratio statistics should be interpreted with caution because one or more sequential model pairs do not appear to be nested based on their model terms."
     )
   }
 
@@ -791,6 +809,8 @@ compare_models <- function(...,
   }
   warnings <- table_notes$warnings
   notes <- table_notes$notes
+  status_notes <- notes[grepl("^(Comparison status|Nested-model status):", notes)]
+  routine_notes <- notes[!notes %in% status_notes]
 
   if (format == "gt") {
     tbl <- gt::gt(display) |>
@@ -802,13 +822,17 @@ compare_models <- function(...,
         locations = gt::cells_column_labels()
       )
 
+    if (length(status_notes)) {
+      tbl <- gt::tab_source_note(tbl, gt::md(paste(status_notes, collapse = "<br>")))
+    }
+
     if (length(warnings)) {
       warning_md <- paste(paste0("**", warnings, "**"), collapse = "<br>")
       tbl <- gt::tab_source_note(tbl, gt::md(warning_md))
     }
 
-    if (length(notes)) {
-      tbl <- gt::tab_source_note(tbl, gt::md(paste(notes, collapse = "<br>")))
+    if (length(routine_notes)) {
+      tbl <- gt::tab_source_note(tbl, gt::md(paste(routine_notes, collapse = "<br>")))
     }
 
     tbl <- .compact_gt_source_notes(tbl)
@@ -852,16 +876,17 @@ compare_models <- function(...,
   if ("compact" %in% theme) {
     ft <- flextable::padding(ft, padding = 2, part = "body")
   }
-  footer_lines <- c(warnings, notes)
+  footer_lines <- c(status_notes, warnings, routine_notes)
   ft <- flextable::add_footer_lines(ft, values = footer_lines)
   if (length(warnings)) {
-    warning_rows <- seq_len(length(warnings))
+    warning_rows <- length(status_notes) + seq_len(length(warnings))
     ft <- flextable::bold(ft, i = warning_rows, bold = TRUE, part = "footer")
     ft <- flextable::bg(ft, i = warning_rows, bg = "#fff3cd", part = "footer")
     ft <- flextable::color(ft, i = warning_rows, color = "#5f4700", part = "footer")
   }
   ft <- .compact_flex_footer(ft)
-  note_rows <- if (length(notes)) seq(length(warnings) + 1L, length(footer_lines)) else integer(0)
+  note_rows <- if (length(footer_lines)) seq_len(length(footer_lines)) else integer(0)
+  note_rows <- setdiff(note_rows, if (length(warnings)) warning_rows else integer(0))
   if (length(note_rows)) {
     ft <- flextable::italic(ft, i = note_rows, italic = TRUE, part = "footer")
   }

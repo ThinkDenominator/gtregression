@@ -380,11 +380,12 @@ test_that("surv_reg supports stratified crude and adjusted survival tables", {
   expect_s3_class(crude, "surv_reg")
   expect_equal(crude$source, "stratified_surv_reg")
   expect_true(crude$stratified)
+  expect_equal(crude$show_sample, "events")
   expect_false(crude$adjusted_mode)
   expect_equal(crude$by, "trt")
   expect_equal(crude$distribution, "weibull")
   expect_equal(crude$levels, c("Standard treatment", "Test treatment"))
-  expect_true("..N__Standard treatment" %in% names(crude$table_display))
+  expect_false("..N__Standard treatment" %in% names(crude$table_display))
   expect_true("..Events__Standard treatment" %in% names(crude$table_display))
   expect_true("..eff__Standard treatment" %in% names(crude$table_display))
   expect_named(crude$per_stratum, c("Standard treatment", "Test treatment"))
@@ -404,12 +405,57 @@ test_that("surv_reg supports stratified crude and adjusted survival tables", {
   expect_true(adjusted$adjusted_mode)
   expect_equal(adjusted$adjust_for, c("age", "karno"))
   expect_equal(adjusted$distribution, "lognormal")
-  expect_true("..N__Standard treatment" %in% names(adjusted$table_display))
+  expect_false("..N__Standard treatment" %in% names(adjusted$table_display))
   expect_true("..Events__Standard treatment" %in% names(adjusted$table_display))
   expect_true("..eff__Standard treatment" %in% names(adjusted$table_display))
   expect_s3_class(adjusted$model_stats, "data.frame")
   expect_true(all(c("stratum", "model", "distribution", "AIC", "events", "n") %in%
                     names(adjusted$model_stats)))
+})
+
+test_that("surv_reg controls displayed sample columns in stratified tables", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+
+  with_n <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = celltype,
+    stratifier = trt,
+    show_sample = n
+  )
+  expect_true("..N__Standard treatment" %in% names(with_n$table_display))
+  expect_false("..Events__Standard treatment" %in% names(with_n$table_display))
+
+  with_both <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = celltype,
+    stratifier = trt,
+    show_sample = both
+  )
+  expect_true("..N__Standard treatment" %in% names(with_both$table_display))
+  expect_true("..Events__Standard treatment" %in% names(with_both$table_display))
+
+  with_none <- surv_reg(
+    data = df,
+    time = time,
+    event = status,
+    exposures = celltype,
+    stratifier = trt,
+    show_sample = none
+  )
+  expect_false(any(startsWith(names(with_none$table_display), "..N__")))
+  expect_false(any(startsWith(names(with_none$table_display), "..Events__")))
+  expect_true("..eff__Standard treatment" %in% names(with_none$table_display))
+
+  expect_error(
+    surv_reg(df, time = time, event = status, exposures = celltype, stratifier = trt, show_sample = "bad"),
+    "show_sample"
+  )
 })
 
 test_that("surv_reg supports stratified multivariable survival tables", {
@@ -429,16 +475,17 @@ test_that("surv_reg supports stratified multivariable survival tables", {
 
   expect_s3_class(res, "stratified_surv_reg")
   expect_true(res$multivariable)
+  expect_equal(res$show_sample, "events")
   expect_false(res$adjusted_mode)
   expect_named(res$models, c("Standard treatment", "Test treatment"))
   expect_named(res$models[["Standard treatment"]], "multivariable_model")
-  expect_true("..N__Standard treatment" %in% names(res$table_display))
+  expect_false("..N__Standard treatment" %in% names(res$table_display))
   expect_true("..Events__Standard treatment" %in% names(res$table_display))
   expect_true("..eff__Standard treatment" %in% names(res$table_display))
   expect_true(any(trimws(res$table_display$Characteristic) %in% c("Age", "age")))
 })
 
-test_that("surv_reg validates stratifier inputs and rejects stratified plot helpers", {
+test_that("surv_reg validates stratifier inputs and supports stratified forest data", {
   skip_if_not_installed("survival")
 
   df <- lung_surv_data()
@@ -471,5 +518,11 @@ test_that("surv_reg validates stratifier inputs and rejects stratified plot help
 
   expect_error(plot_reg(stratified), "does not support stratified")
   expect_error(plot_reg_combine(stratified, stratified), "does not support stratified")
-  expect_error(forest_df(stratified), "does not support stratified")
+
+  forest_data <- forest_df(stratified)
+  expect_s3_class(forest_data, "data.frame")
+  expect_true("Time Ratio (95% CI)" %in% names(forest_data))
+  expect_true(any(forest_data$Characteristic == "trt = Standard treatment"))
+  expect_equal(length(attr(forest_data, "est")), nrow(forest_data))
+  expect_equal(attr(forest_data, "forest_meta")$stratifier, "trt")
 })

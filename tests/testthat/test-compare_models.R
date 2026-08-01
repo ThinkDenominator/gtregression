@@ -31,6 +31,10 @@ test_that("compare_models reports multi_reg statistics without refitting", {
   expect_equal(res$comparison_status$status, "Same analysis sample")
   expect_equal(unique(res$table_body$comparison_status), "Same analysis sample")
   expect_true(res$table_body$nested_comparison[2])
+  expect_false(any(grepl("Different analysis sample", res$comparison_warnings, fixed = TRUE)))
+  expect_false(any(grepl("Non-nested comparison", res$comparison_warnings, fixed = TRUE)))
+  expect_true(any(grepl("Comparison status: Same analysis sample", res$footnotes, fixed = TRUE)))
+  expect_true(any(grepl("Nested-model status: sequential models are nested", res$footnotes, fixed = TRUE)))
   expect_true(is.na(res$table_body$LR_chisq[1]))
   expect_true(is.finite(res$table_body$LR_chisq[2]))
   expect_equal(sum(res$table_body$best_AIC), 1)
@@ -88,8 +92,30 @@ test_that("compare_models flags different analysis samples without hiding statis
   expect_true(is.finite(res$table_body$primary_estimate[2]))
   expect_true(is.finite(res$table_body$primary_pct_change[2]))
   expect_true(length(res$comparison_warnings) >= 1)
-  expect_match(res$comparison_warnings[1], "Caution: Models were fitted to different analysis samples")
-  expect_equal(res$footnotes[1], res$comparison_warnings[1])
+  expect_match(res$comparison_warnings[1], "Different analysis sample: Models were fitted")
+  expect_false(any(grepl("Non-nested comparison", res$comparison_warnings, fixed = TRUE)))
+  expect_true(any(grepl("Comparison status: Different analysis sample", res$footnotes, fixed = TRUE)))
+  expect_true(any(grepl("Nested-model status: sequential models are nested", res$footnotes, fixed = TRUE)))
+})
+
+test_that("compare_models only warns about non-nested models when needed", {
+  df <- data.frame(
+    y = c(0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0),
+    x1 = c(1, 2, 1, 3, 4, 2, 5, 1, 4, 2, 3, 5),
+    x2 = c(0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0),
+    x3 = c(1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6)
+  )
+
+  m0 <- multi_reg(data = df, outcome = y, exposures = c(x1, x2), approach = logit)
+  m1 <- multi_reg(data = df, outcome = y, exposures = c(x1, x3), approach = logit)
+
+  res <- compare_models(m0, m1, format = tibble)
+
+  expect_equal(res$comparison_status$status, "Same analysis sample")
+  expect_false(res$table_body$nested_comparison[2])
+  expect_false(any(grepl("Different analysis sample", res$comparison_warnings, fixed = TRUE)))
+  expect_true(any(grepl("Non-nested comparison", res$comparison_warnings, fixed = TRUE)))
+  expect_true(any(grepl("Nested-model status: one or more sequential model comparisons are not nested", res$footnotes, fixed = TRUE)))
 })
 
 test_that("compare_models reports Cox events and concordance from cox_reg objects", {
@@ -173,8 +199,9 @@ test_that("compare_models renders caution notes prominently in flextable output"
   res <- compare_models(m0, m1, primary_exposure = x1)
 
   expect_s3_class(res$table, "flextable")
-  expect_match(res$table$footer$dataset$Model[1], "Caution: Models were fitted to different analysis samples")
-  expect_match(res$table$footer$dataset$Model[2], "Comparison status: Different analysis sample")
+  expect_match(res$table$footer$dataset$Model[1], "Comparison status: Different analysis sample")
+  expect_match(res$table$footer$dataset$Model[2], "Nested-model status: sequential models are nested")
+  expect_match(res$table$footer$dataset$Model[3], "Different analysis sample: Models were fitted")
 })
 
 test_that("compare_models renders caution notes without raw HTML in gt output", {
@@ -192,7 +219,8 @@ test_that("compare_models renders caution notes without raw HTML in gt output", 
   res <- compare_models(m0, m1, primary_exposure = x1, format = gt)
   source_notes <- unlist(res$table$`_source_notes`, recursive = TRUE, use.names = FALSE)
 
-  expect_true(any(grepl("Caution: Models were fitted", source_notes, fixed = TRUE)))
+  expect_true(any(grepl("Comparison status: Different analysis sample", source_notes, fixed = TRUE)))
+  expect_true(any(grepl("Different analysis sample: Models were fitted", source_notes, fixed = TRUE)))
   expect_false(any(grepl("<div", source_notes, fixed = TRUE)))
   expect_false(any(grepl("background-color", source_notes, fixed = TRUE)))
 })
