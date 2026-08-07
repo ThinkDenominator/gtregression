@@ -183,7 +183,7 @@ test_that("plot_reg uses p values for linear significance", {
   expect_true(sig1 >= sig0)
 })
 
-test_that("plot_reg validates unsupported inputs", {
+test_that("plot_reg supports stratified objects and validates unsupported inputs", {
   df <- birthwt_plot_data()
 
   stratified <- suppressMessages(
@@ -196,8 +196,81 @@ test_that("plot_reg validates unsupported inputs", {
     )
   )
 
+  p <- plot_reg(stratified)
+
+  expect_s3_class(p, "ggplot")
+  expect_true("stratum" %in% names(p$data))
+  expect_equal(levels(p$data$stratum), levels(df$race))
+  expect_true(any(vapply(p$facet$params$facets, rlang::as_label, character(1)) == "stratum"))
+
   expect_error(plot_reg(mtcars), "gtregression object")
-  expect_error(plot_reg(stratified), "does not support stratified")
+})
+
+test_that("plot_reg supports adjusted stratified and survival outputs consistently", {
+  skip_if_not_installed("survival")
+
+  df <- birthwt_plot_data()
+  stratified_multi <- suppressMessages(
+    stratified_multi_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("smoke", "ht"),
+      adjust_for = c("age", "lwt"),
+      stratifier = "race",
+      approach = logit
+    )
+  )
+
+  p_multi <- plot_reg(
+    stratified_multi,
+    show_ref = FALSE,
+    log_x = TRUE,
+    xlim = c(0.2, 20),
+    breaks = c(0.5, 1, 2, 4, 8)
+  )
+
+  expect_s3_class(p_multi, "ggplot")
+  expect_match(p_multi$labels$x, "Adjusted Odds Ratio", fixed = TRUE)
+  expect_true("stratum" %in% names(p_multi$data))
+  expect_equal(levels(p_multi$data$stratum), levels(df$race))
+  expect_equal(p_multi$coordinates$limits$x, c(0.2, 20))
+  expect_equal(p_multi$scales$get_scales("x")$breaks, c(0.5, 1, 2, 4, 8))
+  expect_true(any(p_multi$data$label == "smoke" & p_multi$data$is_header))
+  expect_false(any(grepl("(Ref.)", p_multi$data$label_clean, fixed = TRUE)))
+
+  lung <- data_lungcancer |>
+    dplyr::mutate(
+      trt = factor(trt, levels = c(1, 2),
+                   labels = c("Standard treatment", "Test treatment")),
+      prior = factor(prior, levels = c(0, 10), labels = c("No", "Yes"))
+    )
+
+  stratified_cox <- cox_reg(
+    data = lung,
+    time = time,
+    event = status,
+    exposures = c(celltype, prior),
+    adjust_for = c(age, karno),
+    stratifier = trt
+  )
+  stratified_surv <- surv_reg(
+    data = lung,
+    time = time,
+    event = status,
+    exposures = c(celltype, prior),
+    adjust_for = c(age, karno),
+    stratifier = trt
+  )
+
+  p_cox <- plot_reg(stratified_cox, log_x = TRUE)
+  p_surv <- plot_reg(stratified_surv, log_x = TRUE)
+
+  expect_match(p_cox$labels$x, "Adjusted Hazard Ratio", fixed = TRUE)
+  expect_match(p_surv$labels$x, "Adjusted Time Ratio", fixed = TRUE)
+  expect_equal(levels(p_cox$data$stratum), levels(lung$trt))
+  expect_equal(levels(p_surv$data$stratum), levels(lung$trt))
+  expect_true(any(vapply(p_cox$facet$params$facets, rlang::as_label, character(1)) == "stratum"))
+  expect_true(any(vapply(p_surv$facet$params$facets, rlang::as_label, character(1)) == "stratum"))
 })
 
 test_that("plot_reg validates malformed gtregression objects", {

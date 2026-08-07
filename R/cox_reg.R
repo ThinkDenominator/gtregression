@@ -38,6 +38,9 @@
 #'   when requested, still retain both N and event counts.
 #' @param model_stats Logical; if \code{TRUE}, extract model-fit statistics
 #'   including AIC, BIC, log-likelihood, concordance, number of events, and N.
+#' @param show_ref Logical; if \code{TRUE} (default), display reference-category
+#'   rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
+#'   reminds users to use \code{show_ref = TRUE} when reference rows are needed.
 #'
 #' @details
 #' By default, \code{cox_reg()} keeps the exposure-by-exposure workflow:
@@ -148,7 +151,8 @@ cox_reg <- function(data,
                     format = c("flextable", "gt"),
                     theme = c("minimal"),
                     show_sample = "events",
-                    model_stats = FALSE) {
+                    model_stats = FALSE,
+                    show_ref = TRUE) {
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
@@ -171,6 +175,7 @@ cox_reg <- function(data,
   if (!is.logical(model_stats) || length(model_stats) != 1L || is.na(model_stats)) {
     stop("`model_stats` must be TRUE or FALSE.", call. = FALSE)
   }
+  .validate_show_ref(show_ref)
   if (!is.null(multivariate)) {
     if (!is.logical(multivariate) || length(multivariate) != 1L || is.na(multivariate)) {
       stop("`multivariate` must be TRUE or FALSE.", call. = FALSE)
@@ -224,6 +229,7 @@ cox_reg <- function(data,
       theme = theme,
       show_sample = show_sample,
       model_stats = model_stats,
+      show_ref = show_ref,
       fmt_class = fmt_class
     ))
   }
@@ -249,7 +255,8 @@ cox_reg <- function(data,
       time = time,
       event = event,
       effect_label = effect_label,
-      variable_labels = variable_labels
+      variable_labels = variable_labels,
+      show_ref = show_ref
     )
     .must_be_display_df(display_df)
   } else {
@@ -258,14 +265,15 @@ cox_reg <- function(data,
       core$data_clean,
       outcome = event,
       effect_label = effect_label,
-      variable_labels = variable_labels
+      variable_labels = variable_labels,
+      show_ref = show_ref
     )
     .must_be_display_df_multi(display_df)
   }
 
   footnotes <- c(
     .abbrev_note("cox"),
-    if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
+    if (isTRUE(show_ref) && any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
     if (adjusted_mode) .adjustment_note(adjust_for) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
@@ -274,6 +282,8 @@ cox_reg <- function(data,
       " (1 = event, 0 = censored after internal coding)."
     )
   )
+
+  .message_hidden_ref_rows("cox_reg", core$table_body, show_ref)
 
   tbl <- if (format == "gt") {
     if (crude_mode) {

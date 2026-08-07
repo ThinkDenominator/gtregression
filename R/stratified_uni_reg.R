@@ -17,6 +17,9 @@
 #' @param format Output table format; one of \code{"flextable"} (default) or
 #'   \code{"gt"}.
 #' @param theme Table styling preset or theme primitives.
+#' @param show_ref Logical; if \code{TRUE} (default), display reference-category
+#'   rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
+#'   reminds users to use \code{show_ref = TRUE} when reference rows are needed.
 #'
 #' @details
 #' If exposure variables have a \code{"label"} attribute, for example from
@@ -85,7 +88,8 @@
 stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                approach = "logit",
                                format   = c("flextable","gt"),
-                               theme    = c("minimal")) {
+                               theme    = c("minimal"),
+                               show_ref = TRUE) {
   outcome <- .vars_arg(substitute(outcome), env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
   stratifier <- .vars_arg(substitute(stratifier), env = parent.frame())
@@ -97,6 +101,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   approach <- .normalize_approach(approach)
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
+  .validate_show_ref(show_ref)
 
   format <- match.arg(format, c("flextable","gt"))
   theme  <- .resolve_theme(theme)
@@ -115,7 +120,15 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     message("  > Stratum: ", stratifier, " = ", lv)
     dlev <- data[data[[stratifier]] == lv, , drop = FALSE]
     res  <- tryCatch(
-      uni_reg(dlev, outcome, exposures, approach = approach, format = format, theme = theme),
+      suppressMessages(uni_reg(
+        dlev,
+        outcome,
+        exposures,
+        approach = approach,
+        format = format,
+        theme = theme,
+        show_ref = show_ref
+      )),
       error = function(e) { warning("Skipping stratum ", lv, ": ", e$message, call. = FALSE); NULL }
     )
     if (!is.null(res)) per_stratum[[as.character(lv)]] <- res
@@ -128,7 +141,8 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     exposures,
     stratifier,
     per_stratum,
-    variable_labels = variable_labels
+    variable_labels = variable_labels,
+    show_ref = show_ref
   )
   wide      <- built$wide
   spanners  <- built$spanners
@@ -136,7 +150,12 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     lapply(per_stratum, function(x) x$table_body$ref %in% TRUE),
     use.names = FALSE
   ))
-  footnotes <- c(.abbrev_note(approach), if (has_ref) .ref_note() else NULL)
+  .message_hidden_ref_rows(
+    "stratified_uni_reg",
+    do.call(rbind, lapply(per_stratum, `[[`, "table_body")),
+    show_ref
+  )
+  footnotes <- c(.abbrev_note(approach), if (isTRUE(show_ref) && has_ref) .ref_note() else NULL)
   eff_lab   <- .get_effect_label(approach)
 
   tbl <- if (format == "gt") {

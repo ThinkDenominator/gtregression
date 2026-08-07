@@ -286,6 +286,7 @@ descriptive_table <- function(data,
   }
   # ---- construct long body (header + levels; NO N CELLS) ----
   body_rows <- list()
+  compact_dichotomous_vars <- character()
   for (v in exposures) {
     x <- data[[v]]
     is_cat <- is.factor(x) || is.character(x) || is_forced_categorical(v)
@@ -293,6 +294,7 @@ descriptive_table <- function(data,
 
     if (is_bin && show_dichotomous == "single_row") {
       pick <- get_single_level(v); if (is.na(pick) || !nzchar(pick)) pick <- pick_single_level(x)
+      compact_dichotomous_vars <- c(compact_dichotomous_vars, v)
       body_rows[[length(body_rows)+1]] <- data.frame(
         var=v, level=pick, type="dichotomous", stringsAsFactors=FALSE
       )
@@ -328,6 +330,14 @@ descriptive_table <- function(data,
     }
   }
   table_body <- do.call(rbind, body_rows)
+  if (length(compact_dichotomous_vars)) {
+    message(
+      "descriptive_table(): dichotomous variables are displayed as ",
+      "single rows for ",
+      paste(unique(compact_dichotomous_vars), collapse = ", "),
+      ". To display all levels, use `show_dichotomous = \"all_levels\"`."
+    )
+  }
 
   # ---- display skeleton ----
   display <- do.call(rbind, lapply(

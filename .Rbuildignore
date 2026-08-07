@@ -23,6 +23,7 @@
 ^\.zenodo\.json$
 ^codecov\.yml$
 ^_pkgdown\.yml$
+^netlify\.toml$
 ^pkgdown$
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$

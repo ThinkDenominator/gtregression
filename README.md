@@ -261,59 +261,59 @@ publication table:
 <tr>
 <td>First workflow</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/gtregression-intro.html">Start
+href="https://gtregression.thinkdenominator.com/articles/gtregression-intro.html">Start
 Here</a></td>
 </tr>
 <tr>
 <td>Descriptive summaries</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/descriptive-tables.html">Descriptive
+href="https://gtregression.thinkdenominator.com/articles/descriptive-tables.html">Descriptive
 Tables</a></td>
 </tr>
 <tr>
 <td>Regression tables</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/regression-tables.html">Regression
+href="https://gtregression.thinkdenominator.com/articles/regression-tables.html">Regression
 Tables</a></td>
 </tr>
 <tr>
 <td>Survival analysis</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/survival-analysis.html">Survival
+href="https://gtregression.thinkdenominator.com/articles/survival-analysis.html">Survival
 Analysis</a></td>
 </tr>
 <tr>
 <td>Causal mediation</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/causal-mediation.html">Causal
+href="https://gtregression.thinkdenominator.com/articles/causal-mediation.html">Causal
 Mediation</a></td>
 </tr>
 <tr>
 <td>Visualise estimates</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/visualise-results.html">Visualise
+href="https://gtregression.thinkdenominator.com/articles/visualise-results.html">Visualise
 Results</a></td>
 </tr>
 <tr>
 <td>Stratified models</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/stratified-analysis.html">Stratified
+href="https://gtregression.thinkdenominator.com/articles/stratified-analysis.html">Stratified
 Analysis</a></td>
 </tr>
 <tr>
 <td>Diagnostics and selection</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/diagnostics-selection.html">Diagnostics</a></td>
+href="https://gtregression.thinkdenominator.com/articles/diagnostics-selection.html">Diagnostics</a></td>
 </tr>
 <tr>
 <td>Confounding and interaction</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/confounding-interaction.html">Interpret</a></td>
+href="https://gtregression.thinkdenominator.com/articles/confounding-interaction.html">Interpret</a></td>
 </tr>
 <tr>
 <td>Merge and export</td>
 <td><a
-href="https://thinkdenominator.github.io/gtregression/articles/customize-export.html">Customize
+href="https://gtregression.thinkdenominator.com/articles/customize-export.html">Customize
 and Export</a></td>
 </tr>
 </tbody>

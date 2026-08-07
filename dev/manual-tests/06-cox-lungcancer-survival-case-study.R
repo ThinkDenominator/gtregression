@@ -802,6 +802,58 @@ forest_reg(
 )
 
 
+## 19. Stratified Cox regression ---------------------------------------------
+
+## Question:
+## Do the hazard ratios tell the same story among patients with and without
+## prior therapy? The stratifier is not part of the fitted model; it splits the
+## analysis into separate stratum-specific Cox models.
+
+cox_stratified_crude <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, karno, age),
+  stratifier = prior
+)
+
+cox_stratified_crude
+
+cox_stratified_adjusted <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype),
+  adjust_for = c(age, karno),
+  stratifier = prior,
+  show_sample = events
+)
+
+cox_stratified_adjusted
+
+## Quick/PPT-style display:
+## plot_reg() accepts one stratified Cox object and facets by stratum. Use
+## log_x = TRUE because HRs are ratio measures.
+plot_reg(
+  cox_stratified_crude,
+  log_x = TRUE,
+  title = "Crude hazard ratios by prior therapy"
+)
+
+plot_reg(
+  cox_stratified_adjusted,
+  log_x = TRUE,
+  title = "Adjusted hazard ratios by prior therapy"
+)
+
+## plot_reg_combine() is intentionally not used for stratified objects. For
+## publication, use forest_df() plus forest_reg() with one stratified object.
+cox_stratified_forest_data <- forest_df(cox_stratified_adjusted)
+cox_stratified_forest_data
+
+forest_reg(cox_stratified_forest_data)
+
+
 ## 20. Model comparison for prespecified Cox models ---------------------------
 
 ## compare_models() is for models the analyst has already chosen and fitted.
@@ -958,7 +1010,10 @@ save_docx(
 ## - merge_tables() can combine descriptive, crude HR, and adjusted HR outputs.
 ## - plot_reg() and plot_reg_combine() work with Cox HR outputs.
 ## - plot_reg() respects show_ref = FALSE, xlim, and breaks for Cox HR plots.
+## - plot_reg() draws faceted plots for one stratified Cox object.
+## - plot_reg_combine() is intentionally reserved for non-stratified Cox objects.
 ## - forest_df() and forest_reg() work with Cox HR outputs.
+## - forest_df() and forest_reg() work with one stratified Cox object.
 ## - forest_reg(side = "left") works with Cox forest tables.
 ## - compare_models() reports Cox N, events, AIC/BIC, log-likelihood, and concordance.
 ## - compare_models(primary_exposure = ...) reports the selected HR and percentage change.

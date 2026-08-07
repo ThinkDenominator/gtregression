@@ -60,17 +60,23 @@ test_that("descriptive_table handles dichotomous single-row values", {
     formula = factor(c("Low", "High", "High", "Low"))
   )
 
-  tbl_named <- descriptive_table(
-    df,
-    "named",
-    show_dichotomous = "single_row",
-    value = list(named = "Yes")
+  expect_message(
+    tbl_named <- descriptive_table(
+      df,
+      "named",
+      show_dichotomous = "single_row",
+      value = list(named = "Yes")
+    ),
+    "show_dichotomous = \"all_levels\""
   )
-  tbl_formula <- descriptive_table(
-    df,
-    "formula",
-    show_dichotomous = "single_row",
-    value = list(formula ~ "High")
+  expect_message(
+    tbl_formula <- descriptive_table(
+      df,
+      "formula",
+      show_dichotomous = "single_row",
+      value = list(formula ~ "High")
+    ),
+    "show_dichotomous = \"all_levels\""
   )
 
   expect_equal(tbl_named$table_display$Characteristic, "named")
@@ -86,9 +92,15 @@ test_that("descriptive_table chooses sensible default single-row levels", {
     char_var = c("a", "b", "a")
   )
 
-  tbl_logical <- descriptive_table(df, "logical_var", show_dichotomous = "single_row")
-  tbl_numeric <- descriptive_table(df, "numeric_var", show_dichotomous = "single_row")
-  tbl_char <- descriptive_table(df, "char_var", show_dichotomous = "single_row")
+  tbl_logical <- suppressMessages(
+    descriptive_table(df, "logical_var", show_dichotomous = "single_row")
+  )
+  tbl_numeric <- suppressMessages(
+    descriptive_table(df, "numeric_var", show_dichotomous = "single_row")
+  )
+  tbl_char <- suppressMessages(
+    descriptive_table(df, "char_var", show_dichotomous = "single_row")
+  )
 
   expect_equal(tbl_logical$table_display$Characteristic, "logical_var")
   expect_equal(tbl_numeric$table_display$Characteristic, "numeric_var")
@@ -105,14 +117,17 @@ test_that("descriptive_table single-row dichotomous variables are compact and or
     ht = factor(c("No", "No", "Yes", "Yes"), levels = c("No", "Yes"))
   )
 
-  tbl <- descriptive_table(
-    df,
-    exposures = c("smoke", "ht"),
-    by = "group",
-    show_dichotomous = "single_row",
-    value = list(smoke = "Yes", ht = "Yes"),
-    show_overall = "last",
-    percent = "row"
+  expect_message(
+    tbl <- descriptive_table(
+      df,
+      exposures = c("smoke", "ht"),
+      by = "group",
+      show_dichotomous = "single_row",
+      value = list(smoke = "Yes", ht = "Yes"),
+      show_overall = "last",
+      percent = "row"
+    ),
+    "smoke, ht"
   )
 
   expect_equal(tbl$table_display$Characteristic, c("smoke", "ht"))

@@ -103,6 +103,30 @@ test_that("stratified_multi_reg preserves factor strata order and excludes missi
   expect_true(all(!grepl("NA", names(res$table_display), fixed = TRUE)))
 })
 
+test_that("stratified_multi_reg explains how to show reference rows when hidden", {
+  df <- birthwt_strata_multi_data()
+
+  expect_message(
+    res <- stratified_multi_reg(
+      data = df,
+      outcome = low,
+      exposures = smoke,
+      stratifier = ht,
+      adjust_for = age,
+      approach = logit,
+      show_ref = FALSE
+    ),
+    "To display Ref., use `show_ref = TRUE`.",
+    fixed = TRUE
+  )
+
+  expect_true(any(vapply(res$per_stratum, function(x) any(x$table_body$ref), logical(1))))
+  eff_cols <- startsWith(names(res$table_display), "..eff__")
+  expect_false("Ref." %in% unlist(res$table_display[eff_cols]))
+  expect_false(any(grepl("Ref. = reference category", res$table$`_source_notes`,
+                         fixed = TRUE)))
+})
+
 test_that("stratified_multi_reg accepts bare and quoted options", {
   df <- birthwt_strata_multi_data()
 

@@ -1,0 +1,15 @@
+[build]
+  publish = "docs"
+  command = "Rscript -e 'pkgdown::build_site()'"
+
+[[redirects]]
+  from = "https://www.gtregression.thinkdenominator.com/*"
+  to = "https://gtregression.thinkdenominator.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://thinkdenominator.github.io/gtregression/*"
+  to = "https://gtregression.thinkdenominator.com/:splat"
+  status = 301
+  force = true

@@ -13,7 +13,8 @@ stratified_multi_reg(
   interaction = NULL,
   approach = "logit",
   format = c("flextable", "gt"),
-  theme = c("minimal")
+  theme = c("minimal"),
+  show_ref = TRUE
 )
 }
 \arguments{
@@ -43,6 +44,10 @@ using standard formula syntax, e.g. \code{"bmi*sex"}}
 \item{theme}{Preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 \code{"shaded"}, \code{"jama"}) or primitives
 \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}}
+
+\item{show_ref}{Logical; if \code{TRUE} (default), display reference-category
+rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
+reminds users to use \code{show_ref = TRUE} when reference rows are needed.}
 }
 \value{
 A list of class \code{c("gtregression","stratified_multi_reg", ...)} with:

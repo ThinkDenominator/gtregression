@@ -89,6 +89,28 @@ test_that("multi_reg publication table preserves user exposure order", {
   expect_equal(unique(adjusted$table_body$exposure), c("ht", "smoke", "ui"))
 })
 
+test_that("multi_reg explains how to show reference rows when hidden", {
+  df <- birthwt_multi_data()
+
+  expect_message(
+    res <- multi_reg(
+      data = df,
+      outcome = low,
+      exposures = smoke,
+      approach = logit,
+      show_ref = FALSE
+    ),
+    "To display Ref., use `show_ref = TRUE`.",
+    fixed = TRUE
+  )
+
+  expect_true(any(res$table_body$ref))
+  expect_equal(nrow(res$table_display), 1L)
+  expect_false("Ref." %in% res$table_display[["Adjusted OR (95% CI)"]])
+  expect_false(any(grepl("Ref. = reference category", res$table$`_source_notes`,
+                         fixed = TRUE)))
+})
+
 test_that("multi_reg optionally returns model-fit statistics", {
   df <- birthwt_multi_data()
 

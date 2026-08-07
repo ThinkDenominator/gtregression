@@ -2,7 +2,7 @@
 #'
 #' Wrapper around \code{forestploter::forest()} that works directly with
 #' \code{forest_df()} output or with \code{gtregression} regression objects.
-#' It can show descriptive columns and one or two model effect columns in a
+#' It can show descriptive columns and one or more model effect columns in a
 #' table-style forest plot while leaving axis and interval drawing to
 #' \pkg{forestploter}.
 #'
@@ -13,7 +13,7 @@
 #' @param theme Optional \code{forestploter::forest_theme()}. If \code{NULL},
 #'   \code{forestploter} defaults are used. You may pass colors and styling
 #'   either here or through \code{...}.
-#' @param ci_col_width Numeric value, or length-2 numeric for two effect columns,
+#' @param ci_col_width Numeric value, or one value per effect column,
 #'   controlling the blank spacer width used by \code{forestploter} for the
 #'   confidence-interval plot column(s). Values greater than 1 are interpreted
 #'   as approximate character counts. Values between 0 and 1 are accepted for
@@ -23,17 +23,20 @@
 #'   The \code{Characteristic} column and descriptive columns remain on the left.
 #' @param quiet Logical. Suppress forestploter warnings. Default = `TRUE`.
 #' @param effects Optional effect labels passed to \code{forestploter::forest()}.
-#' @param ticks_at Optional numeric vector, or length-2 list for two effect
+#' @param ticks_at Optional numeric vector, or list of numeric vectors for
+#'   multiple effect
 #'   columns, specifying x-axis tick positions. If \code{NULL},
 #'   \code{forestploter::forest()} chooses the default ticks.
 #' @param ticks_digits Optional number of digits for x-axis tick labels.
-#' @param xlim Optional numeric vector of length 2, or length-2 list for two
+#' @param xlim Optional numeric vector of length 2, or list of length-2 numeric
+#'   vectors for multiple
 #'   effect columns, specifying x-axis limits. If \code{NULL},
 #'   \code{forestploter::forest()} chooses the default limits.
-#' @param style_strata Logical. When \code{TRUE}, stratum header rows created
-#'   by \code{forest_df()} from a stratified regression object are shown in bold
-#'   with a subtle background shade.
-#' @param strata_fill Character. Fill color used for styled stratum header rows.
+#' @param style_strata Logical. Retained for older vertically grouped
+#'   stratified forest data. Current \code{forest_df()} stratified output places
+#'   strata side by side, so no stratum header rows are styled.
+#' @param strata_fill Character. Fill color used for older styled stratum header
+#'   rows.
 #' @param ... Passed to \code{forestploter::forest()}. Common options include
 #'   \code{title} and \code{footnote}.
 #'
@@ -110,14 +113,12 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
     stop("`effects` must be NULL or a character vector.", call. = FALSE)
   }
   if (!is.numeric(ci_col_width) || anyNA(ci_col_width) ||
-      !length(ci_col_width) || !length(ci_col_width) %in% c(1L, 2L) ||
-      any(ci_col_width <= 0)) {
-    stop("`ci_col_width` must be a positive numeric value or length-2 numeric vector.",
+      !length(ci_col_width) || any(ci_col_width <= 0)) {
+    stop("`ci_col_width` must be a positive numeric value or numeric vector.",
          call. = FALSE)
   }
   ci_col_width <- ifelse(ci_col_width <= 1, ci_col_width * 80, ci_col_width)
   ci_col_width <- pmax(4L, as.integer(round(ci_col_width)))
-  if (length(ci_col_width) == 1L) ci_col_width <- rep(ci_col_width, 2L)
   validate_ticks <- function(x, name) {
     if (is.null(x)) return(invisible(NULL))
     ok <- is.numeric(x) && length(x) > 0L && !anyNA(x)
@@ -209,19 +210,11 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
     meta <- list(x_trans = "none", ref_line = 0)
   }
 
-  # choose columns
-  has_multi <- !is.null(attr(df, "est2"))
-  if (has_multi) {
-    est <- list(attr(df, "est"),  attr(df, "est2"))
-    lo  <- list(attr(df, "lo"),   attr(df, "lo2"))
-    hi  <- list(attr(df, "hi"),   attr(df, "hi2"))
-    ci_col <- c(which(names(df) == " "), which(names(df) == "  "))
-  } else {
-    est <- attr(df, "est")
-    lo  <- attr(df, "lo")
-    hi  <- attr(df, "hi")
-    ci_col <- which(names(df) == " ")
-  }
+  # choose estimate sets
+  effect_sets <- .forest_effect_sets(df)
+  est <- if (length(effect_sets$est) == 1L) effect_sets$est[[1]] else effect_sets$est
+  lo <- if (length(effect_sets$lo) == 1L) effect_sets$lo[[1]] else effect_sets$lo
+  hi <- if (length(effect_sets$hi) == 1L) effect_sets$hi[[1]] else effect_sets$hi
 
   df_plot <- df[, setdiff(names(df), c("se_uni","se_adj")), drop = FALSE]
 
@@ -231,23 +224,23 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
   nm <- names(df_plot)
 
   # 1) Identify CI text columns and anchor (plot) columns
-  ci_cols_all <- grep("\\(95% CI\\)$", nm, value = TRUE)        # e.g., "Odds Ratio (95% CI)", "Adjusted Odds Ratio (95% CI)"
-  anchor_cols <- intersect(c(" ", "  "), nm)                    # " " = uni plot, "  " = adj plot if present
+  ci_cols_all <- grep("\\(95% CI\\)$", nm, value = TRUE)
+  anchor_cols <- effect_sets$anchors
+  text_cols <- effect_sets$text_cols
+  if (!length(anchor_cols) || !length(text_cols) ||
+      length(anchor_cols) != length(text_cols)) {
+    stop("`df` does not contain matched forest plot columns.", call. = FALSE)
+  }
+  if (length(ci_col_width) == 1L) {
+    ci_col_width <- rep(ci_col_width, length(anchor_cols))
+  } else if (length(ci_col_width) != length(anchor_cols)) {
+    stop(
+      "`ci_col_width` must be length 1 or have one value per effect column.",
+      call. = FALSE
+    )
+  }
   for (i in seq_along(anchor_cols)) {
     df_plot[[anchor_cols[i]]] <- paste(rep(" ", ci_col_width[i]), collapse = "")
-  }
-
-  # Split CI text into unadjusted vs adjusted (if present)
-  ci_uni <- setdiff(ci_cols_all, ci_cols_all[grepl("^Adjusted\\s+", ci_cols_all)])
-  ci_uni <- ci_uni[1] %||% NA_character_
-
-  ci_adj <- ci_cols_all[grepl("^Adjusted\\s+", ci_cols_all)]
-  ci_adj <- ci_adj[1] %||% NA_character_
-
-  # Multi-only inputs have one plot anchor but an adjusted effect label.
-  if (is.na(ci_uni) && !is.na(ci_adj) && " " %in% anchor_cols && !"  " %in% anchor_cols) {
-    ci_uni <- ci_adj
-    ci_adj <- NA_character_
   }
 
   # 2) Characteristic + desc columns = everything that's not an anchor or CI text
@@ -255,22 +248,18 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
 
   # 3) Build the effect-area blocks based on `side`
   blocks <- character(0)
-
-  # Univariate block (if columns exist)
-  if (!is.na(ci_uni) && " " %in% anchor_cols) {
-    blocks <- c(blocks, if (side == "left") c(" ", ci_uni) else c(ci_uni, " "))
-  }
-
-  # Adjusted block (if columns exist)
-  if (!is.na(ci_adj) && "  " %in% anchor_cols) {
-    blocks <- c(blocks, if (side == "left") c("  ", ci_adj) else c(ci_adj, "  "))
+  for (i in seq_along(anchor_cols)) {
+    blocks <- c(
+      blocks,
+      if (side == "left") c(anchor_cols[i], text_cols[i]) else c(text_cols[i], anchor_cols[i])
+    )
   }
 
   # 4) Reorder df_plot: left (Characteristic/desc) | effect blocks
   df_plot <- df_plot[, c(left_cols, blocks), drop = FALSE]
 
   # 5) Recompute ci_column indices (must be the plot-anchor columns in the same order as in `blocks`)
-  anchor_in_blocks <- blocks[blocks %in% c(" ", "  ")]
+  anchor_in_blocks <- blocks[blocks %in% anchor_cols]
   ci_col <- match(anchor_in_blocks, names(df_plot))
 
   draw <- function() forestploter::forest(
@@ -313,8 +302,57 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
             class = c("gtregression_forest", "list"))
 }
 
+.forest_effect_sets <- function(df) {
+  custom <- attr(df, "forest_estimates", exact = TRUE)
+  if (!is.null(custom)) {
+    out <- list(
+      est = custom$est,
+      lo = custom$lo,
+      hi = custom$hi,
+      anchors = custom$anchors,
+      text_cols = custom$text_cols
+    )
+    if (length(out$est) && length(out$lo) && length(out$hi) &&
+        length(out$anchors) && length(out$text_cols)) {
+      return(out)
+    }
+  }
+
+  ci_cols_all <- grep("\\(95% CI\\)$", names(df), value = TRUE)
+  anchor_cols <- names(df)[grepl("^ +$", names(df))]
+
+  if (!is.null(attr(df, "est2", exact = TRUE))) {
+    text_cols <- character(0)
+    ci_uni <- setdiff(ci_cols_all, ci_cols_all[grepl("^Adjusted\\s+", ci_cols_all)])
+    ci_adj <- ci_cols_all[grepl("^Adjusted\\s+", ci_cols_all)]
+    text_cols <- c(ci_uni[1], ci_adj[1])
+    text_cols <- text_cols[!is.na(text_cols)]
+
+    return(list(
+      est = list(attr(df, "est", exact = TRUE), attr(df, "est2", exact = TRUE)),
+      lo = list(attr(df, "lo", exact = TRUE), attr(df, "lo2", exact = TRUE)),
+      hi = list(attr(df, "hi", exact = TRUE), attr(df, "hi2", exact = TRUE)),
+      anchors = intersect(c(" ", "  "), anchor_cols),
+      text_cols = text_cols
+    ))
+  }
+
+  text_col <- ci_cols_all[1]
+  list(
+    est = list(attr(df, "est", exact = TRUE)),
+    lo = list(attr(df, "lo", exact = TRUE)),
+    hi = list(attr(df, "hi", exact = TRUE)),
+    anchors = anchor_cols[1],
+    text_cols = text_col
+  )
+}
+
 .forest_stratum_rows <- function(df_plot, meta) {
   if (!isTRUE(meta$stratified) || is.null(meta$stratifier) || is.null(meta$strata)) {
+    return(integer())
+  }
+
+  if (isTRUE(meta$side_by_side_strata)) {
     return(integer())
   }
 

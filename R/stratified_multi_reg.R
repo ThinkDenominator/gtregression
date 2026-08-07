@@ -26,6 +26,9 @@
 #' @param theme Preset name (e.g. \code{"minimal"}, \code{"striped"}, \code{"clinical"},
 #'   \code{"shaded"}, \code{"jama"}) or primitives
 #'   \code{c("plain","zebra","lines","labels_bold","compact","header_shaded")}
+#' @param show_ref Logical; if \code{TRUE} (default), display reference-category
+#'   rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
+#'   reminds users to use \code{show_ref = TRUE} when reference rows are needed.
 #'
 #' @details
 #' If exposure variables have a \code{"label"} attribute, for example from
@@ -86,7 +89,8 @@ stratified_multi_reg <- function(data,
                                  interaction = NULL,
                                  approach = "logit",
                                  format = c("flextable", "gt"),
-                                 theme = c("minimal")) {
+                                 theme = c("minimal"),
+                                 show_ref = TRUE) {
 
   outcome <- .vars_arg(substitute(outcome), env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
@@ -101,6 +105,7 @@ stratified_multi_reg <- function(data,
   approach <- .normalize_approach(approach)
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
+  .validate_show_ref(show_ref)
 
   format <- match.arg(format, c("flextable","gt"))
   theme <- .resolve_theme(theme)
@@ -172,7 +177,8 @@ stratified_multi_reg <- function(data,
     exposures,
     stratifier,
     tds,
-    variable_labels = variable_labels
+    variable_labels = variable_labels,
+    show_ref = show_ref
   )
   wide <- .strata_add_model_n(built$wide, models)
   spanners <- built$spanners
@@ -180,10 +186,16 @@ stratified_multi_reg <- function(data,
 
   footnotes <- c(
     .abbrev_note(approach),
-    if (any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))) .ref_note() else NULL,
+    if (isTRUE(show_ref) && any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))) .ref_note() else NULL,
     if (!is.null(adjust_for) && length(adjust_for) > 0) .adjustment_note(adjust_for) else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
     .n_note_multi_strata(stratifier, n_by_stratum)
+  )
+
+  .message_hidden_ref_rows(
+    "stratified_multi_reg",
+    do.call(rbind, tds),
+    show_ref
   )
 
   tbl <- if (format == "gt") {

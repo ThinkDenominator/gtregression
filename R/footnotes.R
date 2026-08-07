@@ -23,6 +23,36 @@
 .ref_note <- function() {
   "Ref. = reference category."
 }
+
+#' @keywords internal
+#' @noRd
+.validate_show_ref <- function(show_ref) {
+  if (!is.logical(show_ref) || length(show_ref) != 1L || is.na(show_ref)) {
+    stop("`show_ref` must be TRUE or FALSE.", call. = FALSE)
+  }
+
+  invisible(show_ref)
+}
+
+#' @keywords internal
+#' @noRd
+.message_hidden_ref_rows <- function(function_name, table_body, show_ref) {
+  if (isTRUE(show_ref) || is.null(table_body) || !"ref" %in% names(table_body)) {
+    return(invisible(FALSE))
+  }
+
+  if (!any(table_body$ref %in% TRUE, na.rm = TRUE)) {
+    return(invisible(FALSE))
+  }
+
+  message(
+    function_name,
+    "(): reference rows are hidden for dichotomous/categorical variables. ",
+    "To display Ref., use `show_ref = TRUE`."
+  )
+
+  invisible(TRUE)
+}
 #' @keywords internal
 #' @noRd
 .adjustment_note <- function(adjust_for) {

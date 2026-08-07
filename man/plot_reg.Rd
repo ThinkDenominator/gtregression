@@ -69,5 +69,7 @@ A \code{ggplot2} object.
 \description{
 Draw a forest-style plot from a fitted \code{gtregression} object produced by
 functions such as \code{uni_reg()}, \code{multi_reg()}, \code{cox_reg()}, or
-\code{surv_reg()}.
+\code{surv_reg()}. Stratified regression outputs are displayed as one
+faceted quick-view plot; use \code{forest_df()} and \code{forest_reg()} for
+publication-style stratified forest tables.
 }

@@ -1,0 +1,518 @@
+---
+title: "Function Options"
+description: "A quick reference for gtregression arguments, defaults, available choices, and what each option does."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Function Options}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
+```
+
+# Function Options at a Glance
+
+This page is a practical companion to the function reference. It lists the
+important arguments, their defaults, accepted choices, and what each option
+does.
+
+Most user-facing arguments accept quoted names and bare names. Quoted names are
+recommended inside scripts, functions, and Shiny apps because they are easier to
+program with.
+
+## Common Choices
+
+| Option family | Available choices | Meaning |
+|---|---|---|
+| Table `format` | `"flextable"`, `"gt"`, `"tibble"` where supported | `flextable` is Word-friendly and the package default for publication tables; `gt` is useful for HTML/pkgdown; `tibble` is useful for inspection and downstream work. |
+| Table `theme` | `"minimal"`, `"clinical"`, `"striped"`, `"shaded"`, `"jama"` | Preset table styling. `theme = "minimal"` is the default in most table functions. |
+| Regression `approach` | `"logit"`, `"firth"`, `"logbinomial"`, `"poisson"`, `"robpoisson"`, `"negbin"`, `"linear"` | Chooses the model family for standard regression tables. |
+| Survival `approach` | `"cox"`, `"survreg"` where supported | Enables Cox or parametric survival workflows in selected helper functions. |
+| Parametric survival `distribution` | `"weibull"`, `"exponential"`, `"lognormal"`, `"loglogistic"` | Distribution used by parametric survival regression. |
+| Reference rows | `show_ref = TRUE` or `FALSE` | `TRUE` displays reference categories as `Ref.`; `FALSE` makes compact tables and plots. |
+| Survival sample display | `"events"`, `"n"`, `"both"`, `"none"` | Controls whether stratified Cox/survival tables show event counts, N, both, or neither. |
+
+## Describe and Inspect Data
+
+### `descriptive_table()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Analysis dataset. |
+| `exposures` | required | column names | Variables to summarise. |
+| `by` | `NULL` | one column name or `NULL` | Creates grouped summary columns. |
+| `percent` | `"column"` | `"column"`, `"row"` | Chooses denominator for categorical percentages. |
+| `digits` | `1` | whole number | Number of decimal places. |
+| `show_missing` | `"ifany"` | `"ifany"`, `"no"` | Shows missing rows only when present, or hides them. |
+| `show_dichotomous` | `"all_levels"` | `"all_levels"`, `"single_row"` | Shows both binary levels by default; `single_row` shows one selected level. |
+| `show_overall` | `"no"` | `"no"`, `"first"`, `"last"` | Adds an overall column before or after grouped columns. |
+| `statistic` | `NULL` | `mean`, `median`, `mode`, `count`, `categorical`; can be named vector | Chooses numeric summary style or forces a numeric variable to display as categorical. |
+| `value` | `NULL` | named vector of displayed levels | Selects the displayed level when `show_dichotomous = "single_row"`. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+```r
+descriptive_table(
+  data = birthwt_data,
+  exposures = c(age, lwt, smoke, race),
+  by = low,
+  statistic = c(age = mean, lwt = median),
+  show_overall = last
+)
+```
+
+### `dissect()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Dataset to inspect. |
+| `verbose` | `FALSE` | `TRUE`, `FALSE` | Prints extra console guidance when `TRUE`. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Publication table or inspectable tibble. |
+
+## Regression Tables
+
+### `uni_reg()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Analysis dataset. |
+| `outcome` | required | one column name | Outcome variable. |
+| `exposures` | required | column names | Fits one univariable model per exposure. |
+| `approach` | `"logit"` | `"logit"`, `"firth"`, `"logbinomial"`, `"poisson"`, `"robpoisson"`, `"negbin"`, `"linear"` | Model family and effect measure. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+| `model_stats` | `FALSE` | `TRUE`, `FALSE` | Attaches AIC, BIC, log-likelihood, pseudo R2 or R2 where relevant, and N. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference category rows. |
+
+### `multi_reg()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Analysis dataset. |
+| `outcome` | required | one column name | Outcome variable. |
+| `exposures` | required | column names | Variables to report. |
+| `adjust_for` | `NULL` | column names or `NULL` | Adds adjustment covariates while reporting only `exposures`. |
+| `interaction` | `NULL` | interaction specification or `NULL` | Fits interaction terms, for example `smoke*race`. |
+| `approach` | `"logit"` | `"logit"`, `"firth"`, `"logbinomial"`, `"poisson"`, `"robpoisson"`, `"negbin"`, `"linear"` | Model family and effect measure. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+| `model_stats` | `FALSE` | `TRUE`, `FALSE` | Attaches model-fit statistics. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference category rows. |
+
+### `stratified_uni_reg()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Analysis dataset. |
+| `outcome` | required | one column name | Outcome variable. |
+| `exposures` | required | column names | Fits one univariable model per exposure within each stratum. |
+| `stratifier` | required | one column name | Splits the analysis into strata. |
+| `approach` | `"logit"` | standard regression approaches | Model family and effect measure. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference category rows. |
+
+### `stratified_multi_reg()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Analysis dataset. |
+| `outcome` | required | one column name | Outcome variable. |
+| `exposures` | required | column names | Variables to report within each stratum. |
+| `stratifier` | required | one column name | Splits the analysis into strata. |
+| `adjust_for` | `NULL` | column names or `NULL` | Adds adjustment covariates within each stratum. |
+| `interaction` | `NULL` | interaction specification or `NULL` | Fits interaction terms within each stratum. |
+| `approach` | `"logit"` | standard regression approaches | Model family and effect measure. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference category rows. |
+
+## Cox and Parametric Survival Regression
+
+### `cox_reg()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Survival dataset. |
+| `time` | required | one column name | Follow-up time. Zero follow-up is allowed; negative time is not. |
+| `event` | required | one column name | Event indicator. |
+| `exposures` | required | column names | Variables to report or use in a full multivariable Cox model. |
+| `adjust_for` | `NULL` | column names or `NULL` | Adds adjustment covariates while reporting only `exposures`. |
+| `stratifier` | `NULL` | one column name or `NULL` | Repeats Cox analyses within strata. |
+| `interaction` | `NULL` | interaction specification or `NULL` | Fits interaction terms. |
+| `multivariable` | `FALSE` | `TRUE`, `FALSE` | If `TRUE`, fits one Cox model using all variables in `exposures`. |
+| `multivariate` | `NULL` | `TRUE`, `FALSE`, `NULL` | Backward-compatible alias for `multivariable`. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+| `show_sample` | `"events"` | `"events"`, `"n"`, `"both"`, `"none"` | Controls displayed sample columns in stratified Cox tables. |
+| `model_stats` | `FALSE` | `TRUE`, `FALSE` | Attaches AIC, BIC, log-likelihood, concordance, N, and events. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference category rows. |
+
+### `surv_reg()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Survival dataset. |
+| `time` | required | one column name | Follow-up time. Zero follow-up is allowed; negative time is not. |
+| `event` | required | one column name | Event indicator. |
+| `exposures` | required | column names | Variables to report or use in a full multivariable model. |
+| `adjust_for` | `NULL` | column names or `NULL` | Adds adjustment covariates while reporting only `exposures`. |
+| `stratifier` | `NULL` | one column name or `NULL` | Repeats parametric survival analyses within strata. |
+| `interaction` | `NULL` | interaction specification or `NULL` | Fits interaction terms. |
+| `multivariable` | `FALSE` | `TRUE`, `FALSE` | If `TRUE`, fits one model using all variables in `exposures`. |
+| `multivariate` | `NULL` | `TRUE`, `FALSE`, `NULL` | Backward-compatible alias for `multivariable`. |
+| `distribution` | `"weibull"` | `"weibull"`, `"exponential"`, `"lognormal"`, `"loglogistic"` | Parametric survival distribution. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+| `show_sample` | `"events"` | `"events"`, `"n"`, `"both"`, `"none"` | Controls displayed sample columns in stratified survival tables. |
+| `model_stats` | `FALSE` | `TRUE`, `FALSE` | Attaches model-fit statistics. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference category rows. |
+
+## Kaplan-Meier and Survival Summaries
+
+### `km_plot()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Survival dataset. |
+| `time` | required | one column name | Follow-up time. |
+| `event` | required | one column name | Event indicator. |
+| `by` | `NULL` | one column name or `NULL` | Draws grouped curves when supplied. |
+| `conf.int` | `TRUE` | `TRUE`, `FALSE` | Shows shaded confidence intervals. |
+| `risk_table` | `TRUE` | `TRUE`, `FALSE` | Adds a number-at-risk table. |
+| `p_value` | `TRUE` | `TRUE`, `FALSE` | Adds log-rank p-value for grouped curves. |
+| `p_value_position` | `NULL` | numeric `c(x, y)` or `NULL` | Manually positions the p-value label. |
+| `censor` | `TRUE` | `TRUE`, `FALSE` | Shows censor marks. |
+| `break_time_by` | `NULL` | number or `NULL` | Controls x-axis and risk-table time breaks. |
+| `xlim` | `NULL` | numeric range or `NULL` | Zooms the follow-up time axis. |
+| `ylim` | `NULL` | numeric range or `NULL` | Zooms the survival probability axis, for example `c(0.5, 1)`. |
+| `xlab` | `"Time"` | character | X-axis label. |
+| `ylab` | `"Survival probability"` | character | Y-axis label. |
+| `title` | `NULL` | character or `NULL` | Main title. |
+| `subtitle` | `NULL` | character or `NULL` | Subtitle. |
+| `caption` | `NULL` | character or `NULL` | Figure caption. |
+| `title_size` | `NULL` | number or `NULL` | Custom title size for publication panels. |
+| `title_face` | `"bold"` | `"plain"`, `"bold"`, `"italic"`, `"bold.italic"` | Title font face. |
+| `legend_title` | `NULL` | character or `NULL` | Legend heading. |
+| `legend_position` | `NULL` | `"bottom"`, `"top"`, `"right"`, `"left"`, `"none"`, `NULL` | Legend location. |
+| `palette` | `NULL` | colour vector or `NULL` | Curve and confidence-band colours. |
+| `y_percent` | `TRUE` | `TRUE`, `FALSE` | Displays survival probability as percentages. |
+| `theme` | `"classic"` | `"classic"`, `"minimal"`, `"bw"`, `"light"`, `"none"` | ggplot theme style. |
+| `grid` | `FALSE` | `TRUE`, `FALSE` | Adds grid lines when `TRUE`. |
+| `base_size` | `13` | number | Base font size. |
+
+### `survival_summary()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data`, `time`, `event` | required | data frame and column names | Defines the survival object. |
+| `by` | `NULL` | one column name or `NULL` | Produces grouped summaries. |
+| `digits` | `1` | whole number | Number of decimal places. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+### `survival_quantiles()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data`, `time`, `event` | required | data frame and column names | Defines the survival object. |
+| `by` | `NULL` | one column name or `NULL` | Produces grouped quantiles. |
+| `probs` | `c(0.25, 0.5, 0.75)` | probabilities between 0 and 1 | Survival-time quantiles to display. |
+| `digits` | `1` | whole number | Number of decimal places. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+### `survival_prob()` and `km_risk_table()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data`, `time`, `event` | required | data frame and column names | Defines the survival object. |
+| `by` | `NULL` | one column name or `NULL` | Produces grouped outputs. |
+| `times` | required | numeric vector | Time points for survival probability or number at risk. |
+| `digits` | `1` | whole number | Number of decimal places. |
+| `extend` | `TRUE` | `TRUE`, `FALSE` | Allows reporting beyond the last event time where appropriate. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+### `logrank_test()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data`, `time`, `event`, `by` | required | data frame and column names | Defines grouped survival comparison. |
+| `digits` | `2` | whole number | Number of decimal places. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+### `rmst_table()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data`, `time`, `event` | required | data frame and column names | Defines the survival object. |
+| `by` | `NULL` | one column name or `NULL` | Produces grouped RMST estimates. |
+| `tau` | required | number | Restriction time for RMST. |
+| `digits` | `1` | whole number | Number of decimal places. |
+| `conf.level` | `0.95` | number between 0 and 1 | Confidence level. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+### Parametric survival helpers
+
+| Function | Argument | Default | Available options or input | What it does |
+|---|---|---:|---|---|
+| `surv_model_compare()` | `distributions` | four common distributions | `"weibull"`, `"exponential"`, `"lognormal"`, `"loglogistic"` | Compares candidate parametric survival distributions. |
+| `surv_model_compare()` | `exposures`, `adjust_for` | required, `NULL` | column names | Defines predictors and adjustment covariates. |
+| `surv_predict()` | `model`, `newdata`, `times` | required, `NULL`, required | fitted model, data frame, numeric times | Predicts survival probabilities. |
+| `plot_surv_fit()` | `distributions` | four common distributions | distribution names | Draws fitted parametric survival curves. |
+| `plot_surv_fit()` | `by`, `adjust_for` | `NULL`, `NULL` | column names or `NULL` | Groups curves or adjusts predicted curves. |
+| `plot_surv_fit()` | `break_time_by`, `xlim`, `n_points` | `NULL`, `NULL`, `200` | number, range, number | Controls curve resolution and x-axis. |
+| `check_ph()` | `transform` | `"km"` | `"km"`, `"rank"`, `"identity"` | Chooses time transform for proportional hazards test. |
+| `check_ph()` | `alpha` | `0.05` | number | Threshold used to flag possible PH violation. |
+| `check_ph()` | `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+
+## Regression Plots and Model Fit
+
+### `plot_reg()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `tbl` | required | gtregression regression object | Plots regression estimates. |
+| `title`, `caption` | `NULL` | character or `NULL` | Plot title and caption. |
+| `ref_line` | automatic | number or `NULL` | Null reference line; usually 1 for ratios and 0 for linear estimates. |
+| `order_y` | `NULL` | character vector or `NULL` | Manually controls vertical order. |
+| `log_x` | `FALSE` | `TRUE`, `FALSE` | Uses log x-axis for ratio measures. |
+| `xlim`, `breaks` | `NULL` | numeric vectors or `NULL` | Controls axis range and tick marks. |
+| `point_color`, `errorbar_color` | default colours | colour values | Styles estimates and confidence intervals. |
+| `base_size` | `14` | number | Base font size. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference rows. |
+| `sig_color`, `sig_errorbar_color` | `NULL` | colour values or `NULL` | Optional significance highlighting. |
+| `alpha` | `0.05` | number | Significance threshold. |
+| `show_adjustment_note` | `TRUE` | `TRUE`, `FALSE` | Adds adjustment note when available. |
+
+### `plot_reg_combine()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `tbl_uni`, `tbl_multi` | required | two compatible regression objects | Plots crude and adjusted estimates side by side. |
+| `title_uni`, `title_multi`, `caption` | `NULL` | character or `NULL` | Plot labels. |
+| `ref_line`, `order_y`, `log_x` | automatic/`NULL`/`FALSE` | number, order vector, logical | Controls null line, order, and scale. |
+| `xlim_uni`, `breaks_uni` | `NULL` | numeric vectors or `NULL` | Axis control for the crude plot. |
+| `xlim_multi`, `breaks_multi` | `NULL` | numeric vectors or `NULL` | Axis control for the adjusted plot. |
+| `point_color`, `errorbar_color` | default colours | colour values | Styles estimates and confidence intervals. |
+| `sig_color`, `sig_errorbar_color` | `NULL` | colour values or `NULL` | Optional significance highlighting. |
+| `base_size`, `show_ref`, `alpha` | `14`, `TRUE`, `0.05` | number, logical, number | Controls readability, reference rows, and highlighting. |
+| `show_adjustment_note` | `TRUE` | `TRUE`, `FALSE` | Adds adjustment note when available. |
+
+### `plot_model_fit()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `model` | required | `uni_reg()`, `multi_reg()`, `cox_reg()`, `surv_reg()`, or fitted model | Object to diagnose. |
+| `model_name` | `NULL` | model name or `NULL` | Selects one named model when the object stores several models. |
+| `type` | `"auto"` | `"auto"`, `"all"`, `"residual"`, `"qq"`, `"scale_location"`, `"cooks"`, `"observed_predicted"`, `"calibration"` | Chooses diagnostic plot type. |
+| `bins` | `10` | whole number | Number of bins for calibration plots. |
+| `base_size` | `13` | number | Base font size. |
+
+## Forest Tables and Forest Plots
+
+### `forest_df()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `uni` | required | regression object, descriptive table, or stratified regression object | Main object used to create the forest-ready data. |
+| `multi` | `NULL` | adjusted regression object or `NULL` | Adds adjusted estimates. |
+| `desc` | `NULL` | descriptive table or `NULL` | Adds descriptive columns. |
+| `digits` | `2` | whole number | Number of decimals for forest table estimates. |
+
+### `forest_reg()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `df` | `NULL` | `forest_df()` output or `NULL` | Plots prepared forest data. |
+| `uni`, `multi`, `desc` | `NULL` | gtregression objects | Builds and plots in one call. |
+| `theme` | `NULL` | forestploter theme or `NULL` | Plot theme passed to forestploter. |
+| `ci_col_width` | `20` | number | Width of CI drawing columns; increase when forest columns feel cramped. |
+| `side` | `"right"` | `"right"`, `"left"` | Places forest columns to the right or left of text columns. |
+| `quiet` | `TRUE` | `TRUE`, `FALSE` | Suppresses helpful messages. |
+| `effects` | `NULL` | effect column names or `NULL` | Selects which estimate columns to draw. |
+| `ticks_at` | `NULL` | numeric vector or list | Manually sets axis tick marks; useful when x-axis labels overlap. |
+| `ticks_digits` | `NULL` | whole number or `NULL` | Controls tick-label precision. |
+| `xlim` | `NULL` | numeric range or list | Manually sets forest x-axis limits. |
+| `style_strata` | `TRUE` | `TRUE`, `FALSE` | Highlights stratum header rows. |
+| `strata_fill` | `"#EAF2F1"` | colour value | Background colour for stratum rows. |
+| `...` | passed on | forestploter options | Extra arguments forwarded to `forestploter::forest()`. |
+
+### `save_forest()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `forest` | required | forest plot object | Object returned by `forest_reg()`. |
+| `filename` | `"forest"` | file path or file stem | Output file. Uses a temporary location when no path is supplied. |
+| `format` | `"pdf"` | `"pdf"`, `"png"`, `"tiff"`, `"jpg"` | Export file type. |
+| `width`, `height` | `NULL` | inches or `NULL` | Manual canvas size. |
+| `scale` | `1` | positive number | Scales automatic width and height. |
+| `auto_size` | `TRUE` | `TRUE`, `FALSE` | Estimates a sensible canvas size from table dimensions. |
+| `padding` | `0.25` | number | Extra white space around the saved forest plot. |
+| `dpi` | `300` | number | Image resolution for raster formats. |
+
+## Diagnostics, Selection, and Model Comparison
+
+### `check_convergence()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data`, `exposures`, `outcome` | required | data frame and column names | Defines candidate models. |
+| `approach` | `"logit"` | `"logit"`, `"logbinomial"`, `"poisson"`, `"robpoisson"`, `"negbin"` | Model family to test. |
+| `multivariate` | `FALSE` | `TRUE`, `FALSE` | Checks one multivariable model instead of separate univariable models. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+
+### `check_collinearity()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `model` | required | fitted model | Model to assess for collinearity. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+
+### `select_models()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data`, `outcome`, `exposures` | required | data frame and column names | Defines candidate predictors. |
+| `approach` | `"logit"` | standard regression approaches plus `"cox"` and `"survreg"` | Model family used for selection. |
+| `time`, `event` | `NULL` | column names or `NULL` | Required for Cox and parametric survival selection. |
+| `distribution` | `"weibull"` | survival distributions | Parametric survival distribution when `approach = "survreg"`. |
+| `direction` | `"forward"` | `"forward"`, `"backward"`, `"both"` when supported | Stepwise selection direction. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+
+### `compare_models()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `...` | required | gtregression model objects or fitted models | Candidate models to compare. |
+| `model_names` | `NULL` | character vector or `NULL` | Overrides default model labels; otherwise object names are used when available. |
+| `nested` | `TRUE` | `TRUE`, `FALSE` | Requests sequential likelihood-ratio comparison where appropriate. |
+| `primary_exposure` | `NULL` | one term name or `NULL` | Displays primary estimate and percentage change. |
+| `exponentiate` | `NULL` | `TRUE`, `FALSE`, `NULL` | Controls whether primary estimate is exponentiated. |
+| `digits` | `2` | whole number | Number of decimals for estimates and fit statistics. |
+| `p_digits` | `3` | whole number | Number of decimals for p-values. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+## Confounding, Interaction, and Mediation
+
+### `identify_confounder()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Analysis dataset. |
+| `outcome` | `NULL` | column name or `NULL` | Outcome for non-survival models. |
+| `exposure` | required | one column name | Main exposure. |
+| `potential_confounder` | required | one column name | Variable being assessed. |
+| `approach` | `"logit"` | standard approaches plus `"cox"` and `"survreg"` | Model family. |
+| `time`, `event` | `NULL` | column names or `NULL` | Required for survival approaches. |
+| `distribution` | `"weibull"` | survival distributions | Parametric distribution for `approach = "survreg"`. |
+| `method` | `"change"` | `"change"`, `"mh"`, `"both"` | Confounder assessment method. |
+| `threshold` | `10` | number | Percent-change threshold for confounding. |
+| `emm_threshold` | `10` | number | Percent-change threshold for effect-measure modification. |
+| `emm_test` | `"interaction"` | `"interaction"`, `"both"`, `"estimate"` | How to assess effect modification. |
+| `interaction_alpha` | `0.05` | number | P-value threshold for interaction test. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output format. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+### `interaction_models()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Analysis dataset. |
+| `outcome` | `NULL` | column name or `NULL` | Outcome for non-survival models. |
+| `exposure` | required | one column name | Main exposure. |
+| `covariates` | `NULL` | column names or `NULL` | Adjustment variables. |
+| `effect_modifier` | required | one column name | Candidate effect modifier. |
+| `approach` | `"logit"` | standard approaches plus `"cox"` and `"survreg"` | Model family. |
+| `time`, `event` | `NULL` | column names or `NULL` | Required for survival approaches. |
+| `distribution` | `"weibull"` | survival distributions | Parametric distribution for `approach = "survreg"`. |
+| `test` | `"LRT"` | `"LRT"`, `"Wald"` | Interaction test type. |
+| `alpha` | `0.05` | number | Threshold used to flag evidence of interaction. |
+| `verbose` | `FALSE` | `TRUE`, `FALSE` | Prints extra details when `TRUE`. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+
+### `mediation_analysis()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Analysis dataset. |
+| `exposure`, `mediator`, `outcome` | required | column names | Defines mediation pathway. |
+| `covariates` | `NULL` | column names or `NULL` | Adjustment variables. |
+| `mediator_approach` | `"linear"` | currently linear mediator model | Fits mediator model. |
+| `outcome_approach` | `"linear"` | `"linear"`, `"logit"` | Fits continuous or binary outcome model. |
+| `exposure_value`, `reference_value` | `NULL` | values or `NULL` | Defines exposure contrast. |
+| `sims` | `1000` | whole number | Bootstrap replicates. |
+| `conf_level` | `0.95` | number between 0 and 1 | Confidence level. |
+| `seed` | `NULL` | number or `NULL` | Reproducibility seed. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+### `plot_mediation()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `mediation_object` | required | output from `mediation_analysis()` | Draws mediation path diagram. |
+| `show_estimates` | `TRUE` | `TRUE`, `FALSE` | Displays effect estimates on the diagram. |
+| `base_size` | `13` | number | Base font size. |
+
+## Merge, Modify, and Export
+
+### `merge_tables()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `...` | required | gtregression table objects | Merges descriptive, crude, adjusted, Cox, survival, or other compatible tables. |
+| `spanners` | `NULL` | character vector or `NULL` | Adds group headers above merged table blocks. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+
+### `modify_table()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `gt_table` | required | gtregression table object | Table to modify. |
+| `variable_labels` | `NULL` | named character vector or `NULL` | Relabels variables. |
+| `level_labels` | `NULL` | named character vector or `NULL` | Relabels factor levels. |
+| `header_labels` | `NULL` | named character vector or `NULL` | Relabels column headers. |
+| `caption` | `NULL` | character or `NULL` | Adds table caption. |
+| `bold_labels` | `FALSE` | `TRUE`, `FALSE` | Bolds variable label rows. |
+| `bold_levels` | `FALSE` | `TRUE`, `FALSE` | Bolds level rows. |
+| `remove_N`, `remove_N_obs` | `FALSE` | `TRUE`, `FALSE` | Removes sample-size columns when present. |
+| `remove_abbreviations` | `FALSE` | `TRUE`, `FALSE` | Removes abbreviation footnotes. |
+| `caveat` | `NULL` | character or `NULL` | Adds custom caveat or interpretation note. |
+
+### Save helpers
+
+| Function | Argument | Default | Available options or input | What it does |
+|---|---|---:|---|---|
+| `save_table()` | `filename` | `"table"` | path or file stem | Saves to a temporary location when no path is supplied. |
+| `save_table()` | `format` | `"docx"` | `"docx"`, `"pdf"`, `"html"` | Table export type. |
+| `save_table()` | `orientation` | `"auto"` | `"auto"`, `"portrait"`, `"landscape"` | Chooses page orientation; auto prefers landscape for wide tables. |
+| `save_table()` | `fit_width` | `TRUE` | `TRUE`, `FALSE` | Attempts to fit table to page width. |
+| `save_table()` | `font_size`, `min_font_size` | `9`, `8` | numbers | Font-size control with lower bound. |
+| `save_docx()` | `tables`, `plots` | `NULL`, `NULL` | lists or objects | Builds a Word report from tables and plots. |
+| `save_docx()` | `filename` | `"report.docx"` | path or file stem | Word output file. |
+| `save_docx()` | `titles` | `NULL` | character vector or `NULL` | Section titles in the Word report. |
+| `save_docx()` | `table_width`, `plot_width`, `plot_height` | `6.5`, `6`, `5` | numbers | Output sizing in inches. |
+| `save_plot()` | `filename` | `"plot"` | path or file stem | Saves to a temporary location when no path is supplied. |
+| `save_plot()` | `format` | `"png"` | `"png"`, `"pdf"`, `"jpg"` | Plot export type. |
+| `save_plot()` | `width`, `height`, `dpi` | `8`, `6`, `300` | numbers | Plot canvas and resolution. |
+
+## Practical Defaults
+
+| Goal | Recommended option |
+|---|---|
+| Word manuscript table | Use the default `format = "flextable"`. |
+| HTML/pkgdown output | Use `format = "gt"`. |
+| Data checking or pipes | Use `format = "tibble"` when supported. |
+| Compact binary regression tables | Use `show_ref = FALSE`; use `show_ref = TRUE` when reference rows are needed. |
+| Compact binary descriptive tables | Use `show_dichotomous = "single_row"`; use `"all_levels"` for full level display. |
+| KM plot with publication panels | Use `title_face = "plain"`, smaller `title_size`, `risk_table = FALSE`, and patchwork. |
+| KM plot when survival remains high | Use `ylim = c(0.5, 1)` or another clinically meaningful range. |
+| Forest plot x-axis overlap | Set `xlim` and `ticks_at` manually; increase `ci_col_width` if the CI drawing column is cramped. |
+| Wide forest plot export | Use `save_forest()` with `auto_size = TRUE`, or manually increase `width`. |

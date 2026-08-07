@@ -118,8 +118,9 @@ one small subgroup should not erase the whole analysis.
 ## Forest Plot by Stratum
 
 `forest_df()` can also prepare one stratified regression object for
-`forest_reg()`. Stratum headers are kept in the plot so readers can scan each
-subgroup separately.
+`forest_reg()`. The variable rows are kept once and each stratum is placed in a
+side-by-side effect column, which is easier to compare than repeating the full
+variable list for every subgroup.
 
 ```{r strata-forest, message=FALSE, warning=FALSE, fig.width=8, fig.height=7}
 strata_forest_data <- forest_df(strata_multi)

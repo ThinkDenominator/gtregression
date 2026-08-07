@@ -32,6 +32,9 @@
 #'   non-linear models, and R-squared for linear models. Statistics are stored
 #'   in the returned object's \code{model_stats} element and are not added to
 #'   the publication table.
+#' @param show_ref Logical; if \code{TRUE} (default), display reference-category
+#'   rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
+#'   reminds users to use \code{show_ref = TRUE} when reference rows are needed.
 #'
 #' @details
 #' Use the default mode when you want all exposures in one model. Use
@@ -92,7 +95,8 @@ multi_reg <- function(data,
                       approach = "logit",
                       format = c("flextable", "gt"),
                       theme = c("minimal"),
-                      model_stats = FALSE) {
+                      model_stats = FALSE,
+                      show_ref = TRUE) {
 
   outcome <- .vars_arg(substitute(outcome), env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
@@ -109,6 +113,7 @@ multi_reg <- function(data,
   if (!is.logical(model_stats) || length(model_stats) != 1L || is.na(model_stats)) {
     stop("`model_stats` must be TRUE or FALSE.", call. = FALSE)
   }
+  .validate_show_ref(show_ref)
 
   format <- match.arg(format, c("flextable","gt"))
   theme <- .resolve_theme(theme)
@@ -129,7 +134,7 @@ multi_reg <- function(data,
   footnotes <- if (!core$adjusted_mode) {
     c(
       .abbrev_note(approach),
-      if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
+      if (isTRUE(show_ref) && any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
       if (!is.null(interaction)) .interaction_note(interaction) else NULL,
       if (!is.na(core$n_used)) {
         paste0(
@@ -152,19 +157,21 @@ multi_reg <- function(data,
 
     c(
       .abbrev_note(approach),
-      if (any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
+      if (isTRUE(show_ref) && any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
       .adjustment_note(adjust_for),
       if (!is.null(interaction)) .interaction_note(interaction) else NULL,
       n_note
     )
   }
 
+  .message_hidden_ref_rows("multi_reg", core$table_body, show_ref)
   display_df <- .make_display_multi(
     core$table_body,
     core$data_clean,
     outcome,
     effect_label_adj,
-    variable_labels = variable_labels
+    variable_labels = variable_labels,
+    show_ref = show_ref
   )
   .must_be_display_df_multi(display_df)
 

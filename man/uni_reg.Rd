@@ -11,7 +11,8 @@ uni_reg(
   approach = "logit",
   format = c("flextable", "gt"),
   theme = c("minimal"),
-  model_stats = FALSE
+  model_stats = FALSE,
+  show_ref = TRUE
 )
 }
 \arguments{
@@ -39,6 +40,10 @@ such as AIC, BIC, log-likelihood, deviance, pseudo R-squared for
 non-linear models, and R-squared for linear models. Statistics are stored
 in the returned object's \code{model_stats} element and are not added to
 the publication table.}
+
+\item{show_ref}{Logical; if \code{TRUE} (default), display reference-category
+rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
+reminds users to use \code{show_ref = TRUE} when reference rows are needed.}
 }
 \value{
 A list of class \code{c("gtregression","uni_reg", ...)} with elements:

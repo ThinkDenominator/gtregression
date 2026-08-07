@@ -136,12 +136,119 @@
   }
 
   labels <- stats::setNames(as.character(df$Characteristic), ids)
+  headers <- stats::setNames(as.logical(df$is_header), ids)
 
   list(
     row_ids_order = ids,
     content_cols = content_cols,
     lookup = lookup,
-    labels = labels
+    labels = labels,
+    headers = headers
+  )
+}
+
+#' Align compact binary regression rows to descriptive level rows
+#'
+#' Regression tables that do not display reference rows may represent a binary
+#' exposure as one compact row (var||var). When merged with a descriptive table
+#' that has explicit level rows (var||No, var||Yes), the compact row should live
+#' on the non-reference level rather than creating a separate variable row.
+#'
+#' @keywords internal
+#' @noRd
+.align_compact_binary_maps <- function(maps) {
+  parse_ids <- function(ids) {
+    parts <- strsplit(ids, "\\|\\|")
+    data.frame(
+      id = ids,
+      var = vapply(parts, `[`, character(1), 1),
+      level = vapply(parts, `[`, character(1), 2),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  all_ids <- unique(unlist(lapply(maps, `[[`, "row_ids_order"), use.names = FALSE))
+  all_ids <- all_ids[!is.na(all_ids)]
+  id_df <- parse_ids(all_ids)
+
+  positive_values <- c(
+    "yes", "y", "true", "1", "present", "positive", "exposed",
+    "case", "event"
+  )
+
+  choose_level <- function(var, current_label) {
+    candidates <- id_df$level[
+      id_df$var == var &
+        !id_df$level %in% c(var, "__header__")
+    ]
+    candidates <- unique(candidates[nzchar(candidates)])
+    if (!length(candidates)) {
+      return(NA_character_)
+    }
+
+    current_label <- trimws(current_label)
+    label_match <- candidates[tolower(candidates) == tolower(current_label)]
+    if (length(label_match)) {
+      return(label_match[1])
+    }
+
+    positive_match <- candidates[tolower(candidates) %in% positive_values]
+    if (length(positive_match)) {
+      return(positive_match[1])
+    }
+
+    if (length(candidates) == 2L) {
+      return(candidates[2])
+    }
+
+    NA_character_
+  }
+
+  remapped <- character()
+
+  for (m in seq_along(maps)) {
+    ids <- maps[[m]]$row_ids_order
+    if (!length(ids)) {
+      next
+    }
+
+    parsed <- parse_ids(ids)
+    compact <- which(parsed$var == parsed$level)
+
+    for (i in compact) {
+      from <- parsed$id[i]
+      value <- maps[[m]]$lookup[[from]]
+      if (is.null(value)) {
+        next
+      }
+
+      label <- unname(maps[[m]]$labels[from])
+      target_level <- choose_level(parsed$var[i], label)
+      if (is.na(target_level)) {
+        next
+      }
+
+      to <- paste0(parsed$var[i], "||", target_level)
+      if (identical(from, to)) {
+        next
+      }
+
+      maps[[m]]$lookup[[to]] <- value
+      rm(list = from, envir = maps[[m]]$lookup)
+
+      maps[[m]]$row_ids_order[maps[[m]]$row_ids_order == from] <- to
+      names(maps[[m]]$labels)[names(maps[[m]]$labels) == from] <- to
+      if (!is.null(maps[[m]]$headers)) {
+        names(maps[[m]]$headers)[names(maps[[m]]$headers) == from] <- to
+        maps[[m]]$headers[to] <- FALSE
+      }
+      remapped <- c(remapped, parsed$var[i])
+    }
+  }
+
+  list(
+    maps = maps,
+    remapped = unique(remapped)
   )
 }
 
@@ -161,7 +268,18 @@
     var <- parts[1]
     lvl <- parts[2]
 
-    is_header <- identical(var, lvl) || identical(lvl, "__header__")
+    is_source_header <- any(vapply(
+      maps,
+      function(map) {
+        if (is.null(map$headers)) {
+          return(FALSE)
+        }
+        isTRUE(unname(map$headers[id]))
+      },
+      logical(1)
+    ))
+    is_header <- identical(var, lvl) || identical(lvl, "__header__") ||
+      is_source_header
     label <- NA_character_
     for (map in maps) {
       hit <- unname(map$labels[id])
@@ -335,6 +453,17 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
   }
 
   maps <- lapply(tbls, .canonical_map)
+  aligned <- .align_compact_binary_maps(maps)
+  maps <- aligned$maps
+  if (length(aligned$remapped)) {
+    message(
+      "merge_tables(): compact binary regression rows were aligned to ",
+      "descriptive level rows for ",
+      paste(aligned$remapped, collapse = ", "),
+      ". To display Ref., use `show_ref = TRUE` in the regression ",
+      "function before merging."
+    )
+  }
   skeleton <- .build_merged_skeleton(maps)
   base_ids <- skeleton$row_id
 

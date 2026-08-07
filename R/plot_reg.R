@@ -2,7 +2,9 @@
 #'
 #' Draw a forest-style plot from a fitted \code{gtregression} object produced by
 #' functions such as \code{uni_reg()}, \code{multi_reg()}, \code{cox_reg()}, or
-#' \code{surv_reg()}.
+#' \code{surv_reg()}. Stratified regression outputs are displayed as one
+#' faceted quick-view plot; use \code{forest_df()} and \code{forest_reg()} for
+#' publication-style stratified forest tables.
 #'
 #' @param tbl A fitted \code{gtregression} object.
 #' @param title Optional plot title.
@@ -60,12 +62,25 @@ plot_reg <- function(tbl,
     stop("`tbl` must contain `source` and `approach`.", call. = FALSE)
   }
 
-  if (isTRUE(tbl$stratified) ||
-      identical(source_type, "stratified_multi_reg") ||
-      identical(source_type, "stratified_uni_reg") ||
-      identical(source_type, "stratified_cox_reg") ||
-      identical(source_type, "stratified_surv_reg")) {
-    stop("plot_reg() does not support stratified objects.", call. = FALSE)
+  if (.plot_is_stratified(tbl, source_type)) {
+    return(.plot_reg_stratified(
+      tbl = tbl,
+      title = title,
+      caption = caption,
+      ref_line = ref_line,
+      order_y = order_y,
+      log_x = log_x,
+      xlim = xlim,
+      breaks = breaks,
+      point_color = point_color,
+      errorbar_color = errorbar_color,
+      base_size = base_size,
+      show_ref = show_ref,
+      sig_color = sig_color,
+      sig_errorbar_color = sig_errorbar_color,
+      alpha = alpha,
+      show_adjustment_note = show_adjustment_note
+    ))
   }
 
   if (is.null(tbl$table_body) || !nrow(tbl$table_body)) {
@@ -375,6 +390,270 @@ plot_reg <- function(tbl,
   }
 
   p
+}
+
+#' Plot stratified regression outputs (internal)
+#' @keywords internal
+#' @noRd
+.plot_reg_stratified <- function(tbl,
+                                 title = NULL,
+                                 caption = NULL,
+                                 ref_line = NULL,
+                                 order_y = NULL,
+                                 log_x = FALSE,
+                                 xlim = NULL,
+                                 breaks = NULL,
+                                 point_color = "#1F77B4",
+                                 errorbar_color = "#4C4C4C",
+                                 base_size = 14,
+                                 show_ref = TRUE,
+                                 sig_color = NULL,
+                                 sig_errorbar_color = NULL,
+                                 alpha = 0.05,
+                                 show_adjustment_note = TRUE) {
+  if (is.null(tbl$per_stratum) || !length(tbl$per_stratum)) {
+    stop("Stratified regression objects must contain `per_stratum` results.", call. = FALSE)
+  }
+
+  strata <- names(tbl$per_stratum)
+  if (is.null(strata) || any(!nzchar(strata))) {
+    strata <- paste0("Stratum ", seq_along(tbl$per_stratum))
+  }
+
+  parts <- Map(function(item, stratum) {
+    stratum_tbl <- .plot_stratum_object(tbl, item)
+    p <- plot_reg(
+      stratum_tbl,
+      title = NULL,
+      caption = NULL,
+      ref_line = ref_line,
+      order_y = order_y,
+      log_x = log_x,
+      xlim = NULL,
+      breaks = breaks,
+      point_color = point_color,
+      errorbar_color = errorbar_color,
+      base_size = base_size,
+      show_ref = show_ref,
+      sig_color = sig_color,
+      sig_errorbar_color = sig_errorbar_color,
+      alpha = alpha,
+      show_adjustment_note = show_adjustment_note
+    )
+    out <- p$data
+    out$stratum <- stratum
+    out$row_key <- paste(stratum, seq_len(nrow(out)), sep = "__")
+    out
+  }, tbl$per_stratum, strata)
+
+  plot_df <- do.call(rbind, parts)
+  plot_df$stratum <- factor(plot_df$stratum, levels = strata)
+  plot_df$row_key <- factor(plot_df$row_key, levels = rev(unique(plot_df$row_key)))
+  label_map <- stats::setNames(plot_df$label_clean, as.character(plot_df$row_key))
+
+  approach <- .normalize_approach(tbl$approach)
+  if (is.null(ref_line)) {
+    ref_line <- if (identical(approach, "linear")) 0 else 1
+  }
+  if (identical(approach, "linear")) {
+    log_x <- FALSE
+  }
+
+  x_axis_label <- .plot_axis_label(
+    approach = approach,
+    adjusted = .plot_stratified_is_adjusted(tbl)
+  )
+  if (log_x) {
+    x_axis_label <- paste0(x_axis_label, " (log scale)")
+  }
+
+  if (is.null(xlim)) {
+    vals <- c(plot_df$conf.low, plot_df$conf.high, plot_df$estimate, ref_line)
+    vals <- vals[is.finite(vals)]
+    if (length(vals) >= 2L) {
+      rng <- range(vals, na.rm = TRUE)
+      if (log_x) {
+        lower <- max(min(rng[1], ref_line, na.rm = TRUE), .Machine$double.eps * 10)
+        upper <- max(rng[2], ref_line, na.rm = TRUE)
+      } else {
+        span <- diff(rng)
+        pad <- if (is.finite(span) && span > 0) 0.05 * span else 0.1
+        lower <- min(rng[1], ref_line, na.rm = TRUE) - pad
+        upper <- max(rng[2], ref_line, na.rm = TRUE) + pad
+      }
+      xlim <- c(lower, upper)
+    }
+  }
+
+  fill_vals <- c(
+    "FALSE" = point_color,
+    "TRUE" = if (!is.null(sig_color)) sig_color else point_color
+  )
+  line_vals <- c(
+    "FALSE" = errorbar_color,
+    "TRUE" = if (!is.null(sig_errorbar_color)) sig_errorbar_color else errorbar_color
+  )
+  caption <- .plot_caption(
+    tbl = tbl,
+    caption = caption,
+    show_adjustment_note = show_adjustment_note,
+    show_ref = show_ref,
+    has_ref = any(plot_df$ref %in% TRUE)
+  )
+
+  p <- ggplot2::ggplot(
+    plot_df,
+    ggplot2::aes(x = .data$estimate, y = .data$row_key)
+  ) +
+    .add_h_ci(plot_df[plot_df$is_data, , drop = FALSE]) +
+    ggplot2::geom_point(
+      data = plot_df[plot_df$is_data, , drop = FALSE],
+      ggplot2::aes(fill = .data$is_sig),
+      shape = 21,
+      size = 3,
+      stroke = 0.6,
+      show.legend = FALSE,
+      na.rm = TRUE
+    ) +
+    ggplot2::geom_vline(
+      xintercept = ref_line,
+      linetype = "dashed",
+      colour = "gray60"
+    ) +
+    ggplot2::facet_wrap(ggplot2::vars(.data$stratum), scales = "free_y") +
+    ggplot2::scale_fill_manual(values = fill_vals, guide = "none") +
+    ggplot2::scale_color_manual(values = line_vals, guide = "none") +
+    ggplot2::scale_y_discrete(
+      labels = label_map
+    ) +
+    ggplot2::labs(title = title, x = x_axis_label, y = NULL, caption = caption) +
+    ggplot2::theme_minimal(base_size = base_size) +
+    ggplot2::theme(
+      panel.grid.major.y = ggplot2::element_blank(),
+      panel.grid.major.x = ggplot2::element_blank(),
+      panel.grid.minor.x = ggplot2::element_blank(),
+      axis.text.y = ggtext::element_markdown(hjust = 0),
+      axis.text.y.left = ggtext::element_markdown(hjust = 0),
+      strip.text = ggplot2::element_text(face = "bold"),
+      plot.title = ggplot2::element_text(face = "bold"),
+      plot.margin = ggplot2::margin(10, 40, 10, 10)
+    )
+
+  if (log_x) {
+    if (is.null(breaks)) {
+      breaks <- .plot_log_breaks(xlim)
+    }
+    p <- p + ggplot2::scale_x_log10(breaks = breaks)
+  } else if (!is.null(breaks)) {
+    p <- p + ggplot2::scale_x_continuous(breaks = breaks)
+  }
+  if (!is.null(xlim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = xlim)
+  }
+
+  p
+}
+
+#' Stratified plot input detector (internal)
+#' @keywords internal
+#' @noRd
+.plot_is_stratified <- function(tbl, source_type = tbl$source) {
+  isTRUE(tbl$stratified) ||
+    identical(source_type, "stratified_multi_reg") ||
+    identical(source_type, "stratified_uni_reg") ||
+    identical(source_type, "stratified_cox_reg") ||
+    identical(source_type, "stratified_surv_reg")
+}
+
+#' Recreate a plottable per-stratum regression object (internal)
+#' @keywords internal
+#' @noRd
+.plot_stratum_object <- function(parent, x) {
+  if (inherits(x, "gtregression")) {
+    x$stratified <- FALSE
+    return(x)
+  }
+
+  out <- x
+  out$table_display <- .plot_display_from_body(x$table_body, parent$variable_labels)
+  out$approach <- parent$approach
+  out$variable_labels <- parent$variable_labels
+  out$stratified <- FALSE
+  out$adjusted_mode <- .forest_or(parent$adjusted_mode, x$adjusted_mode)
+  out$multivariable <- .forest_or(parent$multivariable, x$multivariable)
+  out$adjust_for <- parent$adjust_for
+
+  if (inherits(parent, "stratified_multi_reg")) {
+    out$source <- "multi_reg"
+    class(out) <- c("gtregression", "multi_reg", "gt_multi", class(out))
+  } else if (inherits(parent, "stratified_cox_reg")) {
+    out$source <- "cox_reg"
+    class(out) <- c("gtregression", "cox_reg", "gt_cox", class(out))
+  } else if (inherits(parent, "stratified_surv_reg")) {
+    out$source <- "surv_reg"
+    class(out) <- c("gtregression", "surv_reg", "gt_surv", class(out))
+  } else {
+    out$source <- parent$source
+    class(out) <- c("gtregression", class(out))
+  }
+
+  out
+}
+
+#' Build a minimal table display from table_body rows (internal)
+#' @keywords internal
+#' @noRd
+.plot_display_from_body <- function(table_body, variable_labels = NULL) {
+  rows <- list()
+  for (ex in unique(table_body$exposure)) {
+    dfx <- table_body[table_body$exposure == ex, , drop = FALSE]
+    rows[[length(rows) + 1L]] <- data.frame(
+      Characteristic = .label_var(ex, variable_labels),
+      is_header = TRUE,
+      stringsAsFactors = FALSE
+    )
+    if (any(dfx$ref %in% TRUE)) {
+      for (lv in dfx$level) {
+        rows[[length(rows) + 1L]] <- data.frame(
+          Characteristic = as.character(lv),
+          is_header = FALSE,
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+  }
+  out <- do.call(rbind, rows)
+  rownames(out) <- NULL
+  out
+}
+
+#' Plot axis label helper (internal)
+#' @keywords internal
+#' @noRd
+.plot_axis_label <- function(approach, adjusted = FALSE) {
+  base <- dplyr::case_when(
+    approach %in% c("logit", "firth") ~ "Odds Ratio",
+    approach == "logbinomial" ~ "Risk Ratio",
+    approach %in% c("poisson", "negbin") ~ "Incidence Rate Ratio",
+    approach == "robpoisson" ~ "Risk Ratio",
+    approach == "cox" ~ "Hazard Ratio",
+    approach == "survreg" ~ "Time Ratio",
+    approach == "linear" ~ "Beta Coefficient",
+    TRUE ~ "Effect Size"
+  )
+  if (isTRUE(adjusted)) paste("Adjusted", base) else base
+}
+
+#' Stratified adjusted plot detector (internal)
+#' @keywords internal
+#' @noRd
+.plot_stratified_is_adjusted <- function(tbl) {
+  inherits(tbl, "stratified_multi_reg") ||
+    isTRUE(tbl$adjusted_mode) ||
+    isTRUE(tbl$multivariable) ||
+    any(vapply(tbl$per_stratum, function(x) {
+      isTRUE(x$adjusted_mode) || isTRUE(x$multivariable)
+    }, logical(1)))
 }
 
 #' Plot adjustment caption helper (internal)

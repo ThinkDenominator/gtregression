@@ -75,6 +75,7 @@ Suggests:
 Config/testthat/edition: 3
 Config/Needs/website: 
     pkgdown
-URL: https://thinkdenominator.github.io/gtregression/
+URL: https://gtregression.thinkdenominator.com/,
+    https://github.com/ThinkDenominator/gtregression
 BugReports: https://github.com/ThinkDenominator/gtregression/issues
 Config/roxygen2/version: 8.0.0

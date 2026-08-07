@@ -105,6 +105,113 @@ test_that("merge_tables supports three-table merges and default spanners", {
   expect_true(ncol(merged$table_display) > ncol(desc_tbl$table_display))
 })
 
+test_that("merge_tables aligns compact binary regression rows to descriptive levels", {
+  df <- birthwt_merge_data()
+
+  desc_tbl <- descriptive_table(
+    df,
+    exposures = c("age", "smoke"),
+    by = "low",
+    format = gt
+  )
+  uni_tbl <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = logit,
+    format = gt
+  )
+
+  compact_uni <- uni_tbl
+  display <- uni_tbl$table_display
+  body <- uni_tbl$table_body
+
+  smoke_header <- which(display$Characteristic == "smoke" & display$is_header)[1]
+  smoke_yes <- which(trimws(display$Characteristic) == "Yes" & !display$is_header)[1]
+  age_row <- which(display$Characteristic == "age" & display$is_header)[1]
+  effect_cols <- setdiff(names(display), c("Characteristic", "is_header"))
+
+  display[smoke_header, effect_cols] <- display[smoke_yes, effect_cols]
+  compact_uni$table_display <- display[c(age_row, smoke_header), , drop = FALSE]
+  compact_uni$table_body <- body[
+    body$exposure == "age" | (body$exposure == "smoke" & body$level == "Yes"),
+    ,
+    drop = FALSE
+  ]
+
+  merged <- NULL
+  expect_message(
+    merged <- merge_tables(desc_tbl, compact_uni, spanners = c("Descriptive", "Crude")),
+    "show_ref = TRUE"
+  )
+
+  out <- merged$table_display
+  or_cols <- grep("OR", names(out), value = TRUE)
+  p_cols <- grep("p.value", names(out), value = TRUE)
+  smoke_header_row <- which(trimws(out$Characteristic) == "smoke" & (out$is_header %in% TRUE))
+  smoke_yes_row <- which(trimws(out$Characteristic) == "Yes" & (out$is_header %in% FALSE))
+
+  expect_length(smoke_header_row, 1L)
+  expect_length(smoke_yes_row, 1L)
+  expect_equal(out[smoke_header_row, or_cols], "")
+  expect_equal(out[smoke_header_row, p_cols], "")
+  expect_true(any(nzchar(unlist(out[smoke_yes_row, or_cols], use.names = FALSE))))
+  expect_false(any(trimws(out$Characteristic) == "smoke" & (out$is_header %in% FALSE)))
+})
+
+test_that("merge_tables keeps compact descriptive and regression binary rows aligned", {
+  df <- birthwt_merge_data()
+
+  desc_tbl <- suppressMessages(
+    descriptive_table(
+      df,
+      exposures = c("age", "smoke"),
+      by = "low",
+      show_dichotomous = "single_row",
+      value = list(smoke = "Yes"),
+      format = gt
+    )
+  )
+  uni_tbl <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = logit,
+    format = gt
+  )
+
+  compact_uni <- uni_tbl
+  display <- uni_tbl$table_display
+  body <- uni_tbl$table_body
+
+  smoke_header <- which(display$Characteristic == "smoke" & display$is_header)[1]
+  smoke_yes <- which(trimws(display$Characteristic) == "Yes" & !display$is_header)[1]
+  age_row <- which(display$Characteristic == "age" & display$is_header)[1]
+  effect_cols <- setdiff(names(display), c("Characteristic", "is_header"))
+
+  display[smoke_header, effect_cols] <- display[smoke_yes, effect_cols]
+  compact_uni$table_display <- display[c(age_row, smoke_header), , drop = FALSE]
+  compact_uni$table_body <- body[
+    body$exposure == "age" | (body$exposure == "smoke" & body$level == "Yes"),
+    ,
+    drop = FALSE
+  ]
+
+  merged <- NULL
+  expect_message(
+    merged <- merge_tables(desc_tbl, compact_uni, spanners = c("Descriptive", "Crude")),
+    "show_ref = TRUE"
+  )
+
+  out <- merged$table_display
+  smoke_rows <- which(trimws(out$Characteristic) == "smoke")
+  or_cols <- grep("OR", names(out), value = TRUE)
+
+  expect_length(smoke_rows, 1L)
+  expect_true(out$is_header[smoke_rows])
+  expect_true(any(nzchar(unlist(out[smoke_rows, or_cols], use.names = FALSE))))
+})
+
 test_that("merge_tables supports flextable output", {
   skip_if_not_installed("flextable")
 

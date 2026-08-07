@@ -18,7 +18,8 @@ surv_reg(
   format = c("flextable", "gt"),
   theme = c("minimal"),
   show_sample = "events",
-  model_stats = FALSE
+  model_stats = FALSE,
+  show_ref = TRUE
 )
 }
 \arguments{
@@ -76,6 +77,10 @@ Model statistics, when requested, still retain both N and event counts.}
 
 \item{model_stats}{Logical; if \code{TRUE}, extract model-fit statistics
 including AIC, BIC, log-likelihood, scale, number of events, and N.}
+
+\item{show_ref}{Logical; if \code{TRUE} (default), display reference-category
+rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
+reminds users to use \code{show_ref = TRUE} when reference rows are needed.}
 }
 \value{
 A list of class \code{c("gtregression","surv_reg", ...)} with elements:

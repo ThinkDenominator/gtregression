@@ -11,7 +11,7 @@
 #' Build canonical row skeleton (exposure headers + factor levels)
 #' @keywords internal
 #' @noRd
-.strata_build_skeleton <- function(data, exposures, variable_labels = NULL) {
+.strata_build_skeleton <- function(data, exposures, variable_labels = NULL, show_ref = TRUE) {
   is_factor <- vapply(exposures, function(x) is.factor(data[[x]]), logical(1))
   label_map <- variable_labels
   if (is.null(label_map)) {
@@ -36,7 +36,12 @@
     )
 
     if (is_factor[[x]]) {
-      for (lv in levels_map[[x]]) {
+      levels_to_show <- levels_map[[x]]
+      if (!isTRUE(show_ref) && length(levels_to_show) > 0L) {
+        levels_to_show <- levels_to_show[-1]
+      }
+
+      for (lv in levels_to_show) {
         rows[[length(rows) + 1]] <- data.frame(
           exposure = x,
           level = lv,
@@ -67,7 +72,10 @@
 #'
 #' @keywords internal
 #' @noRd
-.strata_build_skeleton_multi <- function(exposures, td_by_stratum, variable_labels = NULL) {
+.strata_build_skeleton_multi <- function(exposures,
+                                         td_by_stratum,
+                                         variable_labels = NULL,
+                                         show_ref = TRUE) {
   rows <- list()
 
   for (x in exposures) {
@@ -98,6 +106,10 @@
       factor_levels <- unique(td_exp$level)
       factor_levels <- factor_levels[!is.na(factor_levels)]
       factor_levels <- factor_levels[factor_levels != x]
+      if (!isTRUE(show_ref)) {
+        ref_levels <- unique(td_exp$level[td_exp$ref %in% TRUE])
+        factor_levels <- setdiff(factor_levels, ref_levels)
+      }
 
       for (lv in factor_levels) {
         if (!(lv %in% seen_levels)) {
@@ -193,8 +205,19 @@
 
 #' Assemble wide display DF for all strata (univariate)
 #' @keywords internal
-.strata_build_wide_uni <- function(data, outcome, exposures, stratifier, per_stratum, variable_labels = NULL) {
-  sk <- .strata_build_skeleton(data, exposures, variable_labels = variable_labels)
+.strata_build_wide_uni <- function(data,
+                                   outcome,
+                                   exposures,
+                                   stratifier,
+                                   per_stratum,
+                                   variable_labels = NULL,
+                                   show_ref = TRUE) {
+  sk <- .strata_build_skeleton(
+    data,
+    exposures,
+    variable_labels = variable_labels,
+    show_ref = show_ref
+  )
   skeleton  <- sk$skeleton
   is_factor <- sk$is_factor
 
@@ -266,14 +289,20 @@
 #' Assemble wide display DF for all strata (multivariable)
 #' @keywords internal
 #' @noRd
-.strata_build_wide_multi <- function(data, exposures, stratifier, td_by_stratum, variable_labels = NULL) {
+.strata_build_wide_multi <- function(data,
+                                     exposures,
+                                     stratifier,
+                                     td_by_stratum,
+                                     variable_labels = NULL,
+                                     show_ref = TRUE) {
   if (is.null(variable_labels)) {
     variable_labels <- .var_label_map(data, exposures)
   }
   skeleton <- .strata_build_skeleton_multi(
     exposures = exposures,
     td_by_stratum = td_by_stratum,
-    variable_labels = variable_labels
+    variable_labels = variable_labels,
+    show_ref = show_ref
   )
 
   wide <- skeleton[, c("Characteristic", "is_header"), drop = FALSE]

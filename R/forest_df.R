@@ -153,60 +153,6 @@
   out
 }
 
-.forest_add_stratum_header <- function(df, label) {
-  header <- df[1, , drop = FALSE]
-  for (col in names(header)) {
-    if (is.numeric(header[[col]])) {
-      header[[col]] <- NA_real_
-    } else {
-      header[[col]] <- ""
-    }
-  }
-  header$Characteristic <- label
-
-  out <- rbind(header, df)
-  rownames(out) <- NULL
-
-  for (nm in c("est", "lo", "hi", "est2", "lo2", "hi2")) {
-    vals <- attr(df, nm, exact = TRUE)
-    if (!is.null(vals)) {
-      attr(out, nm) <- c(NA_real_, vals)
-    }
-  }
-  attr(out, "forest_meta") <- attr(df, "forest_meta", exact = TRUE)
-  out
-}
-
-.forest_bind_strata <- function(parts) {
-  all_cols <- unique(unlist(lapply(parts, names), use.names = FALSE))
-  meta <- attr(parts[[1]], "forest_meta", exact = TRUE)
-  attr_values <- lapply(c("est", "lo", "hi", "est2", "lo2", "hi2"), function(nm) {
-    unlist(lapply(parts, function(x) attr(x, nm, exact = TRUE)), use.names = FALSE)
-  })
-  names(attr_values) <- c("est", "lo", "hi", "est2", "lo2", "hi2")
-
-  parts <- lapply(parts, function(x) {
-    missing <- setdiff(all_cols, names(x))
-    for (col in missing) {
-      x[[col]] <- if (grepl("^se_", col)) NA_real_ else ""
-    }
-    x[, all_cols, drop = FALSE]
-  })
-
-  out <- do.call(rbind, parts)
-  rownames(out) <- NULL
-
-  for (nm in c("est", "lo", "hi", "est2", "lo2", "hi2")) {
-    vals <- attr_values[[nm]]
-    if (length(vals)) {
-      attr(out, nm) <- vals
-    }
-  }
-
-  attr(out, "forest_meta") <- meta
-  out
-}
-
 .forest_df_from_stratified <- function(x, digits = 2) {
   strata <- x$per_stratum
   if (!length(strata)) {
@@ -219,17 +165,86 @@
   }
 
   stratifier <- .forest_or(x$by, "Stratum")
-  parts <- Map(function(item, label) {
+  parts <- lapply(strata, function(item) {
     stratum_object <- .forest_stratum_object(x, item)
-    forest_part <- forest_df(stratum_object, digits = digits)
-    .forest_add_stratum_header(forest_part, paste0(stratifier, " = ", label))
-  }, strata, labels)
+    forest_df(stratum_object, digits = digits)
+  })
 
-  out <- .forest_bind_strata(parts)
+  first <- parts[[1]]
+  text_cols_first <- grep("\\(95% CI\\)$", names(first), value = TRUE)
+  if (length(text_cols_first) != 1L) {
+    stop(
+      "Stratified forest plots expect one effect column per stratum. ",
+      "Use a single stratified regression object created by the package stratified functions.",
+      call. = FALSE
+    )
+  }
+
+  helper_cols <- c("se_uni", "se_adj")
+  anchor_cols_first <- names(first)[grepl("^ +$", names(first))]
+  left_cols <- setdiff(names(first), c(text_cols_first, anchor_cols_first, helper_cols))
+  out <- first[, left_cols, drop = FALSE]
+
+  est_list <- lo_list <- hi_list <- vector("list", length(parts))
+  anchor_names <- character(length(parts))
+  text_names <- character(length(parts))
+
+  for (i in seq_along(parts)) {
+    part <- parts[[i]]
+    text_cols <- grep("\\(95% CI\\)$", names(part), value = TRUE)
+    if (length(text_cols) != 1L) {
+      stop(
+        "Stratified forest plots expect one effect column per stratum. ",
+        "Use a single stratified regression object created by the package stratified functions.",
+        call. = FALSE
+      )
+    }
+
+    effect_label <- text_cols[[1]]
+    text_name <- paste0(stratifier, " = ", labels[[i]], "\n", effect_label)
+    anchor_name <- paste(rep(" ", i), collapse = "")
+
+    out[[text_name]] <- part[[effect_label]]
+    out[[anchor_name]] <- ""
+
+    est_list[[i]] <- attr(part, "est", exact = TRUE)
+    lo_list[[i]] <- attr(part, "lo", exact = TRUE)
+    hi_list[[i]] <- attr(part, "hi", exact = TRUE)
+    anchor_names[[i]] <- anchor_name
+    text_names[[i]] <- text_name
+  }
+
+  if ("se_uni" %in% names(first)) {
+    out$se_uni <- first$se_uni
+  }
+
+  # Keep the old single/two-model attributes for backward compatibility, while
+  # also exposing a general list for side-by-side stratified plots.
+  attr(out, "est") <- est_list[[1]]
+  attr(out, "lo") <- lo_list[[1]]
+  attr(out, "hi") <- hi_list[[1]]
+  if (length(est_list) >= 2L) {
+    attr(out, "est2") <- est_list[[2]]
+    attr(out, "lo2") <- lo_list[[2]]
+    attr(out, "hi2") <- hi_list[[2]]
+  }
+  attr(out, "forest_estimates") <- list(
+    est = est_list,
+    lo = lo_list,
+    hi = hi_list,
+    anchors = anchor_names,
+    text_cols = text_names
+  )
+
   meta <- .forest_or(attr(out, "forest_meta", exact = TRUE), list())
+  first_meta <- attr(first, "forest_meta", exact = TRUE)
+  if (!is.null(first_meta$x_trans)) meta$x_trans <- first_meta$x_trans
+  if (!is.null(first_meta$ref_line)) meta$ref_line <- first_meta$ref_line
   meta$stratified <- TRUE
   meta$stratifier <- stratifier
   meta$strata <- labels
+  meta$side_by_side_strata <- TRUE
+  meta$effect_sets <- list(anchors = anchor_names, text_cols = text_names)
   attr(out, "forest_meta") <- meta
   out
 }
@@ -240,8 +255,9 @@
 #' \code{multi_reg()}, and optionally \code{descriptive_table()} objects. This
 #' function is useful when users want to inspect, edit, or reuse the exact data
 #' that will be passed to the forest plot. Stratified regression objects are
-#' also supported when supplied one at a time; the returned data frame is grouped
-#' by stratum and can be passed directly to \code{forest_reg()}.
+#' also supported when supplied one at a time; the returned data frame keeps the
+#' characteristic rows once and places strata side by side as separate effect
+#' columns for \code{forest_reg()}.
 #'
 #' @param uni A \code{gtregression} object from \code{uni_reg()}. If
 #'   \code{multi} is supplied without \code{uni}, the multivariable object is

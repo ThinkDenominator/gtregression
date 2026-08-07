@@ -59,6 +59,7 @@
                                     theme = "minimal",
                                     show_sample = "events",
                                     model_stats = FALSE,
+                                    show_ref = TRUE,
                                     fmt_class = "ft_cox") {
   .run_stratified_survival_reg(
     data = data,
@@ -73,6 +74,7 @@
     theme = theme,
     show_sample = show_sample,
     model_stats = model_stats,
+    show_ref = show_ref,
     fmt_class = fmt_class,
     approach = "cox",
     source = "stratified_cox_reg",
@@ -104,6 +106,7 @@
                                      theme = "minimal",
                                      show_sample = "events",
                                      model_stats = FALSE,
+                                     show_ref = TRUE,
                                      fmt_class = "ft_surv") {
   run_core <- function(data, time, event, exposures, adjust_for, interaction, multivariable) {
     .run_surv_core(
@@ -131,6 +134,7 @@
     theme = theme,
     show_sample = show_sample,
     model_stats = model_stats,
+    show_ref = show_ref,
     fmt_class = fmt_class,
     approach = "survreg",
     source = "stratified_surv_reg",
@@ -162,6 +166,7 @@
                                          theme = "minimal",
                                          show_sample = "events",
                                          model_stats = FALSE,
+                                         show_ref = TRUE,
                                          fmt_class,
                                          approach,
                                          source,
@@ -239,7 +244,8 @@
       exposures = exposures,
       stratifier = stratifier,
       td_by_stratum = tds,
-      variable_labels = variable_labels
+      variable_labels = variable_labels,
+      show_ref = show_ref
     )
     wide <- .strata_filter_survival_sample_cols(
       .strata_add_survival_counts(built$wide, models),
@@ -258,6 +264,7 @@
         stratifier = stratifier,
         n_by_stratum = n_by_stratum,
         show_sample = show_sample,
+        show_ref = show_ref,
         extra_footnotes = extra_footnotes
       ))
     } else {
@@ -272,6 +279,7 @@
         stratifier = stratifier,
         n_by_stratum = n_by_stratum,
         show_sample = show_sample,
+        show_ref = show_ref,
         extra_footnotes = extra_footnotes
       ))
     }
@@ -284,7 +292,8 @@
       exposures = exposures,
       stratifier = stratifier,
       per_stratum = per_for_uni,
-      variable_labels = variable_labels
+      variable_labels = variable_labels,
+      show_ref = show_ref
     )
     wide <- .strata_filter_survival_sample_cols(built$wide, show_sample = show_sample)
     spanners <- built$spanners
@@ -300,6 +309,7 @@
         stratifier = stratifier,
         n_by_stratum = n_by_stratum,
         show_sample = show_sample,
+        show_ref = show_ref,
         extra_footnotes = extra_footnotes
       ))
     } else {
@@ -314,10 +324,17 @@
         stratifier = stratifier,
         n_by_stratum = n_by_stratum,
         show_sample = show_sample,
+        show_ref = show_ref,
         extra_footnotes = extra_footnotes
       ))
     }
   }
+
+  .message_hidden_ref_rows(
+    source,
+    do.call(rbind, tds),
+    show_ref
+  )
 
   model_stats_out <- if (isTRUE(model_stats)) {
     .bind_stratified_model_stats(stats_by_stratum)
@@ -431,8 +448,14 @@
                                             exposures,
                                             stratifier,
                                             per_stratum,
-                                            variable_labels = NULL) {
-  sk <- .strata_build_skeleton(data, exposures, variable_labels = variable_labels)
+                                            variable_labels = NULL,
+                                            show_ref = TRUE) {
+  sk <- .strata_build_skeleton(
+    data,
+    exposures,
+    variable_labels = variable_labels,
+    show_ref = show_ref
+  )
   skeleton <- sk$skeleton
   is_factor <- sk$is_factor
 
@@ -476,11 +499,12 @@
                                            stratifier,
                                            n_by_stratum,
                                            show_sample = "events",
+                                           show_ref = TRUE,
                                            extra_footnotes = NULL) {
   c(
     .abbrev_note(approach),
     extra_footnotes,
-    if (any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))) .ref_note() else NULL,
+    if (isTRUE(show_ref) && any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))) .ref_note() else NULL,
     if (isTRUE(adjusted_mode)) .adjustment_note(adjust_for) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,

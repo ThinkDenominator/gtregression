@@ -1,6 +1,6 @@
 #' @keywords internal
 #' @noRd
-.make_display <- function(td, data, outcome, approach, effect_label) {
+.make_display <- function(td, data, outcome, approach, effect_label, show_ref = TRUE) {
   stopifnot(all(c("exposure","level","estimate","conf.low","conf.high","p.value","ref") %in% names(td)))
   label_map <- .var_label_map(data, unique(td$exposure))
   fmt_est_ci <- function(est, lo, hi, digits = 2) {
@@ -33,6 +33,18 @@
       header$is_header       <- TRUE
 
       lev <- df
+      if (!isTRUE(show_ref) && nrow(lev) == 2L && sum(lev$ref %in% TRUE) == 1L) {
+        row <- lev[!(lev$ref %in% TRUE), , drop = FALSE][1, ]
+        header[[effect_label]] <- fmt_est_ci(row$estimate, row$conf.low, row$conf.high)
+        header[["p-value"]] <- fmt_p(row$p.value)
+        return(header[, c("Characteristic", effect_label, "p-value", "N", "is_header"),
+                      drop = FALSE])
+      }
+
+      if (!isTRUE(show_ref)) {
+        lev <- lev[!(lev$ref %in% TRUE), , drop = FALSE]
+      }
+
       lev$Characteristic <- ifelse(lev$ref, lev$level, paste0("  ", lev$level))
       lev[[effect_label]] <- ifelse(lev$ref, "Ref.",
                                     fmt_est_ci(lev$estimate, lev$conf.low, lev$conf.high))
@@ -63,7 +75,13 @@
 
 #' @keywords internal
 #' @noRd
-.make_display_survival_uni <- function(td, data, time, event, effect_label, variable_labels = NULL) {
+.make_display_survival_uni <- function(td,
+                                       data,
+                                       time,
+                                       event,
+                                       effect_label,
+                                       variable_labels = NULL,
+                                       show_ref = TRUE) {
   stopifnot(all(c(
     "exposure", "level", "estimate", "conf.low", "conf.high", "p.value", "ref"
   ) %in% names(td)))
@@ -106,6 +124,18 @@
     header$is_header <- TRUE
 
     lev <- df
+    if (!isTRUE(show_ref) && nrow(lev) == 2L && sum(lev$ref %in% TRUE) == 1L) {
+      row <- lev[!(lev$ref %in% TRUE), , drop = FALSE][1, ]
+      header[[effect_label]] <- fmt_est_ci(row$estimate, row$conf.low, row$conf.high)
+      header[["p-value"]] <- .fmt_p(row$p.value)
+      return(header[, c("Characteristic", effect_label, "p-value", "N", "is_header"),
+                    drop = FALSE])
+    }
+
+    if (!isTRUE(show_ref)) {
+      lev <- lev[!(lev$ref %in% TRUE), , drop = FALSE]
+    }
+
     lev$Characteristic <- ifelse(lev$ref, lev$level, paste0("  ", lev$level))
     lev[[effect_label]] <- ifelse(
       lev$ref,
@@ -128,7 +158,12 @@
 
 #' @keywords internal
 #' @noRd
-.make_display_multi <- function(td, data, outcome, effect_label, variable_labels = NULL) {
+.make_display_multi <- function(td,
+                                data,
+                                outcome,
+                                effect_label,
+                                variable_labels = NULL,
+                                show_ref = TRUE) {
   stopifnot(all(c(
     "exposure", "level", "estimate", "conf.low", "conf.high", "p.value", "ref"
   ) %in% names(td)))
@@ -183,6 +218,18 @@
 
     # For factor exposures: show reference and levels underneath
     if (is_fact) {
+      if (!isTRUE(show_ref) && nrow(lev) == 2L && sum(lev$ref %in% TRUE) == 1L) {
+        row <- lev[!(lev$ref %in% TRUE), , drop = FALSE][1, ]
+        header[[effect_label]] <- fmt_est_ci(row$estimate, row$conf.low, row$conf.high)
+        header[["p-value"]] <- fmt_p(row$p.value)
+        return(header[, c("Characteristic", effect_label, "p-value", "is_header"),
+                      drop = FALSE])
+      }
+
+      if (!isTRUE(show_ref)) {
+        lev <- lev[!(lev$ref %in% TRUE), , drop = FALSE]
+      }
+
       lev$Characteristic <- ifelse(lev$ref, lev$level, paste0("  ", lev$level))
       lev[[effect_label]] <- ifelse(
         lev$ref,

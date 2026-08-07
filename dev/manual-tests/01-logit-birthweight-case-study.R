@@ -508,6 +508,26 @@ stratified_multi_reg(
   approach = "logit"
 )
 
+## Quick stratified plots:
+## plot_reg() accepts one stratified gtregression object and draws one panel per
+## stratum. This is useful for slides, meetings, and checking whether the
+## direction of association looks broadly similar across race groups.
+plot_reg(
+  strat_uni,
+  log_x = TRUE,
+  title = "Crude odds ratios by race"
+)
+
+plot_reg(
+  strat_multi,
+  log_x = TRUE,
+  title = "Adjusted odds ratios by race"
+)
+
+## plot_reg_combine() is intentionally not used for stratified objects. Crude
+## plus adjusted panels across several strata become too busy for a slide.
+## Use forest_reg() below for the publication-style stratified display.
+
 ## Forest plot by stratum:
 ## forest_df() accepts one stratified regression object at a time. The stratum
 ## headers are shaded in forest_reg(), which makes it easier to scan the race
@@ -720,6 +740,9 @@ save_docx(
 ## - identify_confounder() prints a console summary and has a formatted $table.
 ## - model_stats = TRUE stores fit statistics in $model_stats without cluttering
 ##   the publication table.
+## - plot_reg() draws faceted plots for one stratified object.
+## - plot_reg_combine() is intentionally reserved for non-stratified crude versus
+##   adjusted comparisons.
 ## - save_docx(table_width = 6.5) keeps wide flextables fitted to a Word page.
 ## - save_table(), save_plot(), and save_docx() write files to tempdir when the
 ##   filename has no directory.

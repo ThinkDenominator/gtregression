@@ -70,6 +70,31 @@ test_that("surv_reg crude tables display survival complete-case N consistently",
   expect_false("N" %in% names(modify_table(res, remove_N = TRUE)$table_display))
 })
 
+test_that("surv_reg explains how to show reference rows when hidden", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+
+  expect_message(
+    res <- surv_reg(
+      data = df,
+      time = time,
+      event = status,
+      exposures = trt,
+      distribution = weibull,
+      show_ref = FALSE
+    ),
+    "To display Ref., use `show_ref = TRUE`.",
+    fixed = TRUE
+  )
+
+  expect_true(any(res$table_body$ref))
+  expect_equal(nrow(res$table_display), 1L)
+  expect_false("Ref." %in% res$table_display[["Time Ratio (95% CI)"]])
+  expect_false(any(grepl("Ref. = reference category", res$table$`_source_notes`,
+                         fixed = TRUE)))
+})
+
 test_that("surv_reg returns adjusted time-ratio tables and model stats", {
   skip_if_not_installed("survival")
 
@@ -413,6 +438,32 @@ test_that("surv_reg supports stratified crude and adjusted survival tables", {
                     names(adjusted$model_stats)))
 })
 
+test_that("surv_reg explains hidden reference rows in stratified tables", {
+  skip_if_not_installed("survival")
+
+  df <- lung_surv_data()
+
+  expect_message(
+    res <- surv_reg(
+      data = df,
+      time = time,
+      event = status,
+      exposures = prior,
+      stratifier = trt,
+      distribution = weibull,
+      show_ref = FALSE
+    ),
+    "To display Ref., use `show_ref = TRUE`.",
+    fixed = TRUE
+  )
+
+  expect_true(any(vapply(res$per_stratum, function(x) any(x$table_body$ref), logical(1))))
+  eff_cols <- startsWith(names(res$table_display), "..eff__")
+  expect_false("Ref." %in% unlist(res$table_display[eff_cols]))
+  expect_false(any(grepl("Ref. = reference category", res$table$`_source_notes`,
+                         fixed = TRUE)))
+})
+
 test_that("surv_reg controls displayed sample columns in stratified tables", {
   skip_if_not_installed("survival")
 
@@ -516,13 +567,24 @@ test_that("surv_reg validates stratifier inputs and supports stratified forest d
     distribution = weibull
   )
 
-  expect_error(plot_reg(stratified), "does not support stratified")
+  strat_plot <- plot_reg(stratified)
+  expect_s3_class(strat_plot, "ggplot")
+  expect_true("stratum" %in% names(strat_plot$data))
   expect_error(plot_reg_combine(stratified, stratified), "does not support stratified")
 
   forest_data <- forest_df(stratified)
   expect_s3_class(forest_data, "data.frame")
-  expect_true("Time Ratio (95% CI)" %in% names(forest_data))
-  expect_true(any(forest_data$Characteristic == "trt = Standard treatment"))
+  expect_true(all(paste0(
+    "trt = ",
+    c("Standard treatment", "Test treatment"),
+    "\nTime Ratio (95% CI)"
+  ) %in% names(forest_data)))
+  expect_false(any(forest_data$Characteristic %in% c(
+    "trt = Standard treatment",
+    "trt = Test treatment"
+  )))
   expect_equal(length(attr(forest_data, "est")), nrow(forest_data))
   expect_equal(attr(forest_data, "forest_meta")$stratifier, "trt")
+  expect_true(attr(forest_data, "forest_meta")$side_by_side_strata)
+  expect_equal(length(attr(forest_data, "forest_estimates")$est), 2L)
 })

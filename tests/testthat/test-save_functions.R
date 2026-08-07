@@ -10,10 +10,17 @@ birthwt_save_data <- function() {
 test_that("normalize save paths validates input and appends extensions", {
   path <- .normalize_save_path(file.path(tempdir(), "my-table"), "html")
   bare_path <- .normalize_save_path("my-table", "html")
+  default_paths <- c(
+    .normalize_save_path("table", "html"),
+    .normalize_save_path("plot", "png"),
+    .normalize_save_path("forest", "pdf"),
+    .normalize_save_path("report.docx", "docx")
+  )
 
   expect_match(path, "\\.html$")
   expect_equal(normalizePath(dirname(bare_path)), normalizePath(tempdir()))
   expect_equal(basename(bare_path), "my-table.html")
+  expect_true(all(normalizePath(dirname(default_paths)) == normalizePath(tempdir())))
   expect_error(.normalize_save_path(character(0), "html"), "`filename` must be")
   expect_error(.normalize_save_path(NA_character_, "html"), "`filename` must be")
   expect_error(.normalize_save_path("x", ""), "`ext` must be")

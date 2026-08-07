@@ -394,7 +394,7 @@ test_that("forest_df recognises survival multivariable outputs as adjusted", {
   expect_false("Time Ratio (95% CI)" %in% names(surv_only))
 })
 
-test_that("forest_df builds grouped data for stratified regression outputs", {
+test_that("forest_df builds side-by-side data for stratified regression outputs", {
   df <- birthwt_forest_data()
 
   strat_uni <- stratified_uni_reg(
@@ -416,18 +416,17 @@ test_that("forest_df builds grouped data for stratified regression outputs", {
   multi_out <- forest_df(strat_multi)
 
   expect_s3_class(uni_out, "data.frame")
-  expect_true("OR (95% CI)" %in% names(uni_out))
+  expect_true(all(paste0("race = ", c("White", "Black", "Other"), "\nOR (95% CI)") %in% names(uni_out)))
   expect_equal(length(attr(uni_out, "est")), nrow(uni_out))
-  expect_true(any(uni_out$Characteristic == "race = White"))
-  expect_true(any(uni_out$Characteristic == "race = Black"))
+  expect_false(any(uni_out$Characteristic %in% c("race = White", "race = Black", "race = Other")))
+  expect_equal(sum(uni_out$Characteristic == "age"), 1L)
   expect_equal(attr(uni_out, "forest_meta")$stratifier, "race")
+  expect_true(attr(uni_out, "forest_meta")$side_by_side_strata)
+  expect_equal(length(attr(uni_out, "forest_estimates")$est), 3L)
 
   uni_plot <- forest_reg(uni_out, quiet = TRUE)
   expect_s3_class(uni_plot, "gtregression_forest")
-  expect_equal(
-    uni_plot$meta$strata_rows,
-    which(uni_plot$data$Characteristic %in% c("race = White", "race = Black", "race = Other"))
-  )
+  expect_equal(uni_plot$meta$strata_rows, integer())
   expect_true(uni_plot$meta$style_strata)
 
   plain_plot <- forest_reg(uni_out, style_strata = FALSE, quiet = TRUE)
@@ -435,7 +434,7 @@ test_that("forest_df builds grouped data for stratified regression outputs", {
   expect_equal(plain_plot$meta$strata_rows, uni_plot$meta$strata_rows)
 
   expect_s3_class(multi_out, "data.frame")
-  expect_true("Adjusted OR (95% CI)" %in% names(multi_out))
+  expect_true(all(paste0("race = ", c("White", "Black", "Other"), "\nAdjusted OR (95% CI)") %in% names(multi_out)))
   expect_false("OR (95% CI)" %in% names(multi_out))
   expect_equal(length(attr(multi_out, "est")), nrow(multi_out))
   expect_equal(attr(multi_out, "forest_meta")$strata, c("White", "Black", "Other"))
@@ -446,7 +445,7 @@ test_that("forest_df builds grouped data for stratified regression outputs", {
   )
 })
 
-test_that("forest_df builds grouped data for stratified Cox and surv outputs", {
+test_that("forest_df builds side-by-side data for stratified Cox and surv outputs", {
   skip_if_not_installed("survival")
 
   df <- data_lungcancer |>
@@ -483,20 +482,18 @@ test_that("forest_df builds grouped data for stratified Cox and surv outputs", {
   cox_adjusted_out <- forest_df(cox_adjusted_strat)
   surv_out <- forest_df(surv_strat)
 
-  expect_true("HR (95% CI)" %in% names(cox_out))
-  expect_true("Adjusted HR (95% CI)" %in% names(cox_adjusted_out))
-  expect_true("Time Ratio (95% CI)" %in% names(surv_out))
+  expect_true(all(paste0("trt = ", c("Standard treatment", "Test treatment"), "\nHR (95% CI)") %in% names(cox_out)))
+  expect_true(all(paste0("trt = ", c("Standard treatment", "Test treatment"), "\nAdjusted HR (95% CI)") %in% names(cox_adjusted_out)))
+  expect_true(all(paste0("trt = ", c("Standard treatment", "Test treatment"), "\nTime Ratio (95% CI)") %in% names(surv_out)))
   expect_equal(length(attr(cox_out, "est")), nrow(cox_out))
   expect_equal(length(attr(cox_adjusted_out, "est")), nrow(cox_adjusted_out))
   expect_equal(length(attr(surv_out, "est")), nrow(surv_out))
   expect_equal(attr(cox_out, "forest_meta")$x_trans, "log")
   expect_equal(attr(surv_out, "forest_meta")$stratifier, "trt")
+  expect_equal(length(attr(cox_out, "forest_estimates")$est), 2L)
   cox_plot <- forest_reg(cox_out, quiet = TRUE)
   expect_s3_class(cox_plot, "gtregression_forest")
-  expect_equal(
-    cox_plot$meta$strata_rows,
-    which(cox_plot$data$Characteristic %in% c("trt = Standard treatment", "trt = Test treatment"))
-  )
+  expect_equal(cox_plot$meta$strata_rows, integer())
 })
 
 test_that("forest_reg leaves default axis ticks to forestploter and respects overrides", {

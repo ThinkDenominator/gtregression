@@ -21,6 +21,9 @@
 #'   non-linear models, and R-squared for linear models. Statistics are stored
 #'   in the returned object's \code{model_stats} element and are not added to
 #'   the publication table.
+#' @param show_ref Logical; if \code{TRUE} (default), display reference-category
+#'   rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
+#'   reminds users to use \code{show_ref = TRUE} when reference rows are needed.
 #'
 #' @details
 #' Use this when you want a quick crude association table before building an
@@ -71,7 +74,8 @@ uni_reg <- function(data,
                     approach = "logit",
                     format = c("flextable","gt"),
                     theme = c("minimal"),
-                    model_stats = FALSE) {
+                    model_stats = FALSE,
+                    show_ref = TRUE) {
 
   outcome <- .vars_arg(substitute(outcome), env = parent.frame())
   exposures <- .vars_arg(substitute(exposures), env = parent.frame())
@@ -86,6 +90,7 @@ uni_reg <- function(data,
   if (!is.logical(model_stats) || length(model_stats) != 1L || is.na(model_stats)) {
     stop("`model_stats` must be TRUE or FALSE.", call. = FALSE)
   }
+  .validate_show_ref(show_ref)
 
   format <- match.arg(format, c("flextable","gt"))
   theme  <- .resolve_theme(theme)
@@ -112,12 +117,13 @@ uni_reg <- function(data,
 
   # ---- display + build table -------------------------------------------------
   effect_label <- .get_effect_label(approach)
-  display_df   <- .make_display(td, data, outcome, approach, effect_label)
+  .message_hidden_ref_rows("uni_reg", td, show_ref)
+  display_df   <- .make_display(td, data, outcome, approach, effect_label, show_ref = show_ref)
   .must_be_display_df(display_df)
 
   source_note  <- c(
     .abbrev_note(approach),
-    if (any(td$ref %in% TRUE)) .ref_note() else NULL
+    if (isTRUE(show_ref) && any(td$ref %in% TRUE)) .ref_note() else NULL
   )
 
   tbl <- if (format == "gt") {

@@ -637,7 +637,7 @@ stratified_multi_lm <- stratified_multi_reg(
 
 stratified_multi_lm
 
-stratified_multi_reg(
+stratified_adj_lm <- stratified_multi_reg(
   data = pima_data,
   outcome = outcome,
   exposures = c("mass", "insulin", "pedigree"),
@@ -645,6 +645,29 @@ stratified_multi_reg(
   adjust_for = c("pregnant", "pressure"),
   approach = "linear"
 )
+
+stratified_adj_lm
+
+## Quick stratified plots:
+## plot_reg() uses one panel per age stratum. This is the cleanest way to review
+## whether beta coefficients tell the same story in younger and older patients.
+plot_reg(
+  stratified_uni_lm,
+  title = "Crude beta coefficients by age group"
+)
+
+plot_reg(
+  stratified_adj_lm,
+  title = "Adjusted beta coefficients by age group"
+)
+
+## plot_reg_combine() is intentionally not used for stratified outputs. The
+## side-by-side crude versus adjusted display is better for ordinary regression
+## objects; forest_reg() is clearer for stratified publication tables.
+stratified_lm_forest_data <- forest_df(stratified_adj_lm)
+stratified_lm_forest_data
+
+forest_reg(stratified_lm_forest_data)
 
 
 ## 14. Export outputs ---------------------------------------------------------
@@ -679,6 +702,9 @@ save_docx(
 ## - reg_check output appears for linear models.
 ## - plot_reg() highlights significant associations when colours are supplied.
 ## - plot_reg_combine() makes crude versus adjusted changes easy to see.
+## - plot_reg() draws faceted plots for one stratified object.
+## - plot_reg_combine() is intentionally reserved for non-stratified crude versus
+##   adjusted comparisons.
 ## - model_stats = TRUE stores R-squared and fit statistics in $model_stats.
 ## - save_docx(table_width = 6.5) keeps wide flextables fitted to a Word page.
 ## - select_models() output mentions the selection direction.

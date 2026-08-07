@@ -53,6 +53,30 @@ test_that("uni_reg publication table preserves user exposure order", {
   expect_equal(unique(res$table_body$exposure), exposures)
 })
 
+test_that("uni_reg explains how to show reference rows when hidden", {
+  df <- mtcars
+  df$am <- as.integer(df$am)
+  df$vs <- factor(df$vs, levels = c(0, 1), labels = c("No", "Yes"))
+
+  expect_message(
+    res <- uni_reg(
+      data = df,
+      outcome = am,
+      exposures = vs,
+      approach = logit,
+      show_ref = FALSE
+    ),
+    "To display Ref., use `show_ref = TRUE`.",
+    fixed = TRUE
+  )
+
+  expect_true(any(res$table_body$ref))
+  expect_equal(nrow(res$table_display), 1L)
+  expect_false("Ref." %in% res$table_display[["OR (95% CI)"]])
+  expect_false(any(grepl("Ref. = reference category", res$table$`_source_notes`,
+                         fixed = TRUE)))
+})
+
 test_that("uni_reg optionally returns model-fit statistics", {
   df <- mtcars
   df$am <- as.integer(df$am)

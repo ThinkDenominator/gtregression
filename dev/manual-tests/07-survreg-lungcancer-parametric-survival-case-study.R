@@ -969,7 +969,61 @@ forest_reg(
 )
 
 
-## 21. Model selection for parametric survival regression ----------------------
+## 21. Stratified parametric survival regression -------------------------------
+
+## Question:
+## Do time ratios look different among patients with and without prior therapy?
+## The stratifier is not included as a model term; it creates separate
+## stratum-specific parametric survival models.
+
+surv_stratified_crude <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype, karno, age),
+  stratifier = prior,
+  distribution = weibull
+)
+
+surv_stratified_crude
+
+surv_stratified_adjusted <- surv_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, celltype),
+  adjust_for = c(age, karno),
+  stratifier = prior,
+  distribution = weibull,
+  show_sample = events
+)
+
+surv_stratified_adjusted
+
+## Quick/PPT-style display:
+## plot_reg() accepts one stratified surv_reg object and facets by stratum. Use
+## log_x = TRUE because Time Ratios are ratio measures.
+plot_reg(
+  surv_stratified_crude,
+  log_x = TRUE,
+  title = "Crude time ratios by prior therapy"
+)
+
+plot_reg(
+  surv_stratified_adjusted,
+  log_x = TRUE,
+  title = "Adjusted time ratios by prior therapy"
+)
+
+## plot_reg_combine() is intentionally not used for stratified objects. For
+## publication, use forest_df() plus forest_reg() with one stratified object.
+surv_stratified_forest_data <- forest_df(surv_stratified_adjusted)
+surv_stratified_forest_data
+
+forest_reg(surv_stratified_forest_data)
+
+
+## 22. Model selection for parametric survival regression ----------------------
 
 ## select_models() supports approach = survreg. Use the distribution argument to
 ## choose the parametric survival distribution used during selection.
@@ -1013,7 +1067,7 @@ select_models(
 )
 
 
-## 22. Export outputs ----------------------------------------------------------
+## 23. Export outputs ----------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
 ## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
@@ -1038,7 +1092,7 @@ save_docx(
 )
 
 
-## 23. Final checklist ---------------------------------------------------------
+## 24. Final checklist ---------------------------------------------------------
 
 ## Things to confirm manually:
 ## - surv_reg() displays Time Ratio (95% CI), not HR.
@@ -1063,7 +1117,10 @@ save_docx(
 ## - merge_tables() combines descriptive, crude, and adjusted survival outputs.
 ## - plot_reg() and plot_reg_combine() work with Time Ratio outputs.
 ## - plot_reg() respects show_ref = FALSE, xlim, and breaks for Time Ratio plots.
+## - plot_reg() draws faceted plots for one stratified surv_reg object.
+## - plot_reg_combine() is intentionally reserved for non-stratified surv_reg objects.
 ## - forest_df() and forest_reg() work with Time Ratio outputs.
+## - forest_df() and forest_reg() work with one stratified surv_reg object.
 ## - forest_reg(side = "left") works with parametric survival forest tables.
 ## - select_models() supports approach = survreg with time, event, and distribution.
 ## - select_models() supports forward, backward, and both directions for survreg.

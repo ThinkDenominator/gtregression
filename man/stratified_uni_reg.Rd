@@ -11,7 +11,8 @@ stratified_uni_reg(
   stratifier,
   approach = "logit",
   format = c("flextable", "gt"),
-  theme = c("minimal")
+  theme = c("minimal"),
+  show_ref = TRUE
 )
 }
 \arguments{
@@ -34,6 +35,10 @@ and bare names are accepted.}
 \code{"gt"}.}
 
 \item{theme}{Table styling preset or theme primitives.}
+
+\item{show_ref}{Logical; if \code{TRUE} (default), display reference-category
+rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
+reminds users to use \code{show_ref = TRUE} when reference rows are needed.}
 }
 \value{
 A list of class

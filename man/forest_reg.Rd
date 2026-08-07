@@ -33,7 +33,7 @@ forest_reg(
 \code{forestploter} defaults are used. You may pass colors and styling
 either here or through \code{...}.}
 
-\item{ci_col_width}{Numeric value, or length-2 numeric for two effect columns,
+\item{ci_col_width}{Numeric value, or one value per effect column,
 controlling the blank spacer width used by \code{forestploter} for the
 confidence-interval plot column(s). Values greater than 1 are interpreted
 as approximate character counts. Values between 0 and 1 are accepted for
@@ -47,21 +47,24 @@ The \code{Characteristic} column and descriptive columns remain on the left.}
 
 \item{effects}{Optional effect labels passed to \code{forestploter::forest()}.}
 
-\item{ticks_at}{Optional numeric vector, or length-2 list for two effect
+\item{ticks_at}{Optional numeric vector, or list of numeric vectors for
+multiple effect
 columns, specifying x-axis tick positions. If \code{NULL},
 \code{forestploter::forest()} chooses the default ticks.}
 
 \item{ticks_digits}{Optional number of digits for x-axis tick labels.}
 
-\item{xlim}{Optional numeric vector of length 2, or length-2 list for two
+\item{xlim}{Optional numeric vector of length 2, or list of length-2 numeric
+vectors for multiple
 effect columns, specifying x-axis limits. If \code{NULL},
 \code{forestploter::forest()} chooses the default limits.}
 
-\item{style_strata}{Logical. When \code{TRUE}, stratum header rows created
-by \code{forest_df()} from a stratified regression object are shown in bold
-with a subtle background shade.}
+\item{style_strata}{Logical. Retained for older vertically grouped
+stratified forest data. Current \code{forest_df()} stratified output places
+strata side by side, so no stratum header rows are styled.}
 
-\item{strata_fill}{Character. Fill color used for styled stratum header rows.}
+\item{strata_fill}{Character. Fill color used for older styled stratum header
+rows.}
 
 \item{...}{Passed to \code{forestploter::forest()}. Common options include
 \code{title} and \code{footnote}.}
@@ -80,7 +83,7 @@ A \code{gtregression_forest} object with elements:
 \description{
 Wrapper around \code{forestploter::forest()} that works directly with
 \code{forest_df()} output or with \code{gtregression} regression objects.
-It can show descriptive columns and one or two model effect columns in a
+It can show descriptive columns and one or more model effect columns in a
 table-style forest plot while leaving axis and interval drawing to
 \pkg{forestploter}.
 }
