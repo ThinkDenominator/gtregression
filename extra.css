@@ -66,6 +66,14 @@ body {
   filter: drop-shadow(0 18px 30px rgba(23, 33, 43, 0.16));
 }
 
+.template-home .gtreg-home-logo {
+  display: block;
+  width: min(280px, 52vw);
+  max-width: 100%;
+  height: auto;
+  margin: 1.25rem 0 2rem;
+}
+
 .gtreg-kicker {
   display: inline-flex;
   align-items: center;
@@ -193,6 +201,10 @@ body {
 
   .gtreg-hero img {
     max-width: 130px;
+  }
+
+  .template-home .gtreg-home-logo {
+    width: min(180px, 60vw);
   }
 
   .gtreg-workflow {
