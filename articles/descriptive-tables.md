@@ -1,7 +1,7 @@
 # Descriptive Tables
 
 Start with a table that people can actually read.
-[`descriptive_table()`](https://thinkdenominator.github.io/gtregression/reference/descriptive_table.md)
+[`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md)
 creates publication-ready summaries for continuous, categorical, and
 mixed exposure sets.
 

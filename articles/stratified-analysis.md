@@ -72,7 +72,7 @@ strata_desc$table
 
 ## Univariable by Stratum
 
-[`stratified_uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_uni_reg.md)
+[`stratified_uni_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_uni_reg.md)
 fits one model per exposure inside each stratum. The result is a single
 wide table, with one spanner per stratum.
 
@@ -113,7 +113,7 @@ strata_uni$table
 ## Full Multivariable Model by Stratum
 
 With `adjust_for = NULL`,
-[`stratified_multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_multi_reg.md)
+[`stratified_multi_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_multi_reg.md)
 fits one multivariable model inside each stratum using all supplied
 exposures.
 
@@ -200,11 +200,12 @@ real data, and one small subgroup should not erase the whole analysis.
 
 ## Forest Plot by Stratum
 
-[`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
+[`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
 can also prepare one stratified regression object for
-[`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md).
-Stratum headers are kept in the plot so readers can scan each subgroup
-separately.
+[`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md).
+The variable rows are kept once and each stratum is placed in a
+side-by-side effect column, which is easier to compare than repeating
+the full variable list for every subgroup.
 
 ``` r
 

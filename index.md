@@ -6,8 +6,8 @@ visualise results, and export manuscript-ready outputs without
 hand-formatting every coefficient.
 
 [Start the
-workflow](https://thinkdenominator.github.io/gtregression/articles/gtregression-intro.md)[Explore
-functions](https://thinkdenominator.github.io/gtregression/reference/index.md)
+workflow](https://gtregression.thinkdenominator.com/articles/gtregression-intro.md)[Explore
+functions](https://gtregression.thinkdenominator.com/reference/index.md)
 
 ![gtregression logo](reference/figures/gtregression_hex.png)
 
@@ -159,29 +159,29 @@ uni_stats$model_stats
 
 | Task | Start here |
 |----|----|
-| First workflow | [Start Here](https://thinkdenominator.github.io/gtregression/articles/gtregression-intro.html) |
-| Descriptive summaries | [Descriptive Tables](https://thinkdenominator.github.io/gtregression/articles/descriptive-tables.html) |
-| Regression tables | [Regression Tables](https://thinkdenominator.github.io/gtregression/articles/regression-tables.html) |
-| Survival analysis | [Survival Analysis](https://thinkdenominator.github.io/gtregression/articles/survival-analysis.html) |
-| Causal mediation | [Causal Mediation](https://thinkdenominator.github.io/gtregression/articles/causal-mediation.html) |
-| Visualise estimates | [Visualise Results](https://thinkdenominator.github.io/gtregression/articles/visualise-results.html) |
-| Stratified models | [Stratified Analysis](https://thinkdenominator.github.io/gtregression/articles/stratified-analysis.html) |
-| Diagnostics and selection | [Diagnostics](https://thinkdenominator.github.io/gtregression/articles/diagnostics-selection.html) |
-| Confounding and interaction | [Interpret](https://thinkdenominator.github.io/gtregression/articles/confounding-interaction.html) |
-| Merge and export | [Customize and Export](https://thinkdenominator.github.io/gtregression/articles/customize-export.html) |
+| First workflow | [Start Here](https://gtregression.thinkdenominator.com/articles/gtregression-intro.html) |
+| Descriptive summaries | [Descriptive Tables](https://gtregression.thinkdenominator.com/articles/descriptive-tables.html) |
+| Regression tables | [Regression Tables](https://gtregression.thinkdenominator.com/articles/regression-tables.html) |
+| Survival analysis | [Survival Analysis](https://gtregression.thinkdenominator.com/articles/survival-analysis.html) |
+| Causal mediation | [Causal Mediation](https://gtregression.thinkdenominator.com/articles/causal-mediation.html) |
+| Visualise estimates | [Visualise Results](https://gtregression.thinkdenominator.com/articles/visualise-results.html) |
+| Stratified models | [Stratified Analysis](https://gtregression.thinkdenominator.com/articles/stratified-analysis.html) |
+| Diagnostics and selection | [Diagnostics](https://gtregression.thinkdenominator.com/articles/diagnostics-selection.html) |
+| Confounding and interaction | [Interpret](https://gtregression.thinkdenominator.com/articles/confounding-interaction.html) |
+| Merge and export | [Customize and Export](https://gtregression.thinkdenominator.com/articles/customize-export.html) |
 
 ## Function Map
 
 | Workflow | Functions |
 |----|----|
-| Describe | [`descriptive_table()`](https://thinkdenominator.github.io/gtregression/reference/descriptive_table.md), [`dissect()`](https://thinkdenominator.github.io/gtregression/reference/dissect.md) |
-| Model | [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md), [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md), [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md), [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md) |
-| Survival | [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md), [`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md), [`survival_summary()`](https://thinkdenominator.github.io/gtregression/reference/survival_summary.md), [`survival_quantiles()`](https://thinkdenominator.github.io/gtregression/reference/survival_quantiles.md), [`survival_prob()`](https://thinkdenominator.github.io/gtregression/reference/survival_prob.md), [`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md), [`logrank_test()`](https://thinkdenominator.github.io/gtregression/reference/logrank_test.md), [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md), [`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md), [`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md), [`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md) |
-| Stratify | [`stratified_uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_uni_reg.md), [`stratified_multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_multi_reg.md) |
-| Visualise | [`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md), [`plot_reg_combine()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.md), [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md), [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md) |
-| Diagnose | [`check_convergence()`](https://thinkdenominator.github.io/gtregression/reference/check_convergence.md), [`check_collinearity()`](https://thinkdenominator.github.io/gtregression/reference/check_collinearity.md), [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md), [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md) |
-| Interpret | [`identify_confounder()`](https://thinkdenominator.github.io/gtregression/reference/identify_confounder.md), [`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md), [`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md), [`plot_mediation()`](https://thinkdenominator.github.io/gtregression/reference/plot_mediation.md) |
-| Polish and export | [`modify_table()`](https://thinkdenominator.github.io/gtregression/reference/modify_table.md), [`merge_tables()`](https://thinkdenominator.github.io/gtregression/reference/merge_tables.md), [`save_table()`](https://thinkdenominator.github.io/gtregression/reference/save_table.md), [`save_plot()`](https://thinkdenominator.github.io/gtregression/reference/save_plot.md), [`save_docx()`](https://thinkdenominator.github.io/gtregression/reference/save_docx.md) |
+| Describe | [`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md), [`dissect()`](https://gtregression.thinkdenominator.com/reference/dissect.md) |
+| Model | [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md), [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md), [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md), [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md) |
+| Survival | [`km_plot()`](https://gtregression.thinkdenominator.com/reference/km_plot.md), [`km_risk_table()`](https://gtregression.thinkdenominator.com/reference/km_risk_table.md), [`survival_summary()`](https://gtregression.thinkdenominator.com/reference/survival_summary.md), [`survival_quantiles()`](https://gtregression.thinkdenominator.com/reference/survival_quantiles.md), [`survival_prob()`](https://gtregression.thinkdenominator.com/reference/survival_prob.md), [`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md), [`logrank_test()`](https://gtregression.thinkdenominator.com/reference/logrank_test.md), [`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md), [`surv_model_compare()`](https://gtregression.thinkdenominator.com/reference/surv_model_compare.md), [`plot_surv_fit()`](https://gtregression.thinkdenominator.com/reference/plot_surv_fit.md), [`surv_predict()`](https://gtregression.thinkdenominator.com/reference/surv_predict.md) |
+| Stratify | [`stratified_uni_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_uni_reg.md), [`stratified_multi_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_multi_reg.md) |
+| Visualise | [`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md), [`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md), [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md), [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md) |
+| Diagnose | [`check_convergence()`](https://gtregression.thinkdenominator.com/reference/check_convergence.md), [`check_collinearity()`](https://gtregression.thinkdenominator.com/reference/check_collinearity.md), [`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md), [`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md) |
+| Interpret | [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md), [`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md), [`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md), [`plot_mediation()`](https://gtregression.thinkdenominator.com/reference/plot_mediation.md) |
+| Polish and export | [`modify_table()`](https://gtregression.thinkdenominator.com/reference/modify_table.md), [`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md), [`save_table()`](https://gtregression.thinkdenominator.com/reference/save_table.md), [`save_plot()`](https://gtregression.thinkdenominator.com/reference/save_plot.md), [`save_docx()`](https://gtregression.thinkdenominator.com/reference/save_docx.md) |
 
 ## Citation
 

@@ -15,7 +15,8 @@ multi_reg(
   approach = "logit",
   format = c("flextable", "gt"),
   theme = c("minimal"),
-  model_stats = FALSE
+  model_stats = FALSE,
+  show_ref = TRUE
 )
 ```
 
@@ -74,6 +75,12 @@ multi_reg(
   R-squared for linear models. Statistics are stored in the returned
   object's `model_stats` element and are not added to the publication
   table.
+
+- show_ref:
+
+  Logical; if `TRUE` (default), display reference-category rows as
+  `"Ref."`. If `FALSE`, hide reference rows; a message reminds users to
+  use `show_ref = TRUE` when reference rows are needed.
 
 ## Value
 

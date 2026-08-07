@@ -29,7 +29,7 @@ exposures <- c("age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat")
 ## Convergence Screening
 
 Use
-[`check_convergence()`](https://thinkdenominator.github.io/gtregression/reference/check_convergence.md)
+[`check_convergence()`](https://gtregression.thinkdenominator.com/reference/check_convergence.md)
 before interpreting model estimates, especially for log-binomial and
 small or sparse binary-outcome models. A non-converged model is a
 fitting warning, not a finding.
@@ -73,11 +73,11 @@ check_convergence(
 | smoke + ht + ui + ptl_cat | logbinomial | No |  |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-7a69f9fc quarto-disable-processing="true"}
+Convergence check {.table .cl-000441fc quarto-disable-processing="true"}
 
 ## Collinearity Screening
 
-[`check_collinearity()`](https://thinkdenominator.github.io/gtregression/reference/check_collinearity.md)
+[`check_collinearity()`](https://gtregression.thinkdenominator.com/reference/check_collinearity.md)
 reports VIF-style diagnostics for multivariable models. High VIF values
 are prompts to inspect coding, overlap between predictors, and the
 scientific purpose of the model.
@@ -107,7 +107,7 @@ check_collinearity(birthwt_multi, format = gt)
 | Screening aid only; interpret VIF with model purpose, coding choices, sample size, and subject-matter knowledge. |  |  |
 
 Adjusted-mode
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
 objects contain one model per exposure. The collinearity output keeps
 that list structure so each model can be inspected separately.
 
@@ -162,14 +162,14 @@ check_collinearity(birthwt_adjusted, format = tibble)
 
 ## Model Fit Plots
 
-[`plot_model_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_model_fit.md)
+[`plot_model_fit()`](https://gtregression.thinkdenominator.com/reference/plot_model_fit.md)
 turns fitted models into quick diagnostic plots. It accepts raw
 [`lm()`](https://rdrr.io/r/stats/lm.html) and
 [`glm()`](https://rdrr.io/r/stats/glm.html) objects, and it also works
 with models saved inside
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+[`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
 and
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
 results.
 
 For logistic regression, the calibration plot compares predicted
@@ -191,7 +191,7 @@ plot_model_fit(
 ![](diagnostics-selection_files/figure-html/diag-fit-logistic-1.png)
 
 When a
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+[`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
 object contains several models, use `model_name` to choose the exposure
 you want to inspect. For a simple binary exposure, calibration may only
 show two points because the model has only two fitted probabilities; in
@@ -233,7 +233,7 @@ plot_model_fit(fit_lm)
 ## Proportional Hazards Screening
 
 For Cox models, use
-[`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md)
+[`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md)
 before treating hazard ratios as final. It reports Schoenfeld residual
 tests from
 [`survival::cox.zph()`](https://rdrr.io/pkg/survival/man/cox.zph.html),
@@ -314,14 +314,14 @@ check_ph(cox_fit, transform = rank, format = tibble)
 
 ## Stepwise Model Selection
 
-[`compare_models()`](https://thinkdenominator.github.io/gtregression/reference/compare_models.md)
+[`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md)
 is for prespecified candidate models that have already been fitted with
 gtregression. It answers a different question from stepwise selection:
 “How do these planned models compare?” The inputs should be
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
 or
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
 outputs, not raw [`lm()`](https://rdrr.io/r/stats/lm.html),
 [`glm()`](https://rdrr.io/r/stats/glm.html), `coxph()`, or `survreg()`
 objects. This keeps the workflow consistent with the publication-ready
@@ -374,7 +374,7 @@ identifies better relative fit among the compared models. When
 `primary_exposure` is supplied, the table also tracks that effect
 estimate and the percentage change across models.
 
-[`compare_models()`](https://thinkdenominator.github.io/gtregression/reference/compare_models.md)
+[`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md)
 automatically checks whether the candidate models appear to use the same
 analysis sample. It uses retained row identifiers when the fitted model
 stores them; otherwise it compares N and event counts. If the models use
@@ -387,11 +387,11 @@ intervals, and clinical or epidemiological reasoning to judge
 robustness.
 
 For Cox and parametric survival models, fit the candidate models with
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
 or
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
 first.
-[`compare_models()`](https://thinkdenominator.github.io/gtregression/reference/compare_models.md)
+[`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md)
 then keeps survival-specific columns such as events and Cox concordance.
 
 ``` r
@@ -434,7 +434,7 @@ cox_model_comparison$table
 
 [TABLE]
 
-[`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md)
+[`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md)
 compares candidate models step by step. It is useful for exploration,
 teaching, and sensitivity checks. It should not replace a planned model
 based on study design or a causal framework.
@@ -513,26 +513,26 @@ select_models(
 
 ## What To Inspect
 
-- [`check_convergence()`](https://thinkdenominator.github.io/gtregression/reference/check_convergence.md):
+- [`check_convergence()`](https://gtregression.thinkdenominator.com/reference/check_convergence.md):
   convergence status and maximum fitted probabilities. Use `format = gt`
   or `format = flextable` for viewing tables.
-- [`check_collinearity()`](https://thinkdenominator.github.io/gtregression/reference/check_collinearity.md):
+- [`check_collinearity()`](https://gtregression.thinkdenominator.com/reference/check_collinearity.md):
   VIF and interpretation. Nested model outputs keep their list structure
   when formatted.
-- [`plot_model_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_model_fit.md):
+- [`plot_model_fit()`](https://gtregression.thinkdenominator.com/reference/plot_model_fit.md):
   residual, calibration, observed-versus-predicted, and influence plots
   for `lm`/`glm` models and stored
-  [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+  [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
   /
-  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+  [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
   fitted models.
-- [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md):
+- [`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md):
   Schoenfeld residual proportional hazards tests for Cox models,
   including term-level and global tests.
-- [`compare_models()`](https://thinkdenominator.github.io/gtregression/reference/compare_models.md):
+- [`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md):
   AIC, BIC, log-likelihood, likelihood-ratio tests, sample size, events
   for survival models, and optional primary-exposure tracking for
   gtregression candidate models.
-- [`select_models()`](https://thinkdenominator.github.io/gtregression/reference/select_models.md):
+- [`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md):
   `$results_table`, `$best_model`, `$all_models`, and `$direction`;
   `$table` is added when `format = gt` or `format = flextable`.

@@ -3,10 +3,10 @@
 Compare gtregression candidate models side by side using model-fit
 statistics. This is intended for transparent model comparison after you
 have already fitted the candidate models with functions such as
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
 or
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md).
 
 ## Usage
 
@@ -30,10 +30,10 @@ compare_models(
 
   Two or more gtregression model objects, or one list containing them.
   Inputs should be outputs from
-  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
-  [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
+  [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+  [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
   or
-  [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
+  [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md).
 
 - model_names:
 
@@ -100,10 +100,10 @@ complete-case filtering. It compares models already fitted by
 gtregression and extracts the single fitted model stored in each
 object's `models` element. The reported N, event counts, and fit
 statistics therefore come from the model already fitted by
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
 or
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md).
 This keeps model comparison separate from model selection: compare
 candidate models first, then choose the final model using clinical,
 epidemiological, and statistical judgement.

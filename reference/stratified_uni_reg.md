@@ -14,7 +14,8 @@ stratified_uni_reg(
   stratifier,
   approach = "logit",
   format = c("flextable", "gt"),
-  theme = c("minimal")
+  theme = c("minimal"),
+  show_ref = TRUE
 )
 ```
 
@@ -52,6 +53,12 @@ stratified_uni_reg(
 
   Table styling preset or theme primitives.
 
+- show_ref:
+
+  Logical; if `TRUE` (default), display reference-category rows as
+  `"Ref."`. If `FALSE`, hide reference rows; a message reminds users to
+  use `show_ref = TRUE` when reference rows are needed.
+
 ## Value
 
 A list of class `c("gtregression", "stratified_uni_reg", ...)` with
@@ -68,7 +75,7 @@ elements:
 - `per_stratum`:
 
   List of complete
-  [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+  [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
   results by stratum.
 
 - `models`:
@@ -127,7 +134,7 @@ matching still uses the original column names.
 - `$per_stratum`:
 
   Full
-  [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+  [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
   result objects by stratum.
 
 - `$models`:

@@ -24,6 +24,7 @@ gt or flextable."><!-- dependencies from examples --></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
+    <li><a class="dropdown-item" href="../articles/function-options.html">Function Options</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
@@ -63,7 +64,8 @@ combine the results into a stratified table rendered with
 <span>  <span class="va">stratifier</span>,</span>
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span><span class="op">)</span>,</span>
-<span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minimal"</span><span class="op">)</span></span>
+<span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minimal"</span><span class="op">)</span>,</span>
+<span>  show_ref <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -103,6 +105,12 @@ and bare names are accepted.</p></dd>
 
 <dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>
 <dd><p>Table styling preset or theme primitives.</p></dd>
+
+
+<dt id="arg-show-ref">show_ref<a class="anchor" aria-label="anchor" href="#arg-show-ref"></a></dt>
+<dd><p>Logical; if <code>TRUE</code> (default), display reference-category
+rows as <code>"Ref."</code>. If <code>FALSE</code>, hide reference rows; a message
+reminds users to use <code>show_ref = TRUE</code> when reference rows are needed.</p></dd>
 
 </dl></div>
     <div class="section level2">

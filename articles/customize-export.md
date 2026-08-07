@@ -53,7 +53,7 @@ birthwt_multi <- multi_reg(
 
 If labels already live on the data, `gtregression` uses them
 automatically.
-[`modify_table()`](https://thinkdenominator.github.io/gtregression/reference/modify_table.md)
+[`modify_table()`](https://gtregression.thinkdenominator.com/reference/modify_table.md)
 is still useful for journal-specific wording, compact headers, captions,
 and caveats. Use raw variable names on the left side of
 `variable_labels` and `level_labels`; this keeps customisation stable
@@ -98,12 +98,12 @@ birthwt_custom$table
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
 | Adjusted for maternal age, maternal weight, and maternal race. |  |  |
 
-Adjusted regression for low birth weight {.table .cl-749ff0d0
+Adjusted regression for low birth weight {.table .cl-fab19056
 quarto-disable-processing="true"}
 
 ## Merge Tables
 
-[`merge_tables()`](https://thinkdenominator.github.io/gtregression/reference/merge_tables.md)
+[`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md)
 combines descriptive, crude, and adjusted results. Matching is based on
 the original variable names, so merged tables remain aligned even when
 the visible labels differ across input tables.
@@ -185,7 +185,7 @@ birthwt_merged_paper$table
 | Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-75264072 quarto-disable-processing="true"}
+.cl-fb240a96 quarto-disable-processing="true"}
 
 ## Save Outputs
 
@@ -218,7 +218,7 @@ plot_path <- save_plot(
 `flextable` is the default table engine, so Word export works naturally.
 If a table was created as `format = gt`, save it as HTML/PDF or recreate
 it with `format = flextable` before sending it to
-[`save_docx()`](https://thinkdenominator.github.io/gtregression/reference/save_docx.md).
+[`save_docx()`](https://gtregression.thinkdenominator.com/reference/save_docx.md).
 Wide tables are fitted to a standard Word page by default; use
 `table_width` when your document has different margins or landscape
 orientation.
@@ -244,13 +244,13 @@ docx_path <- save_docx(
 
 ## What To Inspect
 
-- [`modify_table()`](https://thinkdenominator.github.io/gtregression/reference/modify_table.md):
+- [`modify_table()`](https://gtregression.thinkdenominator.com/reference/modify_table.md):
   changed labels, caption, and caveat.
-- [`merge_tables()`](https://thinkdenominator.github.io/gtregression/reference/merge_tables.md):
+- [`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md):
   `$table`, `$table_display`, and `$footnotes`.
-- [`save_table()`](https://thinkdenominator.github.io/gtregression/reference/save_table.md),
-  [`save_plot()`](https://thinkdenominator.github.io/gtregression/reference/save_plot.md),
-  [`save_docx()`](https://thinkdenominator.github.io/gtregression/reference/save_docx.md):
+- [`save_table()`](https://gtregression.thinkdenominator.com/reference/save_table.md),
+  [`save_plot()`](https://gtregression.thinkdenominator.com/reference/save_plot.md),
+  [`save_docx()`](https://gtregression.thinkdenominator.com/reference/save_docx.md):
   invisibly returned file paths.
 - Raw variable names remain available for relabelling, merging, and
   testing even when display labels are used.

@@ -3,40 +3,46 @@
 ### Start Here
 
 - [Start Here: Model to
-  Manuscript](https://thinkdenominator.github.io/gtregression/articles/gtregression-intro.md):
+  Manuscript](https://gtregression.thinkdenominator.com/articles/gtregression-intro.md):
+
+- [Function
+  Options](https://gtregression.thinkdenominator.com/articles/function-options.md):
+
+  A quick reference for gtregression arguments, defaults, available
+  choices, and what each option does.
 
 ### Tables
 
 - [Descriptive
-  Tables](https://thinkdenominator.github.io/gtregression/articles/descriptive-tables.md):
+  Tables](https://gtregression.thinkdenominator.com/articles/descriptive-tables.md):
 - [Regression
-  Tables](https://thinkdenominator.github.io/gtregression/articles/regression-tables.md):
+  Tables](https://gtregression.thinkdenominator.com/articles/regression-tables.md):
 - [Survival
-  Analysis](https://thinkdenominator.github.io/gtregression/articles/survival-analysis.md):
+  Analysis](https://gtregression.thinkdenominator.com/articles/survival-analysis.md):
 
 ### Visualise
 
 - [Visualise Regression
-  Results](https://thinkdenominator.github.io/gtregression/articles/visualise-results.md):
+  Results](https://gtregression.thinkdenominator.com/articles/visualise-results.md):
 
 ### Stratify
 
 - [Stratified
-  Analysis](https://thinkdenominator.github.io/gtregression/articles/stratified-analysis.md):
+  Analysis](https://gtregression.thinkdenominator.com/articles/stratified-analysis.md):
 
 ### Diagnostics
 
 - [Diagnostics and Model
-  Selection](https://thinkdenominator.github.io/gtregression/articles/diagnostics-selection.md):
+  Selection](https://gtregression.thinkdenominator.com/articles/diagnostics-selection.md):
 
 ### Interpret
 
 - [Confounding and
-  Interaction](https://thinkdenominator.github.io/gtregression/articles/confounding-interaction.md):
+  Interaction](https://gtregression.thinkdenominator.com/articles/confounding-interaction.md):
 - [Causal Mediation
-  Analysis](https://thinkdenominator.github.io/gtregression/articles/causal-mediation.md):
+  Analysis](https://gtregression.thinkdenominator.com/articles/causal-mediation.md):
 
 ### Export
 
 - [Customize, Merge, and
-  Export](https://thinkdenominator.github.io/gtregression/articles/customize-export.md):
+  Export](https://gtregression.thinkdenominator.com/articles/customize-export.md):

@@ -24,6 +24,7 @@ spanners for each stratum, model N, "Adjusted &amp;lt;effect&amp;gt;", and "p-va
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
+    <li><a class="dropdown-item" href="../articles/function-options.html">Function Options</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
@@ -65,7 +66,8 @@ spanners for each stratum, model N, "Adjusted &lt;effect&gt;", and "p-value".</p
 <span>  interaction <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span><span class="op">)</span>,</span>
-<span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minimal"</span><span class="op">)</span></span>
+<span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minimal"</span><span class="op">)</span>,</span>
+<span>  show_ref <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -116,6 +118,12 @@ using standard formula syntax, e.g. <code>"bmi*sex"</code></p></dd>
 <dd><p>Preset name (e.g. <code>"minimal"</code>, <code>"striped"</code>, <code>"clinical"</code>,
 <code>"shaded"</code>, <code>"jama"</code>) or primitives
 <code>c("plain","zebra","lines","labels_bold","compact","header_shaded")</code></p></dd>
+
+
+<dt id="arg-show-ref">show_ref<a class="anchor" aria-label="anchor" href="#arg-show-ref"></a></dt>
+<dd><p>Logical; if <code>TRUE</code> (default), display reference-category
+rows as <code>"Ref."</code>. If <code>FALSE</code>, hide reference rows; a message
+reminds users to use <code>show_ref = TRUE</code> when reference rows are needed.</p></dd>
 
 </dl></div>
     <div class="section level2">

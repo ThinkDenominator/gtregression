@@ -22,6 +22,7 @@ table in flextable or gt format."><!-- dependencies from examples --></head><bod
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
+    <li><a class="dropdown-item" href="../articles/function-options.html">Function Options</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
@@ -62,7 +63,8 @@ table in <span class="pkg">flextable</span> or <span class="pkg">gt</span> forma
 <span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span><span class="op">)</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"minimal"</span><span class="op">)</span>,</span>
-<span>  model_stats <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  model_stats <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  show_ref <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -124,6 +126,12 @@ such as AIC, BIC, log-likelihood, deviance, pseudo R-squared for
 non-linear models, and R-squared for linear models. Statistics are stored
 in the returned object's <code>model_stats</code> element and are not added to
 the publication table.</p></dd>
+
+
+<dt id="arg-show-ref">show_ref<a class="anchor" aria-label="anchor" href="#arg-show-ref"></a></dt>
+<dd><p>Logical; if <code>TRUE</code> (default), display reference-category
+rows as <code>"Ref."</code>. If <code>FALSE</code>, hide reference rows; a message
+reminds users to use <code>show_ref = TRUE</code> when reference rows are needed.</p></dd>
 
 </dl></div>
     <div class="section level2">

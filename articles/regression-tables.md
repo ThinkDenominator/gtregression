@@ -44,7 +44,7 @@ attr(birthwt_data$ftv_cat, "label") <- "First trimester visits"
 
 ## Univariable Models
 
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+[`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
 fits one model per exposure and returns a table ready for reports.
 Variable labels set with `attr(x, "label")` or
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html)
@@ -94,7 +94,7 @@ birthwt_uni$table
 ## Multivariable Models
 
 With `adjust_for = NULL`,
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
 fits all supplied exposures in one multivariable model. This is the
 usual fully adjusted model when every exposure listed should appear in
 the same formula.
@@ -222,7 +222,7 @@ birthwt_uni_stats$model_stats
     ## 8        NA            NA 189
 
 For adjusted mode,
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
 returns one row of statistics per adjusted exposure-specific model.
 
 ``` r
@@ -322,7 +322,7 @@ multi_reg(
 
 ## Cox Survival Models
 
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
 uses direct `time` and `event` arguments and returns hazard ratios.
 Without `adjust_for`, the table shows crude HRs. With `adjust_for`, the
 table shows adjusted HRs.
@@ -448,9 +448,9 @@ cox_interaction$table
 
 ## Parametric Survival Models
 
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
 uses the same `time`, `event`, `exposures`, and `adjust_for` grammar as
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
 but fits parametric survival models with
 [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html).
 The table reports time ratios rather than hazard ratios. A time ratio

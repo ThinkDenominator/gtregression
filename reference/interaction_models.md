@@ -102,11 +102,11 @@ estimation is not used here because this function tests an explicit
 interaction term in a regression model. For broader screening of
 candidate confounders or effect modifiers, including
 Mantel-Haenszel-supported checks when appropriate, use
-[`identify_confounder()`](https://thinkdenominator.github.io/gtregression/reference/identify_confounder.md).
+[`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md).
 
 ## See also
 
-[`identify_confounder()`](https://thinkdenominator.github.io/gtregression/reference/identify_confounder.md)
+[`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md)
 for broader confounding and effect-modification screening.
 
 ## Examples
@@ -171,11 +171,11 @@ interaction_models(
 #> 
 #> $formula_no_interaction
 #> low ~ smoke + race + age + lwt
-#> <environment: 0x55a4340ae5a8>
+#> <environment: 0x563e176a6ed8>
 #> 
 #> $formula_with_interaction
 #> low ~ smoke + race + age + lwt + smoke:race
-#> <environment: 0x55a4340ae5a8>
+#> <environment: 0x563e176a6ed8>
 #> 
 #> $interaction_terms
 #> [1] "smokeYes:raceBlack" "smokeYes:raceOther"
@@ -276,12 +276,12 @@ interaction_models(
 #> 
 #> $formula_no_interaction
 #> survival::Surv(time, status) ~ trt + prior + age + karno
-#> <environment: 0x55a42f897f50>
+#> <environment: 0x563e1c48b730>
 #> 
 #> $formula_with_interaction
 #> survival::Surv(time, status) ~ trt + prior + age + karno + trt * 
 #>     prior
-#> <environment: 0x55a42f897f50>
+#> <environment: 0x563e1c48b730>
 #> 
 #> $interaction_terms
 #> [1] "trtTest treatment:priorYes"

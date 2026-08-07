@@ -17,7 +17,8 @@ stratified_multi_reg(
   interaction = NULL,
   approach = "logit",
   format = c("flextable", "gt"),
-  theme = c("minimal")
+  theme = c("minimal"),
+  show_ref = TRUE
 )
 ```
 
@@ -46,7 +47,7 @@ stratified_multi_reg(
 
   Optional character vector of adjustment variables. Quoted and bare
   names are accepted. This argument works the same way as in
-  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md).
+  [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md).
 
 - interaction:
 
@@ -67,6 +68,12 @@ stratified_multi_reg(
   Preset name (e.g. `"minimal"`, `"striped"`, `"clinical"`, `"shaded"`,
   `"jama"`) or primitives
   `c("plain","zebra","lines","labels_bold","compact","header_shaded")`
+
+- show_ref:
+
+  Logical; if `TRUE` (default), display reference-category rows as
+  `"Ref."`. If `FALSE`, hide reference rows; a message reminds users to
+  use `show_ref = TRUE` when reference rows are needed.
 
 ## Value
 

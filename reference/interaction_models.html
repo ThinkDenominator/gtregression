@@ -26,6 +26,7 @@ interaction."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
+    <li><a class="dropdown-item" href="../articles/function-options.html">Function Options</a></li>
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
@@ -229,11 +230,11 @@ modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_no_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> low ~ smoke + race + age + lwt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55a4340ae5a8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x563e176a6ed8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_with_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> low ~ smoke + race + age + lwt + smoke:race</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55a4340ae5a8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x563e176a6ed8&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $interaction_terms</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "smokeYes:raceBlack" "smokeYes:raceOther"</span>
@@ -334,12 +335,12 @@ modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_no_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> survival::Surv(time, status) ~ trt + prior + age + karno</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55a42f897f50&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x563e1c48b730&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_with_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> survival::Surv(time, status) ~ trt + prior + age + karno + trt * </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     prior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55a42f897f50&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x563e1c48b730&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $interaction_terms</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "trtTest treatment:priorYes"</span>

@@ -2,11 +2,17 @@
 
 Draw a forest-style plot from a fitted `gtregression` object produced by
 functions such as
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md),
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
+[`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md),
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
 or
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md).
+Stratified regression outputs are displayed as one faceted quick-view
+plot; use
+[`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
+and
+[`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
+for publication-style stratified forest tables.
 
 ## Usage
 
@@ -45,7 +51,7 @@ plot_reg(
 
   Optional plot caption. If `NULL`, notes are added automatically for
   adjusted
-  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+  [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
   objects and displayed reference categories.
 
 - ref_line:

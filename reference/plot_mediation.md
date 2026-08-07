@@ -1,7 +1,7 @@
 # Plot mediation paths
 
 Draw the exposure, mediator, and outcome path from a
-[`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md)
+[`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md)
 result.
 
 ## Usage
@@ -15,7 +15,7 @@ plot_mediation(mediation_object, show_estimates = TRUE, base_size = 13)
 - mediation_object:
 
   Object returned by
-  [`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md).
+  [`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md).
 
 - show_estimates:
 

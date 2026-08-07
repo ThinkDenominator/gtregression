@@ -1,21 +1,21 @@
 # Visualise Regression Results
 
 Regression tables are the evidence. Plots are the quick read. Use
-[`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md),
-[`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md),
-[`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md),
-[`survival_summary()`](https://thinkdenominator.github.io/gtregression/reference/survival_summary.md),
-[`survival_quantiles()`](https://thinkdenominator.github.io/gtregression/reference/survival_quantiles.md),
-[`survival_prob()`](https://thinkdenominator.github.io/gtregression/reference/survival_prob.md),
-[`logrank_test()`](https://thinkdenominator.github.io/gtregression/reference/logrank_test.md),
-[`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md),
-[`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md),
-[`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md),
-[`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md),
-[`plot_reg_combine()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.md),
-[`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md),
+[`km_plot()`](https://gtregression.thinkdenominator.com/reference/km_plot.md),
+[`km_risk_table()`](https://gtregression.thinkdenominator.com/reference/km_risk_table.md),
+[`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md),
+[`survival_summary()`](https://gtregression.thinkdenominator.com/reference/survival_summary.md),
+[`survival_quantiles()`](https://gtregression.thinkdenominator.com/reference/survival_quantiles.md),
+[`survival_prob()`](https://gtregression.thinkdenominator.com/reference/survival_prob.md),
+[`logrank_test()`](https://gtregression.thinkdenominator.com/reference/logrank_test.md),
+[`surv_model_compare()`](https://gtregression.thinkdenominator.com/reference/surv_model_compare.md),
+[`plot_surv_fit()`](https://gtregression.thinkdenominator.com/reference/plot_surv_fit.md),
+[`surv_predict()`](https://gtregression.thinkdenominator.com/reference/surv_predict.md),
+[`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md),
+[`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md),
+[`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md),
 and
-[`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
+[`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
 to visualise survival and regression results, inspect reference
 categories, and prepare figures for manuscripts or reports.
 
@@ -95,7 +95,7 @@ lung_surv <- surv_reg(
 
 ## Kaplan-Meier Curve
 
-[`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md)
+[`km_plot()`](https://gtregression.thinkdenominator.com/reference/km_plot.md)
 gives the survival curve before regression modelling. Use it to show the
 observed survival experience by group, with optional confidence
 intervals, censoring marks, log-rank p-value, and number-at-risk table.
@@ -159,7 +159,7 @@ patchwork::wrap_plots(km_treatment, km_prior, ncol = 2) +
 
 ## Risk Table
 
-[`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md)
+[`km_risk_table()`](https://gtregression.thinkdenominator.com/reference/km_risk_table.md)
 gives the number at risk at selected follow-up times as a standalone
 table. This is useful when the risk table needs to be reported beside or
 underneath a Kaplan-Meier curve.
@@ -177,7 +177,7 @@ km_risk_table(
 
 ## Restricted Mean Survival Time
 
-[`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md)
+[`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md)
 reports the average survival time up to a fixed follow-up point, called
 `tau`. This is useful when readers want an absolute survival-time
 summary, or when hazard ratios are difficult to explain.
@@ -195,7 +195,7 @@ rmst_table(
 
 ## Kaplan-Meier Summary
 
-[`survival_summary()`](https://thinkdenominator.github.io/gtregression/reference/survival_summary.md)
+[`survival_summary()`](https://gtregression.thinkdenominator.com/reference/survival_summary.md)
 is the table companion to the Kaplan-Meier curve. It reports the number
 analysed, events, censored observations, and median survival with a 95%
 confidence interval. Use it when readers need the key survival numbers
@@ -213,7 +213,7 @@ survival_summary(
 
 ## Survival Quantiles
 
-[`survival_quantiles()`](https://thinkdenominator.github.io/gtregression/reference/survival_quantiles.md)
+[`survival_quantiles()`](https://gtregression.thinkdenominator.com/reference/survival_quantiles.md)
 reports detailed Kaplan-Meier time points. This is useful when the
 median alone is not enough, or when you want to show the 25th, 50th, and
 75th percentile event times by group.
@@ -230,7 +230,7 @@ survival_quantiles(
 
 ## Survival Probabilities
 
-[`survival_prob()`](https://thinkdenominator.github.io/gtregression/reference/survival_prob.md)
+[`survival_prob()`](https://gtregression.thinkdenominator.com/reference/survival_prob.md)
 reports Kaplan-Meier survival probability at fixed follow-up times. This
 is useful for clinically familiar summaries such as 90-day, 6-month, or
 1-year survival.
@@ -248,10 +248,10 @@ survival_prob(
 
 ## Log-Rank Test
 
-[`logrank_test()`](https://thinkdenominator.github.io/gtregression/reference/logrank_test.md)
+[`logrank_test()`](https://gtregression.thinkdenominator.com/reference/logrank_test.md)
 formally compares Kaplan-Meier curves between groups. It is useful after
 the curve and summary table, but it does not give an effect size; use
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
 when a hazard ratio is needed.
 
 ``` r
@@ -266,9 +266,9 @@ logrank_test(
 
 ## Parametric Survival Model Comparison
 
-[`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md)
+[`surv_model_compare()`](https://gtregression.thinkdenominator.com/reference/surv_model_compare.md)
 helps users choose a candidate distribution before using
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md).
 It fits the same model with Weibull, exponential, lognormal, and
 loglogistic distributions, then compares AIC and BIC.
 
@@ -285,9 +285,9 @@ surv_model_compare(
 
 ## Parametric Survival Fit Plot
 
-[`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md)
+[`plot_surv_fit()`](https://gtregression.thinkdenominator.com/reference/plot_surv_fit.md)
 is the visual companion to
-[`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md).
+[`surv_model_compare()`](https://gtregression.thinkdenominator.com/reference/surv_model_compare.md).
 It overlays the observed Kaplan-Meier curve with fitted parametric
 survival curves, so users can check whether a distribution that looks
 good by AIC/BIC also follows the observed survival pattern.
@@ -327,7 +327,7 @@ plot_surv_fit(
 
 ## Parametric Survival Prediction
 
-[`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md)
+[`surv_predict()`](https://gtregression.thinkdenominator.com/reference/surv_predict.md)
 turns a fitted parametric survival model into predicted survival
 probabilities at clinically useful follow-up times. This helps users
 move from a time-ratio table to a more direct statement such as
@@ -347,17 +347,17 @@ surv_predict(
 ```
 
 If `newdata` is omitted,
-[`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md)
+[`surv_predict()`](https://gtregression.thinkdenominator.com/reference/surv_predict.md)
 uses a typical profile from the model data, using medians for numeric
 variables and the most common level for categorical variables.
 
 ## One Regression Plot
 
-[`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md)
+[`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md)
 turns a
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+[`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
 or
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
 result into a forest-style plot. By default, categorical reference
 levels are shown and labelled as `(Ref.)`; the caption explains the
 abbreviation. Variable labels set on the data are used automatically in
@@ -447,7 +447,7 @@ plot_reg(
 
 ## Compare Crude and Adjusted Effects
 
-[`plot_reg_combine()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.md)
+[`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md)
 places crude and adjusted model results side by side. This is useful
 when a manuscript needs to show how adjustment changes the estimate.
 Axis limits and tick marks can be controlled separately for each side.
@@ -472,9 +472,9 @@ plot_reg_combine(
 
 ## Publication-Style Forest Table
 
-[`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
+[`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
 prepares the data.
-[`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
+[`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
 draws the forest table. This is the most manuscript-oriented plot when
 you want descriptive summaries and crude or adjusted estimates in the
 same figure.
@@ -558,14 +558,14 @@ forest_reg(
 
 ## What To Inspect
 
-- [`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md)
+- [`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md)
   returns a `ggplot`.
-- [`plot_reg_combine()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.md)
+- [`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md)
   returns a combined `ggplot`.
-- [`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md)
+- [`km_risk_table()`](https://gtregression.thinkdenominator.com/reference/km_risk_table.md)
   reports at-risk, event, and censored counts at requested follow-up
   times.
-- [`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md)
+- [`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md)
   reports restricted mean survival time up to a chosen time point.
 - `show_ref = TRUE` displays reference levels as `(Ref.)`.
 - `show_ref = FALSE` hides reference levels; affirmative binary
@@ -573,25 +573,25 @@ forest_reg(
 - Adjustment variables from `multi_reg(adjust_for = ...)` are carried
   into plot captions.
 - `log_x = TRUE` uses log scaling for non-linear model effect measures.
-- [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
+- [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
   returns the plotting data frame.
-- [`survival_prob()`](https://thinkdenominator.github.io/gtregression/reference/survival_prob.md)
+- [`survival_prob()`](https://gtregression.thinkdenominator.com/reference/survival_prob.md)
   reports survival probability at requested follow-up times.
-- [`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md)
+- [`surv_model_compare()`](https://gtregression.thinkdenominator.com/reference/surv_model_compare.md)
   compares parametric survival distributions before fitting final
-  [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+  [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
   tables.
-- [`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md)
+- [`plot_surv_fit()`](https://gtregression.thinkdenominator.com/reference/plot_surv_fit.md)
   overlays fitted parametric survival curves on the observed
   Kaplan-Meier curve.
-- [`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md)
+- [`surv_predict()`](https://gtregression.thinkdenominator.com/reference/surv_predict.md)
   reports model-based survival probabilities at user-specified follow-up
   times.
 - In
-  [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md),
+  [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md),
   use `xlim` and `ticks_at` when x-axis labels overlap.
 - In
-  [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md),
+  [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md),
   use `ci_col_width` when the CI plot panel is too narrow or too wide.
-- [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
+- [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
   returns `plot`, `data`, `input_data`, and `meta`.

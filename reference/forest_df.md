@@ -1,17 +1,18 @@
 # Build a compatible data frame for forest plots
 
 Creates the tabular input used by
-[`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
+[`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
 from
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md),
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
+[`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md),
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
 and optionally
-[`descriptive_table()`](https://thinkdenominator.github.io/gtregression/reference/descriptive_table.md)
+[`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md)
 objects. This function is useful when users want to inspect, edit, or
 reuse the exact data that will be passed to the forest plot. Stratified
 regression objects are also supported when supplied one at a time; the
-returned data frame is grouped by stratum and can be passed directly to
-[`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md).
+returned data frame keeps the characteristic rows once and places strata
+side by side as separate effect columns for
+[`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md).
 
 ## Usage
 
@@ -24,19 +25,19 @@ forest_df(uni, multi = NULL, desc = NULL, digits = 2)
 - uni:
 
   A `gtregression` object from
-  [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md).
+  [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md).
   If `multi` is supplied without `uni`, the multivariable object is
   plotted as a single effect column.
 
 - multi:
 
   Optional `gtregression` object from
-  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md).
+  [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md).
 
 - desc:
 
   Optional descriptive table object from
-  [`descriptive_table()`](https://thinkdenominator.github.io/gtregression/reference/descriptive_table.md).
+  [`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md).
 
 - digits:
 
@@ -46,7 +47,7 @@ forest_df(uni, multi = NULL, desc = NULL, digits = 2)
 
 A data frame with display columns, formatted effect-size columns,
 standard-error columns, and plotting attributes used by
-[`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
+[`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
 to draw confidence intervals.
 
 ## Examples

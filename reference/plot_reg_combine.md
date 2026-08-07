@@ -2,11 +2,11 @@
 
 Creates two aligned forest plots from compatible `gtregression`
 regression objects such as crude and adjusted outputs from
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md),
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
+[`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md),
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
 or
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md).
 
 ## Usage
 
@@ -53,7 +53,7 @@ plot_reg_combine(
 
   Optional combined plot caption. If `NULL`, notes are added
   automatically for adjusted
-  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+  [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
   objects and displayed reference categories.
 
 - ref_line:

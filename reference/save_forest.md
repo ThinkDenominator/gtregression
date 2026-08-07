@@ -1,7 +1,7 @@
 # Save a forest_reg() output
 
 Saves a
-[`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
+[`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
 output, or a compatible forestploter/grid object, to a fixed graphics
 device. This is useful when the RStudio Viewer or operating-system
 graphics device crops wide forest plots or compresses forest columns.
@@ -27,7 +27,7 @@ save_forest(
 - forest:
 
   A `gtregression_forest` object returned by
-  [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md),
+  [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md),
   or a compatible forestploter/grid object.
 
 - filename:
@@ -47,7 +47,7 @@ save_forest(
   forestploter gtable dimensions. If measurement is not possible, a
   practical fallback is estimated from the number of rows and columns in
   the
-  [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md)
+  [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
   output.
 
 - scale:
@@ -92,7 +92,7 @@ uni_or <- uni_reg(
 
 forest <- forest_reg(uni = uni_or)
 save_forest(forest, filename = tempfile("forest"), format = "pdf")
-#> Forest plot saved at: /tmp/RtmpGV7UGu/forest1b4267529daa.pdf
+#> Forest plot saved at: /tmp/RtmphvE3PL/forest1b9284dffda.pdf
 
 # For large forest plots, increase width, height, scale, or padding.
 save_forest(
@@ -103,5 +103,5 @@ save_forest(
   padding = 0.35,
   dpi = 300
 )
-#> Forest plot saved at: /tmp/RtmpGV7UGu/forest-wide1b424f672f9b.png
+#> Forest plot saved at: /tmp/RtmphvE3PL/forest-wide1b922ef85b90.png
 ```

@@ -2,7 +2,7 @@
 
 Computes Variance Inflation Factors (VIF) for fitted multivariable
 models returned by
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
 or related functions.
 
 ## Usage
@@ -16,8 +16,8 @@ check_collinearity(model, format = c("flextable", "gt", "tibble"))
 - model:
 
   A fitted model object returned by
-  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
-  [`stratified_multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_multi_reg.md),
+  [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+  [`stratified_multi_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_multi_reg.md),
   or compatible `gtregression` functions. Univariable model objects are
   rejected because VIF is not applicable.
 

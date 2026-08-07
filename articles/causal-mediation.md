@@ -160,7 +160,7 @@ head(diabetes_med$boot)
 
 ## Path Diagram
 
-[`plot_mediation()`](https://thinkdenominator.github.io/gtregression/reference/plot_mediation.md)
+[`plot_mediation()`](https://gtregression.thinkdenominator.com/reference/plot_mediation.md)
 draws the exposure, mediator, outcome, and the direct and indirect
 paths.
 

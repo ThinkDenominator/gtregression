@@ -11,6 +11,7 @@ Assemble wide display DF for all strata (univariate)
   exposures,
   stratifier,
   per_stratum,
-  variable_labels = NULL
+  variable_labels = NULL,
+  show_ref = TRUE
 )
 ```

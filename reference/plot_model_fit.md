@@ -2,9 +2,9 @@
 
 Visualise model fit for fitted regression models and models stored
 inside
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+[`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
 or
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
 results.
 
 ## Usage
@@ -25,9 +25,9 @@ plot_model_fit(
 - model:
 
   A fitted `lm` or `glm` model, or a
-  [`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md)
+  [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
   /
-  [`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md)
+  [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
   result.
 
 - model_name:
@@ -58,9 +58,9 @@ multiple diagnostics are requested.
 
 `plot_model_fit()` is a visual check of how a fitted model behaves, not
 a formal model-selection rule. For survival models, use
-[`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md)
+[`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md)
 for Cox proportional hazards diagnostics and
-[`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md)
+[`plot_surv_fit()`](https://gtregression.thinkdenominator.com/reference/plot_surv_fit.md)
 for parametric survival model fit.
 
 For binomial models, `type = "calibration"` compares grouped predicted

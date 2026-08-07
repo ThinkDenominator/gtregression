@@ -3,10 +3,11 @@
 Wrapper around
 [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html)
 that works directly with
-[`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
+[`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
 output or with `gtregression` regression objects. It can show
-descriptive columns and one or two model effect columns in a table-style
-forest plot while leaving axis and interval drawing to forestploter.
+descriptive columns and one or more model effect columns in a
+table-style forest plot while leaving axis and interval drawing to
+forestploter.
 
 ## Usage
 
@@ -35,13 +36,13 @@ forest_reg(
 - df:
 
   Output of
-  [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md).
+  [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md).
   If `NULL`, it is built from `uni`, `multi`, and `desc`.
 
 - uni, multi, desc:
 
   Optional `gtregression` objects to pass through to
-  [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md).
+  [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md).
 
 - theme:
 
@@ -52,12 +53,11 @@ forest_reg(
 
 - ci_col_width:
 
-  Numeric value, or length-2 numeric for two effect columns, controlling
-  the blank spacer width used by `forestploter` for the
-  confidence-interval plot column(s). Values greater than 1 are
-  interpreted as approximate character counts. Values between 0 and 1
-  are accepted for backward compatibility and converted to character
-  counts.
+  Numeric value, or one value per effect column, controlling the blank
+  spacer width used by `forestploter` for the confidence-interval plot
+  column(s). Values greater than 1 are interpreted as approximate
+  character counts. Values between 0 and 1 are accepted for backward
+  compatibility and converted to character counts.
 
 - side:
 
@@ -77,8 +77,8 @@ forest_reg(
 
 - ticks_at:
 
-  Optional numeric vector, or length-2 list for two effect columns,
-  specifying x-axis tick positions. If `NULL`,
+  Optional numeric vector, or list of numeric vectors for multiple
+  effect columns, specifying x-axis tick positions. If `NULL`,
   [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html)
   chooses the default ticks.
 
@@ -88,21 +88,23 @@ forest_reg(
 
 - xlim:
 
-  Optional numeric vector of length 2, or length-2 list for two effect
-  columns, specifying x-axis limits. If `NULL`,
+  Optional numeric vector of length 2, or list of length-2 numeric
+  vectors for multiple effect columns, specifying x-axis limits. If
+  `NULL`,
   [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html)
   chooses the default limits.
 
 - style_strata:
 
-  Logical. When `TRUE`, stratum header rows created by
-  [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
-  from a stratified regression object are shown in bold with a subtle
-  background shade.
+  Logical. Retained for older vertically grouped stratified forest data.
+  Current
+  [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
+  stratified output places strata side by side, so no stratum header
+  rows are styled.
 
 - strata_fill:
 
-  Character. Fill color used for styled stratum header rows.
+  Character. Fill color used for older styled stratum header rows.
 
 - ...:
 
@@ -126,7 +128,7 @@ A `gtregression_forest` object with elements:
 - `input_data`:
 
   The original
-  [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md)
+  [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
   data, including standard-error helper columns.
 
 - `meta`:

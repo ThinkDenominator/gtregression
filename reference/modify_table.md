@@ -1,14 +1,14 @@
 # Modify Regression/Descriptive Tables (labels, headers, caption, notes)
 
 Works with objects created by this package (class `"gtregression"`):
-[`uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/uni_reg.md),
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md),
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md),
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md),
+[`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md),
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md),
 stratified regression outputs,
-[`descriptive_table()`](https://thinkdenominator.github.io/gtregression/reference/descriptive_table.md),
+[`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md),
 and
-[`merge_tables()`](https://thinkdenominator.github.io/gtregression/reference/merge_tables.md).
+[`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md).
 No gtsummary dependency or fallback.
 
 ## Usage

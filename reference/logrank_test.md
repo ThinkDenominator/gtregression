@@ -83,7 +83,7 @@ The log-rank test compares the observed number of events with the
 expected number of events in each group under the null hypothesis that
 the survival curves are the same. It is a group comparison, not an
 effect-size estimate; use
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
 when a hazard ratio is needed.
 
 ## Examples

@@ -77,7 +77,7 @@ lung_summary$table
 ## 2. Show Observed Survival
 
 Use
-[`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md)
+[`km_plot()`](https://gtregression.thinkdenominator.com/reference/km_plot.md)
 for the Kaplan-Meier curve. Add `risk_table = TRUE` when the number at
 risk should appear under the curve. When survival remains high, use
 `ylim` to focus the y-axis, for example `ylim = c(50, 100)` with the
@@ -163,7 +163,7 @@ survival_summary(
 | Test treatment | 68 | 64 | 4 | 52.5 (44.0-95.0) |
 | Median survival is estimated using Kaplan-Meier methods. Not reached means survival did not fall to 50% during observed follow-up. |  |  |  |  |
 
-Kaplan-Meier survival summary {.table .cl-8dd2fad4
+Kaplan-Meier survival summary {.table .cl-1333c572
 quarto-disable-processing="true"}
 
 ``` r
@@ -187,10 +187,10 @@ survival_prob(
 | Test treatment | 365.0 | 6 | 7 | 1 | 11.0% (5.3%-22.7%) |
 | Survival probabilities are estimated using Kaplan-Meier methods. Events and censored counts are interval counts up to each requested time point. |  |  |  |  |  |
 
-Kaplan-Meier survival probabilities {.table .cl-8df5df18
+Kaplan-Meier survival probabilities {.table .cl-135360f8
 quarto-disable-processing="true"}
 
-[`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md)
+[`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md)
 reports restricted mean survival time up to a chosen follow-up time.
 This is useful when an absolute survival-time summary is easier to
 explain than a ratio measure.
@@ -213,12 +213,12 @@ rmst_table(
 | Difference (Test treatment - Standard treatment) | 365.0 |  |  |  | -6.6 (-45.3-32.2) | 0.740 |
 | RMST is restricted mean survival time up to tau. For two groups, the difference is the second group minus the first group. |  |  |  |  |  |  |
 
-Restricted mean survival time {.table .cl-8e227000
+Restricted mean survival time {.table .cl-13797856
 quarto-disable-processing="true"}
 
 ## 3. Compare Survival Curves
 
-[`logrank_test()`](https://thinkdenominator.github.io/gtregression/reference/logrank_test.md)
+[`logrank_test()`](https://gtregression.thinkdenominator.com/reference/logrank_test.md)
 compares Kaplan-Meier curves. It is a group comparison test, not an
 effect-size model.
 
@@ -238,14 +238,14 @@ logrank_test(
 | Test treatment | 68 | 64 | 63.50 |
 | Log-rank test: chi-square = 0.01, df = 1, p-value = 0.928. This compares survival curves; use cox_reg() when a hazard ratio is needed. |  |  |  |
 
-Log-rank test {.table .cl-8e49c18c quarto-disable-processing="true"}
+Log-rank test {.table .cl-139b28fc quarto-disable-processing="true"}
 
 ## 4. Fit Cox Regression
 
-[`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md)
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
 reports hazard ratios. Use `adjust_for` to produce adjusted hazard
 ratios while keeping the syntax aligned with
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md).
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md).
 
 ``` r
 
@@ -287,7 +287,7 @@ cox_adjusted$table
 
 Planned interactions use the same `interaction = exposure*modifier`
 grammar as
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md).
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md).
 In the default exposure-by-exposure workflow, supply the single exposure
 you want to interpret.
 
@@ -329,7 +329,7 @@ check_ph(cox_adjusted)$table
 
 ## 5. Fit Parametric Survival Regression
 
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
 fits accelerated failure time style parametric survival models and
 reports time ratios. A time ratio above 1 suggests longer survival time;
 below 1 suggests shorter survival time, conditional on the selected
@@ -360,7 +360,7 @@ surv_model_compare(
 | weibull | 1,449.11 | 1,475.39 | -715.55 | 0.93 | 137 | 128 | No | No |
 | Lower AIC or BIC indicates better relative fit among the compared distributions. Use model fit statistics with clinical judgment and visual checks. |  |  |  |  |  |  |  |  |
 
-Parametric survival model comparison {.table .cl-8f1f5aae
+Parametric survival model comparison {.table .cl-1454882e
 quarto-disable-processing="true"}
 
 ``` r
@@ -467,7 +467,7 @@ surv_interaction$table
 
 ## 6. Predict Survival Probabilities
 
-[`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md)
+[`surv_predict()`](https://gtregression.thinkdenominator.com/reference/surv_predict.md)
 turns a fitted parametric survival model into predicted survival
 probabilities at selected follow-up times for a profile.
 
@@ -491,7 +491,7 @@ surv_predict(
 | 1 | Test treatment | 60 | 70 | 365.0 | 11.1% | loglogistic |
 | Model-based predictions from a parametric survival regression model. Distribution: loglogistic. Predictions depend on the supplied profile and model specification. |  |  |  |  |  |  |
 
-Predicted survival probabilities {.table .cl-9001a5a8
+Predicted survival probabilities {.table .cl-15193b88
 quarto-disable-processing="true"}
 
 ## 7. Visualise And Export Model Results
@@ -535,17 +535,17 @@ tables, export using a wider graphics device or Word canvas.
 
 | Task | Function |
 |----|----|
-| Kaplan-Meier curve | [`km_plot()`](https://thinkdenominator.github.io/gtregression/reference/km_plot.md) |
-| Number at risk | [`km_risk_table()`](https://thinkdenominator.github.io/gtregression/reference/km_risk_table.md) |
-| Median survival | [`survival_summary()`](https://thinkdenominator.github.io/gtregression/reference/survival_summary.md) |
-| Survival quantiles | [`survival_quantiles()`](https://thinkdenominator.github.io/gtregression/reference/survival_quantiles.md) |
-| Fixed-time survival probability | [`survival_prob()`](https://thinkdenominator.github.io/gtregression/reference/survival_prob.md) |
-| Restricted mean survival time | [`rmst_table()`](https://thinkdenominator.github.io/gtregression/reference/rmst_table.md) |
-| Compare KM curves | [`logrank_test()`](https://thinkdenominator.github.io/gtregression/reference/logrank_test.md) |
-| Cox hazard ratios | [`cox_reg()`](https://thinkdenominator.github.io/gtregression/reference/cox_reg.md) |
-| Cox PH check | [`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md) |
-| Parametric time ratios | [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md) |
-| Compare parametric distributions | [`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md) |
-| Plot fitted parametric curves | [`plot_surv_fit()`](https://thinkdenominator.github.io/gtregression/reference/plot_surv_fit.md) |
-| Predict survival probabilities | [`surv_predict()`](https://thinkdenominator.github.io/gtregression/reference/surv_predict.md) |
-| Model plots and forest tables | [`plot_reg()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg.md), [`plot_reg_combine()`](https://thinkdenominator.github.io/gtregression/reference/plot_reg_combine.md), [`forest_df()`](https://thinkdenominator.github.io/gtregression/reference/forest_df.md), [`forest_reg()`](https://thinkdenominator.github.io/gtregression/reference/forest_reg.md) |
+| Kaplan-Meier curve | [`km_plot()`](https://gtregression.thinkdenominator.com/reference/km_plot.md) |
+| Number at risk | [`km_risk_table()`](https://gtregression.thinkdenominator.com/reference/km_risk_table.md) |
+| Median survival | [`survival_summary()`](https://gtregression.thinkdenominator.com/reference/survival_summary.md) |
+| Survival quantiles | [`survival_quantiles()`](https://gtregression.thinkdenominator.com/reference/survival_quantiles.md) |
+| Fixed-time survival probability | [`survival_prob()`](https://gtregression.thinkdenominator.com/reference/survival_prob.md) |
+| Restricted mean survival time | [`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md) |
+| Compare KM curves | [`logrank_test()`](https://gtregression.thinkdenominator.com/reference/logrank_test.md) |
+| Cox hazard ratios | [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md) |
+| Cox PH check | [`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md) |
+| Parametric time ratios | [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md) |
+| Compare parametric distributions | [`surv_model_compare()`](https://gtregression.thinkdenominator.com/reference/surv_model_compare.md) |
+| Plot fitted parametric curves | [`plot_surv_fit()`](https://gtregression.thinkdenominator.com/reference/plot_surv_fit.md) |
+| Predict survival probabilities | [`surv_predict()`](https://gtregression.thinkdenominator.com/reference/surv_predict.md) |
+| Model plots and forest tables | [`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md), [`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md), [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md), [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md) |

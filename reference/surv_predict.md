@@ -23,7 +23,7 @@ surv_predict(
 - model:
 
   A fitted `survreg` model, or a
-  [`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+  [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
   object containing exactly one fitted model.
 
 - newdata:
@@ -76,14 +76,14 @@ A list of class `c("gtregression","surv_predict", ...)` with elements:
 ## Details
 
 `surv_predict()` is for parametric survival regression models fitted by
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
 or
 [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html).
 It is not a Kaplan-Meier estimate and it is not a Cox prediction helper.
 
 Supported distributions are `"weibull"`, `"exponential"`, `"lognormal"`,
 and `"loglogistic"`, matching
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md).
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md).
 Predictions are conditional on the supplied profile and the chosen
 parametric distribution.
 

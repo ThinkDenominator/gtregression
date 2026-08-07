@@ -18,7 +18,8 @@ cox_reg(
   format = c("flextable", "gt"),
   theme = c("minimal"),
   show_sample = "events",
-  model_stats = FALSE
+  model_stats = FALSE,
+  show_ref = TRUE
 )
 ```
 
@@ -98,6 +99,12 @@ cox_reg(
   Logical; if `TRUE`, extract model-fit statistics including AIC, BIC,
   log-likelihood, concordance, number of events, and N.
 
+- show_ref:
+
+  Logical; if `TRUE` (default), display reference-category rows as
+  `"Ref."`. If `FALSE`, hide reference rows; a message reminds users to
+  use `show_ref = TRUE` when reference rows are needed.
+
 ## Value
 
 A list of class `c("gtregression","cox_reg", ...)` with elements:
@@ -145,7 +152,7 @@ reporting several adjusted exposure effects.
 With `multivariable = TRUE`, all variables in `exposures` are included
 in a single Cox model and all coefficients are reported. This mirrors
 the multivariable workflow used by
-[`multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/multi_reg.md).
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md).
 The `adjust_for` argument is not used in this mode; include every
 variable that belongs in the model inside `exposures`. Since these
 estimates are adjusted for the other variables in the same model, the
@@ -158,7 +165,7 @@ exposure.
 
 The proportional hazards assumption should be assessed separately, for
 example with
-[`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md).
+[`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md).
 
 Stratified Cox tables show event counts by default. Use
 `show_sample = "n"`, `show_sample = "both"`, or `show_sample = "none"`

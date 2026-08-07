@@ -105,11 +105,11 @@ A `ggplot2` object with attributes `km_fit`, `model_fits`,
 
 `plot_surv_fit()` is a visual diagnostic for parametric survival
 modelling. It is useful after
-[`surv_model_compare()`](https://thinkdenominator.github.io/gtregression/reference/surv_model_compare.md)
+[`surv_model_compare()`](https://gtregression.thinkdenominator.com/reference/surv_model_compare.md)
 and before treating a final
-[`surv_reg()`](https://thinkdenominator.github.io/gtregression/reference/surv_reg.md)
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
 model as the preferred model. It is not a Cox-model diagnostic; use
-[`check_ph()`](https://thinkdenominator.github.io/gtregression/reference/check_ph.md)
+[`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md)
 for Cox proportional hazards assumptions.
 
 When `adjust_for` is supplied, fitted curves are predicted at typical

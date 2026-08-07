@@ -7,12 +7,13 @@ articles:
   customize-export: customize-export.html
   descriptive-tables: descriptive-tables.html
   diagnostics-selection: diagnostics-selection.html
+  function-options: function-options.html
   gtregression-intro: gtregression-intro.html
   regression-tables: regression-tables.html
   stratified-analysis: stratified-analysis.html
   survival-analysis: survival-analysis.html
   visualise-results: visualise-results.html
-last_built: 2026-08-01T07:40Z
+last_built: 2026-08-07T10:00Z
 urls:
-  reference: https://thinkdenominator.github.io/gtregression/reference
-  article: https://thinkdenominator.github.io/gtregression/articles
+  reference: https://gtregression.thinkdenominator.com/reference
+  article: https://gtregression.thinkdenominator.com/articles

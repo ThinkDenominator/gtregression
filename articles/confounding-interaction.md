@@ -14,9 +14,9 @@ basis for model adjustment.
 
 | Question | Use | Why |
 |----|----|----|
-| Could these candidate variables be confounders or effect modifiers? | [`identify_confounder()`](https://thinkdenominator.github.io/gtregression/reference/identify_confounder.md) | Screens crude, adjusted, Mantel-Haenszel, and interaction signals together. |
-| Does this planned interaction term improve the model? | [`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md) | Compares models with and without `exposure:effect_modifier` using LRT or Wald tests. |
-| Could part of an exposure-outcome association operate through a mediator? | [`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md) | Estimates direct, indirect, total, and proportion mediated effects with explicit causal caveats. |
+| Could these candidate variables be confounders or effect modifiers? | [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md) | Screens crude, adjusted, Mantel-Haenszel, and interaction signals together. |
+| Does this planned interaction term improve the model? | [`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md) | Compares models with and without `exposure:effect_modifier` using LRT or Wald tests. |
+| Could part of an exposure-outcome association operate through a mediator? | [`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md) | Estimates direct, indirect, total, and proportion mediated effects with explicit causal caveats. |
 | Do I need a Mantel-Haenszel estimate? | `identify_confounder(method = "mh")` or `identify_confounder(method = "both")` | MH is a stratified pooled estimate for eligible binary/categorical settings, not a formal interaction-term test. |
 
 A practical workflow is:
@@ -24,20 +24,20 @@ A practical workflow is:
 1.  Use DAGs, prior literature, and study design to list important
     variables.
 2.  Use
-    [`identify_confounder()`](https://thinkdenominator.github.io/gtregression/reference/identify_confounder.md)
+    [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md)
     to organise screening evidence for candidate confounders or effect
     modifiers.
 3.  Use
-    [`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md)
+    [`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md)
     when you have a planned interaction hypothesis.
 4.  Use
-    [`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md)
+    [`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md)
     when the mediator is part of a planned causal question and the
     temporal order is defensible.
 5.  If interaction is important, consider stratified reporting with
-    [`stratified_uni_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_uni_reg.md)
+    [`stratified_uni_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_uni_reg.md)
     or
-    [`stratified_multi_reg()`](https://thinkdenominator.github.io/gtregression/reference/stratified_multi_reg.md).
+    [`stratified_multi_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_multi_reg.md).
 
 ``` r
 
@@ -132,7 +132,7 @@ identify_confounder(
 
 ## Test Interaction
 
-[`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md)
+[`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md)
 compares models with and without the interaction term. It is
 deliberately model-based and uses `LRT` or `Wald`, not Mantel-Haenszel.
 Use it when the interaction term is planned or supported by clinical,
@@ -222,7 +222,7 @@ survival_interaction$table
 
 ## Causal Mediation
 
-[`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md)
+[`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md)
 asks whether part of an exposure-outcome association may operate through
 a mediator. In this example, obesity is the exposure, plasma glucose is
 the mediator, and diabetes is the outcome. The question is not only “is
@@ -327,7 +327,7 @@ med_gt$table
 | Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
 | Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |
 
-[`plot_mediation()`](https://thinkdenominator.github.io/gtregression/reference/plot_mediation.md)
+[`plot_mediation()`](https://gtregression.thinkdenominator.com/reference/plot_mediation.md)
 draws the same planned causal structure as a path diagram. It is useful
 for teaching, presentations, or checking that the exposure, mediator,
 and outcome have been specified as intended.
@@ -351,7 +351,7 @@ plot_mediation(diabetes_med, show_estimates = FALSE)
 
 ## Overlap and Difference
 
-| Topic | [`identify_confounder()`](https://thinkdenominator.github.io/gtregression/reference/identify_confounder.md) | [`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md) |
+| Topic | [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md) | [`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md) |
 |----|----|----|
 | Main purpose | Organises candidate confounder and effect-modifier screening signals. | Tests a planned exposure-by-modifier term. |
 | Typical input | Exposure plus one or more candidate variables. | One exposure and one effect modifier. |
@@ -360,7 +360,7 @@ plot_mediation(diabetes_med, show_estimates = FALSE)
 | Best use | Early review of candidate variables, with DAGs and judgement. | Focused test of a clinically or biologically plausible interaction. |
 | Output status | Viewing aid, not publication-ready evidence by itself. | Viewing aid; report with stratum-specific estimates when relevant. |
 
-[`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md)
+[`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md)
 is different from both functions. It decomposes one planned
 exposure-outcome relationship into direct and mediator-related
 components; it does not select confounders or test whether effects
@@ -368,13 +368,13 @@ differ across strata.
 
 ## What To Inspect
 
-- [`identify_confounder()`](https://thinkdenominator.github.io/gtregression/reference/identify_confounder.md):
+- [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md):
   `$summary`, `$table`, `$details`, `$mh_estimate`, `$mh_status`,
   `$decision`, and `$recommendation`.
-- [`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md):
+- [`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md):
   `$summary`, `$table`, `$p_value`, `$decision`, and fitted model
   objects.
-- [`mediation_analysis()`](https://thinkdenominator.github.io/gtregression/reference/mediation_analysis.md):
+- [`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md):
   `$table`, `$table_body`, `$models`, `$boot`, `$values`,
   `$variable_labels`, and `$complete_data`.
 - Use subject-matter knowledge with these outputs. The functions support

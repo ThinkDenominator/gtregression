@@ -19,7 +19,8 @@ surv_reg(
   format = c("flextable", "gt"),
   theme = c("minimal"),
   show_sample = "events",
-  model_stats = FALSE
+  model_stats = FALSE,
+  show_ref = TRUE
 )
 ```
 
@@ -105,6 +106,12 @@ surv_reg(
 
   Logical; if `TRUE`, extract model-fit statistics including AIC, BIC,
   log-likelihood, scale, number of events, and N.
+
+- show_ref:
+
+  Logical; if `TRUE` (default), display reference-category rows as
+  `"Ref."`. If `FALSE`, hide reference rows; a message reminds users to
+  use `show_ref = TRUE` when reference rows are needed.
 
 ## Value
 

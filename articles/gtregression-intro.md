@@ -250,7 +250,7 @@ birthwt_final$table
 | Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-80cd954c quarto-disable-processing="true"}
+.cl-0755e5fa quarto-disable-processing="true"}
 
 Save helpers return file paths and use
 [`tempdir()`](https://rdrr.io/r/base/tempfile.html) when no directory is
@@ -265,30 +265,30 @@ save_docx(tables = birthwt_final, filename = "birthwt-report")
 ### Where To Go Next
 
 - [**Descriptive
-  Tables**](https://thinkdenominator.github.io/gtregression/articles/descriptive-tables.md):
+  Tables**](https://gtregression.thinkdenominator.com/articles/descriptive-tables.md):
   build baseline tables users can read.
 - [**Regression
-  Tables**](https://thinkdenominator.github.io/gtregression/articles/regression-tables.md):
+  Tables**](https://gtregression.thinkdenominator.com/articles/regression-tables.md):
   create crude and adjusted publication-ready outputs.
 - [**Survival
-  Analysis**](https://thinkdenominator.github.io/gtregression/articles/survival-analysis.md):
+  Analysis**](https://gtregression.thinkdenominator.com/articles/survival-analysis.md):
   Kaplan-Meier curves, survival summaries, Cox regression, parametric
   survival models, and survival predictions.
 - [**Causal
-  Mediation**](https://thinkdenominator.github.io/gtregression/articles/causal-mediation.md):
+  Mediation**](https://gtregression.thinkdenominator.com/articles/causal-mediation.md):
   estimate direct, indirect, total, and proportion mediated effects with
   clear causal caveats.
 - [**Visualise
-  Results**](https://thinkdenominator.github.io/gtregression/articles/visualise-results.md):
+  Results**](https://gtregression.thinkdenominator.com/articles/visualise-results.md):
   plot regression estimates and forest tables.
 - [**Stratified
-  Analysis**](https://thinkdenominator.github.io/gtregression/articles/stratified-analysis.md):
+  Analysis**](https://gtregression.thinkdenominator.com/articles/stratified-analysis.md):
   repeat models across subgroups.
-- [**Diagnostics**](https://thinkdenominator.github.io/gtregression/articles/diagnostics-selection.md):
+- [**Diagnostics**](https://gtregression.thinkdenominator.com/articles/diagnostics-selection.md):
   check convergence, collinearity, and model selection.
 - [**Confounding &
-  Interaction**](https://thinkdenominator.github.io/gtregression/articles/confounding-interaction.md):
+  Interaction**](https://gtregression.thinkdenominator.com/articles/confounding-interaction.md):
   support interpretation and model decisions.
 - [**Customize &
-  Export**](https://thinkdenominator.github.io/gtregression/articles/customize-export.md):
+  Export**](https://gtregression.thinkdenominator.com/articles/customize-export.md):
   polish and save tables, plots, and reports.

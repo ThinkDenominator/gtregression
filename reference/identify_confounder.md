@@ -134,11 +134,11 @@ variables and organise crude, adjusted, Mantel-Haenszel, and
 effect-modification signals in one place. For a focused comparison of
 models with and without a planned exposure-by-modifier interaction term,
 use
-[`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md).
+[`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md).
 
 ## See also
 
-[`interaction_models()`](https://thinkdenominator.github.io/gtregression/reference/interaction_models.md)
+[`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md)
 for focused model comparison of a planned interaction term.
 
 ## Examples
