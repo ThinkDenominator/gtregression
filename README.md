@@ -12,7 +12,7 @@ hand-formatting every coefficient.
 workflow</a><a class="secondary" href="reference/index.html">Explore
 functions</a>
 
-<img src="man/figures/gtregression_hex.png" alt="gtregression logo"/>
+<img class="gtreg-home-logo" src="man/figures/gtregression_hex.png" alt="gtregression logo"/>
 
 <!-- badges: start -->
 

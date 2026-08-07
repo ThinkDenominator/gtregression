@@ -5,7 +5,7 @@ template:
   logo: man/figures/gtregression_hex.png
 
 home:
-  title: gtregression
+  title: Home
   description: Publication-ready regression, survival, mediation, diagnostics, and Word-friendly outputs
   links:
     - text: Start Here

@@ -29,7 +29,7 @@ functions</a>
 ::::
 
 ::: {}
-<img src="man/figures/gtregression_hex.png" alt="gtregression logo"/>
+<img class="gtreg-home-logo" src="man/figures/gtregression_hex.png" alt="gtregression logo"/>
 :::
 ::::::
 
