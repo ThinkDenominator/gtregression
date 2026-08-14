@@ -316,7 +316,8 @@ cox_reg <- function(data,
     multivariable = isTRUE(multivariable),
     adjust_for = if (adjusted_mode) unique(adjust_for) else NULL,
     exposures = unique(exposures),
-    interaction = interaction
+    interaction = interaction,
+    show_ref = isTRUE(show_ref)
   )
 
   class(res) <- c("gtregression", "cox_reg", fmt_class, class(res))
@@ -625,8 +626,9 @@ cox_reg <- function(data,
   }
 
   ref_row <- NULL
-  if (!is.null(fit$model[[exposure]]) && is.factor(fit$model[[exposure]])) {
-    levs <- levels(fit$model[[exposure]])
+  exposure_data <- .model_data_col(fit, exposure)
+  if (!is.null(exposure_data) && is.factor(exposure_data)) {
+    levs <- levels(exposure_data)
     ref_row <- data.frame(
       exposure = exposure,
       level = levs[1],

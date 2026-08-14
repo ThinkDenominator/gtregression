@@ -13,6 +13,7 @@
 # Development-only project files
 ^dev$
 ^data-raw$
+^gui ref$
 ^README\.Rmd$
 ^README\.html$
 ^README - Rubes\.md$

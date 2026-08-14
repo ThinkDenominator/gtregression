@@ -46,6 +46,9 @@
 #' \code{surv_reg()}. This keeps model comparison separate from model
 #' selection: compare candidate models first, then choose the final model using
 #' clinical, epidemiological, and statistical judgement.
+#' The guided builder in \code{gtregression_app()} can create the fitted
+#' gtregression objects before calling this function; the generated app code
+#' exposes every model formula and comparison call.
 #'
 #' Likelihood-ratio p-values are meaningful only for nested models fitted to
 #' the same analysis sample. \code{compare_models()} checks whether the fitted
@@ -91,6 +94,9 @@
 #'   model_names = c("Treatment only", "Treatment + age + performance"),
 #'   primary_exposure = trt
 #' )
+#'
+#' @seealso \code{gtregression_app()}, \code{multi_reg()}, \code{cox_reg()},
+#'   \code{surv_reg()}, \code{select_models()}
 #'
 #' @export
 compare_models <- function(...,
@@ -757,28 +763,45 @@ compare_models <- function(...,
     warnings <- c(
       warnings,
       paste0(
-        "Different analysis sample: Models were fitted to different analysis samples because of missing data or differing inclusion criteria. ",
-        "AIC, BIC, log-likelihood and likelihood-ratio statistics are presented for completeness but should not be interpreted as formal model-selection criteria across different datasets."
+        paste0(
+          "Different analysis sample: Models were fitted to different analysis samples because of ",
+          "missing data or differing inclusion criteria. "
+        ),
+        paste0(
+          "AIC, BIC, log-likelihood and likelihood-ratio statistics are presented for completeness ",
+          "but should not be interpreted as formal model-selection criteria across different datasets."
+        )
       )
     )
   } else {
     notes <- c(
       notes,
-      "Models were fitted to the same analysis sample. AIC, BIC, log-likelihood and likelihood-ratio tests may be interpreted as formal model-comparison statistics when the models are nested as required."
+      paste0(
+        "Models were fitted to the same analysis sample. AIC, BIC, log-likelihood and ",
+        "likelihood-ratio tests may be interpreted as formal model-comparison statistics when ",
+        "the models are nested as required."
+      )
     )
   }
 
   if (isTRUE(nested) && any(body$nested_comparison %in% FALSE)) {
     warnings <- c(
       warnings,
-      "Non-nested comparison: Likelihood-ratio statistics should be interpreted with caution because one or more sequential model pairs do not appear to be nested based on their model terms."
+      paste0(
+        "Non-nested comparison: Likelihood-ratio statistics should be interpreted with caution ",
+        "because one or more sequential model pairs do not appear to be nested based on their ",
+        "model terms."
+      )
     )
   }
 
   if (!is.null(primary_exposure) && any(is.finite(body$primary_estimate))) {
     notes <- c(
       notes,
-      "Primary estimate change is calculated on the coefficient/log-effect scale before exponentiation and can help assess robustness across candidate models."
+      paste0(
+        "Primary estimate change is calculated on the coefficient/log-effect scale before ",
+        "exponentiation and can help assess robustness across candidate models."
+      )
     )
   }
 

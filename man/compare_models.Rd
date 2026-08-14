@@ -73,6 +73,9 @@ the model already fitted by \code{multi_reg()}, \code{cox_reg()}, or
 \code{surv_reg()}. This keeps model comparison separate from model
 selection: compare candidate models first, then choose the final model using
 clinical, epidemiological, and statistical judgement.
+The guided builder in \code{gtregression_app()} can create the fitted
+gtregression objects before calling this function; the generated app code
+exposes every model formula and comparison call.
 
 Likelihood-ratio p-values are meaningful only for nested models fitted to
 the same analysis sample. \code{compare_models()} checks whether the fitted
@@ -119,4 +122,8 @@ compare_models(
   primary_exposure = trt
 )
 
+}
+\seealso{
+\code{gtregression_app()}, \code{multi_reg()}, \code{cox_reg()},
+  \code{surv_reg()}, \code{select_models()}
 }

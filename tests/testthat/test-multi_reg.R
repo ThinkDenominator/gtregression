@@ -43,7 +43,7 @@ test_that("multi_reg returns a gtregression object for default logit models", {
     c("table", "table_body", "table_display", "models",
       "model_summaries", "model_stats", "variable_labels", "reg_check",
       "approach", "format", "source",
-      "adjusted_mode", "adjust_for", "exposures", "interaction")
+      "adjusted_mode", "adjust_for", "exposures", "interaction", "show_ref")
   )
   expect_null(res$model_stats)
   expect_false(res$adjusted_mode)
@@ -399,4 +399,21 @@ test_that("multi_reg validates adjustment and interaction inputs", {
     ),
     "exposure must be part"
   )
+})
+test_that("multi_reg displays every level of character predictors", {
+  set.seed(411)
+  d <- data.frame(
+    outcome = stats::rbinom(180, 1, 0.4),
+    classification = rep(c("Associated", "Elementary", "Combined"), each = 60),
+    age = stats::rnorm(180, 50, 10)
+  )
+
+  res <- multi_reg(
+    d, outcome, c(classification, age), approach = "logit", format = "gt"
+  )
+  rows <- res$table_body[res$table_body$exposure == "classification", ]
+
+  expect_equal(rows$level, c("Associated", "Combined", "Elementary"))
+  expect_equal(sum(rows$ref), 1L)
+  expect_equal(nrow(rows), 3L)
 })

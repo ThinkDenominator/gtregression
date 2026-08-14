@@ -205,11 +205,14 @@
   }
 
   if (inherits(tbl, "stratified_cox_reg")) {
-    effect_label <- .stratified_effect_label(header_labels, if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
+    effect_label <- .stratified_effect_label(
+      header_labels,
+      if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
       "Adjusted HR (95% CI)"
     } else {
       "HR (95% CI)"
-    })
+      }
+    )
     builder <- if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
       if (identical(format, "gt")) .build_gt_strata_wide_multi else .build_flex_strata_wide_multi
     } else {
@@ -219,11 +222,14 @@
   }
 
   if (inherits(tbl, "stratified_surv_reg")) {
-    effect_label <- .stratified_effect_label(header_labels, if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
+    effect_label <- .stratified_effect_label(
+      header_labels,
+      if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
       "Adjusted Time Ratio (95% CI)"
     } else {
       "Time Ratio (95% CI)"
-    })
+      }
+    )
     builder <- if (isTRUE(tbl$adjusted_mode) || isTRUE(tbl$multivariable)) {
       if (identical(format, "gt")) .build_gt_strata_wide_multi else .build_flex_strata_wide_multi
     } else {

@@ -163,6 +163,37 @@ test_that("plot_reg handles reference rows, ordering, significance, and x limits
   expect_true(any(grepl("GeomErrorbarh|GeomErrorbar", gclasses)))
 })
 
+test_that("plot_reg inherits the table reference-row setting", {
+  df <- birthwt_plot_data()
+
+  compact_tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht", "age"),
+    approach = logit,
+    show_ref = FALSE
+  )
+  expanded_tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht", "age"),
+    approach = logit,
+    show_ref = TRUE
+  )
+
+  compact_plot <- plot_reg(compact_tbl)
+  expanded_plot <- plot_reg(expanded_tbl)
+
+  expect_false(any(grepl("(Ref.)", compact_plot$data$label_clean, fixed = TRUE)))
+  expect_false(any(compact_plot$data$label %in% c("Yes", "No")))
+  expect_true(all(c("smoke", "ht") %in% compact_plot$data$label))
+  expect_true(all(compact_plot$data$is_header[compact_plot$data$label %in% c("smoke", "ht")]))
+  expect_true(any(grepl("(Ref.)", expanded_plot$data$label_clean, fixed = TRUE)))
+
+  override_plot <- plot_reg(expanded_tbl, show_ref = FALSE)
+  expect_false(any(grepl("(Ref.)", override_plot$data$label_clean, fixed = TRUE)))
+})
+
 test_that("plot_reg uses p values for linear significance", {
   df <- birthwt_plot_data()
 
@@ -202,6 +233,11 @@ test_that("plot_reg supports stratified objects and validates unsupported inputs
   expect_true("stratum" %in% names(p$data))
   expect_equal(levels(p$data$stratum), levels(df$race))
   expect_true(any(vapply(p$facet$params$facets, rlang::as_label, character(1)) == "stratum"))
+
+  expect_error(
+    plot_reg_combine(stratified, stratified),
+    "does not support stratified objects"
+  )
 
   expect_error(plot_reg(mtcars), "gtregression object")
 })

@@ -8,7 +8,16 @@
   if (is.null(mf) || !variable %in% names(mf)) {
     return(NULL)
   }
-  mf[[variable]]
+  x <- mf[[variable]]
+
+  # R's modelling machinery expands character predictors as treatment-coded
+  # categorical variables, but model.frame() may retain their character class.
+  # Normalise only for table reconstruction so every fitted level is displayed.
+  if (is.character(x)) {
+    x <- factor(x)
+  }
+
+  x
 }
 
 #' @keywords internal

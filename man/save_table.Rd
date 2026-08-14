@@ -7,7 +7,7 @@
 save_table(
   tbl,
   filename = "table",
-  format = c("docx", "pdf", "html"),
+  format = c("docx", "rtf", "pdf", "html"),
   orientation = c("auto", "portrait", "landscape"),
   fit_width = TRUE,
   font_size = 9,
@@ -21,8 +21,9 @@ save_table(
 \item{filename}{File name for the output. Extension is optional. If no
 directory is supplied, the file is saved in \code{tempdir()}.}
 
-\item{format}{Output format. One of \code{"docx"}, \code{"pdf"}, or
-\code{"html"}.}
+\item{format}{Output format. One of \code{"docx"}, \code{"rtf"},
+\code{"pdf"}, or \code{"html"}. Flextable objects can be saved as
+\code{"docx"}, \code{"rtf"}, or \code{"html"}.}
 
 \item{orientation}{Word page orientation for DOCX output. One of
 \code{"auto"}, \code{"portrait"}, or \code{"landscape"}. With
@@ -43,7 +44,7 @@ Saves the file to disk. Invisibly returns the normalized file path.
 }
 \description{
 Saves a \code{gtregression} table, merged table, \code{gt_tbl}, or
-\code{flextable} as a Word, PDF, or HTML file.
+\code{flextable} as a Word, RTF, PDF, or HTML file.
 }
 \examples{
 birthwt_data <- data_birthwt |>

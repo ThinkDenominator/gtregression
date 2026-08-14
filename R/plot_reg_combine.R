@@ -16,10 +16,12 @@
 #' @param log_x Logical; if \code{TRUE}, uses log x-axis for non-linear models.
 #' @param point_color,errorbar_color Base colors for non-significant rows.
 #' @param base_size Base font size for \code{theme_minimal()}.
-#' @param show_ref Logical; if \code{TRUE}, include reference levels as
-#'   \code{(Ref.)}. If \code{FALSE}, binary exposures are shown as compact rows
-#'   for the estimated non-reference category; affirmative levels such as
-#'   \code{Yes} or \code{1} are displayed using the variable name.
+#' @param show_ref Logical or \code{NULL}. The default \code{NULL} inherits the
+#'   setting used to create the supplied tables. If \code{TRUE}, include
+#'   reference levels as \code{(Ref.)}. If \code{FALSE}, binary exposures are
+#'   shown as compact rows for the estimated non-reference category;
+#'   affirmative levels such as \code{Yes} or \code{1} are displayed using the
+#'   variable name.
 #' @param sig_color,sig_errorbar_color Optional colors for significant rows.
 #'   If \code{NULL}, base colors are reused.
 #' @param xlim_uni,breaks_uni Optional x-axis limits and breaks for the
@@ -46,7 +48,7 @@ plot_reg_combine <- function(tbl_uni,
                              point_color = "#1F77B4",
                              errorbar_color = "#4C4C4C",
                              base_size = 14,
-                             show_ref = TRUE,
+                             show_ref = NULL,
                              sig_color = NULL,
                              sig_errorbar_color = NULL,
                              xlim_uni = NULL,
@@ -62,9 +64,11 @@ plot_reg_combine <- function(tbl_uni,
   if (!inherits(tbl_multi, "gtregression")) {
     stop("`tbl_multi` must be a gtregression object.", call. = FALSE)
   }
-  if (isTRUE(tbl_uni$stratified) || isTRUE(tbl_multi$stratified)) {
+  if (.plot_is_stratified(tbl_uni) || .plot_is_stratified(tbl_multi)) {
     stop("plot_reg_combine() does not support stratified objects.", call. = FALSE)
   }
+
+  show_ref <- .plot_resolve_show_ref(show_ref, tbl_uni, tbl_multi)
 
   valid_standard_pair <- identical(tbl_uni$source, "uni_reg") &&
     identical(tbl_multi$source, "multi_reg")
@@ -84,7 +88,13 @@ plot_reg_combine <- function(tbl_uni,
     }
     if (tbl_uni$source %in% c("cox_reg", "surv_reg") ||
         tbl_multi$source %in% c("cox_reg", "surv_reg")) {
-      stop("For survival objects, use a crude cox_reg()/surv_reg() object first and its adjusted counterpart second.", call. = FALSE)
+      stop(
+        paste0(
+          "For survival objects, use a crude cox_reg()/surv_reg() object first and its adjusted ",
+          "counterpart second."
+        ),
+        call. = FALSE
+      )
     }
     stop("`tbl_uni` must come from uni_reg() and `tbl_multi` must come from multi_reg().", call. = FALSE)
   }
@@ -407,7 +417,11 @@ plot_reg_combine <- function(tbl_uni,
         panel.grid.major.x = ggplot2::element_blank(),
         panel.grid.minor.x = ggplot2::element_blank(),
         axis.text.y = if (show_y) ggtext::element_markdown(family = "mono", hjust = 0) else ggplot2::element_blank(),
-        axis.text.y.left = if (show_y) ggtext::element_markdown(family = "mono", hjust = 0) else ggplot2::element_blank(),
+        axis.text.y.left = if (show_y) {
+          ggtext::element_markdown(family = "mono", hjust = 0)
+        } else {
+          ggplot2::element_blank()
+        },
         axis.title.y = ggplot2::element_blank(),
         plot.title = ggplot2::element_text(face = "bold"),
         plot.margin = ggplot2::margin(10, 40, 10, 10)

@@ -389,14 +389,15 @@
 #' Save a single regression or summary table
 #'
 #' Saves a \code{gtregression} table, merged table, \code{gt_tbl}, or
-#' \code{flextable} as a Word, PDF, or HTML file.
+#' \code{flextable} as a Word, RTF, PDF, or HTML file.
 #'
 #' @param tbl A \code{gtregression} object, \code{merged_table} object,
 #'   \code{gt_tbl}, or \code{flextable}.
 #' @param filename File name for the output. Extension is optional. If no
 #'   directory is supplied, the file is saved in \code{tempdir()}.
-#' @param format Output format. One of \code{"docx"}, \code{"pdf"}, or
-#'   \code{"html"}.
+#' @param format Output format. One of \code{"docx"}, \code{"rtf"},
+#'   \code{"pdf"}, or \code{"html"}. Flextable objects can be saved as
+#'   \code{"docx"}, \code{"rtf"}, or \code{"html"}.
 #' @param orientation Word page orientation for DOCX output. One of
 #'   \code{"auto"}, \code{"portrait"}, or \code{"landscape"}. With
 #'   \code{"auto"}, wide tables are saved in landscape orientation before any
@@ -441,12 +442,12 @@
 #' @export
 save_table <- function(tbl,
                        filename = "table",
-                       format = c("docx", "pdf", "html"),
+                       format = c("docx", "rtf", "pdf", "html"),
                        orientation = c("auto", "portrait", "landscape"),
                        fit_width = TRUE,
                        font_size = 9,
                        min_font_size = 8) {
-  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("docx", "pdf", "html"))
+  format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("docx", "rtf", "pdf", "html"))
   format <- match.arg(format)
   orientation <- .choice_arg(
     substitute(orientation),
@@ -482,11 +483,13 @@ save_table <- function(tbl,
         path = filename,
         pr_section = docx$section
       )
+    } else if (identical(format, "rtf")) {
+      flextable::save_as_rtf(obj, path = filename)
     } else if (identical(format, "html")) {
       flextable::save_as_html(obj, path = filename)
     } else {
       stop(
-        "Saving flextable objects as PDF is not directly supported. Save as DOCX or HTML instead.",
+        "Saving flextable objects as PDF is not directly supported. Save as DOCX, RTF, or HTML instead.",
         call. = FALSE
       )
     }
@@ -806,7 +809,10 @@ save_docx <- function(tables = NULL,
         ft <- .fit_flextable_docx_width(obj, table_width = table_width)
       } else if (inherits(obj, "gt_tbl")) {
         stop(
-          "DOCX export currently supports flextable-based tables directly. For gt tables, save as HTML/PDF with save_table(), or create the table with format = 'flextable'.",
+          paste0(
+            "DOCX export currently supports flextable-based tables directly. For gt tables, ",
+            "save as HTML/PDF with save_table(), or create the table with format = 'flextable'."
+          ),
           call. = FALSE
         )
       } else {

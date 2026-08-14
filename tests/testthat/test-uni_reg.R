@@ -22,7 +22,7 @@ test_that("uni_reg returns a gtregression object for binary logistic models", {
     res,
     c("table", "table_body", "table_display", "models",
       "model_summaries", "model_stats", "variable_labels", "reg_check",
-      "approach", "format", "source")
+      "approach", "format", "source", "show_ref")
   )
   expect_null(res$model_stats)
   expect_true(all(c("exposure", "level", "estimate", "conf.low",
@@ -292,4 +292,20 @@ test_that("uni_reg accessors return current components", {
   expect_s3_class(res$table, "flextable")
   expect_equal(res$format, "flextable")
   expect_identical(res$engine, res$format)
+})
+test_that("uni_reg displays every level of character predictors", {
+  set.seed(410)
+  d <- data.frame(
+    outcome = stats::rbinom(180, 1, 0.4),
+    classification = rep(c("Associated", "Elementary", "Combined"), each = 60)
+  )
+
+  res <- uni_reg(d, outcome, classification, approach = "logit", format = "gt")
+  rows <- res$table_body[res$table_body$exposure == "classification", ]
+
+  expect_equal(rows$level, c("Associated", "Combined", "Elementary"))
+  expect_equal(sum(rows$ref), 1L)
+  expect_equal(nrow(rows), 3L)
+  expect_true(all(c("Associated", "Combined", "Elementary") %in%
+                    trimws(res$table_display$Characteristic)))
 })

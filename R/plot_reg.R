@@ -20,10 +20,11 @@
 #' @param point_color Fill color for points.
 #' @param errorbar_color Color for error bars.
 #' @param base_size Base font size.
-#' @param show_ref Logical; if \code{TRUE}, reference rows are shown. If
-#'   \code{FALSE}, binary exposures are shown as compact rows for the estimated
-#'   non-reference category; affirmative levels such as \code{Yes} or \code{1}
-#'   are displayed using the variable name.
+#' @param show_ref Logical or \code{NULL}. The default \code{NULL} inherits the
+#'   reference-row choice used to create \code{tbl}. If \code{TRUE}, reference
+#'   rows are shown. If \code{FALSE}, binary exposures are shown as compact rows
+#'   for the estimated non-reference category; affirmative levels such as
+#'   \code{Yes} or \code{1} are displayed using the variable name.
 #' @param sig_color Optional fill color for significant points.
 #' @param sig_errorbar_color Optional color for significant error bars.
 #' @param alpha Significance level for linear models when \code{p.value} is available.
@@ -45,7 +46,7 @@ plot_reg <- function(tbl,
                      point_color = "#1F77B4",
                      errorbar_color = "#4C4C4C",
                      base_size = 14,
-                     show_ref = TRUE,
+                     show_ref = NULL,
                      sig_color = NULL,
                      sig_errorbar_color = NULL,
                      alpha = 0.05,
@@ -61,6 +62,8 @@ plot_reg <- function(tbl,
   if (is.null(source_type) || is.null(approach)) {
     stop("`tbl` must contain `source` and `approach`.", call. = FALSE)
   }
+
+  show_ref <- .plot_resolve_show_ref(show_ref, tbl)
 
   if (.plot_is_stratified(tbl, source_type)) {
     return(.plot_reg_stratified(
@@ -390,6 +393,37 @@ plot_reg <- function(tbl,
   }
 
   p
+}
+
+#' Resolve reference-row display for regression plots
+#' @keywords internal
+#' @noRd
+.plot_resolve_show_ref <- function(show_ref, ...) {
+  objects <- list(...)
+
+  if (!is.null(show_ref)) {
+    if (!is.logical(show_ref) || length(show_ref) != 1L || is.na(show_ref)) {
+      stop("`show_ref` must be TRUE, FALSE, or NULL.", call. = FALSE)
+    }
+    return(isTRUE(show_ref))
+  }
+
+  stored <- vapply(objects, function(x) {
+    if (is.null(x$show_ref)) NA else isTRUE(x$show_ref)
+  }, logical(1))
+  stored <- stored[!is.na(stored)]
+
+  if (!length(stored)) return(TRUE)
+  if (length(unique(stored)) == 1L) return(stored[[1]])
+
+  warning(
+    paste0(
+      "The supplied tables use different `show_ref` settings; reference rows are shown to keep ",
+      "panels aligned. Set `show_ref` explicitly to override this."
+    ),
+    call. = FALSE
+  )
+  TRUE
 }
 
 #' Plot stratified regression outputs (internal)

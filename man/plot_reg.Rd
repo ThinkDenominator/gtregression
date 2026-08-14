@@ -16,7 +16,7 @@ plot_reg(
   point_color = "#1F77B4",
   errorbar_color = "#4C4C4C",
   base_size = 14,
-  show_ref = TRUE,
+  show_ref = NULL,
   sig_color = NULL,
   sig_errorbar_color = NULL,
   alpha = 0.05,
@@ -49,10 +49,11 @@ Defaults to 0 for linear models and 1 otherwise.}
 
 \item{base_size}{Base font size.}
 
-\item{show_ref}{Logical; if \code{TRUE}, reference rows are shown. If
-\code{FALSE}, binary exposures are shown as compact rows for the estimated
-non-reference category; affirmative levels such as \code{Yes} or \code{1}
-are displayed using the variable name.}
+\item{show_ref}{Logical or \code{NULL}. The default \code{NULL} inherits the
+reference-row choice used to create \code{tbl}. If \code{TRUE}, reference
+rows are shown. If \code{FALSE}, binary exposures are shown as compact rows
+for the estimated non-reference category; affirmative levels such as
+\code{Yes} or \code{1} are displayed using the variable name.}
 
 \item{sig_color}{Optional fill color for significant points.}
 

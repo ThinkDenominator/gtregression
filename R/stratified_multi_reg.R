@@ -186,7 +186,10 @@ stratified_multi_reg <- function(data,
 
   footnotes <- c(
     .abbrev_note(approach),
-    if (isTRUE(show_ref) && any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))) .ref_note() else NULL,
+    if (
+      isTRUE(show_ref) &&
+        any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))
+    ) .ref_note() else NULL,
     if (!is.null(adjust_for) && length(adjust_for) > 0) .adjustment_note(adjust_for) else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
     .n_note_multi_strata(stratifier, n_by_stratum)
@@ -218,7 +221,8 @@ stratified_multi_reg <- function(data,
     levels = levs,
     approach = approach,
     format = format,
-    source = "stratified_multi_reg"
+    source = "stratified_multi_reg",
+    show_ref = isTRUE(show_ref)
   )
 
   class(out) <- c("gtregression", "stratified_multi_reg", fmt_class, class(out))

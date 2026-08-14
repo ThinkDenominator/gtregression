@@ -152,7 +152,10 @@ multi_reg <- function(data,
         " complete observations included across outcome, exposure, and adjustment variables"
       )
     } else {
-      "N varies by exposure according to complete observations for outcome, the current exposure, and adjustment variables"
+      paste0(
+        "N varies by exposure according to complete observations for outcome, the current ",
+        "exposure, and adjustment variables"
+      )
     }
 
     c(
@@ -196,7 +199,8 @@ multi_reg <- function(data,
     adjusted_mode = core$adjusted_mode,
     adjust_for = if (isTRUE(core$adjusted_mode)) unique(adjust_for) else NULL,
     exposures = unique(exposures),
-    interaction = interaction
+    interaction = interaction,
+    show_ref = isTRUE(show_ref)
   )
 
   class(res) <- c("gtregression", "multi_reg", fmt_class, class(res))

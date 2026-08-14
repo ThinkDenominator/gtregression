@@ -182,7 +182,8 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     levels        = levs,
     approach      = approach,
     format        = format,
-    source        = "stratified_uni_reg"
+    source        = "stratified_uni_reg",
+    show_ref      = isTRUE(show_ref)
   )
   class(out) <- c("gtregression","stratified_uni_reg", fmt_class, class(out))
   out

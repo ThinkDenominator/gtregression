@@ -149,7 +149,11 @@ descriptive_table <- function(data,
                 rows = "row", rowwise = "row")
   )
   show_missing <- .choice_arg(substitute(show_missing), env = parent.frame(), choices = c("ifany","no"))
-  show_dichotomous <- .choice_arg(substitute(show_dichotomous), env = parent.frame(), choices = c("all_levels","single_row"))
+  show_dichotomous <- .choice_arg(
+    substitute(show_dichotomous),
+    env = parent.frame(),
+    choices = c("all_levels", "single_row")
+  )
   show_overall <- .choice_arg(substitute(show_overall), env = parent.frame(), choices = c("no","first","last"))
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable","gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
@@ -462,7 +466,11 @@ descriptive_table <- function(data,
     is.factor(x) || is.character(x) || is_binary(x) || is_forced_categorical(v)
   }, logical(1))]
   stat_used <- if (length(cont_vars)) {
-    lbls <- vapply(cont_vars, function(v) stat_label(ifelse(is.na(get_user_stat(v)),"median", get_user_stat(v))), character(1))
+    lbls <- vapply(
+      cont_vars,
+      function(v) stat_label(ifelse(is.na(get_user_stat(v)), "median", get_user_stat(v))),
+      character(1)
+    )
     if (length(unique(lbls)) == 1L) {
       paste0("Continuous variables shown as ", unique(lbls), ".")
     } else {

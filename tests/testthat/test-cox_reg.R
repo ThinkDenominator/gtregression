@@ -712,3 +712,18 @@ test_that("cox_reg validates stratifier inputs and supports stratified forest da
   expect_true(attr(forest_data, "forest_meta")$side_by_side_strata)
   expect_equal(length(attr(forest_data, "forest_estimates")$est), 2L)
 })
+test_that("cox_reg displays every level of character predictors", {
+  set.seed(412)
+  d <- data.frame(
+    time = stats::rexp(180),
+    event = stats::rbinom(180, 1, 0.7),
+    classification = rep(c("Associated", "Elementary", "Combined"), each = 60)
+  )
+
+  res <- cox_reg(d, time, event, classification, format = "gt")
+  rows <- res$table_body[res$table_body$exposure == "classification", ]
+
+  expect_equal(rows$level, c("Associated", "Combined", "Elementary"))
+  expect_equal(sum(rows$ref), 1L)
+  expect_equal(nrow(rows), 3L)
+})

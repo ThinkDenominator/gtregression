@@ -47,7 +47,7 @@ test_that("stratified_multi_reg returns a gtregression object for full logit mod
     res,
     c("table", "table_display", "per_stratum", "models",
       "model_summaries", "variable_labels", "reg_check", "by", "levels", "approach",
-      "format", "source")
+      "format", "source", "show_ref")
   )
   expect_named(res$models, c("White", "Black", "Other"))
   expect_named(res$models$White, "multivariable_model")

@@ -3,6 +3,11 @@ template:
   bootstrap: 5
   bootswatch: zephyr
   logo: man/figures/gtregression_hex.png
+  includes:
+    in_header: |
+      <link rel="stylesheet" href="https://thinkdenominator.com/analytics-consent.css">
+      <script>window.TD_GA_MEASUREMENT_ID = "G-XV0W2M650P";</script>
+      <script defer src="https://thinkdenominator.com/analytics-consent.js"></script>
 
 home:
   title: Home
@@ -35,6 +40,8 @@ navbar:
         href: articles/gtregression-intro.html
       - text: Function Options
         href: articles/function-options.html
+      - text: App Manual
+        href: articles/gtregression-app.html
       - text: Tables
         href: articles/descriptive-tables.html
       - text: Regression
@@ -60,6 +67,7 @@ articles:
     contents:
       - gtregression-intro
       - function-options
+      - gtregression-app
 
   - title: "Tables"
     navbar: "Tables"
@@ -152,10 +160,11 @@ reference:
       - plot_mediation
 
   - title: "Modify, Merge, and Export"
-    desc: "Polish tables, combine outputs, and save tables, plots, or Word reports."
+    desc: "Polish tables, combine outputs, launch the app, and save tables, plots, or Word reports."
     contents:
       - modify_table
       - merge_tables
+      - gtregression_app
       - save_table
       - save_docx
       - save_plot

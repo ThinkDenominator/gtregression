@@ -364,7 +364,8 @@
     multivariable = isTRUE(multivariable),
     adjust_for = if (adjusted_mode) unique(adjust_for) else NULL,
     exposures = unique(exposures),
-    interaction = interaction
+    interaction = interaction,
+    show_ref = isTRUE(show_ref)
   )
 
   class(out) <- c("gtregression", source, object_class, fmt_class, class(out))
@@ -504,7 +505,10 @@
   c(
     .abbrev_note(approach),
     extra_footnotes,
-    if (isTRUE(show_ref) && any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))) .ref_note() else NULL,
+    if (
+      isTRUE(show_ref) &&
+        any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))
+    ) .ref_note() else NULL,
     if (isTRUE(adjusted_mode)) .adjustment_note(adjust_for) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,

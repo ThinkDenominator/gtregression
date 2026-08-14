@@ -83,7 +83,10 @@
 #'
 #' @importFrom survival Surv survfit survdiff
 #' @importFrom stats as.formula pchisq complete.cases
-#' @importFrom ggplot2 ggplot aes geom_ribbon geom_step geom_point geom_text labs theme_minimal theme_classic theme_bw theme_light theme_void theme element_blank element_text scale_y_continuous scale_x_continuous coord_cartesian scale_color_manual scale_fill_manual guides guide_legend
+#' @importFrom ggplot2 ggplot aes geom_ribbon geom_step geom_point geom_text labs
+#' @importFrom ggplot2 theme_minimal theme_classic theme_bw theme_light theme_void theme
+#' @importFrom ggplot2 element_blank element_text scale_y_continuous scale_x_continuous
+#' @importFrom ggplot2 coord_cartesian scale_color_manual scale_fill_manual guides guide_legend
 #' @importFrom patchwork wrap_plots
 #' @export
 km_plot <- function(data,

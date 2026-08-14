@@ -275,7 +275,10 @@
     reason <- switch(
       emm_basis,
       "both" = "Stratum-specific estimates differ and the interaction test also supports effect modification.",
-      "estimate" = "Stratum-specific estimates differ meaningfully, although the interaction test is not strongly significant.",
+      "estimate" = paste0(
+        "Stratum-specific estimates differ meaningfully, although the interaction test is not ",
+        "strongly significant."
+      ),
       "interaction" = "Interaction test supports effect modification, although estimate spread is less marked.",
       "Effect modification detected."
     )

@@ -159,7 +159,8 @@ uni_reg <- function(data,
     reg_check       = reg_diagnostics,
     approach        = approach,
     format          = format,
-    source          = "uni_reg"
+    source          = "uni_reg",
+    show_ref        = isTRUE(show_ref)
   )
   class(res) <- c("gtregression", "uni_reg", fmt_class, class(res))
   res

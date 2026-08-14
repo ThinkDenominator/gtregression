@@ -71,7 +71,9 @@
 #'
 #' @importFrom survival Surv survfit survreg
 #' @importFrom stats complete.cases median predict
-#' @importFrom ggplot2 ggplot aes geom_step geom_line labs theme_minimal theme element_text scale_y_continuous scale_x_continuous coord_cartesian scale_color_manual scale_linetype_manual
+#' @importFrom ggplot2 ggplot aes geom_step geom_line labs theme_minimal theme element_text
+#' @importFrom ggplot2 scale_y_continuous scale_x_continuous coord_cartesian
+#' @importFrom ggplot2 scale_color_manual scale_linetype_manual
 #' @export
 plot_surv_fit <- function(data,
                           time,

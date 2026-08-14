@@ -55,7 +55,7 @@ test_that("save_table writes gt html files and returns normalized paths", {
   unlink(out)
 })
 
-test_that("save_table writes flextable docx and html files", {
+test_that("save_table writes flextable docx, rtf, and html files", {
   skip_if_not_installed("flextable")
 
   df <- birthwt_save_data()
@@ -68,6 +68,7 @@ test_that("save_table writes flextable docx and html files", {
   )
 
   file_docx <- file.path(tempdir(), paste0("gtregression-flex-", Sys.getpid(), ".docx"))
+  file_rtf <- file.path(tempdir(), paste0("gtregression-flex-", Sys.getpid(), ".rtf"))
   file_html <- file.path(tempdir(), paste0("gtregression-flex-", Sys.getpid(), ".html"))
 
   out_docx <- save_table(
@@ -79,14 +80,16 @@ test_that("save_table writes flextable docx and html files", {
     font_size = 9,
     min_font_size = 8
   )
+  out_rtf <- save_table(tbl, filename = file_rtf, format = rtf)
   out_html <- save_table(tbl, filename = file_html, format = html)
 
   expect_true(file.exists(out_docx))
+  expect_true(file.exists(out_rtf))
   expect_true(file.exists(out_html))
   expect_error(save_table(tbl, filename = file.path(tempdir(), "bad-flex"), format = pdf),
                "PDF is not directly supported")
 
-  unlink(c(out_docx, out_html))
+  unlink(c(out_docx, out_rtf, out_html))
 })
 
 test_that("docx flextables are fitted without unsafe font shrinking", {

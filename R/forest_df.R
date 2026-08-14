@@ -107,9 +107,21 @@
 
   for (nm in names(inputs)) {
     x <- inputs[[nm]]
-    if (is_uni(x))   { if (!is.null(got_uni))  stop("Two univariate objects supplied.", call. = FALSE); got_uni <- x;  next }
-    if (is_multi(x)) { if (!is.null(got_multi)) stop("Two multivariable objects supplied.", call. = FALSE); got_multi <- x; next }
-    if (is_desc(x))  { if (!is.null(got_desc))  stop("Two descriptive tables supplied.", call. = FALSE); got_desc <- x;  next }
+    if (is_uni(x)) {
+      if (!is.null(got_uni)) stop("Two univariate objects supplied.", call. = FALSE)
+      got_uni <- x
+      next
+    }
+    if (is_multi(x)) {
+      if (!is.null(got_multi)) stop("Two multivariable objects supplied.", call. = FALSE)
+      got_multi <- x
+      next
+    }
+    if (is_desc(x)) {
+      if (!is.null(got_desc)) stop("Two descriptive tables supplied.", call. = FALSE)
+      got_desc <- x
+      next
+    }
     stop("Unknown input type for argument '", nm, "'.", call. = FALSE)
   }
 

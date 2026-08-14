@@ -249,7 +249,11 @@ surv_predict <- function(model,
 
   profile_cols <- newdata[grid$Profile, , drop = FALSE]
   rownames(profile_cols) <- NULL
-  cbind(out[, "Profile", drop = FALSE], profile_cols, out[, c("Time", "Survival.probability", "Distribution"), drop = FALSE])
+  cbind(
+    out[, "Profile", drop = FALSE],
+    profile_cols,
+    out[, c("Time", "Survival.probability", "Distribution"), drop = FALSE]
+  )
 }
 
 #' @keywords internal

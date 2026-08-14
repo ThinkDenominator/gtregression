@@ -19,7 +19,11 @@
 }
 #' @keywords internal
 #' @noRd
-.is_ratio <- function(a) .normalize_approach(a) %in% c("logit","firth","logbinomial","poisson", "robpoisson", "negbin", "cox", "survreg")
+.is_ratio <- function(a) {
+  .normalize_approach(a) %in% c(
+    "logit", "firth", "logbinomial", "poisson", "robpoisson", "negbin", "cox", "survreg"
+  )
+}
 #' @keywords internal
 #' @noRd
 .get_effect_label <- function(a) switch(.normalize_approach(a),

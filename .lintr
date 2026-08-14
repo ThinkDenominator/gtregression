@@ -1,0 +1,14 @@
+linters: list(
+  line_length_linter = line_length_linter(120L)
+  )
+exclusions: list(
+  "R/mod-data-prep.R" = Inf,
+  "inst/shiny/app.R" = Inf,
+  "data-raw" = Inf,
+  "docs" = Inf,
+  "man" = Inf,
+  "tests" = Inf,
+  "vignettes" = Inf,
+  "README.Rmd" = Inf,
+  "README.md" = Inf
+  )

@@ -16,7 +16,7 @@ plot_reg_combine(
   point_color = "#1F77B4",
   errorbar_color = "#4C4C4C",
   base_size = 14,
-  show_ref = TRUE,
+  show_ref = NULL,
   sig_color = NULL,
   sig_errorbar_color = NULL,
   xlim_uni = NULL,
@@ -49,10 +49,12 @@ linear models and 1 otherwise.}
 
 \item{base_size}{Base font size for \code{theme_minimal()}.}
 
-\item{show_ref}{Logical; if \code{TRUE}, include reference levels as
-\code{(Ref.)}. If \code{FALSE}, binary exposures are shown as compact rows
-for the estimated non-reference category; affirmative levels such as
-\code{Yes} or \code{1} are displayed using the variable name.}
+\item{show_ref}{Logical or \code{NULL}. The default \code{NULL} inherits the
+setting used to create the supplied tables. If \code{TRUE}, include
+reference levels as \code{(Ref.)}. If \code{FALSE}, binary exposures are
+shown as compact rows for the estimated non-reference category;
+affirmative levels such as \code{Yes} or \code{1} are displayed using the
+variable name.}
 
 \item{sig_color, sig_errorbar_color}{Optional colors for significant rows.
 If \code{NULL}, base colors are reused.}

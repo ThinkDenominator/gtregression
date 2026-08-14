@@ -8,7 +8,15 @@ vignette: >
 ---
 
 ```{r, echo=FALSE, out.width='160px'}
-knitr::include_graphics("../man/figures/gtregression_hex.png")
+logo_candidates <- c(
+  "man/figures/gtregression_hex.png",
+  "../man/figures/gtregression_hex.png"
+)
+logo_path <- logo_candidates[file.exists(logo_candidates)][1]
+
+if (!is.na(logo_path)) {
+  knitr::include_graphics(logo_path)
+}
 ```
 
 # gtregression

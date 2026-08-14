@@ -26,6 +26,29 @@ test_that("plot_reg_combine returns patchwork for current regression objects", {
   expect_equal(p[[2]]$data$exposure[p[[2]]$data$is_header], exposures)
 })
 
+test_that("plot_reg_combine inherits compact binary rows from both tables", {
+  df <- birthwt_plot_combine_data()
+  exposures <- c("smoke", "ht", "age")
+
+  tbl_uni <- uni_reg(
+    df, outcome = "low", exposures = exposures, approach = logit,
+    show_ref = FALSE
+  )
+  tbl_multi <- multi_reg(
+    df, outcome = "low", exposures = exposures, approach = logit,
+    show_ref = FALSE
+  )
+
+  p <- plot_reg_combine(tbl_uni, tbl_multi)
+
+  expect_false(any(grepl("(Ref.)", p[[1]]$data$label_clean, fixed = TRUE)))
+  expect_false(any(grepl("(Ref.)", p[[2]]$data$label_clean, fixed = TRUE)))
+  expect_false(any(p[[1]]$data$label %in% c("Yes", "No")))
+  expect_false(any(p[[2]]$data$label %in% c("Yes", "No")))
+  expect_true(all(c("smoke", "ht") %in% p[[1]]$data$label))
+  expect_true(all(c("smoke", "ht") %in% p[[2]]$data$label))
+})
+
 test_that("plot_reg_combine supports multi_reg adjust_for mode", {
   df <- birthwt_plot_combine_data()
 

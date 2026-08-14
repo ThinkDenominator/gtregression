@@ -399,6 +399,31 @@ descriptive_table(
 | `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
 | `theme` | `"minimal"` | table theme preset | Table styling. |
 
+#### Compare Models in the gtregression App
+
+The R function above compares already fitted gtregression objects. The app adds
+a candidate-model builder in **Advanced > Compare models**, fits the requested
+models, and then calls the same function.
+
+| App control | Default | Available options or input | What it does |
+|---|---:|---|---|
+| Regression approach | `logit` | logistic, linear, Firth, log-binomial, Poisson, robust Poisson, negative binomial, Cox, parametric survival | Selects the gtregression fitting function used for every candidate. |
+| Outcome | first eligible variable | one column | Common outcome for ordinary regression candidates. |
+| Follow-up time, event | first eligible variables | numeric time and event columns | Replace outcome for Cox and parametric survival candidates. |
+| Distribution | `weibull` | distributions supported by `surv_reg()` | Appears only for parametric survival regression. |
+| Primary exposure to track | none | one predictor or none | Adds the estimate and percentage change from the first candidate. |
+| Candidate name | generated model name | unique text | Becomes the visible model label in the comparison table and generated code. |
+| Reported exposures | none | one or more predictors | Defines the candidate's focal predictors. These are included in the fitted model. |
+| Adjustment variables | none | zero or more predictors | Adds planned covariates to that candidate. |
+| Interaction | none | two predictors already in the candidate | Adds one interaction while retaining its main effects. |
+| Add candidate | two initially | two to six candidates | Adds another independently specified model. |
+| Remove candidate | not applicable | candidates above the minimum | Removes the last candidate while retaining at least two. |
+
+Candidates are compared in their displayed order. Use meaningful unique names,
+place the baseline model first, and include the tracked primary exposure in
+every candidate. The app's **Code** panel contains the complete `multi_reg()`,
+`cox_reg()`, or `surv_reg()` calls followed by `compare_models()`.
+
 ## Confounding, Interaction, and Mediation
 
 ### `identify_confounder()`
@@ -480,8 +505,8 @@ descriptive_table(
 | `level_labels` | `NULL` | named character vector or `NULL` | Relabels factor levels. |
 | `header_labels` | `NULL` | named character vector or `NULL` | Relabels column headers. |
 | `caption` | `NULL` | character or `NULL` | Adds table caption. |
-| `bold_labels` | `FALSE` | `TRUE`, `FALSE` | Bolds variable label rows. |
-| `bold_levels` | `FALSE` | `TRUE`, `FALSE` | Bolds level rows. |
+| `bold_labels` | `FALSE` | `TRUE`, `FALSE` | Displays variable label rows in bold. |
+| `bold_levels` | `FALSE` | `TRUE`, `FALSE` | Displays level rows in bold. |
 | `remove_N`, `remove_N_obs` | `FALSE` | `TRUE`, `FALSE` | Removes sample-size columns when present. |
 | `remove_abbreviations` | `FALSE` | `TRUE`, `FALSE` | Removes abbreviation footnotes. |
 | `caveat` | `NULL` | character or `NULL` | Adds custom caveat or interpretation note. |

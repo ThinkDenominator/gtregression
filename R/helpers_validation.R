@@ -437,7 +437,10 @@
 
   if ((adjusted_mode || exposure_by_exposure) && length(exposures) != 1L) {
     stop(
-      "When `interaction` is supplied in exposure-by-exposure mode, please provide a single exposure or set `multivariable = TRUE`.",
+      paste0(
+        "When `interaction` is supplied in exposure-by-exposure mode, please provide a single ",
+        "exposure or set `multivariable = TRUE`."
+      ),
       call. = FALSE
     )
   }

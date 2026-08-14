@@ -38,6 +38,7 @@ Description:
   best practices in epidemiology and applied statistics.
 License: MIT + file LICENSE
 Encoding: UTF-8
+Language: en-US
 LazyData: true
 Depends: 
     R (>= 4.1.0)
@@ -65,13 +66,19 @@ Imports:
     survival
 VignetteBuilder: knitr
 Suggests:
+    haven,
     testthat (>= 3.1.5),
     knitr,
     rmarkdown,
     car,
     forcats,
     pkgdown,
-    ggtext
+    ggtext,
+    shiny,
+    rstudioapi,
+    DT,
+    readxl,
+    rio
 Config/testthat/edition: 3
 Config/Needs/website: 
     pkgdown
