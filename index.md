@@ -66,6 +66,28 @@ The user-facing functions return objects with fitted models, table
 bodies, and display metadata that advanced users can audit, modify, or
 reuse.
 
+## Menu-Driven App
+
+Launch the optional interface with:
+
+``` r
+
+gtregression_app()
+```
+
+The app supports data preparation, descriptive and regression tables,
+survival analysis, visualisation, export, mediation, diagnostics, and
+prespecified model comparison. Under **Advanced \> Compare models**,
+users can name two to six candidates, select each model’s exposures and
+adjustment variables, add an optional interaction, and track a primary
+exposure. The app fits gtregression model objects and displays their
+AIC, BIC, log-likelihood, sample checks, survival events where relevant,
+and estimate changes. Every step is available as copyable R code.
+
+See the [gtregression App
+manual](https://gtregression.thinkdenominator.com/articles/gtregression-app.md)
+for detailed birth weight, Cox, and parametric survival examples.
+
 ## Install
 
 ``` R

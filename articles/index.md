@@ -11,6 +11,11 @@
   A quick reference for gtregression arguments, defaults, available
   choices, and what each option does.
 
+- [Using the gtregression
+  App](https://gtregression.thinkdenominator.com/articles/gtregression-app.md):
+
+  A beginner-friendly manual for the menu-driven gtregression Shiny app.
+
 ### Tables
 
 - [Descriptive

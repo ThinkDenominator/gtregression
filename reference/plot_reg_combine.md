@@ -23,7 +23,7 @@ plot_reg_combine(
   point_color = "#1F77B4",
   errorbar_color = "#4C4C4C",
   base_size = 14,
-  show_ref = TRUE,
+  show_ref = NULL,
   sig_color = NULL,
   sig_errorbar_color = NULL,
   xlim_uni = NULL,
@@ -79,10 +79,11 @@ plot_reg_combine(
 
 - show_ref:
 
-  Logical; if `TRUE`, include reference levels as `(Ref.)`. If `FALSE`,
-  binary exposures are shown as compact rows for the estimated
-  non-reference category; affirmative levels such as `Yes` or `1` are
-  displayed using the variable name.
+  Logical or `NULL`. The default `NULL` inherits the setting used to
+  create the supplied tables. If `TRUE`, include reference levels as
+  `(Ref.)`. If `FALSE`, binary exposures are shown as compact rows for
+  the estimated non-reference category; affirmative levels such as `Yes`
+  or `1` are displayed using the variable name.
 
 - sig_color, sig_errorbar_color:
 

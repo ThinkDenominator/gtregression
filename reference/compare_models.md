@@ -106,7 +106,10 @@ or
 [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md).
 This keeps model comparison separate from model selection: compare
 candidate models first, then choose the final model using clinical,
-epidemiological, and statistical judgement.
+epidemiological, and statistical judgement. The guided builder in
+[`gtregression_app()`](https://gtregression.thinkdenominator.com/reference/gtregression_app.md)
+can create the fitted gtregression objects before calling this function;
+the generated app code exposes every model formula and comparison call.
 
 Likelihood-ratio p-values are meaningful only for nested models fitted
 to the same analysis sample. `compare_models()` checks whether the
@@ -119,6 +122,14 @@ models use the same observations, and no nested-model warning is shown
 when sequential models appear nested. AIC, BIC, log-likelihood, and
 likelihood-ratio statistics remain visible when warnings are needed, but
 should then be interpreted with the displayed caution.
+
+## See also
+
+[`gtregression_app()`](https://gtregression.thinkdenominator.com/reference/gtregression_app.md),
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md),
+[`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md)
 
 ## Examples
 

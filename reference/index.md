@@ -100,13 +100,16 @@ workflows.
 
 ## Modify, Merge, and Export
 
-Polish tables, combine outputs, and save tables, plots, or Word reports.
+Polish tables, combine outputs, launch the app, and save tables, plots,
+or Word reports.
 
 - [`modify_table()`](https://gtregression.thinkdenominator.com/reference/modify_table.md)
   : Modify Regression/Descriptive Tables (labels, headers, caption,
   notes)
 - [`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md)
   : Merge gtregression tables and preserve structure and notes
+- [`gtregression_app()`](https://gtregression.thinkdenominator.com/reference/gtregression_app.md)
+  : Launch the gtregression app
 - [`save_table()`](https://gtregression.thinkdenominator.com/reference/save_table.md)
   : Save a single regression or summary table
 - [`save_docx()`](https://gtregression.thinkdenominator.com/reference/save_docx.md)

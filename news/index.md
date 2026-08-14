@@ -4,6 +4,15 @@
 
 ### Added
 
+- Added an internal Data Prep workflow to the gtregression app, with
+  explicit original/prepared analysis-data selection, quick starts,
+  undo/redo, confirmed reset, prepared-data download, and reproducible
+  preparation code. This code is included directly in gtregression and
+  does not add gtstats as a dependency.
+- Added observed-level reference category controls for categorical
+  regression predictors in the app. Selected baselines are applied with
+  reproducible factor releveling and included in generated and exported
+  R scripts.
 - Added publication-ready `flextable` output as the default table format
   across package table functions, while retaining `gt` and tibble-style
   outputs where appropriate.
@@ -125,6 +134,11 @@
   including AIC, BIC, log-likelihood, likelihood ratio statistics,
   primary exposure estimates, percent change, analysis-sample checks,
   and highlighted best-fit summaries.
+- Added a guided candidate-model builder to the app’s Compare Models
+  workflow. Users can name and fit two to six logistic, linear, count,
+  Cox, or parametric survival candidates with model-specific exposures,
+  adjustment variables, and optional interactions before producing a
+  reproducible comparison table and complete copyable R code.
 - Added
   [`save_forest()`](https://gtregression.thinkdenominator.com/reference/save_forest.md)
   for exporting

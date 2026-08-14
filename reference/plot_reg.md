@@ -29,7 +29,7 @@ plot_reg(
   point_color = "#1F77B4",
   errorbar_color = "#4C4C4C",
   base_size = 14,
-  show_ref = TRUE,
+  show_ref = NULL,
   sig_color = NULL,
   sig_errorbar_color = NULL,
   alpha = 0.05,
@@ -89,10 +89,11 @@ plot_reg(
 
 - show_ref:
 
-  Logical; if `TRUE`, reference rows are shown. If `FALSE`, binary
-  exposures are shown as compact rows for the estimated non-reference
-  category; affirmative levels such as `Yes` or `1` are displayed using
-  the variable name.
+  Logical or `NULL`. The default `NULL` inherits the reference-row
+  choice used to create `tbl`. If `TRUE`, reference rows are shown. If
+  `FALSE`, binary exposures are shown as compact rows for the estimated
+  non-reference category; affirmative levels such as `Yes` or `1` are
+  displayed using the variable name.
 
 - sig_color:
 

@@ -1,7 +1,7 @@
 # Save a single regression or summary table
 
 Saves a `gtregression` table, merged table, `gt_tbl`, or `flextable` as
-a Word, PDF, or HTML file.
+a Word, RTF, PDF, or HTML file.
 
 ## Usage
 
@@ -9,7 +9,7 @@ a Word, PDF, or HTML file.
 save_table(
   tbl,
   filename = "table",
-  format = c("docx", "pdf", "html"),
+  format = c("docx", "rtf", "pdf", "html"),
   orientation = c("auto", "portrait", "landscape"),
   fit_width = TRUE,
   font_size = 9,
@@ -32,7 +32,8 @@ save_table(
 
 - format:
 
-  Output format. One of `"docx"`, `"pdf"`, or `"html"`.
+  Output format. One of `"docx"`, `"rtf"`, `"pdf"`, or `"html"`.
+  Flextable objects can be saved as `"docx"`, `"rtf"`, or `"html"`.
 
 - orientation:
 
@@ -76,7 +77,7 @@ tbl <- uni_reg(
 )
 
 save_table(tbl, filename = tempfile("table"), format = "html")
-#> Table saved at: /tmp/RtmplwT6ed/table19c64749240.html
+#> Table saved at: /tmp/RtmpcvI1rd/table1a0972334b08.html
 
 # Wide Word tables can be saved in landscape orientation.
 # \donttest{
@@ -89,6 +90,6 @@ save_table(
   font_size = 9,
   min_font_size = 8
 )
-#> Table saved at: /tmp/RtmplwT6ed/table-wide19c64ea62fc0.docx
+#> Table saved at: /tmp/RtmpcvI1rd/table-wide1a09282b8b23.docx
 # }
 ```

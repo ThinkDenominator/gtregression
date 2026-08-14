@@ -1,0 +1,1520 @@
+# Using the gtregression App
+
+## gtregression App Manual
+
+The `gtregression` app is a menu-driven companion to the R package. It
+is designed for users who want to explore data, create publication-ready
+tables, visualise model results, and export outputs without remembering
+every function argument.
+
+The app is not a replacement for a reproducible R script. Its best use
+is:
+
+1.  Load or upload a dataset.
+2.  Build the analysis step by step.
+3.  Review the table or plot.
+4.  Copy the generated R code.
+5.  Paste the code into RStudio and save the final manuscript output.
+
+Each analysis tab includes a **Code** panel with a copy button. This is
+important: the app helps users learn the package while creating
+reproducible code they can edit, save, and share.
+
+Screenshots can be added later if needed. Suggested screenshot files
+are: `man/figures/app-data.png`, `man/figures/app-regression.png`,
+`man/figures/app-survival.png`, and
+`man/figures/app-visualise-export.png`.
+
+### Launch the App
+
+Install and load `gtregression`, then run:
+
+``` r
+
+library(gtregression)
+
+gtregression_app()
+```
+
+When the app is launched from RStudio, it opens in the RStudio Viewer
+when available. Outside RStudio, it opens in a browser during an
+interactive session.
+
+You can pass arguments to
+[`shiny::runApp()`](https://rdrr.io/pkg/shiny/man/runApp.html) through
+[`gtregression_app()`](https://gtregression.thinkdenominator.com/reference/gtregression_app.md):
+
+``` r
+
+gtregression_app(launch.browser = TRUE)
+```
+
+To run the app without automatically opening a browser:
+
+``` r
+
+gtregression_app(launch.browser = FALSE)
+```
+
+### Close the App Safely
+
+The app keeps the R session busy while it is running. This is normal for
+Shiny.
+
+Use the **Close app** button in the bottom-right corner of the app to
+stop the session cleanly. This avoids the confusing console behaviour
+that can happen when users stop the app manually from RStudio.
+
+If R ever enters a `Browse[1]>` prompt after an interrupted app session,
+type:
+
+``` r
+
+Q
+```
+
+and press Enter.
+
+### App Dependencies
+
+The app is launched only when
+[`gtregression_app()`](https://gtregression.thinkdenominator.com/reference/gtregression_app.md)
+is called. This keeps the main package lightweight for users who only
+want command-line functions.
+
+The app uses standard, trusted R packages:
+
+| Purpose                           | Packages                               |
+|-----------------------------------|----------------------------------------|
+| App interface                     | `shiny`                                |
+| Table display and Word/RTF export | `flextable`                            |
+| HTML table fallback               | `gt`                                   |
+| Plot display                      | `ggplot2`, `patchwork`, `forestploter` |
+| Data upload and preview           | `readxl`, `DT` where available         |
+| RStudio Viewer support            | `rstudioapi` where available           |
+
+If a dependency is missing, the app gives a message explaining what to
+install.
+
+### Recommended Workflow
+
+The app is easiest to use when users follow a deliberate order:
+
+1.  **Data**: load a built-in dataset or import CSV, Excel, RDS, Stata,
+    SPSS, or SAS data.
+2.  **Data Prep**: review the data and explicitly choose **Use original
+    data** or **Use prepared data**.
+3.  **Descriptive**: inspect variables and create a baseline table.
+4.  **Regression**: run univariable models first.
+5.  **Regression**: reselect the clinically important variables and run
+    the multivariable model.
+6.  **Visualise & Export**: merge descriptive, crude, and adjusted
+    outputs.
+7.  **Visualise & Export**: create
+    [`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md)
+    or
+    [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
+    previews.
+8.  **Advanced**: check model fit, compare models, assess confounding,
+    and assess interaction where appropriate.
+9.  **Code panels**: copy the generated code into RStudio for
+    reproducible saving and editing.
+
+The app intentionally encourages users to run analyses one step at a
+time. For example, run univariable regression first, then decide which
+variables to keep, then run the multivariable model.
+
+### Simple and Advanced Modes
+
+The app starts in **Simple** mode. This is the best setting for most
+users, especially when they are learning the package or running a
+standard analysis. Simple mode keeps the screen focused on the common
+workflow:
+
+- load data;
+- create a descriptive table;
+- run regression or survival models;
+- visualise results;
+- merge and export outputs;
+- copy reproducible code.
+
+In Simple mode, the app hides technical options that are not needed for
+routine table generation. This keeps the interface cleaner and helps
+users move through the analysis without feeling they need to understand
+every modelling argument.
+
+Switch to **Advanced** mode when extra control is needed for
+diagnostics, manuscript polishing, or reviewer requests. Advanced mode
+reveals options such as:
+
+- custom descriptive statistic overrides;
+- model statistics for diagnostics and model comparison;
+- additional Kaplan-Meier display controls;
+- forest plot confidence interval column width;
+- forest plot x-axis limits and tick marks;
+- export size tuning for wider or longer outputs.
+
+| Mode | Best for | What users see |
+|----|----|----|
+| Simple | Beginners, teaching, routine analysis, quick manuscript tables | Core workflow controls only |
+| Advanced | Experienced users, diagnostics, publication polishing, complex outputs | Extra modelling, plotting, and export controls |
+
+A practical rule is:
+
+- use **Simple** mode to build the analysis;
+- switch to **Advanced** mode only when the output needs fine-tuning.
+
+This design keeps the app friendly for new users while still allowing
+full control when the analysis becomes more technical.
+
+### Quick-Start Templates
+
+The **Data** tab includes quick-start templates. These load labelled
+teaching datasets and preselect sensible variables across the app:
+
+| Template | Best for |
+|----|----|
+| Birthweight regression | Descriptive tables, logistic regression, merged tables, forest plots |
+| Lung survival | Cox regression, parametric survival regression, Kaplan-Meier plots |
+| Diabetes mediation | Causal mediation workflow and path diagrams |
+| Firth logistic | Sparse-data logistic regression |
+
+Templates are meant to help users learn the flow. After selecting a
+template, users can still change any variable, model, or display option.
+
+### Workflow Guide
+
+The app shows a compact workflow guide near the top of the screen. It
+marks which steps have already been completed and gives one suggested
+action.
+
+For example:
+
+- after loading data, it suggests reviewing the preview and choosing an
+  analysis;
+- after a descriptive table, it suggests regression or survival
+  analysis;
+- after fitted models, it suggests visualisation, model checks, merge,
+  or export;
+- after plots or merged tables, it suggests code review or
+  download/export.
+
+This is deliberately beginner-friendly. Users do not need to know the
+whole package before starting; the app nudges them through a
+reproducible analysis.
+
+### Live Analysis Status and Preflight Checks
+
+A status strip remains visible near the top of the app. It identifies
+the loaded dataset, whether modelling uses the original or prepared
+data, the current sample size, and the selected regression outcome and
+approach. This helps prevent an analysis being run on the wrong version
+of the data.
+
+The Regression and Survival tabs also show a short preflight summary
+immediately above their run buttons. Review it before fitting a model.
+It confirms the outcome or survival variables, the number of exposures
+and adjustment variables, the modelling mode, and any selected
+categorical reference levels. If a required choice is missing, the
+summary states what must be selected next.
+
+### Select and Clear Variable Buttons
+
+Several tabs include **Select all** and **Clear all** buttons beside
+long variable lists. These are available where users commonly need to
+choose multiple variables, including:
+
+- descriptive table variables;
+- regression exposures and adjustment variables;
+- survival exposures and adjustment variables;
+- advanced model-building variables;
+- mediation covariates.
+
+The buttons are role-aware. For example, after selecting an outcome,
+**Select all** for regression exposures avoids selecting the outcome as
+an exposure. In the survival tab, **Select all** avoids the selected
+time, event, and stratifier variables. This reduces accidental modelling
+errors while keeping variable selection fast for larger uploaded
+datasets.
+
+### Data Tab
+
+Use the **Data** tab to start the analysis.
+
+Users can:
+
+- load a built-in `gtregression` teaching dataset;
+- upload a CSV or Excel file;
+- import an RDS file containing a data frame or tibble;
+- import Stata (`.dta`), SPSS (`.sav`, `.zsav`, `.por`), or SAS
+  (`.sas7bdat`, `.xpt`) data when `haven` is installed;
+- preview the dataset;
+- inspect a quick data summary;
+- copy reusable data-loading code.
+
+For uploaded CSV files, check:
+
+- whether the file has a header;
+- the separator: comma, semicolon, or tab.
+
+For Excel files, optionally provide the sheet name or sheet number.
+
+CSV controls are ignored for other formats, and the Excel sheet field is
+ignored unless an Excel file is selected. An RDS file must contain a
+data frame or tibble. Generated code records the appropriate
+[`readRDS()`](https://rdrr.io/r/base/readRDS.html),
+[`readxl::read_excel()`](https://readxl.tidyverse.org/reference/read_excel.html),
+or `haven::read_*()` call.
+
+After loading data, check the preview before moving to the next tab.
+This helps catch common issues such as numeric variables imported as
+character, missing factor labels, or incorrect event coding.
+
+### Data Prep Tab
+
+The **Data Prep** tab is an internal part of the gtregression app. It
+does not load or depend on the `gtstats` package. It provides a safe,
+visible sequence of common preparation steps while retaining the
+original imported dataset.
+
+Users can rename and retain variables, set variable types and factor
+order, recode values, define or display missing values, filter rows,
+calculate new variables, and create grouped variables. **Quick starts**
+provide common recipes. Every applied change is added to a readable
+history and reusable R code.
+
+When creating groups from a numeric variable, conditions include `=`,
+`!=`, `>`, `>=`, `<`, `<=`, an inclusive **between** range, and
+**outside the range**. Rules are checked from top to bottom and each row
+is assigned to the first rule it matches. The final group contains
+everyone not matched earlier. For example, `< 35`, then `< 65`, then
+everyone else produces groups for under 35, 35–64, and 65 or older. The
+preview shows the row count in every group before the change is applied.
+
+The recovery controls are deliberately prominent:
+
+- **Undo** reverses the latest change;
+- **Redo** reapplies an undone change;
+- **Reset** asks for confirmation before restoring the original data;
+- **Download prepared data** saves the current prepared dataset;
+- **Download code** saves the preparation recipe.
+
+Loading data does not silently decide the analysis dataset. Before any
+model or table can run, explicitly select one of:
+
+- **Use original data**: subsequent analyses use the untouched imported
+  data;
+- **Use prepared data**: subsequent analyses use the current prepared
+  version.
+
+If preparation is changed later, review the tab and make the choice
+again. The generated workflow records that choice and includes the
+preparation operations when prepared data are selected.
+
+### Descriptive Tab
+
+Use the **Descriptive** tab to create baseline tables with
+[`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md).
+
+Typical steps:
+
+1.  Select variables in **Exposures**.
+2.  Optionally select a grouping variable in **By**.
+3.  Choose the percentage denominator.
+4.  Decide whether to show an overall column.
+5.  Decide how missing values should be displayed.
+6.  Run the table.
+
+Common settings:
+
+``` r
+
+desc_result <- descriptive_table(
+  data = df,
+  exposures = c("age", "lwt", "race", "smoke"),
+  by = "low",
+  percent = "column",
+  show_overall = "last",
+  show_missing = "ifany"
+)
+```
+
+#### Binary Variables
+
+For baseline tables, the default binary display is usually helpful
+because it shows both levels. This makes descriptive outputs easier to
+align with regression and forest tables later.
+
+If a user wants a compact one-row binary summary, they can change the
+binary display option. For merged tables and forest plots, showing both
+levels is often clearer.
+
+#### Numeric Statistic Overrides
+
+The app allows numeric summaries to be changed by typing named overrides
+such as:
+
+``` r
+age = mean, lwt = median
+```
+
+This creates code similar to:
+
+``` r
+
+descriptive_table(
+  data = df,
+  exposures = c("age", "lwt", "race", "smoke"),
+  by = "low",
+  statistic = c(age = "mean", lwt = "median")
+)
+```
+
+### Regression Tab
+
+Use the **Regression** tab for standard regression tables:
+
+- logistic regression;
+- Firth logistic regression;
+- log-binomial regression;
+- Poisson regression;
+- robust Poisson regression;
+- negative binomial regression;
+- linear regression.
+
+The recommended order is:
+
+1.  Choose the outcome.
+2.  Choose all candidate exposures.
+3.  Run **Univariate** analysis.
+4.  Review the crude results.
+5.  Reselect variables for the adjusted analysis.
+6.  Add adjustment variables where needed.
+7.  Run **Multivariable** analysis.
+8.  Copy the generated code into an R script.
+
+Example:
+
+``` r
+
+uni_result <- uni_reg(
+  data = df,
+  outcome = "low",
+  exposures = c("age", "lwt", "race", "smoke"),
+  approach = "logit",
+  show_ref = TRUE,
+  format = "flextable"
+)
+
+multi_result <- multi_reg(
+  data = df,
+  outcome = "low",
+  exposures = c("smoke", "ht", "ui"),
+  adjust_for = c("age", "lwt", "race"),
+  approach = "logit",
+  show_ref = TRUE,
+  format = "flextable"
+)
+```
+
+#### Reference Categories
+
+After categorical predictors are selected, the app displays a
+**Reference categories** section. Each control lists the levels actually
+observed in the selected analysis dataset. The selected level is the
+model baseline. It is not shown for continuous predictors or for the
+outcome.
+
+For example, choosing `No` as the baseline for `smoke` means every
+displayed smoking estimate is interpreted relative to non-smokers. The
+app applies the choice with
+[`factor()`](https://rdrr.io/r/base/factor.html) and
+[`stats::relevel()`](https://rdrr.io/r/stats/relevel.html) and writes
+the same operation into the generated and downloaded R scripts:
+
+``` r
+
+analysis_data[["smoke"]] <- stats::relevel(
+  factor(
+    as.character(analysis_data[["smoke"]]),
+    levels = c("No", "Yes")
+  ),
+  ref = "No"
+)
+```
+
+Use **Show reference categories** when planning to merge tables or
+create forest plots. This displays the chosen baseline row as `Ref.` and
+keeps categorical variables easier to interpret.
+
+If compact tables are preferred, reference rows can be hidden. When
+reference rows are hidden, binary variables may appear as single rows.
+That is acceptable, but merged descriptive-regression outputs may be
+clearer when `show_ref = TRUE`.
+
+#### Model Statistics
+
+The **Store model statistics** option attaches fit statistics such as
+AIC, BIC, log-likelihood, pseudo R-squared where appropriate, and N.
+
+For logistic, Poisson, Cox, and parametric survival models, ordinary
+linear `R2` is not usually available. In those settings, pseudo
+R-squared or survival model statistics are more appropriate.
+
+### Stratified Regression
+
+The **Stratified** output repeats regression analyses within levels of a
+stratifier.
+
+Use it when the clinical or epidemiological question is naturally
+stratified, for example:
+
+- sex-specific associations;
+- treatment subgroup analyses;
+- hospital or site-level exploratory analyses;
+- diabetes status subgroups.
+
+Example:
+
+``` r
+
+stratified_result <- stratified_multi_reg(
+  data = df,
+  outcome = "low",
+  exposures = c("smoke", "ht"),
+  adjust_for = c("age", "lwt"),
+  stratifier = "race",
+  approach = "logit",
+  show_ref = TRUE,
+  format = "flextable"
+)
+```
+
+Stratified outputs are useful for tables. For plots,
+[`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md)
+can create quick presentation-style views. For publication forest
+outputs, use
+[`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
+and
+[`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
+after checking that the display remains readable.
+
+### Survival Tab
+
+Use the **Survival** tab for:
+
+- Cox regression with
+  [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md);
+- parametric survival regression with
+  [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md);
+- Kaplan-Meier curves with
+  [`km_plot()`](https://gtregression.thinkdenominator.com/reference/km_plot.md);
+- log-rank tests and survival summaries.
+
+At the top of the workspace, choose **Cox regression** or **Parametric
+survival**. The app shows one model workflow at a time: Cox mode hides
+the distribution control, while Parametric survival mode asks for the
+Weibull, exponential, log-normal, or log-logistic distribution. The
+active mode also controls the run button, model result, and reusable
+code. Each method retains two independent result slots: **Exposure
+models** and **Multivariable model**. Running one does not replace the
+other. Both completed tables remain available as separate choices in
+**Visualise & Export**, including the merge-table menu, and in
+compatible **Advanced** tools.
+
+For a complete GUI workflow, first leave **Single multivariable model**
+clear and run the exposure models. Then select the predictors for the
+joint model, check **Single multivariable model**, and run again. Review
+or download either result from its named subtab. This mirrors the two
+API calls below and makes it possible to merge the resulting
+crude/exposure and multivariable tables.
+
+Typical Cox regression workflow:
+
+``` r
+
+cox_result <- cox_reg(
+  data = df,
+  time = "time",
+  event = "status",
+  exposures = c("trt", "celltype", "prior"),
+  adjust_for = c("age", "karno"),
+  show_ref = TRUE,
+  format = "flextable"
+)
+```
+
+For one full multivariable Cox model using all selected exposures:
+
+``` r
+
+cox_result <- cox_reg(
+  data = df,
+  time = "time",
+  event = "status",
+  exposures = c("trt", "celltype", "prior", "age", "karno"),
+  multivariable = TRUE,
+  show_ref = TRUE,
+  format = "flextable"
+)
+```
+
+Parametric survival regression follows the same app flow, with an
+additional distribution option:
+
+``` r
+
+survreg_result <- surv_reg(
+  data = df,
+  time = "time",
+  event = "status",
+  exposures = c("trt", "celltype", "prior"),
+  adjust_for = c("age", "karno"),
+  distribution = "weibull",
+  show_ref = TRUE,
+  format = "flextable"
+)
+```
+
+### Kaplan-Meier Plots
+
+The app supports publication-friendly Kaplan-Meier plots:
+
+- grouped or overall curves;
+- shaded confidence intervals;
+- risk tables;
+- log-rank p-values;
+- percent or probability y-axis;
+- x-axis limits;
+- y-axis limits;
+- classic, minimal, black-and-white, light, or no theme;
+- optional grid lines.
+
+Example:
+
+``` r
+
+km_result <- km_plot(
+  data = df,
+  time = "time",
+  event = "status",
+  by = "trt",
+  conf.int = TRUE,
+  risk_table = TRUE,
+  p_value = TRUE,
+  y_percent = TRUE,
+  ylim = c(50, 100),
+  xlim = c(0, 800),
+  break_time_by = 200,
+  theme = "classic",
+  grid = FALSE
+)
+```
+
+Use y-axis limits when curves sit between high survival probabilities.
+For example, if survival stays between 80% and 100%, setting
+`ylim = c(50, 100)` can make group differences easier to see.
+
+For multi-panel figures created with `patchwork`, use smaller titles or
+remove titles in the app-generated code and add labels later:
+
+``` r
+
+p1 <- km_plot(df, time = "time", event = "status", by = "trt",
+              title = NULL, base_size = 10)
+p2 <- km_plot(df, time = "time", event = "status", by = "celltype",
+              title = NULL, base_size = 10)
+
+p1 + p2
+```
+
+### Visualise & Export Tab
+
+The **Visualise & Export** tab turns fitted results into tables and
+figures. It also provides **Download complete R script**, which saves a
+single `gtregression-session.R` file for the current session. The script
+records the selected data source, any Data Prep changes, categorical
+reference levels, completed descriptive and modelling steps,
+visualisations, and export calls. Only analyses that have actually been
+run are included.
+
+Open **Full Workflow Code** to review the same script before downloading
+it. The downloaded script begins with
+[`library(gtregression)`](https://gtregression.thinkdenominator.com/)
+and can be edited or rerun in RStudio as the reproducible record of the
+app workflow.
+
+Choose the task from the menu across the top. The left panel then
+displays only the controls needed for that task, while the corresponding
+preview opens on the right. This keeps table merging, regression plots,
+forest plots, and model-fit diagnostics separate.
+
+It can preview:
+
+- merged tables;
+- single-result
+  [`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md)
+  outputs;
+- combined crude and adjusted
+  [`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md)
+  outputs;
+- single-result or combined crude and adjusted
+  [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
+  outputs;
+- model fit plots.
+
+It can also generate code for:
+
+- [`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md);
+- [`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md);
+- [`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md);
+- [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md);
+- [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md);
+- [`save_table()`](https://gtregression.thinkdenominator.com/reference/save_table.md);
+- [`save_plot()`](https://gtregression.thinkdenominator.com/reference/save_plot.md);
+- [`save_forest()`](https://gtregression.thinkdenominator.com/reference/save_forest.md).
+
+Browser plots should be treated as previews. For final output, copy the
+code into RStudio and export with explicit width and height.
+
+#### Export Size Presets
+
+The app provides export presets for plot downloads:
+
+| Preset | When to use |
+|----|----|
+| Standard | Routine regression plots and moderate forest plots |
+| Wide | Long labels, combined crude/adjusted plots, or manuscript figures |
+| Many rows | Forest plots with many variables or strata |
+| Compact | Quick previews or slides with few variables |
+
+These presets change the downloaded PNG/PDF size. The browser preview
+may still look cramped on a small screen, so final checks should be done
+on the exported file.
+
+#### Forest Plot Controls
+
+These controls remain visible in both Simple and Advanced modes:
+
+| Control | What it does | When to change it |
+|----|----|----|
+| Forest plot side | Places the confidence-interval plot before or after the text | Match a journal or slide layout |
+| CI column width | Allocates room to each forest panel | Increase it when intervals or tick labels overlap |
+| Forest x limits | Sets the effect range using two comma-separated values | Widen it when intervals approach an edge |
+| Forest tick marks | Sets comma-separated axis labels | Use fewer ticks when labels overlap |
+| Export size preset | Controls PNG/PDF dimensions | Use **Wide** for long labels and **Many rows** for large tables |
+
+Leave x limits and tick marks blank to use `forestploter`’s automatic
+choices. Every custom tick must lie inside the selected limits.
+
+#### Download Formats
+
+Table previews offer **DOCX**, **RTF**, and **HTML**. HTML is the
+browser-ready copy; DOCX and RTF are editable manuscript formats. Plot
+previews offer **PNG** and **PDF**, because plots are graphics objects
+rather than HTML tables.
+
+#### Full Workflow Code
+
+The **Full Workflow Code** panel collects the analysis steps completed
+in the app into one script-style block. This is useful after a user has
+loaded data, run descriptive tables, fitted models, and created plots.
+
+The recommended behaviour is:
+
+1.  Run the app steps interactively.
+2.  Open **Full Workflow Code**.
+3.  Click the copy button.
+4.  Paste the code into RStudio.
+5.  Save and edit the script as the final reproducible analysis.
+
+This is the easiest way for app users to move from menu-driven analysis
+to a proper script.
+
+#### Merge Tables
+
+Choose **Merge tables** from the top menu. The app lists only completed
+tables. Select at least two tables, keep them in the intended
+descriptive/crude/adjusted order, and click **Merge selected tables**.
+This also supports two-table merges, such as descriptive plus crude or
+crude plus adjusted.
+
+The app creates code similar to:
+
+``` r
+
+merged_table <- merge_tables(
+  desc_result,
+  uni_result,
+  multi_result,
+  spanners = c("Descriptive", "Crude", "Adjusted")
+)
+
+save_table(merged_table, filename = "merged_table.docx")
+```
+
+If binary variables do not align as expected, rerun regression tables
+with `show_ref = TRUE`. This displays reference rows and usually gives
+the cleanest merged output.
+
+#### Regression Plots
+
+Choose **Regression plot** from the top menu. Choose **Selected result**
+to preview the object named in **Result** with
+[`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md).
+When a matching pair has been fitted, the app also offers **Regression
+crude + adjusted**, **Cox exposure + multivariable**, or **Parametric
+exposure + multivariable**. These choices call
+[`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md)
+with the two corresponding stored results; an option appears only after
+both members of that pair exist.
+
+Use
+[`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md)
+for quick presentation-style plots:
+
+``` r
+
+reg_plot <- plot_reg(
+  multi_result,
+  log_x = TRUE
+)
+
+save_plot(reg_plot, filename = "plot_reg.png", width = 9, height = 6)
+```
+
+Use
+[`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md)
+when both crude and adjusted models are available:
+
+``` r
+
+combined_plot <- plot_reg_combine(
+  uni_result,
+  multi_result,
+  log_x = TRUE
+)
+
+save_plot(
+  combined_plot,
+  filename = "plot_reg_combined.png",
+  width = 10,
+  height = 7
+)
+```
+
+[`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md)
+is intended for standard univariable and multivariable outputs.
+Stratified outputs are better handled carefully with separate
+[`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md)
+calls or forest tables, depending on the publication need.
+
+#### Forest Tables
+
+Choose **Forest plot** from the top menu. **Selected result** creates
+[`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
+from one result. **Crude + adjusted** combines the stored univariable
+and multivariable objects. **Descriptive + crude + adjusted** is a
+separate option and appears only after all three results exist;
+descriptive columns are therefore never added unexpectedly.
+
+Cox and parametric survival results follow the same pattern. After
+fitting both the exposure-model and multivariable modes, choose their
+named combined option. If a descriptive table is also available, choose
+the corresponding **Descriptive + …** option to place those columns
+beside the survival effect estimates. This prevents an older regression
+result from being combined with the currently selected survival analysis
+by accident.
+
+Use forest plots for manuscript-style effect summaries.
+
+For one regression object:
+
+``` r
+
+forest_data <- forest_df(multi_result)
+
+forest_plot <- forest_reg(
+  forest_data,
+  ci_col_width = 20
+)
+```
+
+For descriptive plus crude plus adjusted results:
+
+``` r
+
+forest_both <- forest_df(
+  uni_result,
+  multi_result,
+  desc = desc_result
+)
+
+forest_both_plot <- forest_reg(
+  forest_both,
+  ci_col_width = 24,
+  xlim = c(0.25, 12),
+  ticks_at = c(0.5, 1, 2, 4, 8)
+)
+
+save_forest(
+  forest_both_plot,
+  filename = "forest_reg_combined.pdf",
+  width = 13,
+  height = 9
+)
+```
+
+If the forest plot looks crowded:
+
+- increase
+  [`save_forest()`](https://gtregression.thinkdenominator.com/reference/save_forest.md)
+  `width`;
+- increase
+  [`save_forest()`](https://gtregression.thinkdenominator.com/reference/save_forest.md)
+  `height` for many rows;
+- increase `ci_col_width` when the confidence interval drawing area is
+  narrow;
+- set `xlim` to control the x-axis range;
+- set fewer or clearer `ticks_at` values if x-axis labels overlap.
+
+Example for a crowded odds-ratio forest plot:
+
+``` r
+
+forest_reg(
+  forest_both,
+  ci_col_width = 28,
+  xlim = c(0.25, 20),
+  ticks_at = c(0.5, 1, 2, 5, 10, 20)
+)
+```
+
+For a very long table, export instead of judging the small browser
+preview:
+
+``` r
+
+save_forest(
+  forest_both_plot,
+  filename = "large_forest_plot.pdf",
+  width = 16,
+  height = 12
+)
+```
+
+### Advanced Tab
+
+The **Advanced** tab supports model building, diagnostics, confounding,
+and interaction assessment without presenting every setting at once.
+
+Choose one tool across the top of the page:
+
+| Tool | Question it helps answer | Inputs shown |
+|----|----|----|
+| Select models | Which candidate path has the preferred AIC? | Model roles, candidate predictors, direction |
+| Compare models | How do named candidate models differ? | Shared outcome/approach, model-specific exposures, adjustment variables, interactions, and optional primary exposure |
+| Confounder | How much does a candidate change the exposure estimate? | Model roles, exposure, potential confounder |
+| Interaction | Does the exposure association differ between groups? | Model roles, exposure, modifier, adjustment variables |
+| Convergence | Did the requested models fit reliably? | Outcome, predictors, supported approach |
+| Collinearity | Do fitted predictors contain overlapping information? | One fitted multivariable model |
+
+The left panel then shows only the controls needed by that tool. For Cox
+and parametric survival tools, **Follow-up time** and **Event status**
+replace the ordinary outcome selector. Survival distribution appears
+only for parametric survival regression.
+
+After running a tool, the app opens the **Output** panel and provides:
+
+- a publication-style table when the function returns one;
+- concise guidance specific to that result;
+- console messages and warnings;
+- DOCX, RTF, and HTML downloads;
+- a complete copyable command under **Code**.
+
+In **Compare models**, the app fits each candidate model for you. Choose
+the outcome and regression approach once, then define two to six
+candidates. Each candidate has a meaningful name, reported exposures,
+adjustment variables, and an optional interaction. The app creates
+compatible
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
+or
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
+objects and passes them to
+[`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md).
+The generated code shows every fitted model, so the comparison is fully
+reproducible in RStudio.
+
+Use **Primary exposure to track** when the same exposure appears in
+every candidate. The comparison then shows how its estimate changes as
+variables are added. Variables selected as adjustment variables are
+included in the fitted model even though the app distinguishes them from
+the exposures being reported.
+
+Collinearity requires an explicitly selected fitted multivariable model,
+because it is a property of predictors fitted together.
+
+#### Build and Compare Candidate Models
+
+The app version of **Compare models** is designed for users who have a
+set of planned models but have not fitted them elsewhere. It does two
+jobs in a visible sequence:
+
+1.  it fits each named candidate with a gtregression modelling function;
+    and
+2.  it sends those fitted gtregression objects to
+    [`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md).
+
+To use it:
+
+1.  Open **Advanced**, then choose **Compare models**.
+2.  Select the common regression approach and outcome. For Cox or
+    parametric survival regression, select follow-up time and event
+    status instead.
+3.  Optionally select a **Primary exposure to track**. Use the same
+    exposure in every candidate when you want to inspect estimate
+    stability.
+4.  Give each candidate a short, meaningful name such as *Clinical
+    core*, *Expanded model*, or *Sensitivity model*.
+5.  Select the exposures and adjustment variables for that candidate.
+6.  Optionally add one interaction. Both interaction variables must
+    already be included in that candidate as an exposure or adjustment
+    variable.
+7.  Add further candidates as needed, then choose **Fit and compare
+    models**.
+
+The app requires at least two candidates, permits up to six, and
+requires unique non-empty model names. Candidate order matters: the
+first model is the reference for percentage change in the primary
+estimate, and sequential likelihood-ratio comparisons follow the
+displayed order.
+
+The **reported exposures** and **adjustment variables** controls make
+the model building intention easy to read. Both sets are included in the
+fitted model. The generated code shows their combined predictor set
+explicitly, so there is no hidden formula construction.
+
+##### Birth Weight Example
+
+With the prepared `data_birthwt` example, choose:
+
+| App control                      | Selection                  |
+|----------------------------------|----------------------------|
+| Approach                         | Logistic regression        |
+| Outcome                          | `low`                      |
+| Primary exposure                 | `smoke`                    |
+| Candidate 1 name                 | Clinical core              |
+| Candidate 1 exposures            | `smoke`                    |
+| Candidate 1 adjustment variables | `age`, `lwt`               |
+| Candidate 2 name                 | Expanded model             |
+| Candidate 2 exposures            | `smoke`                    |
+| Candidate 2 adjustment variables | `age`, `lwt`, `race`, `ht` |
+
+This is equivalent to the R code shown in the next section. To assess a
+planned interaction, add a third candidate containing both `smoke` and
+`ht`, then select `smoke` and `ht` as the interaction pair. Keep the
+corresponding main effects in the model when interpreting the
+interaction.
+
+##### Cox and Parametric Survival Examples
+
+For the lung cancer example, the same builder can compare survival
+models:
+
+| App control | Cox example |
+|----|----|
+| Approach | Cox regression |
+| Follow-up time | `time` |
+| Event status | `status` |
+| Primary exposure | `trt` |
+| Candidate 1 | Treatment only: exposure `trt` |
+| Candidate 2 | Clinical adjustment: exposure `trt`; adjust for `age`, `karno` |
+
+Choose parametric survival regression instead to build
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
+candidates. The app then reveals the distribution control; all
+candidates in that comparison use the selected distribution. Cox
+comparisons report hazard ratios and events, while parametric survival
+comparisons report the model’s time-ratio estimates.
+
+##### Reading the Comparison
+
+The output combines fit statistics with interpretation checks:
+
+- **Model** uses the names entered in the candidate cards.
+- **N** and **Events** show the fitted analysis sample; events appear
+  for survival models.
+- **AIC**, **BIC**, and **Log-likelihood** describe relative model fit.
+- **LR statistic**, **df**, and **p-value** compare sequential models
+  when likelihood-ratio comparison is requested.
+- **Concordance** appears where available for Cox models.
+- **Primary estimate** and **Change from first model** appear when a
+  primary exposure is selected.
+
+The status immediately below the table is context-aware. **Same analysis
+sample** means likelihood-based statistics can be compared, provided the
+models are also nested. **Different analysis sample** means missingness
+or inclusion criteria changed the fitted observations; the statistics
+remain visible for transparency, but estimate stability and clinical
+reasoning deserve greater weight. A separate status identifies
+non-nested sequential comparisons.
+
+Open **Code** to copy every model call and the final
+[`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md)
+call. This is the recommended route for revising a candidate, auditing
+the formulas, or retaining the full analysis in a script. The table can
+also be downloaded as DOCX, RTF, or HTML.
+
+#### Model Selection and Comparison
+
+Use
+[`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md)
+when exploring candidate model paths:
+
+``` r
+
+selected_models <- select_models(
+  data = df,
+  outcome = "low",
+  exposures = c("age", "lwt", "smoke", "race"),
+  approach = "logit",
+  direction = "both",
+  format = "flextable"
+)
+```
+
+The app builds the fitted objects before calling
+[`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md).
+The equivalent R workflow is:
+
+``` r
+
+clinical <- multi_reg(
+  data = df,
+  outcome = "low",
+  exposures = c("smoke", "age", "lwt"),
+  approach = "logit"
+)
+
+expanded <- multi_reg(
+  data = df,
+  outcome = "low",
+  exposures = c("smoke", "age", "lwt", "race", "ht"),
+  approach = "logit"
+)
+
+comparison_table <- compare_models(
+  clinical = clinical,
+  expanded = expanded,
+  primary_exposure = "smoke",
+  format = "flextable"
+)
+```
+
+The comparison output warns users when models are fitted on different
+analysis samples or when likelihood-ratio comparisons need caution.
+
+For Cox models, the equivalent generated workflow is:
+
+``` r
+
+treatment_only <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt
+)
+
+clinical_adjustment <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = trt,
+  adjust_for = c(age, karno)
+)
+
+compare_models(
+  `Treatment only` = treatment_only,
+  `Clinical adjustment` = clinical_adjustment,
+  primary_exposure = trt
+)
+```
+
+[`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md)
+and **Compare models** answer different questions.
+[`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md)
+explores a stepwise path from one predictor pool. **Compare models**
+fits and compares the distinct, prespecified candidates entered by the
+user, including candidates with different adjustment sets or
+interactions.
+
+#### Role Checks
+
+The app checks for common role conflicts before fitting models. For
+example, the same variable should not be selected as:
+
+- the outcome and an exposure;
+- the survival time and an exposure;
+- the survival event and an adjustment variable;
+- the stratifier and an exposure;
+- both an exposure and an adjustment variable.
+
+When this happens, the app shows a direct message explaining what to
+change. These checks prevent silent mistakes and make the generated code
+cleaner.
+
+#### Confounding and Interaction
+
+Use
+[`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md)
+and
+[`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md)
+as screening aids, not as replacements for study design and
+subject-matter judgement.
+
+Example confounder check:
+
+``` r
+
+confounder_check <- identify_confounder(
+  data = df,
+  outcome = "low",
+  exposure = "smoke",
+  potential_confounder = "race",
+  approach = "logit",
+  format = "flextable"
+)
+```
+
+Example interaction check:
+
+``` r
+
+interaction_check <- interaction_models(
+  data = df,
+  outcome = "low",
+  exposure = "smoke",
+  effect_modifier = "race",
+  covariates = c("age", "lwt"),
+  approach = "logit",
+  format = "flextable"
+)
+```
+
+Interpret confounding and effect modification with DAGs, temporal order,
+clinical reasoning, and model diagnostics.
+
+### Mediation Tab
+
+The **Mediation** tab runs
+[`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md)
+and draws a mediation path diagram.
+
+Typical workflow:
+
+1.  Choose exposure.
+2.  Choose mediator.
+3.  Choose outcome.
+4.  Add covariates.
+5.  Choose `logit` or `linear` outcome model.
+6.  Choose bootstrap replicates.
+7.  Run mediation analysis.
+8.  Review the table and diagram.
+9.  Copy the code.
+
+Example:
+
+``` r
+
+mediation_result <- mediation_analysis(
+  data = df,
+  exposure = "obesity",
+  mediator = "glucose",
+  outcome = "diabetes",
+  covariates = c("age", "blood_pressure", "pregnancies", "diabetes_pedigree"),
+  outcome_approach = "logit",
+  sims = 300,
+  seed = 123,
+  format = "flextable"
+)
+
+plot_mediation(mediation_result)
+```
+
+Mediation results require strong assumptions. Interpret them causally
+only when the design, DAG, temporal order, and no-unmeasured-confounding
+assumptions are defensible.
+
+### Saving Outputs
+
+The app provides download buttons for tables and plots. For final
+publication work, copied code gives more control.
+
+Tables:
+
+``` r
+
+save_table(merged_table, filename = "table_1.docx")
+save_table(merged_table, filename = "table_1.rtf")
+save_table(merged_table, filename = "table_1.html")
+```
+
+The app displays publication-ready tables with the same flextable engine
+used for DOCX and RTF export. Use HTML when you want a browser-friendly
+copy of the same table. Direct table PDF export is intentionally not
+shown in the app because flextable output is more reliable through DOCX,
+RTF, or HTML.
+
+Plots:
+
+``` r
+
+save_plot(reg_plot, filename = "regression_plot.png", width = 9, height = 6)
+save_plot(km_result, filename = "km_plot.png", width = 8, height = 6)
+```
+
+Forest plots:
+
+``` r
+
+save_forest(
+  forest_both_plot,
+  filename = "forest_plot.pdf",
+  width = 13,
+  height = 9
+)
+```
+
+When a save function is called without a user-supplied destination, the
+package uses a temporary location. This is helpful for examples,
+testing, and CRAN-safe documentation.
+
+### Troubleshooting
+
+#### The App Does Not Open
+
+Check that `shiny` is installed:
+
+``` r
+
+install.packages("shiny")
+```
+
+Then run:
+
+``` r
+
+gtregression_app()
+```
+
+#### The Browser Preview Looks Cramped
+
+Browser preview size depends on the device, browser, zoom level, and
+RStudio Viewer size. A cramped preview does not always mean the exported
+figure will be cramped.
+
+For final outputs, copy the code and export with a wider canvas:
+
+``` r
+
+save_forest(forest_plot, "forest_plot.pdf", width = 16, height = 10)
+```
+
+#### Forest Plot X-Axis Labels Overlap
+
+Control the axis explicitly:
+
+``` r
+
+forest_reg(
+  forest_data,
+  xlim = c(0.25, 20),
+  ticks_at = c(0.5, 1, 2, 5, 10, 20)
+)
+```
+
+Use fewer tick marks when labels are too close together.
+
+#### Forest Plot Columns Feel Too Narrow
+
+Increase the confidence interval column width:
+
+``` r
+
+forest_reg(
+  forest_data,
+  ci_col_width = 28
+)
+```
+
+Also increase the saved output width:
+
+``` r
+
+save_forest(forest_plot, "forest_plot.pdf", width = 16, height = 10)
+```
+
+#### Kaplan-Meier Curves Look Almost Flat
+
+If survival probabilities stay high, use y-axis limits:
+
+``` r
+
+km_plot(
+  data = df,
+  time = "time",
+  event = "status",
+  by = "trt",
+  y_percent = TRUE,
+  ylim = c(50, 100)
+)
+```
+
+If `y_percent = FALSE`, use probability limits instead:
+
+``` r
+
+km_plot(
+  data = df,
+  time = "time",
+  event = "status",
+  by = "trt",
+  y_percent = FALSE,
+  ylim = c(0.5, 1)
+)
+```
+
+#### Merged Tables Do Not Align as Expected
+
+Use reference rows in regression tables:
+
+``` r
+
+uni_result <- uni_reg(
+  data = df,
+  outcome = "low",
+  exposures = exposures,
+  approach = "logit",
+  show_ref = TRUE
+)
+```
+
+Then rerun the merged table:
+
+``` r
+
+merge_tables(desc_result, uni_result, multi_result)
+```
+
+#### Chrome or Browser Crashes
+
+Use the RStudio Viewer where available by running:
+
+``` r
+
+gtregression_app()
+```
+
+If the browser keeps causing problems, run:
+
+``` r
+
+gtregression_app(launch.browser = FALSE)
+```
+
+and open the printed local Shiny URL manually in another browser.
+
+#### Nothing Appears After Clicking a Button
+
+Check that:
+
+- a dataset has been loaded;
+- required variables are selected;
+- the outcome or time/event variables are selected;
+- at least two uniquely named candidate cards are complete before
+  running **Compare models**;
+- descriptive and regression outputs exist before running
+  [`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md).
+
+### Beginner Case Study: Birth Weight
+
+This example mirrors a common app workflow.
+
+``` r
+
+library(gtregression)
+library(dplyr)
+
+data("data_birthwt", package = "gtregression")
+
+birthwt_data <- data_birthwt |>
+  mutate(
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+    ptl_cat = ifelse(ptl > 0, "Yes", "No"),
+    ftv_cat = case_when(
+      ftv == 0 ~ "None",
+      ftv == 1 ~ "One",
+      ftv >= 2 ~ "Two or more"
+    ),
+    ptl_cat = factor(ptl_cat, levels = c("No", "Yes")),
+    ftv_cat = factor(ftv_cat, levels = c("None", "One", "Two or more"))
+  )
+
+exposures <- c("age", "lwt", "race", "smoke", "ht", "ui", "ptl_cat", "ftv_cat")
+
+desc_result <- descriptive_table(
+  data = birthwt_data,
+  exposures = exposures,
+  by = "low",
+  percent = "column",
+  show_overall = "last"
+)
+
+uni_result <- uni_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = exposures,
+  approach = "logit",
+  show_ref = TRUE
+)
+
+multi_result <- multi_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = c("smoke", "ht", "ui"),
+  adjust_for = c("age", "lwt", "race", "ptl_cat", "ftv_cat"),
+  approach = "logit",
+  show_ref = TRUE
+)
+
+merged_table <- merge_tables(
+  desc_result,
+  uni_result,
+  multi_result,
+  spanners = c("Descriptive", "Crude", "Adjusted")
+)
+
+forest_data <- forest_df(uni_result, multi_result, desc = desc_result)
+
+forest_plot <- forest_reg(
+  forest_data,
+  ci_col_width = 24,
+  xlim = c(0.25, 12),
+  ticks_at = c(0.5, 1, 2, 4, 8)
+)
+```
+
+The app helps users build this workflow by clicking through tabs. The
+copied code gives them the same analysis in script form.
+
+### Best Practice
+
+Use the app to learn, explore, and generate reproducible code. Use the
+copied code in RStudio for final analyses, manuscript tables, and final
+figure exports.

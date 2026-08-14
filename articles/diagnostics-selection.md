@@ -73,7 +73,7 @@ check_convergence(
 | smoke + ht + ui + ptl_cat | logbinomial | No |  |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-eb4a15cc quarto-disable-processing="true"}
+Convergence check {.table .cl-72987650 quarto-disable-processing="true"}
 
 ## Collinearity Screening
 
@@ -385,6 +385,36 @@ model-selection criteria across different datasets. In that situation,
 use the primary exposure estimate, percentage change, confidence
 intervals, and clinical or epidemiological reasoning to judge
 robustness.
+
+### Build Candidates in the App
+
+The function API intentionally accepts fitted gtregression objects. In
+the gtregression app, **Advanced \> Compare models** provides a guided
+layer before that API: choose the shared outcome and approach, name two
+to six candidates, and select each candidate’s exposures, adjustment
+variables, and optional interaction. The app fits
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
+or
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
+objects and then calls
+[`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md)
+with those objects.
+
+For the birth weight models above, enter *Smoking only*, *Add age and
+weight*, and *Full clinical model* as the candidate names, place `smoke`
+in the exposure control, and add the corresponding variables under
+adjustment. Select `smoke` as the primary exposure to reproduce the
+estimate-change columns. The generated code records every fitted model
+and is suitable for direct use in an R script.
+
+Candidate order is deliberate. Put the simplest or primary model first
+because percentage change is calculated from that model and
+likelihood-ratio statistics compare sequential pairs. If the fitted
+samples differ, or a sequential pair is not nested, the rendered table
+displays only the warning relevant to that comparison. See the
+**gtregression App** article for the complete ordinary, Cox, and
+parametric survival walkthrough.
 
 For Cox and parametric survival models, fit the candidate models with
 [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
