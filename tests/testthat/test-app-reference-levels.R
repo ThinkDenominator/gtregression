@@ -29,7 +29,7 @@ test_that("selected reference categories are applied and reproducible", {
 
   expect_identical(levels(changed$group), c("B", "A"))
   expect_match(code, "stats::relevel", fixed = TRUE)
-  expect_match(code, "ref = 'B'", fixed = TRUE)
+  expect_match(code, "ref = [\"']B[\"']")
   expect_error(gtx_relevel_predictors(data, list(group = "Missing")), "not observed")
   expect_error(gtx_relevel_predictors(data, list(age = "20")), "categorical predictors")
 })

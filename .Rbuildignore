@@ -21,6 +21,7 @@
 ^renv$
 ^renv\.lock$
 ^\.github$
+^\.lintr$
 ^\.zenodo\.json$
 ^codecov\.yml$
 ^_pkgdown\.yml$
