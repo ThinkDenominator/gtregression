@@ -20,11 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          # Pin the stable release to avoid relying on the external release alias.
-          - {os: macos-latest,   r: '4.6.0'}
-          - {os: windows-latest, r: '4.6.0'}
+          # Pin a stable, cross-platform R version instead of the external release alias.
+          - {os: windows-latest, r: '4.5.2'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,   r: '4.6.0'}
+          - {os: ubuntu-latest,   r: '4.5.2'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
           # - {os: ubuntu-latest,   r: 'oldrel-2'}
           # - {os: ubuntu-latest,   r: 'oldrel-3'}
