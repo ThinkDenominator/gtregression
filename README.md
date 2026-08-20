@@ -1,18 +1,38 @@
+
+<div class="gtreg-hero">
+
+<div>
+
 <h1>
+
 gtregression
 </h1>
+
 <p>
+
 Publication-ready regression and survival analysis tables, plots, and
 forest plots for real-world health data. Fit models, compare estimates,
 visualise results, and export manuscript-ready outputs without
 hand-formatting every coefficient.
 </p>
 
+<div class="gtreg-actions">
+
 <a href="articles/gtregression-intro.html">Start the
 workflow</a><a class="secondary" href="reference/index.html">Explore
 functions</a>
 
-<img class="gtreg-home-logo" src="man/figures/gtregression_hex.png" alt="gtregression logo"/>
+</div>
+
+</div>
+
+<div>
+
+<img src="man/figures/gtregression_hex.png" alt="gtregression logo" class="gtreg-home-logo"/>
+
+</div>
+
+</div>
 
 <!-- badges: start -->
 
@@ -45,61 +65,124 @@ It supports logistic, log-binomial, Poisson, robust Poisson, negative
 binomial, linear, Cox, parametric survival, and causal mediation
 workflows, including adjusted and stratified models.
 
-<table>
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Build</th>
-<th>What you get</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Descriptive tables</td>
-<td>Grouped summaries with row or column percentages</td>
-</tr>
-<tr>
-<td>Regression tables</td>
-<td>Crude, adjusted, stratified, linear, Cox, and parametric survival
-outputs</td>
-</tr>
-<tr>
-<td>Survival analysis</td>
-<td>Kaplan-Meier curves, survival summaries, RMST, log-rank tests, Cox
-PH checks, and survival predictions</td>
-</tr>
-<tr>
-<td>Mediation analysis</td>
-<td>Direct, indirect, total, and proportion mediated effects with causal
-caveats</td>
-</tr>
-<tr>
-<td>Visualisations</td>
-<td>Regression plots, survival curves, fitted survival curves, and
-forest tables</td>
-</tr>
-<tr>
-<td>Interpretation helpers</td>
-<td>Confounding, interaction, mediation, convergence, collinearity,
-model selection, and survival diagnostics</td>
-</tr>
-<tr>
-<td>Exports</td>
-<td>HTML, PDF, PNG, and Word-ready outputs</td>
-</tr>
-</tbody>
-</table>
+| Build | What you get |
+|----|----|
+| Descriptive tables | Grouped summaries with row or column percentages |
+| Regression tables | Crude, adjusted, stratified, linear, Cox, and parametric survival outputs |
+| Survival analysis | Kaplan-Meier curves, survival summaries, RMST, log-rank tests, Cox PH checks, and survival predictions |
+| Mediation analysis | Direct, indirect, total, and proportion mediated effects with causal caveats |
+| Visualisations | Regression plots, survival curves, fitted survival curves, and forest tables |
+| Interpretation helpers | Confounding, interaction, mediation, convergence, collinearity, model selection, and survival diagnostics |
+| Exports | HTML, PDF, PNG, and Word-ready outputs |
 
-<strong>Describe</strong>Build baseline tables with grouped summaries.
+## From Data to Manuscript
 
-<strong>Model</strong>Fit crude, adjusted, and stratified regressions.
+<div class="gtreg-analysis-path">
 
-<strong>Visualise</strong>Create plots and forest tables for estimates.
+<div class="gtreg-path-intro">
 
-<strong>Export</strong>Save polished tables, figures, and Word outputs.
+<div class="gtreg-kicker">
+
+One connected workflow
+
+</div>
+
+### Start with the question. Finish with a result you can use.
+
+Each step leaves an inspectable object behind, so beginners have a clear
+path and experienced analysts retain full control.
+
+</div>
+
+<div class="gtreg-path-steps">
+
+<div class="gtreg-path-step">
+
+<span class="gtreg-path-number">01</span>
+
+<div class="gtreg-path-copy">
+
+**Prepare**
+
+Check variables, labels, levels, and missing data.
+
+</div>
+
+`dissect(data)` <span class="gtreg-path-result">Analysis-ready
+data</span>
+
+</div>
+
+<div class="gtreg-path-step">
+
+<span class="gtreg-path-number">02</span>
+
+<div class="gtreg-path-copy">
+
+**Describe**
+
+Build a clear baseline table before modelling.
+
+</div>
+
+`descriptive_table(...)` <span class="gtreg-path-result">Table 1</span>
+
+</div>
+
+<div class="gtreg-path-step">
+
+<span class="gtreg-path-number">03</span>
+
+<div class="gtreg-path-copy">
+
+**Model**
+
+Fit crude, adjusted, stratified, or survival models.
+
+</div>
+
+`uni_reg() + multi_reg()` <span class="gtreg-path-result">Effect
+estimates</span>
+
+</div>
+
+<div class="gtreg-path-step">
+
+<span class="gtreg-path-number">04</span>
+
+<div class="gtreg-path-copy">
+
+**Interpret**
+
+Review assumptions, confounding, interaction, and fit.
+
+</div>
+
+`check_*() + compare_models()`
+<span class="gtreg-path-result">Defensible model</span>
+
+</div>
+
+<div class="gtreg-path-step">
+
+<span class="gtreg-path-number">05</span>
+
+<div class="gtreg-path-copy">
+
+**Publish**
+
+Merge, visualise, and export polished outputs.
+
+</div>
+
+`forest_reg() + save_table()`
+<span class="gtreg-path-result">Manuscript-ready output</span>
+
+</div>
+
+</div>
+
+</div>
 
 ## Why It Exists
 
@@ -115,129 +198,82 @@ packages. The package uses widely trusted modelling, tidying, plotting,
 and reporting tools so users can inspect fitted models and understand
 the statistical engines behind each output.
 
-<table>
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Area</th>
-<th>Core packages used</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Data handling and tidy workflows</td>
-<td><code>dplyr</code>, <code>purrr</code>, <code>tibble</code>,
-<code>rlang</code></td>
-</tr>
-<tr>
-<td>Model fitting</td>
-<td><code>stats</code>, <code>MASS</code>, <code>survival</code>,
-<code>risks</code>, <code>logistf</code></td>
-</tr>
-<tr>
-<td>Robust and diagnostic inference</td>
-<td><code>sandwich</code>, <code>lmtest</code>, <code>broom</code>,
-<code>broom.helpers</code></td>
-</tr>
-<tr>
-<td>Tables and Word-ready reporting</td>
-<td><code>flextable</code>, <code>officer</code>, <code>gt</code></td>
-</tr>
-<tr>
-<td>Figures and forest plots</td>
-<td><code>ggplot2</code>, <code>patchwork</code>,
-<code>forestploter</code>, <code>scales</code></td>
-</tr>
-<tr>
-<td>Optional development and checking tools</td>
-<td><code>testthat</code>, <code>knitr</code>, <code>rmarkdown</code>,
-<code>pkgdown</code>, <code>car</code>, <code>forcats</code>,
-<code>ggtext</code></td>
-</tr>
-</tbody>
-</table>
+| Area | Core packages used |
+|----|----|
+| Data handling and tidy workflows | `dplyr`, `purrr`, `tibble`, `rlang` |
+| Model fitting | `stats`, `MASS`, `survival`, `risks`, `logistf` |
+| Robust and diagnostic inference | `sandwich`, `lmtest`, `broom`, `broom.helpers` |
+| Tables and Word-ready reporting | `flextable`, `officer`, `gt` |
+| Figures and forest plots | `ggplot2`, `patchwork`, `forestploter`, `scales` |
+| Optional development and checking tools | `testthat`, `knitr`, `rmarkdown`, `pkgdown`, `car`, `forcats`, `ggtext` |
 
 The user-facing functions return objects with fitted models, table
 bodies, and display metadata that advanced users can audit, modify, or
 reuse.
 
-## Menu-Driven App
-
-Launch the optional interface with:
-
-```r
-gtregression_app()
-```
-
-The app supports data preparation, descriptive and regression tables,
-survival analysis, visualisation, export, mediation, diagnostics, and
-prespecified model comparison. Under **Advanced > Compare models**, users can
-name two to six candidates, select each model's exposures and adjustment
-variables, add an optional interaction, and track a primary exposure. The app
-fits gtregression model objects and displays their AIC, BIC, log-likelihood,
-sample checks, survival events where relevant, and estimate changes. Every step
-is available as copyable R code.
-
-See the [gtregression App manual](articles/gtregression-app.html) for detailed
-birth weight, Cox, and parametric survival examples.
-
 ## Install
 
-    install.packages("gtregression")
+``` r
+# CRAN
+install.packages("gtregression")
 
-    # Development version
-    devtools::install_github("ThinkDenominator/gtregression")
+# Development version
+remotes::install_github("ThinkDenominator/gtregression")
+```
 
 ## Five-Minute Workflow
 
-    library(gtregression)
-    library(dplyr)
+``` r
+library(gtregression)
+library(dplyr)
 
-    data("data_birthwt", package = "gtregression")
+data("data_birthwt", package = "gtregression")
 
-    birthwt_data <- data_birthwt |>
-      mutate(
-        race = factor(race, levels = c(1, 2, 3),
-                      labels = c("White", "Black", "Other")),
-        smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
-        ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
-        ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
-        low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
-      )
+birthwt_data <- data_birthwt |>
+  mutate(
+    race = factor(race, levels = c(1, 2, 3),
+                  labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+  )
 
-    exposures <- c("age", "lwt", "race", "smoke", "ht", "ui")
+exposures <- c("age", "lwt", "race", "smoke", "ht", "ui")
 
-    attr(birthwt_data$age, "label") <- "Maternal age"
-    attr(birthwt_data$lwt, "label") <- "Maternal weight"
-    attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
+attr(birthwt_data$age, "label") <- "Maternal age"
+attr(birthwt_data$lwt, "label") <- "Maternal weight"
+attr(birthwt_data$smoke, "label") <- "Smoking during pregnancy"
 
-    desc <- descriptive_table(
-      birthwt_data,
-      exposures = exposures,
-      by = "low",
-      percent = "column",
-      show_overall = "last"
-    )
+desc <- descriptive_table(
+  birthwt_data,
+  exposures = exposures,
+  by = "low",
+  percent = "column",
+  show_overall = "last"
+)
 
-    uni <- uni_reg(
-      birthwt_data,
-      outcome = "low",
-      exposures = exposures,
-      approach = "logit"
-    )
+uni <- uni_reg(
+  birthwt_data,
+  outcome = "low",
+  exposures = exposures,
+  approach = "logit"
+)
 
-    multi <- multi_reg(
-      birthwt_data,
-      outcome = "low",
-      exposures = c("smoke", "ht", "ui"),
-      adjust_for = c("age", "lwt", "race"),
-      approach = "logit"
-    )
+multi <- multi_reg(
+  birthwt_data,
+  outcome = "low",
+  exposures = c("smoke", "ht", "ui"),
+  adjust_for = c("age", "lwt", "race"),
+  approach = "logit"
+)
 
-    plot_reg(multi, title = "Adjusted Regression for Low Birth Weight")
+plot_reg(multi, title = "Adjusted Regression for Low Birth Weight")
+
+forest_reg = forest_reg(forest_df(uni, multi)) 
+
+merge_tables(desc, uni, multi)
+```
 
 Variable labels set with `attr(x, "label")` or `labelled::var_label()`
 are used automatically in display tables and plots, while original
@@ -246,160 +282,55 @@ testing.
 
 Objects stay inspectable:
 
-    desc$table
-    uni$table
-    multi$table
-    multi$models
+``` r
+desc$table
+uni$table
+multi$table
+multi$models
+```
 
 Optional model-fit statistics can be requested without changing the
 publication table:
 
-    uni_stats <- uni_reg(
-      data = birthwt_data,
-      outcome = "low",
-      exposures = exposures,
-      approach = "logit",
-      model_stats = TRUE
-    )
+``` r
+uni_stats <- uni_reg(
+  data = birthwt_data,
+  outcome = "low",
+  exposures = exposures,
+  approach = "logit",
+  model_stats = TRUE
+)
 
-    uni_stats$model_stats
+uni_stats$model_stats
+```
 
 ## Browse by Task
 
-<table>
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Task</th>
-<th>Start here</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>First workflow</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/gtregression-intro.html">Start
-Here</a></td>
-</tr>
-<tr>
-<td>Descriptive summaries</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/descriptive-tables.html">Descriptive
-Tables</a></td>
-</tr>
-<tr>
-<td>Regression tables</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/regression-tables.html">Regression
-Tables</a></td>
-</tr>
-<tr>
-<td>Survival analysis</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/survival-analysis.html">Survival
-Analysis</a></td>
-</tr>
-<tr>
-<td>Causal mediation</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/causal-mediation.html">Causal
-Mediation</a></td>
-</tr>
-<tr>
-<td>Visualise estimates</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/visualise-results.html">Visualise
-Results</a></td>
-</tr>
-<tr>
-<td>Stratified models</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/stratified-analysis.html">Stratified
-Analysis</a></td>
-</tr>
-<tr>
-<td>Diagnostics and selection</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/diagnostics-selection.html">Diagnostics</a></td>
-</tr>
-<tr>
-<td>Confounding and interaction</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/confounding-interaction.html">Interpret</a></td>
-</tr>
-<tr>
-<td>Merge and export</td>
-<td><a
-href="https://gtregression.thinkdenominator.com/articles/customize-export.html">Customize
-and Export</a></td>
-</tr>
-</tbody>
-</table>
+| Task | Start here |
+|----|----|
+| First workflow | [Start Here](https://gtregression.thinkdenominator.com/articles/gtregression-intro.html) |
+| Descriptive summaries | [Descriptive Tables](https://gtregression.thinkdenominator.com/articles/descriptive-tables.html) |
+| Regression tables | [Regression Tables](https://gtregression.thinkdenominator.com/articles/regression-tables.html) |
+| Survival analysis | [Survival Analysis](https://gtregression.thinkdenominator.com/articles/survival-analysis.html) |
+| Causal mediation | [Causal Mediation](https://gtregression.thinkdenominator.com/articles/causal-mediation.html) |
+| Visualise estimates | [Visualise Results](https://gtregression.thinkdenominator.com/articles/visualise-results.html) |
+| Stratified models | [Stratified Analysis](https://gtregression.thinkdenominator.com/articles/stratified-analysis.html) |
+| Diagnostics and selection | [Diagnostics](https://gtregression.thinkdenominator.com/articles/diagnostics-selection.html) |
+| Confounding and interaction | [Confounding & Interaction](https://gtregression.thinkdenominator.com/articles/confounding-interaction.html) |
+| Merge and export | [Customize and Export](https://gtregression.thinkdenominator.com/articles/customize-export.html) |
 
 ## Function Map
 
-<table>
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr>
-<th>Workflow</th>
-<th>Functions</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Describe</td>
-<td><code>descriptive_table()</code>, <code>dissect()</code></td>
-</tr>
-<tr>
-<td>Model</td>
-<td><code>uni_reg()</code>, <code>multi_reg()</code>,
-<code>cox_reg()</code>, <code>surv_reg()</code></td>
-</tr>
-<tr>
-<td>Survival</td>
-<td><code>km_plot()</code>, <code>km_risk_table()</code>,
-<code>survival_summary()</code>, <code>survival_quantiles()</code>,
-<code>survival_prob()</code>, <code>rmst_table()</code>,
-<code>logrank_test()</code>, <code>check_ph()</code>,
-<code>surv_model_compare()</code>, <code>plot_surv_fit()</code>,
-<code>surv_predict()</code></td>
-</tr>
-<tr>
-<td>Stratify</td>
-<td><code>stratified_uni_reg()</code>,
-<code>stratified_multi_reg()</code></td>
-</tr>
-<tr>
-<td>Visualise</td>
-<td><code>plot_reg()</code>, <code>plot_reg_combine()</code>,
-<code>forest_df()</code>, <code>forest_reg()</code></td>
-</tr>
-<tr>
-<td>Diagnose</td>
-<td><code>check_convergence()</code>, <code>check_collinearity()</code>,
-<code>check_ph()</code>, <code>select_models()</code></td>
-</tr>
-<tr>
-<td>Interpret</td>
-<td><code>identify_confounder()</code>,
-<code>interaction_models()</code>, <code>mediation_analysis()</code>,
-<code>plot_mediation()</code></td>
-</tr>
-<tr>
-<td>Polish and export</td>
-<td><code>modify_table()</code>, <code>merge_tables()</code>,
-<code>save_table()</code>, <code>save_plot()</code>,
-<code>save_docx()</code></td>
-</tr>
-</tbody>
-</table>
+| Workflow | Functions |
+|----|----|
+| Describe | `descriptive_table()`, `dissect()` |
+| Model | `uni_reg()`, `multi_reg()`, `cox_reg()`, `surv_reg()` |
+| Survival | `km_plot()`, `km_risk_table()`, `survival_summary()`, `survival_quantiles()`, `survival_prob()`, `rmst_table()`, `logrank_test()`, `check_ph()`, `surv_model_compare()`, `plot_surv_fit()`, `surv_predict()` |
+| Stratify | `stratified_uni_reg()`, `stratified_multi_reg()` |
+| Visualise | `plot_reg()`, `plot_reg_combine()`, `forest_df()`, `forest_reg()` |
+| Diagnose | `check_convergence()`, `check_collinearity()`, `check_ph()`, `select_models()` |
+| Interpret | `identify_confounder()`, `interaction_models()`, `mediation_analysis()`, `plot_mediation()` |
+| Polish and export | `modify_table()`, `merge_tables()`, `save_table()`, `save_plot()`, `save_docx()` |
 
 ## Citation
 

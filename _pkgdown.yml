@@ -19,17 +19,18 @@ home:
       href: articles/visualise-results.html
     - text: Survival Analysis
       href: articles/survival-analysis.html
+    - text: Confounding & Interaction
+      href: articles/confounding-interaction.html
+    - text: Causal Mediation
+      href: articles/causal-mediation.html
     - text: Function Overview
       href: reference/index.html
 
 navbar:
   structure:
-    left: [home, reference, articles]
+    left: [reference, articles]
     right: [github]
   components:
-    home:
-      text: Get started
-      href: index.html
     reference:
       text: Functions
       href: reference/index.html
@@ -48,7 +49,9 @@ navbar:
         href: articles/regression-tables.html
       - text: Survival
         href: articles/survival-analysis.html
-      - text: Mediation
+      - text: Confounding & Interaction
+        href: articles/confounding-interaction.html
+      - text: Causal Mediation
         href: articles/causal-mediation.html
       - text: Visualise
         href: articles/visualise-results.html
@@ -56,8 +59,6 @@ navbar:
         href: articles/stratified-analysis.html
       - text: Diagnostics
         href: articles/diagnostics-selection.html
-      - text: Interpret
-        href: articles/confounding-interaction.html
       - text: Export
         href: articles/customize-export.html
 
@@ -91,8 +92,8 @@ articles:
     contents:
       - diagnostics-selection
 
-  - title: "Interpret"
-    navbar: "Interpret"
+  - title: "Confounding & Causal Analysis"
+    navbar: "Confounding & Causal Analysis"
     contents:
       - confounding-interaction
       - causal-mediation
@@ -180,7 +181,7 @@ reference:
     desc: "Built-in datasets for examples, teaching, and tests."
     contents:
       - data_birthwt
-      - data_PimaIndiansDiabetes
+      - data_SynthDiabetes
       - data_gt_quin
       - data_epilepsy
       - data_endometrial

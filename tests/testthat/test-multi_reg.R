@@ -41,11 +41,13 @@ test_that("multi_reg returns a gtregression object for default logit models", {
   expect_named(
     res,
     c("table", "table_body", "table_display", "models",
-      "model_summaries", "model_stats", "variable_labels", "reg_check",
+      "model_summaries", "model_stats", "variable_labels", "footnotes", "reg_check",
       "approach", "format", "source",
       "adjusted_mode", "adjust_for", "exposures", "interaction", "show_ref")
   )
   expect_null(res$model_stats)
+  expect_true(any(grepl("OR = Odds Ratio", res$footnotes, fixed = TRUE)))
+  expect_true(any(grepl("^N = .* complete observations", res$footnotes)))
   expect_false(res$adjusted_mode)
   expect_null(res$adjust_for)
   expect_equal(res$exposures, c("age", "lwt", "race", "smoke"))
@@ -62,6 +64,21 @@ test_that("multi_reg returns a gtregression object for default logit models", {
   expect_true(any(grepl("Ref. = reference category", res$table$`_source_notes`,
                         fixed = TRUE)))
   expect_true("Regression diagnostics available only for 'linear' models." %in% res$reg_check)
+})
+
+test_that("multi_reg uses the same complete-case note for linear and logistic models", {
+  df <- birthwt_multi_data()
+
+  logistic <- multi_reg(
+    df, outcome = low, exposures = c(age, lwt), approach = logit
+  )
+  linear <- multi_reg(
+    df, outcome = bwt, exposures = c(age, lwt), approach = linear
+  )
+
+  note_pattern <- "^N = [0-9]+ complete observations included in the model\\.$"
+  expect_true(any(grepl(note_pattern, logistic$footnotes)))
+  expect_true(any(grepl(note_pattern, linear$footnotes)))
 })
 
 test_that("multi_reg publication table preserves user exposure order", {
@@ -318,6 +335,7 @@ test_that("multi_reg returns diagnostics for linear models", {
 
   expect_s3_class(res, "multi_reg")
   expect_s3_class(res$models$multivariable_model, "lm")
+  expect_s3_class(res$reg_check, "gtregression_reg_check")
   expect_true("Adjusted Beta (95% CI)" %in% names(res$table_display))
   expect_type(res$reg_check, "list")
   expect_named(res$reg_check, "multivariable_model")
@@ -333,6 +351,21 @@ test_that("multi_reg returns diagnostics for linear models", {
   expect_true(is.na(stats_res$model_stats$pseudo_r2))
   expect_true(is.finite(stats_res$model_stats$r_squared))
   expect_true(is.finite(stats_res$model_stats$adj_r_squared))
+})
+
+test_that("multi_reg gives data columns precedence for bare-name vectors", {
+  data("data_SynthDiabetes", package = "gtregression")
+
+  result <- multi_reg(
+    data = data_SynthDiabetes,
+    outcome = glucose,
+    exposures = c(mass, insulin, pedigree),
+    adjust_for = c(age, pregnant, pressure),
+    approach = linear
+  )
+
+  expect_named(result$models, c("mass", "insulin", "pedigree"))
+  expect_equal(result$adjust_for, c("age", "pregnant", "pressure"))
 })
 
 test_that("multi_reg validates required variables and outcome types", {

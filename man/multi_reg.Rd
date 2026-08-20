@@ -75,7 +75,9 @@ A list of class \code{c("gtregression","multi_reg", ...)} with elements:
   otherwise \code{NULL}.}
   \item{variable_labels}{Named character vector of display labels used for
   exposure variables.}
-  \item{reg_check}{Regression diagnostics for linear models; otherwise a message.}
+  \item{reg_check}{Regression diagnostics for linear models. Printing this
+  element renders a publication-ready table; individual diagnostic rows remain
+  available for programmatic use. Other approaches return a message.}
   \item{approach}{The regression approach used.}
   \item{format}{The output format used.}
   \item{source}{Function identifier (\code{"multi_reg"}).}

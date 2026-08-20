@@ -60,7 +60,9 @@
 #'   otherwise \code{NULL}.}
 #'   \item{variable_labels}{Named character vector of display labels used for
 #'   exposure variables.}
-#'   \item{reg_check}{Regression diagnostics for linear models; otherwise a message.}
+#'   \item{reg_check}{Regression diagnostics for linear models. Printing this
+#'   element renders a publication-ready table; individual diagnostic rows remain
+#'   available for programmatic use. Other approaches return a message.}
 #'   \item{approach}{The regression approach used.}
 #'   \item{format}{The output format used.}
 #'   \item{source}{Function identifier (\code{"multi_reg"}).}
@@ -98,9 +100,14 @@ multi_reg <- function(data,
                       model_stats = FALSE,
                       show_ref = TRUE) {
 
-  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
-  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame(), data_names = names(data))
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame(), data_names = names(data))
+  adjust_for <- .vars_arg(
+    substitute(adjust_for),
+    env = parent.frame(),
+    allow_null = TRUE,
+    data_names = names(data)
+  )
   interaction <- .interaction_arg(substitute(interaction), env = parent.frame(), allow_null = TRUE)
   approach <- .choice_arg(
     substitute(approach),
@@ -120,7 +127,10 @@ multi_reg <- function(data,
 
   fmt_class <- if (format == "gt") "gt_multi" else "ft_multi"
   effect_label_adj <- paste("Adjusted", .get_effect_label(approach))
-  variable_labels <- .var_label_map(data, unique(exposures))
+  variable_labels <- .var_label_map(
+    data,
+    unique(c(exposures, adjust_for, .interaction_vars(interaction)))
+  )
 
   core <- .run_multi_core(
     data = data,
@@ -129,6 +139,9 @@ multi_reg <- function(data,
     approach = approach,
     adjust_for = adjust_for,
     interaction = interaction
+  )
+  core$table_body <- .format_interaction_levels(
+    core$table_body, core$data_clean, variable_labels
   )
 
   footnotes <- if (!core$adjusted_mode) {
@@ -139,29 +152,29 @@ multi_reg <- function(data,
       if (!is.na(core$n_used)) {
         paste0(
           "N = ", core$n_used,
-          " complete observations included in the multivariable model"
+          " complete observations included in the model."
         )
       } else {
-        "N reflects complete observations included in the multivariable model"
+        "N reflects complete observations included in the model."
       }
     )
   } else {
     n_note <- if (length(unique(stats::na.omit(core$n_used))) == 1L) {
       paste0(
         "N = ", unique(stats::na.omit(core$n_used)),
-        " complete observations included across outcome, exposure, and adjustment variables"
+        " complete observations included in each adjusted model."
       )
     } else {
       paste0(
-        "N varies by exposure according to complete observations for outcome, the current ",
-        "exposure, and adjustment variables"
+        "N varies across adjusted models according to complete observations for the outcome, ",
+        "current exposure, and adjustment variables."
       )
     }
 
     c(
       .abbrev_note(approach),
       if (isTRUE(show_ref) && any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
-      .adjustment_note(adjust_for),
+      .display_adjustment_note(adjust_for, variable_labels),
       if (!is.null(interaction)) .interaction_note(interaction) else NULL,
       n_note
     )
@@ -192,7 +205,8 @@ multi_reg <- function(data,
     model_summaries = core$model_summaries,
     model_stats = if (isTRUE(model_stats)) .model_stats_table(core$models, approach) else NULL,
     variable_labels = variable_labels,
-    reg_check = core$reg_check,
+    footnotes = footnotes,
+    reg_check = .as_reg_check_result(core$reg_check, format = format),
     approach = approach,
     format = format,
     source = "multi_reg",

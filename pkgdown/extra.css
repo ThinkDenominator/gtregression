@@ -126,27 +126,122 @@ body {
   color: var(--gtreg-accent);
 }
 
-.gtreg-workflow {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.8rem;
-  margin: 1.5rem 0 2rem;
-}
-
-.gtreg-step {
-  padding: 1rem;
+.gtreg-analysis-path {
+  margin: 2.5rem 0;
+  padding: 1.75rem;
   border: 1px solid var(--gtreg-line);
-  border-radius: 14px;
+  border-radius: 8px;
   background: #ffffff;
 }
 
-.gtreg-step strong {
-  display: block;
-  margin-bottom: 0.25rem;
+.gtreg-path-intro {
+  max-width: 48rem;
+  margin-bottom: 1.5rem;
 }
 
-.gtreg-step span {
+.gtreg-path-intro h3 {
+  margin: 0 0 0.55rem;
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+
+.gtreg-path-intro p:last-child {
+  margin-bottom: 0;
   color: var(--gtreg-muted);
+}
+
+.gtreg-path-steps {
+  position: relative;
+  display: grid;
+  gap: 0;
+}
+
+.gtreg-path-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(10rem, 1fr) minmax(11rem, 1.2fr) minmax(8rem, 0.8fr);
+  gap: 1rem;
+  align-items: center;
+  min-height: 5.25rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--gtreg-line);
+}
+
+.gtreg-path-step > p {
+  margin: 0;
+}
+
+.gtreg-path-step > p:last-child {
+  display: contents;
+}
+
+.gtreg-path-step:last-child {
+  border-bottom: 0;
+}
+
+.gtreg-path-number {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid #bcd3d7;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--gtreg-accent);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.gtreg-path-step:not(:last-child) .gtreg-path-number::after {
+  position: absolute;
+  top: 2.3rem;
+  left: 50%;
+  width: 1px;
+  height: 3rem;
+  background: #cfdde3;
+  content: "";
+}
+
+.gtreg-path-copy strong,
+.gtreg-path-copy span,
+.gtreg-path-result {
+  display: block;
+}
+
+.gtreg-path-copy p {
+  margin: 0;
+}
+
+.gtreg-path-copy p:last-child {
+  color: var(--gtreg-muted);
+  font-size: 0.92rem;
+}
+
+.gtreg-path-copy strong {
+  margin-bottom: 0.15rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.gtreg-path-step code {
+  display: block;
+  padding: 0.7rem 0.8rem;
+  overflow: hidden;
+  border: 1px solid #d8e3eb;
+  border-radius: 6px;
+  background: #f5f8fb;
+  color: #0b5e61;
+  font-size: 0.86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gtreg-path-result {
+  color: #394957;
+  font-size: 0.83rem;
+  font-weight: 750;
 }
 
 .ref-index section {
@@ -207,7 +302,22 @@ body {
     width: min(180px, 60vw);
   }
 
-  .gtreg-workflow {
-    grid-template-columns: 1fr;
+  .gtreg-analysis-path {
+    padding: 1.25rem;
+  }
+
+  .gtreg-path-step {
+    grid-template-columns: 2.8rem 1fr;
+    gap: 0.7rem;
+    padding: 0.95rem 0;
+  }
+
+  .gtreg-path-step code,
+  .gtreg-path-result {
+    grid-column: 2;
+  }
+
+  .gtreg-path-step:not(:last-child) .gtreg-path-number::after {
+    height: 5.5rem;
   }
 }

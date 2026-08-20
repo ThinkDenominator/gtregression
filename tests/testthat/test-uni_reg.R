@@ -21,7 +21,7 @@ test_that("uni_reg returns a gtregression object for binary logistic models", {
   expect_named(
     res,
     c("table", "table_body", "table_display", "models",
-      "model_summaries", "model_stats", "variable_labels", "reg_check",
+      "model_summaries", "model_stats", "variable_labels", "footnotes", "reg_check",
       "approach", "format", "source", "show_ref")
   )
   expect_null(res$model_stats)

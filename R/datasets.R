@@ -48,8 +48,8 @@
 
 #' Diabetes Mediation Teaching Dataset
 #'
-#' A health-related teaching dataset prepared from the Pima Indians Diabetes
-#' data. It is designed for the practical question: could part of the obesity
+#' A health-related teaching dataset prepared from synthetic diabetes data.
+#' It is designed for the practical question: could part of the obesity
 #' and diabetes relationship operate through plasma glucose, after adjustment
 #' for basic clinical covariates?
 #'
@@ -71,7 +71,8 @@
 #' ordering and no-unmeasured-confounding assumptions are justified by study
 #' design, DAGs, and subject-matter knowledge.
 #'
-#' @source Derived from \code{data_PimaIndiansDiabetes}.
+#' @source Derived from \code{data_SynthDiabetes}, which is based on
+#' \code{mlbench::SynthDiabetes2} (\pkg{mlbench} version 2.1-11 or later).
 "data_diabetes_mediation"
 
 #' Infertility Matched Case-Control Study
@@ -175,10 +176,11 @@
 #'
 "data_gt_quin"
 
-#' PimaIndians2 Diabetes Dataset
+#' Synthetic Diabetes Dataset
 #'
-#' A cleaned version of the original Pima Indians Diabetes dataset from
-#' the `mlbench` package.
+#' A synthetic replacement for the former diabetes dataset from the
+#' \pkg{mlbench} package. It has the same structure and number of observations
+#' but does not represent real people.
 #' Useful for demonstrating regression approaches for binary outcomes.
 #'
 #' @format A data frame with 768 observations and 9 variables:
@@ -194,5 +196,6 @@
 #'   \item{diabetes}{Factor indicating diabetes status (pos/neg)}
 #' }
 #'
-#' @source \url{https://www.openml.org/d/37}
-"data_PimaIndiansDiabetes"
+#' @source \code{mlbench::SynthDiabetes2}, available in \pkg{mlbench}
+#' version 2.1-11 or later.
+"data_SynthDiabetes"

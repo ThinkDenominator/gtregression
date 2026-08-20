@@ -10,11 +10,14 @@ modify_table(
   level_labels = NULL,
   header_labels = NULL,
   caption = NULL,
-  bold_labels = FALSE,
+  bold_labels = TRUE,
   bold_levels = FALSE,
+  italic_labels = FALSE,
+  italic_levels = FALSE,
   remove_N = FALSE,
   remove_N_obs = FALSE,
   remove_abbreviations = FALSE,
+  remove_adjustment_note = FALSE,
   caveat = NULL
 )
 }
@@ -34,9 +37,14 @@ such as \code{estimate}, \code{p.value}, and \code{N} are also accepted.}
 
 \item{caption}{Optional caption/title.}
 
-\item{bold_labels}{Logical; bold variable (header) rows in the body.}
+\item{bold_labels}{Logical; bold variable (header) rows in the body. Defaults
+to \code{TRUE} to preserve the package table hierarchy.}
 
 \item{bold_levels}{Logical; bold factor level rows in the body.}
+
+\item{italic_labels}{Logical; italicize variable (header) rows in the body.}
+
+\item{italic_levels}{Logical; italicize factor level rows in the body.}
 
 \item{remove_N}{Logical; if \code{TRUE}, drops displayed \code{N} columns
 from univariable and stratified package tables. For stratified survival
@@ -48,6 +56,10 @@ complete-case footnote.}
 
 \item{remove_abbreviations}{Logical; if \code{TRUE}, removes the
 Abbreviations footnote line.}
+
+\item{remove_adjustment_note}{Logical; if \code{TRUE}, removes the automatic
+\code{Adjusted for ...} footnote. Use \code{caveat} to add customised
+wording.}
 
 \item{caveat}{Optional extra footnote.}
 }

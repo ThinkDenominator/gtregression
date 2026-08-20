@@ -47,7 +47,9 @@
 #'   otherwise \code{NULL}.}
 #'   \item{variable_labels}{Named character vector of display labels used for
 #'   exposure variables.}
-#'   \item{reg_check}{Diagnostics for linear models; message otherwise.}
+#'   \item{reg_check}{Diagnostics for linear models. Printing this element
+#'   renders a publication-ready table; individual diagnostic rows remain
+#'   available for programmatic use. Other approaches return a message.}
 #'   \item{approach, format, source}{Metadata fields.}
 #' }
 #'
@@ -77,8 +79,16 @@ uni_reg <- function(data,
                     model_stats = FALSE,
                     show_ref = TRUE) {
 
-  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
+  outcome <- .vars_arg(
+    substitute(outcome),
+    env = parent.frame(),
+    data_names = names(data)
+  )
+  exposures <- .vars_arg(
+    substitute(exposures),
+    env = parent.frame(),
+    data_names = names(data)
+  )
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
@@ -156,7 +166,8 @@ uni_reg <- function(data,
     model_summaries = model_summaries,
     model_stats     = fit_stats,
     variable_labels = attr(display_df, "variable_labels", exact = TRUE),
-    reg_check       = reg_diagnostics,
+    footnotes       = source_note,
+    reg_check       = .as_reg_check_result(reg_diagnostics, format = format),
     approach        = approach,
     format          = format,
     source          = "uni_reg",

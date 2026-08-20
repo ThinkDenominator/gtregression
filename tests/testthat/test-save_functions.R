@@ -34,9 +34,15 @@ test_that("resolve_table_object accepts package tables and raw rendered tables",
     uni_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt),
     multi_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt)
   )
+  merged_gt <- merge_tables(
+    uni_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt),
+    multi_reg(df, outcome = "low", exposures = "smoke", approach = logit, format = gt),
+    format = gt
+  )
 
   expect_s3_class(.resolve_table_object(tbl), "gt_tbl")
-  expect_s3_class(.resolve_table_object(merged), "gt_tbl")
+  expect_s3_class(.resolve_table_object(merged), "flextable")
+  expect_s3_class(.resolve_table_object(merged_gt), "gt_tbl")
   expect_s3_class(.resolve_table_object(tbl$table), "gt_tbl")
   expect_error(.resolve_table_object(data.frame(x = 1)), "`tbl` must be")
 })

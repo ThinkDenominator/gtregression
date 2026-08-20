@@ -155,7 +155,11 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     do.call(rbind, lapply(per_stratum, `[[`, "table_body")),
     show_ref
   )
-  footnotes <- c(.abbrev_note(approach), if (isTRUE(show_ref) && has_ref) .ref_note() else NULL)
+  footnotes <- c(
+    .stratified_by_note(stratifier),
+    .abbrev_note(approach),
+    if (isTRUE(show_ref) && has_ref) .ref_note() else NULL
+  )
   eff_lab   <- .get_effect_label(approach)
 
   tbl <- if (format == "gt") {
@@ -177,7 +181,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     models        = models_list,
     model_summaries = summaries,
     variable_labels = variable_labels,
-    reg_check     = diags,
+    reg_check     = .as_reg_check_result(diags, format = format),
     by            = stratifier,
     levels        = levs,
     approach      = approach,

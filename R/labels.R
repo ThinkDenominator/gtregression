@@ -34,6 +34,42 @@
   if (is.null(out) || is.na(out) || !nzchar(out)) var else out
 }
 
+#' Convert model-matrix interaction names into readable display labels
+#' @keywords internal
+#' @noRd
+.format_interaction_levels <- function(table_body, data, variable_labels = NULL) {
+  if (!is.data.frame(table_body) || !"level" %in% names(table_body)) {
+    return(table_body)
+  }
+
+  idx <- grepl(" x ", table_body$level, fixed = TRUE)
+  if (!any(idx)) return(table_body)
+
+  label_map <- variable_labels
+  if (is.null(label_map)) {
+    label_map <- .var_label_map(data, names(data))
+  }
+  vars <- names(data)[order(nchar(names(data)), decreasing = TRUE)]
+
+  format_piece <- function(piece) {
+    piece <- gsub("`", "", piece, fixed = TRUE)
+    for (var in vars) {
+      if (!startsWith(piece, var)) next
+      level <- substr(piece, nchar(var) + 1L, nchar(piece))
+      label <- .label_var(var, label_map)
+      return(if (nzchar(level)) paste0(label, ": ", level) else label)
+    }
+    piece
+  }
+
+  table_body$level[idx] <- vapply(
+    strsplit(table_body$level[idx], " x ", fixed = TRUE),
+    function(parts) paste(vapply(parts, format_piece, character(1)), collapse = " x "),
+    character(1)
+  )
+  table_body
+}
+
 #' Attach raw row metadata to display data frames
 #'
 #' @keywords internal

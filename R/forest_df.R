@@ -213,7 +213,7 @@
     }
 
     effect_label <- text_cols[[1]]
-    text_name <- paste0(stratifier, " = ", labels[[i]], "\n", effect_label)
+    text_name <- paste0(labels[[i]], "\n", effect_label)
     anchor_name <- paste(rep(" ", i), collapse = "")
 
     out[[text_name]] <- part[[effect_label]]

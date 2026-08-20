@@ -13,7 +13,6 @@ editor_options:
 
 :::::: gtreg-hero
 :::: {}
-
 <h1>gtregression</h1>
 
 <p>Publication-ready regression and survival analysis tables, plots, and
@@ -29,7 +28,7 @@ functions</a>
 ::::
 
 ::: {}
-<img class="gtreg-home-logo" src="man/figures/gtregression_hex.png" alt="gtregression logo"/>
+<img src="man/figures/gtregression_hex.png" alt="gtregression logo" class="gtreg-home-logo"/>
 :::
 ::::::
 
@@ -43,8 +42,7 @@ status](https://www.r-pkg.org/badges/version/gtregression)](https://CRAN.R-proje
 checks](https://badges.cranchecks.info/worst/gtregression.svg)](https://cran.r-project.org/web/checks/check_results_gtregression.html)
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/last-month/gtregression)](https://cranlogs.r-pkg.org/downloads/total/last-month/gtregression)
-[![CRAN
-downloads
+[![CRAN downloads
 total](https://cranlogs.r-pkg.org/badges/grand-total/gtregression)](https://cranlogs.r-pkg.org/downloads/total/grand-total/gtregression)
 [![Lifecycle:
 stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
@@ -62,8 +60,8 @@ models, produce clean tables, visualise estimates, merge outputs, and
 export results without hand-formatting every coefficient.
 
 It supports logistic, log-binomial, Poisson, robust Poisson, negative
-binomial, linear, Cox, parametric survival, and causal mediation workflows,
-including adjusted and stratified models.
+binomial, linear, Cox, parametric survival, and causal mediation
+workflows, including adjusted and stratified models.
 
 | Build | What you get |
 |------------------------------------|------------------------------------|
@@ -75,37 +73,97 @@ including adjusted and stratified models.
 | Interpretation helpers | Confounding, interaction, mediation, convergence, collinearity, model selection, and survival diagnostics |
 | Exports | HTML, PDF, PNG, and Word-ready outputs |
 
-::::::: gtreg-workflow
-::: gtreg-step
-<strong>Describe</strong>Build baseline tables with grouped summaries.
+## From Data to Manuscript
+
+::::: gtreg-analysis-path
+::: gtreg-path-intro
+::: gtreg-kicker
+One connected workflow
 :::
 
-::: gtreg-step
-<strong>Model</strong>Fit crude, adjusted, and stratified regressions.
+### Start with the question. Finish with a result you can use.
+
+Each step leaves an inspectable object behind, so beginners have a clear path
+and experienced analysts retain full control.
 :::
 
-::: gtreg-step
-<strong>Visualise</strong>Create plots and forest tables for estimates.
+::: gtreg-path-steps
+::: gtreg-path-step
+<span class="gtreg-path-number">01</span>
+
+::: gtreg-path-copy
+**Prepare**
+
+Check variables, labels, levels, and missing data.
 :::
 
-::: gtreg-step
-<strong>Export</strong>Save polished tables, figures, and Word outputs.
+`dissect(data)` <span class="gtreg-path-result">Analysis-ready data</span>
 :::
-:::::::
+
+::: gtreg-path-step
+<span class="gtreg-path-number">02</span>
+
+::: gtreg-path-copy
+**Describe**
+
+Build a clear baseline table before modelling.
+:::
+
+`descriptive_table(...)` <span class="gtreg-path-result">Table 1</span>
+:::
+
+::: gtreg-path-step
+<span class="gtreg-path-number">03</span>
+
+::: gtreg-path-copy
+**Model**
+
+Fit crude, adjusted, stratified, or survival models.
+:::
+
+`uni_reg() + multi_reg()` <span class="gtreg-path-result">Effect estimates</span>
+:::
+
+::: gtreg-path-step
+<span class="gtreg-path-number">04</span>
+
+::: gtreg-path-copy
+**Interpret**
+
+Review assumptions, confounding, interaction, and fit.
+:::
+
+`check_*() + compare_models()` <span class="gtreg-path-result">Defensible model</span>
+:::
+
+::: gtreg-path-step
+<span class="gtreg-path-number">05</span>
+
+::: gtreg-path-copy
+**Publish**
+
+Merge, visualise, and export polished outputs.
+:::
+
+`forest_reg() + save_table()` <span class="gtreg-path-result">Manuscript-ready output</span>
+:::
+:::
+:::::
+
 
 ## Why It Exists
 
 Many students, researchers, and public health analysts need regression
 outputs that are readable, reproducible, and report-ready.
-`gtregression` keeps the R syntax approachable while preserving transparent
-model objects underneath.
+`gtregression` keeps the R syntax approachable while preserving
+transparent model objects underneath.
 
 ## Built on Trusted R Packages
 
 `gtregression` is intentionally a readable interface over established R
-packages. The package uses widely trusted modelling,
-tidying, plotting, and reporting tools so users can inspect fitted models and
-understand the statistical engines behind each output.
+packages. The package uses widely trusted modelling, tidying, plotting,
+and reporting tools so users can inspect fitted models and understand
+the statistical engines behind each output.
 
 | Area | Core packages used |
 |------------------------------------|------------------------------------|
@@ -116,16 +174,18 @@ understand the statistical engines behind each output.
 | Figures and forest plots | `ggplot2`, `patchwork`, `forestploter`, `scales` |
 | Optional development and checking tools | `testthat`, `knitr`, `rmarkdown`, `pkgdown`, `car`, `forcats`, `ggtext` |
 
-The user-facing functions return objects with fitted models, table bodies, and
-display metadata that advanced users can audit, modify, or reuse.
+The user-facing functions return objects with fitted models, table
+bodies, and display metadata that advanced users can audit, modify, or
+reuse.
 
 ## Install
 
 ``` r
+# CRAN
 install.packages("gtregression")
 
 # Development version
-devtools::install_github("ThinkDenominator/gtregression")
+remotes::install_github("ThinkDenominator/gtregression")
 ```
 
 ## Five-Minute Workflow
@@ -176,11 +236,16 @@ multi <- multi_reg(
 )
 
 plot_reg(multi, title = "Adjusted Regression for Low Birth Weight")
+
+forest_reg = forest_reg(forest_df(uni, multi)) 
+
+merge_tables(desc, uni, multi)
 ```
 
-Variable labels set with `attr(x, "label")` or `labelled::var_label()` are used
-automatically in display tables and plots, while original column names remain
-available internally for merging, modification, and testing.
+Variable labels set with `attr(x, "label")` or `labelled::var_label()`
+are used automatically in display tables and plots, while original
+column names remain available internally for merging, modification, and
+testing.
 
 Objects stay inspectable:
 
@@ -191,8 +256,8 @@ multi$table
 multi$models
 ```
 
-Optional model-fit statistics can be requested without changing the publication
-table:
+Optional model-fit statistics can be requested without changing the
+publication table:
 
 ``` r
 uni_stats <- uni_reg(
@@ -218,7 +283,7 @@ uni_stats$model_stats
 | Visualise estimates | [Visualise Results](https://gtregression.thinkdenominator.com/articles/visualise-results.html) |
 | Stratified models | [Stratified Analysis](https://gtregression.thinkdenominator.com/articles/stratified-analysis.html) |
 | Diagnostics and selection | [Diagnostics](https://gtregression.thinkdenominator.com/articles/diagnostics-selection.html) |
-| Confounding and interaction | [Interpret](https://gtregression.thinkdenominator.com/articles/confounding-interaction.html) |
+| Confounding and interaction | [Confounding & Interaction](https://gtregression.thinkdenominator.com/articles/confounding-interaction.html) |
 | Merge and export | [Customize and Export](https://gtregression.thinkdenominator.com/articles/customize-export.html) |
 
 ## Function Map
@@ -244,7 +309,7 @@ Zenodo. <https://doi.org/10.5281/zenodo.16905350>
 
 ## Acknowledgements
 
-`gtregression` builds on the R ecosystem, especially `stats`, `survival`,
-`MASS`, `risks`, `logistf`, `broom`, `broom.helpers`, `sandwich`, `lmtest`,
-`dplyr`, `purrr`, `tibble`, `rlang`, `flextable`, `officer`, `gt`, `ggplot2`,
-`patchwork`, `forestploter`, and `scales`.
+`gtregression` builds on the R ecosystem, especially `stats`,
+`survival`, `MASS`, `risks`, `logistf`, `broom`, `broom.helpers`,
+`sandwich`, `lmtest`, `dplyr`, `purrr`, `tibble`, `rlang`, `flextable`,
+`officer`, `gt`, `ggplot2`, `patchwork`, `forestploter`, and `scales`.

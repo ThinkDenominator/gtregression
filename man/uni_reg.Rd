@@ -58,7 +58,9 @@ A list of class \code{c("gtregression","uni_reg", ...)} with elements:
   otherwise \code{NULL}.}
   \item{variable_labels}{Named character vector of display labels used for
   exposure variables.}
-  \item{reg_check}{Diagnostics for linear models; message otherwise.}
+  \item{reg_check}{Diagnostics for linear models. Printing this element
+  renders a publication-ready table; individual diagnostic rows remain
+  available for programmatic use. Other approaches return a message.}
   \item{approach, format, source}{Metadata fields.}
 }
 }

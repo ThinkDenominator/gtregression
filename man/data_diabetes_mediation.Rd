@@ -18,14 +18,15 @@ A data frame with variables:
 }
 }
 \source{
-Derived from \code{data_PimaIndiansDiabetes}.
+Derived from \code{data_SynthDiabetes}, which is based on
+\code{mlbench::SynthDiabetes2} (\pkg{mlbench} version 2.1-11 or later).
 }
 \usage{
 data_diabetes_mediation
 }
 \description{
-A health-related teaching dataset prepared from the Pima Indians Diabetes
-data. It is designed for the practical question: could part of the obesity
+A health-related teaching dataset prepared from synthetic diabetes data.
+It is designed for the practical question: could part of the obesity
 and diabetes relationship operate through plasma glucose, after adjustment
 for basic clinical covariates?
 }

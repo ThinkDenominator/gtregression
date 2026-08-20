@@ -51,8 +51,9 @@ test_that("stratified_multi_reg returns a gtregression object for full logit mod
   )
   expect_named(res$models, c("White", "Black", "Other"))
   expect_named(res$models$White, "multivariable_model")
-  expect_true(all(c("Characteristic", "is_header", "..N__White", "..eff__White",
+  expect_true(all(c("Characteristic", "is_header", "..eff__White",
                     "..p__White") %in% names(res$table_display)))
+  expect_false("..N__White" %in% names(res$table_display))
   eff_cols <- startsWith(names(res$table_display), "..eff__")
   expect_true("Ref." %in% unlist(res$table_display[eff_cols]))
   expect_true(any(grepl("Ref. = reference category", res$table$`_source_notes`,
@@ -79,7 +80,7 @@ test_that("stratified_multi_reg adjust_for fits one adjusted model per exposure"
   expect_named(res$model_summaries$White, c("smoke", "ht", "ui"))
   expect_true(res$per_stratum$White$adjusted_mode)
   expect_true(res$per_stratum$Black$adjusted_mode)
-  expect_true("..N__White" %in% names(res$table_display))
+  expect_false("..N__White" %in% names(res$table_display))
   expect_true(all(c("smoke", "ht", "ui") %in% res$table_display$Characteristic))
 })
 
@@ -218,6 +219,7 @@ test_that("stratified_multi_reg returns diagnostics for linear models", {
 
   expect_s3_class(res, "stratified_multi_reg")
   expect_equal(res$approach, "linear")
+  expect_s3_class(res$reg_check, "gtregression_reg_check")
   expect_true("..eff__White" %in% names(res$table_display))
   expect_true("multivariable_model" %in% names(res$reg_check$White))
   expect_true("Test" %in% names(res$reg_check$White$multivariable_model))

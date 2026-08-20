@@ -21,6 +21,8 @@ checks should not be used as the sole basis for model adjustment.
 |---|---|---|
 | Could these candidate variables be confounders or effect modifiers? | `identify_confounder()` | Screens crude, adjusted, Mantel-Haenszel, and interaction signals together. |
 | Does this planned interaction term improve the model? | `interaction_models()` | Compares models with and without `exposure:effect_modifier` using LRT or Wald tests. |
+| Which automatically generated candidate model has the strongest fit? | `select_models()` | Fits and ranks a defined set of candidate models using model-fit statistics. |
+| How do my named, fitted gtregression models differ? | `compare_models()` | Compares supplied fitted models, checks analysis-sample consistency, and reports fit statistics transparently. |
 | Could part of an exposure-outcome association operate through a mediator? | `mediation_analysis()` | Estimates direct, indirect, total, and proportion mediated effects with explicit causal caveats. |
 | Do I need a Mantel-Haenszel estimate? | `identify_confounder(method = "mh")` or `identify_confounder(method = "both")` | MH is a stratified pooled estimate for eligible binary/categorical settings, not a formal interaction-term test. |
 
@@ -34,6 +36,36 @@ A practical workflow is:
    question and the temporal order is defensible.
 5. If interaction is important, consider stratified reporting with
    `stratified_uni_reg()` or `stratified_multi_reg()`.
+
+## How the Interaction Tests Differ
+
+`identify_confounder()` is a candidate-by-candidate screening aid. For each
+exposure and potential confounder, it compares `outcome ~ exposure` with
+`outcome ~ exposure + potential_confounder`, examines stratum-specific
+estimates, and screens the candidate interaction:
+
+```r
+outcome ~ exposure + potential_confounder + exposure:potential_confounder
+```
+
+No other covariates are included in this interaction screen. Its interaction
+p-value helps organise early evidence; it is not a final covariate-adjusted
+interaction analysis.
+
+Use `interaction_models()` for a planned interaction analysis. Its `covariates`
+are included in both nested models, preserving a common adjusted analysis
+sample. For example, `covariates = c(age, lwt)` fits:
+
+```r
+outcome ~ exposure + effect_modifier + age + lwt
+outcome ~ exposure + effect_modifier + age + lwt + exposure:effect_modifier
+```
+
+Choose covariates using the study design, a DAG, and subject-matter knowledge.
+Do not automatically adjust for mediators or colliders.
+
+The formatted interaction table labels the **effect modifier tested**, displays
+the outcome, and records the two fitted model formulas in its table notes.
 
 ```{r ci-setup, message=FALSE, warning=FALSE}
 library(gtregression)
@@ -60,7 +92,10 @@ attr(birthwt_data$ht, "label") <- "Hypertension"
 Use `method = "change"` for the model-based change-in-estimate method. Use
 `method = "mh"` or `method = "both"` when Mantel-Haenszel is appropriate.
 The output is intentionally tidy and intended for viewing, not as a final
-publication table.
+publication table. Calling the object displays the formatted table; use
+`$summary` when you want the underlying tibble. Its table notes identify the
+outcome and the three candidate-level models: crude, adjusted for the potential
+confounder, and the interaction screen.
 
 ```{r confounder, message=FALSE, warning=FALSE}
 confounder_check <- identify_confounder(
@@ -106,7 +141,8 @@ identify_confounder(
 `interaction_models()` compares models with and without the interaction term.
 It is deliberately model-based and uses `LRT` or `Wald`, not
 Mantel-Haenszel. Use it when the interaction term is planned or supported by
-clinical, causal, or subject-matter reasoning.
+clinical, causal, or subject-matter reasoning. Covariates are included in both
+models, so this is the appropriate function for an adjusted interaction test.
 
 ```{r interaction, message=FALSE, warning=FALSE}
 interaction_check <- interaction_models(
@@ -209,7 +245,7 @@ diabetes_med <- mediation_analysis(
   seed = 123
 )
 
-diabetes_med$table
+diabetes_med
 ```
 
 The underlying values remain available for audit, reporting, or custom

@@ -520,6 +520,14 @@
 #' and interaction checks should not be used as the sole basis for model
 #' adjustment.
 #'
+#' For each exposure-candidate pair, the interaction screen fits
+#' \code{outcome ~ exposure + potential_confounder +
+#' exposure:potential_confounder}. It does not adjust for other covariates.
+#' Consequently, the reported interaction p-value is a candidate-only screening
+#' result, not a final adjusted interaction analysis. Use
+#' \code{interaction_models(covariates = ...)} when testing a planned,
+#' covariate-adjusted interaction.
+#'
 #' Use this function when you want to screen one or more candidate variables and
 #' organise crude, adjusted, Mantel-Haenszel, and effect-modification signals in
 #' one place. For a focused comparison of models with and without a planned
@@ -793,6 +801,8 @@ identify_confounder <- function(data,
 
   summary_table <- .build_identify_confounder_table(
     summary_tbl = summary_tbl,
+    outcome = if (is_survival) paste0("Surv(", time, ", ", event, ")") else outcome,
+    approach = approach,
     format = format,
     theme = theme
   )
@@ -824,6 +834,8 @@ identify_confounder <- function(data,
 #' @keywords internal
 #' @noRd
 .build_identify_confounder_table <- function(summary_tbl,
+                                             outcome,
+                                             approach,
                                              format = c("flextable", "gt"),
                                              theme = c("minimal")) {
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
@@ -836,6 +848,11 @@ identify_confounder <- function(data,
   caveat <- paste(
     "Screening aid only; use DAGs, subject-matter knowledge, and study design",
     "to decide confounding and effect modification."
+  )
+  model_note <- paste0(
+    "Outcome: ", outcome, ". For each exposure E and potential confounder C, ",
+    "models tested: ", outcome, " ~ E; ", outcome, " ~ E + C; and interaction screen: ",
+    outcome, " ~ E + C + E:C (", .get_effect_label(approach), " scale)."
   )
 
   df_display <- df |>
@@ -897,7 +914,7 @@ identify_confounder <- function(data,
     ) |>
     dplyr::transmute(
       "Exposure" = .data$exposure,
-      "Candidate" = .data$candidate,
+      "Potential confounder" = .data$candidate,
       "Crude estimate" = .data$crude_est,
       "Adjusted estimate" = .data$adjusted_est,
       "MH estimate" = .data$mh_est,
@@ -912,16 +929,17 @@ identify_confounder <- function(data,
 
   if (format == "gt") {
     tbl <- gt::gt(df_display) |>
-      gt::cols_align(align = "left", columns = c("Exposure", "Candidate",
+      gt::cols_align(align = "left", columns = c("Exposure", "Potential confounder",
                                                  "Decision", "Recommendation")) |>
       gt::cols_align(align = "center",
                      columns = setdiff(names(df_display),
-                                       c("Exposure", "Candidate", "Decision",
+                                       c("Exposure", "Potential confounder", "Decision",
                                          "Recommendation"))) |>
       gt::tab_style(
         style = gt::cell_text(weight = "bold"),
         locations = gt::cells_column_labels()
       ) |>
+      gt::tab_source_note(gt::md(model_note)) |>
       gt::tab_source_note(gt::md(caveat)) |>
       .compact_gt_source_notes()
 
@@ -953,14 +971,14 @@ identify_confounder <- function(data,
   ft <- flextable::flextable(df_display)
   ft <- flextable::align(
     ft,
-    j = c("Exposure", "Candidate", "Decision", "Recommendation"),
+    j = c("Exposure", "Potential confounder", "Decision", "Recommendation"),
     align = "left",
     part = "all"
   )
   ft <- flextable::align(
     ft,
     j = setdiff(names(df_display),
-                c("Exposure", "Candidate", "Decision", "Recommendation")),
+                c("Exposure", "Potential confounder", "Decision", "Recommendation")),
     align = "center",
     part = "all"
   )
@@ -979,7 +997,7 @@ identify_confounder <- function(data,
     ft <- flextable::bg(ft, part = "header", bg = "#f6f8fa")
   }
 
-  ft <- flextable::add_footer_lines(ft, values = caveat)
+  ft <- flextable::add_footer_lines(ft, values = c(model_note, caveat))
   ft <- .compact_flex_footer(ft)
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   ft <- flextable::autofit(ft)

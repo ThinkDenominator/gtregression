@@ -139,9 +139,9 @@ gtregression_app()
 ## 5. Manual testing checklist ------------------------------------------------
 
 ## Data tab:
-##   - Confirm the app starts in Simple mode.
-##   - Switch to Advanced mode and confirm extra controls appear on later tabs.
-##   - Switch back to Simple mode and confirm the core workflow remains clean.
+##   - Confirm there is no global Simple/Advanced mode switch.
+##   - Confirm less-common controls, such as the KM time break interval, appear
+##     in a local Additional options section.
 ##   - Click each quick-start template:
 ##       Birthweight regression
 ##       Lung survival
@@ -161,19 +161,26 @@ gtregression_app()
 ##   - If DT is not installed, confirm a simple static preview still appears.
 ##   - Click the Copy button in the Reusable Code panel and paste into the
 ##     console to confirm the copied code is complete.
-##   - After completing several analyses, open Visualise & Export and click
+##   - After completing several analyses, open Session Code and click
 ##     Download complete R script. Confirm `gtregression-session.R` contains
 ##     the data source, Data Prep steps, reference levels, completed analyses,
-##     visualisation code, and export commands shown in Full Workflow Code.
+##     visualisation code, and export commands shown in Session Code.
 ##   - Source the downloaded script in a fresh R session and confirm it
 ##     recreates the completed workflow after any uploaded-data path is updated.
 
 ## Data Prep tab:
-##   - Immediately after loading data, confirm model tabs ask for an explicit
-##     original/prepared data choice rather than silently choosing one.
+##   - Immediately after loading data, confirm model tabs can use the original
+##     data without any extra selection. Choose prepared data only after
+##     applying a change.
 ##   - Click Use original data and confirm the workflow guide enables analysis.
 ##   - Reload the dataset, apply a rename or grouped-variable change, and click
 ##     Use prepared data. Confirm the new variable appears in model selectors.
+##   - Use Set display label to label `age` as Maternal age. Select age in a
+##     descriptive or regression analysis and confirm the output shows Maternal
+##     age while the selector and generated analysis code still use `age`.
+##   - Select a categorical variable and change a category display label, for
+##     example `0` to `No` and `1` to `Yes`. Confirm output uses the new labels
+##     and the generated preparation code contains the reproducible recode.
 ##   - Test Quick starts, Undo, Redo, and Reset.
 ##   - Create three groups from `age`: first `< 35` as `Young`, second `< 65`
 ##     as `Older`, and everyone else as `Elder`. Confirm that the preview shows
@@ -185,11 +192,13 @@ gtregression_app()
 ##   - Download prepared data as CSV and RDS; open both files.
 ##   - If rio is installed, also test XLSX and DTA downloads.
 ##   - Download/copy the reusable preparation code and run it against `df`.
-##   - After another preparation change, confirm analysis is paused until the
-##     user explicitly chooses original or prepared data again.
+##   - After another preparation change, confirm the existing source remains
+##     clear in the status line; click Use prepared data to use the latest copy.
 
 ## Descriptive tab:
 ##   - Dataset: Birth weight.
+##   - Select Group by `low` before choosing the variables to summarise; confirm
+##     the selected grouping variable is excluded from Select all.
 ##   - Exposures: age, lwt, race, smoke, ht, ui, ptl_cat, ftv_cat.
 ##   - By: low.
 ##   - Click Select all beside Variables to summarise and confirm the By
@@ -200,13 +209,29 @@ gtregression_app()
 ##   - Confirm the table renders as a publication-style flextable preview.
 ##   - Download DOCX, RTF, and HTML. The DOCX/RTF output should keep the same
 ##     flextable-style formatting seen in the app preview.
-##   - In Advanced mode, type:
+##   - In Numeric statistic override, type:
 ##       age = mean, lwt = median
 ##     and confirm the Code panel uses statistic = c(age = "mean", lwt = "median").
 ##   - Type a deliberately malformed statistic override such as:
 ##       age mean
 ##     and confirm the descriptive table gives a clear message rather than
 ##     breaking the whole app.
+
+## Visualise & Export tab:
+##   - Under Model Fit, confirm Auto, All diagnostics, residual, Q-Q,
+##     scale-location, Cook's distance, observed-vs-predicted, and calibration
+##     are available. Confirm Calibration bins and Base font size appear in the
+##     generated code and Session Code.
+##   - Run a descriptive or regression table, select Modify table, and choose
+##     the completed table as the source.
+##   - Enter `age = Maternal age` under Variable labels and confirm only the
+##     display label changes.
+##   - Enter `smoke: Yes = Smoker` under Level labels and confirm the factor
+##     level changes without altering the reference category.
+##   - Test a header alias such as `p.value = P value`, a caption, bold levels,
+##     removal of the adjustment note, and an additional note.
+##   - Confirm Modified Table downloads as DOCX, RTF, and HTML, while the
+##     original source table remains unchanged.
 
 ## Regression tab:
 ##   - Dataset: Birth weight.
@@ -230,7 +255,7 @@ gtregression_app()
 ##     selected baseline.
 ##   - Copy the generated code and confirm it contains factor(),
 ##     stats::relevel(), the selected baseline, and data = analysis_data.
-##   - Download/copy Full Workflow Code and rerun it in a fresh session to
+##   - Download/copy Session Code and rerun it in a fresh session to
 ##     confirm the same reference category is used.
 ##   - Add adjust_for if available and confirm footnotes mention adjustment.
 ##   - Open each Code panel and confirm the generated code can be copied into
@@ -240,8 +265,9 @@ gtregression_app()
 ##       Select outcome low as an exposure.
 ##     Confirm the app shows a clear message explaining that the outcome cannot
 ##     also be selected as an exposure.
-##   - In Advanced mode, enable Store model statistics and confirm the Model
-##     Stats tab populates after running models.
+##   - Confirm Model Stats populates after univariable or multivariable models.
+##     Clear Store model statistics, fit a new model, and confirm statistics are
+##     not retained for that newly fitted result.
 
 ## Survival tab:
 ##   - Dataset: Lung cancer.
@@ -281,7 +307,7 @@ gtregression_app()
 ##   - Run Kaplan-Meier plot by trt.
 ##   - Test y_percent, y limits, x limits, risk table, and log-rank p value.
 ##   - Confirm grid = FALSE gives a clean ggsurvplot-style display by default.
-##   - In Advanced mode, set Time break interval to 200 and confirm the KM code
+##   - Open Additional KM options, set Time break interval to 200, and confirm the KM code
 ##     includes break_time_by = 200.
 ##   - Try selecting the survival event variable as an adjustment variable and
 ##     confirm the app shows a clear role-conflict message.
@@ -312,8 +338,7 @@ gtregression_app()
 ##   - Choose "Descriptive + crude + adjusted" and confirm descriptive columns
 ##     are included only in this mode.
 ##   - Test side = left/right if exposed.
-##   - Confirm side, CI column width, x limits, and tick marks remain visible in
-##     Simple mode as well as Advanced mode.
+##   - Confirm side, CI column width, x limits, and tick marks remain visible.
 ##   - For a crowded forest plot, set:
 ##       Forest x limits: 0.25, 12
 ##       Forest tick marks: 0.5, 1, 2, 4, 8
@@ -341,12 +366,16 @@ gtregression_app()
 ##       save_forest(forest_plot, ...)
 ##   - For crowded forest plots, test xlim and CI column width guidance.
 ##   - Use the Copy button and confirm it copies all generated plot/export code.
-##   - Open Full Workflow Code after running data, descriptive, regression, and
+##   - Open Session Code after running data, descriptive, regression, and
 ##     visualise steps. Confirm it gives one readable script-style block.
-##   - Copy Full Workflow Code into a fresh R script and check it is easy to
+##   - Copy Session Code into a fresh R script and check it is easy to
 ##     adapt manually.
 
 ## Advanced tab:
+##   - Under Confounder, select two or more exposures and one candidate. Confirm
+##     the output has one screening row per exposure-candidate combination.
+##   - Under Interaction, select covariates and confirm the generated code uses
+##     covariates = c(...) so both compared models are adjusted consistently.
 ##   - Confirm the top menu contains Select models, Compare models, Confounder,
 ##     Interaction, Convergence, and Collinearity.
 ##   - Move through all six tools and confirm only relevant inputs are shown.

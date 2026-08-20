@@ -31,8 +31,10 @@ instead.}
 \item{exposure}{Main exposure variable name. Quoted and bare names are
 accepted.}
 
-\item{covariates}{Optional character vector of additional covariates. Quoted
-names are recommended in scripts, and bare names are also accepted.}
+\item{covariates}{Optional character vector of adjustment covariates. They
+are included in both the model without and the model with the interaction
+term. Quoted names are recommended in scripts, and bare names are also
+accepted.}
 
 \item{effect_modifier}{Variable name for the potential effect modifier.
 Quoted and bare names are accepted.}
@@ -80,6 +82,13 @@ is not used here because this function tests an explicit interaction term in
 a regression model. For broader screening of candidate confounders or effect
 modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 \code{\link{identify_confounder}()}.
+
+With \code{covariates = c(age, sex)}, the two fitted models are
+\code{outcome ~ exposure + effect_modifier + age + sex} and
+\code{outcome ~ exposure + effect_modifier + age + sex +
+exposure:effect_modifier}. Both models use the same complete-case analysis
+data, so covariate adjustment is applied consistently to the interaction
+comparison.
 }
 \examples{
 birthwt_data <- data_birthwt |>

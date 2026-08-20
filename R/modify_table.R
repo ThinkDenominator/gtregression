@@ -181,7 +181,7 @@
     return(NULL)
   }
 
-  spanners <- paste0(tbl$by, " = ", tbl$levels)
+  spanners <- tbl$levels
   theme <- if (!is.null(tbl$theme)) tbl$theme else "minimal"
   format <- tolower(tbl$format)
 
@@ -270,8 +270,11 @@
 #'   \code{c("OR (95\% CI)" = "Crude OR", "p-value" = "P")}. Common aliases
 #'   such as \code{estimate}, \code{p.value}, and \code{N} are also accepted.
 #' @param caption Optional caption/title.
-#' @param bold_labels Logical; bold variable (header) rows in the body.
+#' @param bold_labels Logical; bold variable (header) rows in the body. Defaults
+#'   to \code{TRUE} to preserve the package table hierarchy.
 #' @param bold_levels Logical; bold factor level rows in the body.
+#' @param italic_labels Logical; italicize variable (header) rows in the body.
+#' @param italic_levels Logical; italicize factor level rows in the body.
 #' @param remove_N Logical; if \code{TRUE}, drops displayed \code{N} columns
 #'   from univariable and stratified package tables. For stratified survival
 #'   outputs, event columns are retained unless the original table was created
@@ -280,6 +283,9 @@
 #'   complete-case footnote.
 #' @param remove_abbreviations Logical; if \code{TRUE}, removes the
 #'   Abbreviations footnote line.
+#' @param remove_adjustment_note Logical; if \code{TRUE}, removes the automatic
+#'   \code{Adjusted for ...} footnote. Use \code{caveat} to add customised
+#'   wording.
 #' @param caveat Optional extra footnote.
 #' @return The modified table object (same class as input).
 #'
@@ -312,11 +318,14 @@ modify_table <- function(gt_table,
                          level_labels = NULL,
                          header_labels = NULL,
                          caption = NULL,
-                         bold_labels = FALSE,
+                         bold_labels = TRUE,
                          bold_levels = FALSE,
+                         italic_labels = FALSE,
+                         italic_levels = FALSE,
                          remove_N = FALSE,
                          remove_N_obs = FALSE,
                          remove_abbreviations = FALSE,
+                         remove_adjustment_note = FALSE,
                          caveat = NULL) {
   tbl <- gt_table
 
@@ -331,9 +340,12 @@ modify_table <- function(gt_table,
   .must_be_named_character(header_labels, "header_labels", allow_null = TRUE)
   .must_be_flag(bold_labels, "bold_labels")
   .must_be_flag(bold_levels, "bold_levels")
+  .must_be_flag(italic_labels, "italic_labels")
+  .must_be_flag(italic_levels, "italic_levels")
   .must_be_flag(remove_N, "remove_N")
   .must_be_flag(remove_N_obs, "remove_N_obs")
   .must_be_flag(remove_abbreviations, "remove_abbreviations")
+  .must_be_flag(remove_adjustment_note, "remove_adjustment_note")
   if (!is.null(caption) && (!is.character(caption) || length(caption) != 1L || is.na(caption))) {
     stop("`caption` must be NULL or a single character string.", call. = FALSE)
   }
@@ -347,6 +359,13 @@ modify_table <- function(gt_table,
     variable_labels = variable_labels,
     level_labels    = level_labels
   )
+  if (!is.null(variable_labels)) {
+    current_labels <- tbl$variable_labels
+    if (is.null(current_labels)) current_labels <- character(0)
+    current_labels[names(variable_labels)] <- unname(variable_labels)
+    tbl$variable_labels <- current_labels
+    attr(tbl$table_display, "variable_labels") <- current_labels
+  }
 
   # --------- optionally drop N columns ----------
   if (isTRUE(remove_N)) {
@@ -363,7 +382,10 @@ modify_table <- function(gt_table,
 
   # --------- collect/compose footnotes ----------
   footnotes <- character(0)
-  # existing notes attached to object or inner table
+  # Existing package objects store their complete display notes in `$footnotes`.
+  # Retain these first so a presentation-only modification never loses them.
+  if (!is.null(tbl$footnotes)) footnotes <- c(footnotes, tbl$footnotes)
+  # Some older objects attach notes to the object or rendered inner table.
   ft_attr1 <- attr(tbl, "footnotes", exact = TRUE)
   if (!is.null(ft_attr1)) footnotes <- c(footnotes, ft_attr1)
   ft_attr2 <- if (!is.null(tbl$table)) attr(tbl$table, "footnotes", exact = TRUE) else NULL
@@ -373,6 +395,9 @@ modify_table <- function(gt_table,
       exists(".abbrev_note", mode = "function")) {
     footnotes <- c(footnotes, .abbrev_note(tbl$approach))
   }
+  if (isTRUE(remove_abbreviations)) {
+    footnotes <- footnotes[!grepl("^Abbreviations:", footnotes)]
+  }
   # multivariable N note (unless removed)
   if (!isTRUE(remove_N_obs) && inherits(tbl, "multi_reg")) {
     if (!is.null(tbl$models) && !is.null(tbl$models$multivariable_model)) {
@@ -381,9 +406,12 @@ modify_table <- function(gt_table,
       if (!is.na(n_used)) {
         footnotes <- c(footnotes,
                        paste0("N = ", n_used,
-                              " complete observations included in the multivariable model"))
+                              " complete observations included in the model."))
       }
     }
+  }
+  if (isTRUE(remove_N_obs)) {
+    footnotes <- footnotes[!grepl("^N = .*complete observations", footnotes)]
   }
   # default descriptive notes (if none)
   if (!length(footnotes) && inherits(tbl, "descriptive_table")) {
@@ -391,6 +419,20 @@ modify_table <- function(gt_table,
       "Categorical variables shown as n (%).",
       "Continuous variables shown as Median (IQR)."
     )
+  }
+  # Keep the multivariable adjustment note aligned with the labels currently
+  # visible in the table, including adjustment variables not shown as rows.
+  if (inherits(tbl, c("multi_reg", "cox_reg", "surv_reg")) &&
+      !is.null(tbl$adjust_for) &&
+      length(tbl$adjust_for) && exists(".display_adjustment_note", mode = "function")) {
+    footnotes <- footnotes[!grepl("^Adjusted for ", footnotes)]
+    footnotes <- c(
+      footnotes,
+      .display_adjustment_note(tbl$adjust_for, tbl$variable_labels)
+    )
+  }
+  if (isTRUE(remove_adjustment_note)) {
+    footnotes <- footnotes[!grepl("^Adjusted for ", footnotes)]
   }
   # user caveat last
   if (!is.null(caveat) && nzchar(caveat)) footnotes <- c(footnotes, caveat)
@@ -577,6 +619,60 @@ modify_table <- function(gt_table,
     ft
   }
 
+  apply_body_text_style <- function(rendered, display_df) {
+    header_rows <- which(display_df$is_header %in% TRUE)
+    level_rows <- which(display_df$is_header %in% FALSE)
+
+    if (inherits(rendered, "gt_tbl")) {
+      if (length(header_rows)) {
+        rendered <- gt::tab_style(
+          rendered,
+          style = gt::cell_text(
+            weight = if (isTRUE(bold_labels)) "bold" else "normal",
+            style = if (isTRUE(italic_labels)) "italic" else "normal"
+          ),
+          locations = gt::cells_body(rows = header_rows, columns = "Characteristic")
+        )
+      }
+      if (length(level_rows)) {
+        rendered <- gt::tab_style(
+          rendered,
+          style = gt::cell_text(
+            weight = if (isTRUE(bold_levels)) "bold" else "normal",
+            style = if (isTRUE(italic_levels)) "italic" else "normal"
+          ),
+          locations = gt::cells_body(rows = level_rows, columns = "Characteristic")
+        )
+      }
+      return(rendered)
+    }
+
+    if (inherits(rendered, "flextable")) {
+      if (length(header_rows)) {
+        rendered <- flextable::bold(
+          rendered, i = header_rows, j = "Characteristic",
+          bold = isTRUE(bold_labels), part = "body"
+        )
+        rendered <- flextable::italic(
+          rendered, i = header_rows, j = "Characteristic",
+          italic = isTRUE(italic_labels), part = "body"
+        )
+      }
+      if (length(level_rows)) {
+        rendered <- flextable::bold(
+          rendered, i = level_rows, j = "Characteristic",
+          bold = isTRUE(bold_levels), part = "body"
+        )
+        rendered <- flextable::italic(
+          rendered, i = level_rows, j = "Characteristic",
+          italic = isTRUE(italic_levels), part = "body"
+        )
+      }
+    }
+
+    rendered
+  }
+
   # --------- rebuild rendered table ----------
   strata_table <- .rebuild_modified_stratified_table(tbl, tbl$table_display, footnotes, header_labels)
   if (!is.null(strata_table)) {
@@ -586,6 +682,8 @@ modify_table <- function(gt_table,
   } else if (identical(tolower(tbl$format), "flextable") || inherits(tbl$table, "flextable")) {
     tbl$table <- .build_pkg_flex(tbl$table_display, header_labels, footnotes)
   }
+
+  tbl$table <- apply_body_text_style(tbl$table, tbl$table_display)
 
   tbl
 }

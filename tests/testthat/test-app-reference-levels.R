@@ -41,7 +41,8 @@ test_that("the app exposes Data Prep before modelling and reference guidance", {
   expect_lt(regexpr('"Data Prep"', app_text, fixed = TRUE)[[1]],
             regexpr('"Regression"', app_text, fixed = TRUE)[[1]])
   module_text <- paste(deparse(body(mod_data_prep_server)), collapse = " ")
-  expect_match(module_text, "choose original or prepared data", ignore.case = TRUE)
+  expect_match(module_text, "Original data is active for analysis", fixed = TRUE)
+  expect_match(module_text, "use the prepared data", ignore.case = TRUE)
   expect_match(app_text, "The selected category is the baseline", fixed = TRUE)
   expect_match(app_text, "gtx_reference_code", fixed = TRUE)
 })

@@ -1,6 +1,6 @@
-load("data/data_PimaIndiansDiabetes.rda")
+load("data/data_SynthDiabetes.rda")
 
-data_diabetes_mediation <- data_PimaIndiansDiabetes |>
+data_diabetes_mediation <- data_SynthDiabetes |>
   transform(
     diabetes = factor(diabetes, levels = c("neg", "pos"), labels = c("No", "Yes")),
     obesity = factor(ifelse(mass >= 30, "Yes", "No"), levels = c("No", "Yes")),

@@ -1,7 +1,7 @@
 test_that(".fit_uni_model returns correct model class", {
   skip_if_not_installed("risks")
 
-  df <- data_PimaIndiansDiabetes |>
+  df <- data_SynthDiabetes |>
     dplyr::mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       age_cat = dplyr::case_when(
@@ -47,7 +47,7 @@ test_that(".fit_uni_model returns correct model class", {
 })
 
 test_that(".fit_uni_model handles model fitting failure gracefully", {
-  df <- data_PimaIndiansDiabetes |>
+  df <- data_SynthDiabetes |>
     dplyr::mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       constant = factor("only", levels = "only")

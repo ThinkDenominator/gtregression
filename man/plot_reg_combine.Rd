@@ -13,12 +13,15 @@ plot_reg_combine(
   ref_line = NULL,
   order_y = NULL,
   log_x = FALSE,
-  point_color = "#1F77B4",
-  errorbar_color = "#4C4C4C",
-  base_size = 14,
+  point_color = "#6B7280",
+  errorbar_color = "#6B7280",
+  point_size = 2.8,
+  point_stroke = 0.55,
+  ci_linewidth = 0.55,
+  base_size = 12,
   show_ref = NULL,
-  sig_color = NULL,
-  sig_errorbar_color = NULL,
+  sig_color = "#0072B2",
+  sig_errorbar_color = "#0072B2",
   xlim_uni = NULL,
   breaks_uni = NULL,
   xlim_multi = NULL,
@@ -43,11 +46,18 @@ linear models and 1 otherwise.}
 
 \item{order_y}{Optional character vector to customize exposure ordering.}
 
-\item{log_x}{Logical; if \code{TRUE}, uses log x-axis for non-linear models.}
+\item{log_x}{Logical. If \code{TRUE}, use a log-scaled x-axis for ratio
+measures. The default \code{FALSE} uses a linear x-axis.}
 
 \item{point_color, errorbar_color}{Base colors for non-significant rows.}
 
-\item{base_size}{Base font size for \code{theme_minimal()}.}
+\item{point_size}{Diameter of estimate points in millimetres.}
+
+\item{point_stroke}{Outline width of estimate points.}
+
+\item{ci_linewidth}{Line width of confidence intervals.}
+
+\item{base_size}{Base font size for the plot theme.}
 
 \item{show_ref}{Logical or \code{NULL}. The default \code{NULL} inherits the
 setting used to create the supplied tables. If \code{TRUE}, include

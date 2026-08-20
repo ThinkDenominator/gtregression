@@ -40,6 +40,7 @@ test_that("plot_reg returns ggplot and correct x-axis labels", {
   expect_s3_class(p_linear, "ggplot")
   expect_match(p_logit$labels$x, "Odds Ratio", fixed = TRUE)
   expect_match(p_linear$labels$x, "Beta Coefficient", fixed = TRUE)
+  expect_false(grepl("log scale", p_logit$labels$x, fixed = TRUE))
 
   expect_true(grepl("log scale", plot_reg(tbl_logit, log_x = TRUE)$labels$x, fixed = TRUE))
   expect_false(grepl("log scale", plot_reg(tbl_linear, log_x = TRUE)$labels$x, fixed = TRUE))
@@ -150,6 +151,7 @@ test_that("plot_reg handles reference rows, ordering, significance, and x limits
 
   p_log_default <- plot_reg(tbl, log_x = TRUE)
   expect_true(length(p_log_default$scales$get_scales("x")$breaks) > 1L)
+  expect_lte(length(p_log_default$scales$get_scales("x")$breaks), 5L)
   expect_true(1 %in% p_log_default$scales$get_scales("x")$breaks)
 
   expect_true(all(!p_ref$data$is_header[p_ref$data$is_sig]))
@@ -161,6 +163,19 @@ test_that("plot_reg handles reference rows, ordering, significance, and x limits
 
   gclasses <- vapply(p_ref$layers, function(layer) class(layer$geom)[1], character(1))
   expect_true(any(grepl("GeomErrorbarh|GeomErrorbar", gclasses)))
+
+  styled <- plot_reg(
+    tbl,
+    point_size = 4,
+    point_stroke = 0.8,
+    ci_linewidth = 0.9,
+    base_size = 13
+  )
+  point_layer <- styled$layers[[which(grepl("GeomPoint", vapply(
+    styled$layers, function(layer) class(layer$geom)[1], character(1)
+  )))[1]]]
+  expect_equal(point_layer$aes_params$size, 4)
+  expect_equal(point_layer$aes_params$stroke, 0.8)
 })
 
 test_that("plot_reg inherits the table reference-row setting", {
@@ -240,6 +255,41 @@ test_that("plot_reg supports stratified objects and validates unsupported inputs
   )
 
   expect_error(plot_reg(mtcars), "gtregression object")
+})
+
+test_that("plot_reg keeps parent variable labels in stratified facets", {
+  df <- birthwt_plot_data()
+  attr(df$smoke, "label") <- "Smoking during pregnancy"
+  attr(df$ht, "label") <- "Maternal hypertension"
+
+  stratified <- suppressMessages(
+    stratified_uni_reg(
+      data = df,
+      outcome = "low",
+      exposures = c("smoke", "ht"),
+      stratifier = "race",
+      approach = logit
+    )
+  )
+
+  p <- plot_reg(stratified)
+
+  expect_true(any(
+    p$data$is_header & p$data$label == "Smoking during pregnancy"
+  ))
+  expect_true(any(
+    p$data$is_header & p$data$label == "Maternal hypertension"
+  ))
+  expect_false(any(p$data$is_header & p$data$label %in% c("smoke", "ht")))
+  expect_true(all(c("Smoking during pregnancy", "Maternal hypertension") %in%
+                    p$data$label[p$data$is_header]))
+
+  built <- ggplot2::ggplot_build(p)
+  rendered_labels <- unlist(lapply(built$layout$panel_params, function(panel) {
+    panel$y$get_labels()
+  }), use.names = FALSE)
+  expect_true(any(grepl("Smoking during pregnancy", rendered_labels, fixed = TRUE)))
+  expect_true(any(grepl("Maternal hypertension", rendered_labels, fixed = TRUE)))
 })
 
 test_that("plot_reg supports adjusted stratified and survival outputs consistently", {

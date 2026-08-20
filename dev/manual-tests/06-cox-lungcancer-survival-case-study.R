@@ -638,7 +638,7 @@ cox_interaction_screen$interaction_terms
 
 check_ph(cox_crude)
 
-cox_ph_adjusted <- check_ph(cox_adjusted, format = tibble)
+cox_ph_adjusted <- check_ph(cox_adjusted)
 cox_ph_adjusted
 
 ## Other time transformations supported by cox.zph() can be requested without
@@ -676,6 +676,7 @@ cox_adjusted_paper <- modify_table(
     p.value = "P value"
   ),
   caption = "Table 2. Adjusted Cox regression for lung cancer survival",
+  remove_adjustment_note = TRUE,
   caveat = "Adjusted models include age and Karnofsky performance score."
 )
 

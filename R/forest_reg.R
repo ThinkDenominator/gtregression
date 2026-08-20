@@ -239,6 +239,13 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
       call. = FALSE
     )
   }
+  if (interactive() && is.null(ticks_at) && is.null(xlim)) {
+    message(
+      "forest_reg(): x-axis ticks use forestploter defaults. If labels overlap in your graphics device, ",
+      "set `xlim` and `ticks_at` (use one vector per effect column when applicable) ",
+      "or increase `ci_col_width`."
+    )
+  }
   for (i in seq_along(anchor_cols)) {
     df_plot[[anchor_cols[i]]] <- paste(rep(" ", ci_col_width[i]), collapse = "")
   }
@@ -356,7 +363,7 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
     return(integer())
   }
 
-  labels <- paste0(meta$stratifier, " = ", meta$strata)
+  labels <- meta$strata
   which(df_plot$Characteristic %in% labels)
 }
 

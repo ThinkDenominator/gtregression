@@ -617,11 +617,12 @@ h1, h2, h3, h4, h5, h6 { color: var(--gtx-ink); font-weight: 700; }
 	  color: #3D403C;
 	}
 	.gtx-note {
-	  background: #FFF7ED;
-	  border: 1px solid #FED7AA;
-	  border-radius: 6px;
-	  padding: 10px 12px;
-	  color: #7C2D12;
+	  background: transparent;
+	  border: 0;
+	  border-left: 2px solid #C9CAC6;
+	  border-radius: 0;
+	  padding: 4px 0 4px 10px;
+	  color: var(--gtx-muted);
 	  margin: 10px 0;
 	}
 	.gtx-workflow-note { margin-bottom: 14px; }
@@ -844,17 +845,6 @@ ui <- navbarPage(
         4,
         div(
           class = "gtx-card gtx-side",
-          div(
-            class = "gtx-app-mode",
-            radioButtons(
-              "app_mode",
-              "Experience mode",
-              choices = c("Simple" = "simple", "Advanced" = "advanced"),
-              selected = "simple",
-              inline = TRUE
-            ),
-            gtx_inline_help("Simple mode shows the core workflow. Advanced mode reveals optional modelling and export controls.")
-          ),
           h3("Load Data"),
           div(class = "gtx-help", "Start with a built-in teaching dataset or import CSV, Excel, RDS, Stata, SPSS, or SAS data."),
           div(
@@ -889,7 +879,7 @@ ui <- navbarPage(
       ),
       column(
         8,
-        div(class = "gtx-card", h3("Preview"), gtx_data_output("data_preview")),
+        div(class = "gtx-card", h3("Preview"), div(class = "gtx-help", "First 10 rows only. Use Data Summary to inspect the full structure before modelling."), gtx_data_output("data_preview")),
         div(class = "gtx-card", h4("Data Summary"), verbatimTextOutput("data_summary")),
         gtx_code_panel("Reusable Code", "data_code")
       )
@@ -911,16 +901,14 @@ ui <- navbarPage(
           class = "gtx-card gtx-side",
           h3("Descriptive Table"),
           div(class = "gtx-help", "Use this first to understand the data and to create baseline tables for merge_table(), forest_df(), and reports."),
+          div(class = "gtx-note", "Start by choosing Group by. Leave it as None for one overall summary; otherwise the selected variable defines the comparison columns."),
           uiOutput("desc_inputs"),
           selectInput("desc_percent", "Percent", choices = c("column", "row"), selected = "column"),
           selectInput("desc_overall", "Overall column", choices = c("no", "first", "last"), selected = "no"),
           selectInput("desc_missing", "Missing values", choices = c("ifany", "no"), selected = "ifany"),
           selectInput("desc_dich", "Binary display", choices = c("all_levels", "single_row"), selected = "all_levels"),
-          conditionalPanel(
-            "input.app_mode == 'advanced'",
-            textInput("desc_statistic", "Numeric statistic override", placeholder = 'Optional: age = mean, lwt = median'),
-            gtx_inline_help("Use named overrides only when a variable needs a different summary from the default.")
-          ),
+          textInput("desc_statistic", "Numeric statistic override", placeholder = 'Optional: age = mean, lwt = median'),
+          gtx_inline_help("Use named overrides when a variable needs a different summary from the default."),
           actionButton("run_desc", "Run descriptive table", class = "btn-primary")
         )
       ),
@@ -944,15 +932,13 @@ ui <- navbarPage(
             class = "gtx-step",
             "Run univariable analysis first. Then keep the important variables selected and run the multivariable model. Use Show reference categories when you plan to merge tables or create forest plots."
           ),
+          div(class = "gtx-note", "Choose an outcome first, then exposures. Adjustment variables belong only in the multivariable model and should be selected using the study question, a DAG, and clinical knowledge."),
           uiOutput("reg_inputs"),
           uiOutput("reg_reference_inputs"),
           selectInput("reg_approach", "Approach", choices = gtx_approaches, selected = "logit"),
           checkboxInput("reg_show_ref", "Show reference categories", value = TRUE),
-          conditionalPanel(
-            "input.app_mode == 'advanced'",
-            checkboxInput("reg_model_stats", "Store model statistics", value = FALSE),
-            gtx_inline_help("Model statistics are useful for diagnostics and compare_models(), but they are not needed for basic tables.")
-          ),
+          checkboxInput("reg_model_stats", "Store model statistics", value = TRUE),
+          gtx_inline_help("Enabled by default so the Model Stats tab is ready after fitting. These statistics are kept out of the publication table."),
           uiOutput("reg_preflight"),
           div(
             class = "gtx-run-group",
@@ -999,6 +985,7 @@ ui <- navbarPage(
         div(
           class = "gtx-card gtx-side",
           uiOutput("surv_mode_intro"),
+          div(class = "gtx-note", "Choose Cox for hazard ratios without a distributional assumption. Choose parametric survival when a specified distribution and time-ratio interpretation are appropriate."),
           uiOutput("surv_inputs"),
           checkboxInput("surv_show_ref", "Show reference categories", value = TRUE),
           checkboxInput("surv_multivariable", "Single multivariable model", value = FALSE),
@@ -1023,8 +1010,8 @@ ui <- navbarPage(
           checkboxInput("km_risk", "Show risk table", TRUE),
           textInput("km_ylim", "Y limits", placeholder = "Optional: 50, 100"),
           textInput("km_xlim", "X limits", placeholder = "Optional: 0, 800"),
-          conditionalPanel(
-            "input.app_mode == 'advanced'",
+          tags$details(
+            tags$summary("Additional KM options"),
             numericInput("km_break", "Time break interval", value = NA, min = 0)
           ),
           actionButton("run_km", "Draw KM plot", class = "btn-primary")
@@ -1083,6 +1070,7 @@ ui <- navbarPage(
         label = NULL,
         choices = c(
           "Merge tables" = "merge",
+          "Modify table" = "modify",
           "Regression plot" = "plot",
           "Forest plot" = "forest",
           "Model fit" = "fit"
@@ -1105,10 +1093,35 @@ ui <- navbarPage(
             actionButton("run_merge", "Merge selected tables", class = "btn-primary")
           ),
           conditionalPanel(
+            "input.visual_tool == 'modify'",
+            h3("Modify Table"),
+            div(class = "gtx-help", "Refine a completed table without changing the original result. Use one mapping per line for labels."),
+            uiOutput("modify_source_controls"),
+            textAreaInput("modify_variable_labels", "Variable labels", placeholder = "age = Maternal age\nsmoke = Smoking during pregnancy", rows = 3),
+            gtx_inline_help("One `internal name = display label` per line."),
+            div(class = "gtx-note", strong("Level-label format: "), "use the internal variable name and the exact current level shown in the table. For example: `smoke: Yes = Smoker` or `race: Other = Other ethnic group`. Do not use the display label on the left of `:`."),
+            textAreaInput("modify_level_labels", "Level labels", placeholder = "smoke: Yes = Smoker", rows = 3),
+            gtx_inline_help("One `variable: current level = new level` per line. The original level is case-sensitive."),
+            textAreaInput("modify_header_labels", "Header labels", placeholder = "estimate = Adjusted OR\np.value = P value", rows = 3),
+            gtx_inline_help("Use a visible header name or an alias such as `estimate`, `p.value`, or `N`."),
+            textInput("modify_caption", "Caption", placeholder = "Optional table title"),
+            checkboxInput("modify_bold_labels", "Bold characteristic labels", TRUE),
+            checkboxInput("modify_bold_levels", "Bold category levels", FALSE),
+            checkboxInput("modify_italic_labels", "Italicize characteristic labels", FALSE),
+            checkboxInput("modify_italic_levels", "Italicize category levels", FALSE),
+            checkboxInput("modify_remove_n", "Remove displayed N columns", FALSE),
+            checkboxInput("modify_remove_n_obs", "Remove complete-case N note", FALSE),
+            checkboxInput("modify_remove_abbreviations", "Remove abbreviations note", FALSE),
+            checkboxInput("modify_remove_adjustment_note", "Remove automatic adjustment note", FALSE),
+            textAreaInput("modify_caveat", "Additional note", placeholder = "Optional manuscript note", rows = 2),
+            actionButton("run_modify_table", "Apply table changes", class = "btn-primary")
+          ),
+          conditionalPanel(
             "input.visual_tool == 'plot'",
             h3("Regression Plot"),
             uiOutput("plot_content_controls"),
-            checkboxInput("plot_log_x", "Log x-axis where appropriate", TRUE),
+            checkboxInput("plot_log_x", "Use a log x-axis", FALSE),
+            gtx_inline_help("Linear scale is the default. Use log scale only when you need proportional spacing around the null value of 1."),
             actionButton("run_plot_reg", "Preview regression plot", class = "btn-primary")
           ),
           conditionalPanel(
@@ -1122,7 +1135,7 @@ ui <- navbarPage(
             textInput("forest_xlim", "Forest x limits", placeholder = "Optional: 0.25, 12"),
             gtx_inline_help("Enter two comma-separated limits. Leave blank to use forestploter's automatic range."),
             textInput("forest_ticks", "Forest tick marks", placeholder = "Optional: 0.5, 1, 2, 4, 8"),
-            gtx_inline_help("Enter fewer comma-separated ticks when axis labels overlap. Every tick must lie within the x limits."),
+            gtx_inline_help("If x-axis labels overlap, enter fewer ticks such as 0.5, 1, 2, 4. Every tick must lie within x limits; use x limits as well when the interval range is very wide."),
             div(
               class = "gtx-help",
               "Combine descriptive, crude, and adjusted results when available. For overlapping labels, use fewer ticks, wider x limits, or a wider CI column."
@@ -1132,27 +1145,18 @@ ui <- navbarPage(
           conditionalPanel(
             "input.visual_tool == 'fit'",
             h3("Model Fit"),
+            div(class = "gtx-help", "Choose Auto for the recommended diagnostic panel. Calibration is most useful for multivariable binary-outcome models; bins only affects calibration."),
             uiOutput("fit_source_controls"),
-            selectInput("fit_type", "Type", choices = c("diagnostics", "calibration", "residuals", "cooks"), selected = "diagnostics"),
+            selectInput("fit_type", "Type", choices = c("Auto (recommended)" = "auto", "All diagnostics" = "all", "Residuals vs fitted" = "residual", "Normal Q-Q" = "qq", "Scale-location" = "scale_location", "Cook's distance" = "cooks", "Observed vs predicted" = "observed_predicted", "Calibration" = "calibration"), selected = "auto"),
             textInput("fit_model_name", "Model name for univariate objects", placeholder = "Optional, e.g. smoke"),
-            numericInput("fit_bins", "Calibration bins", value = 6, min = 2),
+            conditionalPanel("input.fit_type == 'calibration'", numericInput("fit_bins", "Calibration bins", value = 10, min = 2)),
+            numericInput("fit_base_size", "Base font size", value = 13, min = 6, step = 1),
             actionButton("run_fit_plot", "Draw model fit", class = "btn-primary")
           ),
           tags$hr(),
           div(
             class = "gtx-note",
-            "Browser outputs are previews. Download tables directly, or copy the generated plot code into RStudio for final publication sizing."
-          ),
-          tags$hr(),
-          h3("Complete R script"),
-          div(
-            class = "gtx-help",
-            "Download one reproducible script containing the data source, preparation steps, reference categories, completed analyses, visualisations, and export commands from this session."
-          ),
-          downloadButton(
-            "download_session_script",
-            "Download complete R script",
-            class = "btn-primary"
+            "Browser outputs are previews. Downloads are generated in temporary app files, then your browser chooses where to save them; the app never writes into a user folder itself. Copy the generated plot code into RStudio for final publication sizing."
           ),
           selectInput(
             "export_preset",
@@ -1177,11 +1181,14 @@ ui <- navbarPage(
               gtx_table_output("merged_table")
             )
           ),
+          tabPanel(
+            "Modified Table",
+            div(class = "gtx-card", tagListDownload("modified", table = TRUE), gtx_table_output("modified_table"))
+          ),
           tabPanel("plot_reg", div(class = "gtx-card", tagListDownload("plotreg", table = FALSE, plot = TRUE), plotOutput("plotreg_plot", height = "620px"))),
           tabPanel("forest_reg", div(class = "gtx-card", tagListDownload("forest", table = FALSE, plot = TRUE), plotOutput("forest_plot", height = "760px"))),
           tabPanel("Model fit", div(class = "gtx-card", tagListDownload("fitplot", table = FALSE, plot = TRUE), plotOutput("fit_plot", height = "680px"))),
-          tabPanel("Code", gtx_code_panel("Code", "visual_code")),
-          tabPanel("Full Workflow Code", gtx_code_panel("Full Workflow Code", "full_workflow_code"))
+          tabPanel("Code", gtx_code_panel("Code", "visual_code"))
         )
       )
     )
@@ -1255,6 +1262,7 @@ ui <- navbarPage(
         div(
           class = "gtx-card gtx-side",
           h3("Causal Mediation"),
+          div(class = "gtx-note", "Specify the causal question before running this analysis. The result is a screening aid and depends on no unmeasured exposure-mediator, mediator-outcome, or exposure-outcome confounding assumptions."),
           uiOutput("med_inputs"),
           selectInput("med_approach", "Outcome model", choices = c("logit", "linear"), selected = "logit"),
           numericInput("med_sims", "Bootstrap replicates", value = 300, min = 50, step = 50),
@@ -1268,6 +1276,23 @@ ui <- navbarPage(
           tabPanel("Table", div(class = "gtx-card", tagListDownload("med", table = TRUE), gtx_table_output("med_table"))),
           tabPanel("Diagram", div(class = "gtx-card", tagListDownload("medplot", table = FALSE, plot = TRUE), plotOutput("med_plot", height = "620px"))),
           tabPanel("Code", gtx_code_panel("Code", "med_code"))
+        )
+      )
+    )
+  ),
+
+  tabPanel(
+    "Session Code",
+    fluidRow(
+      column(
+        12,
+        div(
+          class = "gtx-card",
+          h3("Session Code"),
+          div(class = "gtx-help", "This script is updated automatically from the completed steps in this session. Copy one command from any Code panel, or copy/download the complete workflow here."),
+          downloadButton("download_session_script", "Download complete R script", class = "btn-primary"),
+          tags$hr(),
+          gtx_code_panel("Complete workflow", "full_workflow_code")
         )
       )
     )
@@ -1314,7 +1339,7 @@ server <- function(input, output, session) {
     cox_exposure = NULL, cox_multi = NULL,
     survreg_exposure = NULL, survreg_multi = NULL,
     km = NULL, mediation = NULL,
-    plotreg = NULL, forest = NULL, fitplot = NULL, merged = NULL,
+    plotreg = NULL, forest = NULL, fitplot = NULL, merged = NULL, modified = NULL,
     advanced = NULL, advanced_text = "", advanced_code = "",
     advanced_title = "Choose a tool to begin",
     advanced_guidance = "The app will explain how to read the selected result here.",
@@ -1336,7 +1361,7 @@ server <- function(input, output, session) {
     data <- analysis_data()
     if (is.null(data)) {
       showNotification(
-        "Open Data Prep and choose Use original data or Use prepared data before analysis.",
+        "Load a dataset first. Original data is active automatically; use Data Prep only when you want prepared data.",
         type = "warning",
         duration = 7
       )
@@ -1423,6 +1448,14 @@ server <- function(input, output, session) {
       input$adv_time,
       input$adv_event,
       input$adv_exposures %||% character(0)
+    ))
+  }))
+  wire_select_buttons("conf_exposures", reactive({
+    select_candidates(c(
+      input$adv_outcome,
+      input$adv_time,
+      input$adv_event,
+      input$conf_candidate
     ))
   }))
   wire_select_buttons("med_covariates", reactive({
@@ -1551,8 +1584,8 @@ server <- function(input, output, session) {
     rv$data <- data
     rv$data_name <- name
     rv$data_code <- gtx_template_code(template)
-    rv$last_message <- "Open Data Prep and choose whether analyses use original or prepared data."
-    showNotification(paste(name, "template loaded. Choose an analysis dataset in Data Prep."), type = "message")
+    rv$last_message <- "Original data is active. Open Data Prep only if you want to make changes."
+    showNotification(paste(name, "template loaded. Original data is ready for analysis."), type = "message")
     session$onFlushed(function() {
       for (id in names(updates)) {
         value <- updates[[id]]
@@ -1640,8 +1673,8 @@ server <- function(input, output, session) {
     rv$data <- gtx_dataset(input$dataset_name)
     rv$data_name <- input$dataset_name
     rv$data_code <- paste0('data("', input$dataset_name, '", package = "gtregression")\ndf <- ', input$dataset_name)
-    rv$last_message <- "Open Data Prep and choose whether analyses use original or prepared data."
-    showNotification("Dataset loaded. Choose an analysis dataset in Data Prep before modelling.", type = "message")
+    rv$last_message <- "Original data is active. Open Data Prep only if you want to make changes."
+    showNotification("Dataset loaded. Original data is ready for analysis.", type = "message")
   })
 
   observeEvent(input$load_upload, {
@@ -1689,13 +1722,13 @@ server <- function(input, output, session) {
       return(NULL)
     }
     rv$data_name <- input$data_file$name
-    rv$last_message <- "Open Data Prep and choose whether analyses use original or prepared data."
-    showNotification("Uploaded data loaded. Choose an analysis dataset in Data Prep before modelling.", type = "message")
+    rv$last_message <- "Original data is active. Open Data Prep only if you want to make changes."
+    showNotification("Uploaded data loaded. Original data is ready for analysis.", type = "message")
   })
 
   output$data_preview <- gtx_render_data(function() {
     req(rv$data)
-    utils::head(rv$data, 100)
+    utils::head(rv$data, 10)
   }, page_length = 10)
 
   output$data_summary <- renderPrint({
@@ -1712,9 +1745,9 @@ server <- function(input, output, session) {
     req(analysis_data())
     vars <- names(analysis_data())
     tagList(
+      selectInput("desc_by", "Group by", choices = c("None" = "", vars)),
       checkboxGroupInput("desc_exposures", "Variables to summarise", choices = vars),
-      gtx_select_buttons("desc_exposures"),
-      selectInput("desc_by", "Group by", choices = c("None" = "", vars))
+      gtx_select_buttons("desc_exposures")
     )
   })
 
@@ -1874,7 +1907,8 @@ server <- function(input, output, session) {
       c(gtx_approaches, "Cox" = "cox", "Surv Reg" = "survreg")
     }
 
-    model_roles <- function(include_covariates = FALSE, include_exposures = FALSE) {
+    model_roles <- function(include_covariates = FALSE, include_exposures = FALSE,
+                            covariate_label = "Adjustment variables") {
       current_approach <- input$adv_approach %||% "logit"
       survival_advanced <- isTRUE(current_approach %in% c("cox", "survreg"))
       tagList(
@@ -1890,7 +1924,7 @@ server <- function(input, output, session) {
           gtx_select_buttons("adv_exposures")
         ),
         if (include_covariates) tagList(
-          checkboxGroupInput("adv_covariates", "Adjustment variables", choices = vars, selected = input$adv_covariates %||% character(0)),
+          checkboxGroupInput("adv_covariates", covariate_label, choices = vars, selected = input$adv_covariates %||% character(0)),
           gtx_select_buttons("adv_covariates")
         )
       )
@@ -1965,16 +1999,20 @@ server <- function(input, output, session) {
       ),
       confounder = tagList(
         model_roles(),
-        selectInput("conf_exposure", "Exposure of interest", choices = c("Choose a variable" = "", vars)),
+        checkboxGroupInput("conf_exposures", "Exposures of interest", choices = vars, selected = input$conf_exposures %||% character(0)),
+        gtx_select_buttons("conf_exposures"),
         selectInput("conf_candidate", "Potential confounder", choices = c("Choose a variable" = "", vars)),
-        gtx_inline_help("A change-in-estimate result cannot establish causality. Confirm confounding decisions with a DAG and subject-matter knowledge."),
+        gtx_inline_help("The app screens every selected exposure against this candidate. A change-in-estimate result cannot establish causality; confirm decisions with a DAG and subject-matter knowledge."),
         actionButton("run_confounder", icon("magnifying-glass-chart"), " Assess confounding", class = "btn-primary btn-block")
       ),
       interaction = tagList(
-        model_roles(include_covariates = TRUE),
+        model_roles(
+          include_covariates = TRUE,
+          covariate_label = "Covariates included in both interaction models"
+        ),
         selectInput("conf_exposure", "Exposure of interest", choices = c("Choose a variable" = "", vars)),
         selectInput("conf_candidate", "Possible effect modifier", choices = c("Choose a variable" = "", vars)),
-        gtx_inline_help("A small interaction p-value suggests that the exposure effect may differ between groups. Interpret the stratum-specific estimates as well."),
+        gtx_inline_help("Covariates are included in both the model with and without the interaction. A small interaction p-value suggests that the exposure effect may differ between groups; interpret stratum-specific estimates as well."),
         actionButton("run_interaction", icon("code-branch"), " Test interaction", class = "btn-primary btn-block")
       ),
       convergence = tagList(
@@ -2232,6 +2270,7 @@ server <- function(input, output, session) {
         multivariate = input$surv_multivariable,
         stratifier = if (gtx_has_text(input$surv_stratifier)) input$surv_stratifier else NULL,
         show_ref = input$surv_show_ref,
+        model_stats = input$reg_model_stats,
         format = "flextable"
       ),
       error = function(e) { showNotification(conditionMessage(e), type = "error"); NULL }
@@ -2275,6 +2314,7 @@ server <- function(input, output, session) {
         stratifier = if (gtx_has_text(input$surv_stratifier)) input$surv_stratifier else NULL,
         distribution = input$surv_dist,
         show_ref = input$surv_show_ref,
+        model_stats = input$reg_model_stats,
         format = "flextable"
       ),
       error = function(e) { showNotification(conditionMessage(e), type = "error"); NULL }
@@ -2363,6 +2403,7 @@ server <- function(input, output, session) {
           stratifier = gtx_null_code(input$surv_stratifier),
           distribution = shQuote(input$surv_dist %||% "weibull"),
           show_ref = gtx_bool_code(input$surv_show_ref),
+          model_stats = gtx_bool_code(input$reg_model_stats),
           format = shQuote("flextable")
         )
       )
@@ -2379,6 +2420,7 @@ server <- function(input, output, session) {
           multivariable = gtx_bool_code(input$surv_multivariable),
           stratifier = gtx_null_code(input$surv_stratifier),
           show_ref = gtx_bool_code(input$surv_show_ref),
+          model_stats = gtx_bool_code(input$reg_model_stats),
           format = shQuote("flextable")
         )
       )
@@ -2468,6 +2510,21 @@ server <- function(input, output, session) {
       choices = stats::setNames(names(tbls), names(tbls)),
       selected = names(tbls)
     )
+  })
+
+  output$modify_source_controls <- renderUI({
+    tables <- available_merge_tables()
+    if (!is.null(rv$merged)) tables[["Merged table"]] <- rv$merged
+    if (!length(tables)) {
+      return(div(class = "gtx-note", "No completed table yet. Run a descriptive or regression analysis first."))
+    }
+    selectInput("modify_source", "Completed table", choices = stats::setNames(names(tables), names(tables)))
+  })
+
+  modify_source_object <- reactive({
+    tables <- available_merge_tables()
+    if (!is.null(rv$merged)) tables[["Merged table"]] <- rv$merged
+    tables[[input$modify_source %||% ""]]
   })
 
   single_plot_choices <- reactive({
@@ -2599,6 +2656,7 @@ server <- function(input, output, session) {
     tab <- switch(
       input$visual_tool,
       merge = "Merged Table",
+      modify = "Modified Table",
       plot = "plot_reg",
       forest = "forest_reg",
       fit = "Model fit",
@@ -2655,6 +2713,81 @@ server <- function(input, output, session) {
     }
   })
 
+  parse_named_mapping <- function(text, argument) {
+    lines <- trimws(unlist(strsplit(text %||% "", "\n", fixed = TRUE)))
+    lines <- lines[nzchar(lines)]
+    if (!length(lines)) return(NULL)
+    pieces <- strsplit(lines, "=", fixed = TRUE)
+    valid <- vapply(pieces, function(x) {
+      length(x) == 2L && nzchar(trimws(x[[1L]])) && nzchar(trimws(x[[2L]]))
+    }, logical(1))
+    if (!all(valid)) stop(paste0(argument, " must use one `name = label` mapping per line."), call. = FALSE)
+    keys <- trimws(vapply(pieces, `[[`, character(1), 1L))
+    values <- trimws(vapply(pieces, `[[`, character(1), 2L))
+    if (anyDuplicated(keys)) stop(paste0(argument, " cannot repeat a name."), call. = FALSE)
+    stats::setNames(values, keys)
+  }
+
+  parse_level_mapping <- function(text) {
+    lines <- trimws(unlist(strsplit(text %||% "", "\n", fixed = TRUE)))
+    lines <- lines[nzchar(lines)]
+    if (!length(lines)) return(NULL)
+    parsed <- lapply(lines, function(line) {
+      sides <- strsplit(line, "=", fixed = TRUE)[[1L]]
+      if (length(sides) != 2L) return(NULL)
+      left <- strsplit(trimws(sides[[1L]]), ":", fixed = TRUE)[[1L]]
+      if (length(left) != 2L || !all(nzchar(trimws(left))) || !nzchar(trimws(sides[[2L]]))) return(NULL)
+      list(variable = trimws(left[[1L]]), level = trimws(left[[2L]]), label = trimws(sides[[2L]]))
+    })
+    if (any(vapply(parsed, is.null, logical(1)))) {
+      stop("Level labels must use `variable: current level = new level` on each line.", call. = FALSE)
+    }
+    variables <- vapply(parsed, `[[`, character(1), "variable")
+    levels <- vapply(parsed, `[[`, character(1), "level")
+    if (anyDuplicated(paste(variables, levels, sep = "\r"))) {
+      stop("Level labels cannot repeat the same variable and level.", call. = FALSE)
+    }
+    result <- lapply(unique(variables), function(variable) {
+      matches <- which(variables == variable)
+      stats::setNames(vapply(parsed[matches], `[[`, character(1), "label"), levels[matches])
+    })
+    stats::setNames(result, unique(variables))
+  }
+
+  observeEvent(input$run_modify_table, {
+    source <- modify_source_object()
+    if (is.null(source)) {
+      showNotification("Choose a completed table to modify.", type = "warning")
+      return(NULL)
+    }
+    rv$modified <- tryCatch(
+      gtregression::modify_table(
+        source,
+        variable_labels = parse_named_mapping(input$modify_variable_labels, "Variable labels"),
+        level_labels = parse_level_mapping(input$modify_level_labels),
+        header_labels = parse_named_mapping(input$modify_header_labels, "Header labels"),
+        caption = if (gtx_has_text(input$modify_caption)) input$modify_caption else NULL,
+        bold_labels = isTRUE(input$modify_bold_labels),
+        bold_levels = isTRUE(input$modify_bold_levels),
+        italic_labels = isTRUE(input$modify_italic_labels),
+        italic_levels = isTRUE(input$modify_italic_levels),
+        remove_N = isTRUE(input$modify_remove_n),
+        remove_N_obs = isTRUE(input$modify_remove_n_obs),
+        remove_abbreviations = isTRUE(input$modify_remove_abbreviations),
+        remove_adjustment_note = isTRUE(input$modify_remove_adjustment_note),
+        caveat = if (gtx_has_text(input$modify_caveat)) input$modify_caveat else NULL
+      ),
+      error = function(e) {
+        showNotification(conditionMessage(e), type = "error")
+        NULL
+      }
+    )
+    if (!is.null(rv$modified)) {
+      rv$last_message <- "Modified table ready. Download it or keep refining its wording."
+      showNotification("Modified table ready.", type = "message")
+    }
+  })
+
   observeEvent(input$run_forest, {
     rv$forest <- tryCatch({
       forest_xlim <- gtx_parse_numeric_vector(input$forest_xlim, expected = 2, name = "forest x limits")
@@ -2699,7 +2832,8 @@ server <- function(input, output, session) {
         fit_result,
         model_name = if (gtx_has_text(input$fit_model_name)) input$fit_model_name else NULL,
         type = input$fit_type,
-        bins = input$fit_bins
+        bins = input$fit_bins %||% 10,
+        base_size = input$fit_base_size
       ),
       error = function(e) { showNotification(conditionMessage(e), type = "error"); NULL }
     )
@@ -2713,11 +2847,68 @@ server <- function(input, output, session) {
   output$forest_plot <- renderPlot({ req(rv$forest); print(rv$forest) })
   output$fit_plot <- renderPlot({ req(rv$fitplot); print(rv$fitplot) })
   output$merged_table <- gtx_render_table(function() rv$merged)
+  output$modified_table <- gtx_render_table(function() rv$modified)
   gtx_table_downloads(output, "merged", reactive(rv$merged))
+  gtx_table_downloads(output, "modified", reactive(rv$modified))
   gtx_plot_downloads(output, "plotreg", reactive(rv$plotreg), size_get = reactive(input$export_preset %||% "standard"))
   gtx_plot_downloads(output, "forest", reactive(rv$forest), is_forest = TRUE, size_get = reactive(input$export_preset %||% "standard"))
   gtx_plot_downloads(output, "fitplot", reactive(rv$fitplot), size_get = reactive(input$export_preset %||% "standard"))
   output$visual_code <- renderText({
+    if (identical(input$visual_tool, "modify")) {
+      source_name <- switch(
+        input$modify_source %||% "",
+        "Descriptive" = "desc_result",
+        "Crude" = "uni_result",
+        "Adjusted" = "multi_result",
+        "Cox exposure models" = "cox_exposure_result",
+        "Cox multivariable model" = "cox_multi_result",
+        "Parametric exposure models" = "survreg_exposure_result",
+        "Parametric multivariable model" = "survreg_multi_result",
+        "Merged table" = "merged_table",
+        "table_result"
+      )
+      object_code <- function(x) paste(utils::capture.output(dput(x)), collapse = "")
+      variable_labels <- tryCatch(parse_named_mapping(input$modify_variable_labels, "Variable labels"), error = function(e) NULL)
+      level_labels <- tryCatch(parse_level_mapping(input$modify_level_labels), error = function(e) NULL)
+      header_labels <- tryCatch(parse_named_mapping(input$modify_header_labels, "Header labels"), error = function(e) NULL)
+      return(paste0(
+        "modified_table <- modify_table(\n",
+        "  ", source_name,
+        if (!is.null(variable_labels)) paste0(",\n  variable_labels = ", object_code(variable_labels)) else "",
+        if (!is.null(level_labels)) paste0(",\n  level_labels = ", object_code(level_labels)) else "",
+        if (!is.null(header_labels)) paste0(",\n  header_labels = ", object_code(header_labels)) else "",
+        if (gtx_has_text(input$modify_caption)) paste0(",\n  caption = ", object_code(input$modify_caption)) else "",
+        ",\n  bold_labels = ", gtx_bool_code(input$modify_bold_labels),
+        ",\n  bold_levels = ", gtx_bool_code(input$modify_bold_levels),
+        ",\n  italic_labels = ", gtx_bool_code(input$modify_italic_labels),
+        ",\n  italic_levels = ", gtx_bool_code(input$modify_italic_levels),
+        ",\n  remove_N = ", gtx_bool_code(input$modify_remove_n),
+        ",\n  remove_N_obs = ", gtx_bool_code(input$modify_remove_n_obs),
+        ",\n  remove_abbreviations = ", gtx_bool_code(input$modify_remove_abbreviations),
+        ",\n  remove_adjustment_note = ", gtx_bool_code(input$modify_remove_adjustment_note),
+        if (gtx_has_text(input$modify_caveat)) paste0(",\n  caveat = ", object_code(input$modify_caveat)) else "",
+        "\n)\n",
+        "save_table(modified_table, filename = \"modified_table.docx\")"
+      ))
+    }
+    if (identical(input$visual_tool, "fit")) {
+      fit_result_name <- switch(
+        input$fit_source %||% "uni",
+        uni = "uni_result", multi = "multi_result",
+        cox_exposure = "cox_exposure_result", cox_multi = "cox_multi_result",
+        survreg_exposure = "survreg_exposure_result", survreg_multi = "survreg_multi_result",
+        strat = "stratified_result", "model_result"
+      )
+      return(paste0(
+        "fit_plot <- plot_model_fit(\n  ", fit_result_name,
+        if (gtx_has_text(input$fit_model_name)) paste0(",\n  model_name = ", shQuote(input$fit_model_name)) else "",
+        ",\n  type = ", shQuote(input$fit_type),
+        ",\n  bins = ", input$fit_bins %||% 10,
+        ",\n  base_size = ", input$fit_base_size,
+        "\n)\n",
+        "save_plot(fit_plot, filename = \"model_fit.png\", width = 10, height = 7)"
+      ))
+    }
     plot_result_name <- switch(
       input$plot_source %||% "uni",
       uni = "uni_result",
@@ -2904,11 +3095,13 @@ server <- function(input, output, session) {
     }
 
     if ((!is.null(rv$cox) || !is.null(rv$survreg) || !is.null(rv$km)) && gtx_has_text(input$surv_time) && gtx_has_text(input$surv_event)) {
+      survival_function <- if (!is.null(rv$survreg)) "surv_reg" else "cox_reg"
+      survival_result <- if (identical(survival_function, "surv_reg")) "survreg_result" else "cox_result"
       sections <- c(sections, paste(
         "# 6. Survival analysis",
         gtx_code_assign(
-          "cox_result",
-          "cox_reg",
+          survival_result,
+          survival_function,
           list(
             data = "analysis_data",
             time = gtx_null_code(input$surv_time),
@@ -2917,7 +3110,9 @@ server <- function(input, output, session) {
             adjust_for = gtx_nonempty_vec_code(input$surv_adjust %||% character(0)),
             multivariable = gtx_bool_code(input$surv_multivariable),
             stratifier = gtx_null_code(input$surv_stratifier),
+            distribution = if (identical(survival_function, "surv_reg")) shQuote(input$surv_dist %||% "weibull") else NULL,
             show_ref = gtx_bool_code(input$surv_show_ref),
+            model_stats = gtx_bool_code(input$reg_model_stats %||% TRUE),
             format = shQuote("flextable")
           )
         ),
@@ -2940,18 +3135,122 @@ server <- function(input, output, session) {
     }
 
     if (!is.null(rv$merged) || !is.null(rv$plotreg) || !is.null(rv$forest) || !is.null(rv$fitplot)) {
-      ci_width <- input$forest_ci_width %||% 20
+      result_names <- c(
+        uni = "uni_result", multi = "multi_result", strat = "stratified_result",
+        cox_exposure = "cox_exposure_result", cox_multi = "cox_multi_result",
+        survreg_exposure = "survreg_exposure_result", survreg_multi = "survreg_multi_result"
+      )
+      visual_lines <- character(0)
+      if (!is.null(rv$merged)) {
+        merge_labels <- input$merge_selection %||% character(0)
+        merge_objects <- c(
+          "Descriptive" = "desc_result", "Crude" = "uni_result", "Adjusted" = "multi_result",
+          "Cox exposure models" = "cox_exposure_result", "Cox multivariable model" = "cox_multi_result",
+          "Parametric exposure models" = "survreg_exposure_result", "Parametric multivariable model" = "survreg_multi_result"
+        )[merge_labels]
+        if (length(merge_objects) >= 2L) {
+          visual_lines <- c(visual_lines, paste0(
+            "merged_table <- merge_tables(\n  ", paste(unname(merge_objects), collapse = ",\n  "),
+            ",\n  spanners = ", gtx_vec_code(merge_labels), "\n)",
+            "save_table(merged_table, filename = \"merged_table.docx\")"
+          ))
+        }
+      }
+      if (!is.null(rv$plotreg)) {
+        layout <- input$plot_layout %||% "single"
+        pair <- switch(layout, combined = c("uni_result", "multi_result"), cox_combined = c("cox_exposure_result", "cox_multi_result"), survreg_combined = c("survreg_exposure_result", "survreg_multi_result"), NULL)
+        if (is.null(pair)) {
+          source <- result_names[[input$plot_source %||% "uni"]] %||% "uni_result"
+          visual_lines <- c(visual_lines, paste0("reg_plot <- plot_reg(", source, ", log_x = ", gtx_bool_code(input$plot_log_x), ")", "\nsave_plot(reg_plot, filename = \"plot_reg.png\", width = 9, height = 6)"))
+        } else {
+          visual_lines <- c(visual_lines, paste0("reg_plot <- plot_reg_combine(", pair[[1]], ", ", pair[[2]], ", log_x = ", gtx_bool_code(input$plot_log_x), ")", "\nsave_plot(reg_plot, filename = \"plot_reg_combined.png\", width = 10, height = 7)"))
+        }
+      }
+      if (!is.null(rv$forest)) {
+        content <- input$forest_content %||% "single"
+        forest_data <- switch(content,
+          all = "forest_df(uni_result, multi_result, desc = desc_result)",
+          combined = "forest_df(uni_result, multi_result)",
+          cox_all = "forest_df(cox_exposure_result, cox_multi_result, desc = desc_result)",
+          cox_combined = "forest_df(cox_exposure_result, cox_multi_result)",
+          survreg_all = "forest_df(survreg_exposure_result, survreg_multi_result, desc = desc_result)",
+          survreg_combined = "forest_df(survreg_exposure_result, survreg_multi_result)",
+          paste0("forest_df(", result_names[[input$forest_source %||% "uni"]] %||% "uni_result", ")")
+        )
+        visual_lines <- c(visual_lines, paste0(
+          "forest_data <- ", forest_data, "\n",
+          "forest_plot <- forest_reg(forest_data, side = ", shQuote(input$forest_side),
+          ", ci_col_width = ", input$forest_ci_width %||% 20,
+          if (!is.null(gtx_numeric_vector_code(input$forest_xlim, 2))) paste0(", xlim = ", gtx_numeric_vector_code(input$forest_xlim, 2)) else "",
+          if (!is.null(gtx_numeric_vector_code(input$forest_ticks))) paste0(", ticks_at = ", gtx_numeric_vector_code(input$forest_ticks)) else "", ")\n",
+          "save_forest(forest_plot, filename = \"forest_reg.pdf\", width = 13, height = 9)"
+        ))
+      }
+      if (length(visual_lines)) sections <- c(sections, paste("# 7. Visualise and export", paste(visual_lines, collapse = "\n\n"), sep = "\n"))
+    }
+
+    if (!is.null(rv$fitplot)) {
+      fit_result_name <- switch(
+        input$fit_source %||% "uni",
+        uni = "uni_result", multi = "multi_result",
+        cox_exposure = "cox_exposure_result", cox_multi = "cox_multi_result",
+        survreg_exposure = "survreg_exposure_result", survreg_multi = "survreg_multi_result",
+        strat = "stratified_result", "model_result"
+      )
       sections <- c(sections, paste(
-        "# 7. Visualise and export",
-        "merged_table <- merge_tables(desc_result, uni_result, multi_result, spanners = c(\"Descriptive\", \"Crude\", \"Adjusted\"))",
-        "reg_plot <- plot_reg(uni_result)",
-        "combined_plot <- plot_reg_combine(uni_result, multi_result)",
-        "forest_data <- forest_df(uni_result, multi_result, desc = desc_result)",
-        paste0("forest_plot <- forest_reg(forest_data, ci_col_width = ", ci_width, ")"),
-        "save_table(merged_table, filename = \"merged_table.docx\")",
-        "save_plot(combined_plot, filename = \"plot_reg_combined.png\", width = 10, height = 7)",
-        "save_forest(forest_plot, filename = \"forest_reg.pdf\", width = 13, height = 9)",
+        "# 7a. Model-fit diagnostic",
+        gtx_code_assign(
+          "fit_plot",
+          "plot_model_fit",
+          list(
+            model = fit_result_name,
+            model_name = if (gtx_has_text(input$fit_model_name)) shQuote(input$fit_model_name) else NULL,
+            type = shQuote(input$fit_type),
+            bins = as.character(input$fit_bins %||% 10),
+            base_size = as.character(input$fit_base_size)
+          )
+        ),
+        "save_plot(fit_plot, filename = \"model_fit.png\", width = 10, height = 7)",
         sep = "\n"
+      ))
+    }
+
+    if (!is.null(rv$modified)) {
+      modified_source <- switch(
+        input$modify_source %||% "",
+        "Descriptive" = "desc_result",
+        "Crude" = "uni_result",
+        "Adjusted" = "multi_result",
+        "Cox exposure models" = "cox_exposure_result",
+        "Cox multivariable model" = "cox_multi_result",
+        "Parametric exposure models" = "survreg_exposure_result",
+        "Parametric multivariable model" = "survreg_multi_result",
+        "Merged table" = "merged_table",
+        "table_result"
+      )
+      object_code <- function(x) paste(utils::capture.output(dput(x)), collapse = "")
+      variable_labels <- tryCatch(parse_named_mapping(input$modify_variable_labels, "Variable labels"), error = function(e) NULL)
+      level_labels <- tryCatch(parse_level_mapping(input$modify_level_labels), error = function(e) NULL)
+      header_labels <- tryCatch(parse_named_mapping(input$modify_header_labels, "Header labels"), error = function(e) NULL)
+      sections <- c(sections, paste0(
+        "# 7a. Modify table\n",
+        "modified_table <- modify_table(\n",
+        "  ", modified_source,
+        if (!is.null(variable_labels)) paste0(",\n  variable_labels = ", object_code(variable_labels)) else "",
+        if (!is.null(level_labels)) paste0(",\n  level_labels = ", object_code(level_labels)) else "",
+        if (!is.null(header_labels)) paste0(",\n  header_labels = ", object_code(header_labels)) else "",
+        if (gtx_has_text(input$modify_caption)) paste0(",\n  caption = ", object_code(input$modify_caption)) else "",
+        ",\n  bold_labels = ", gtx_bool_code(input$modify_bold_labels),
+        ",\n  bold_levels = ", gtx_bool_code(input$modify_bold_levels),
+        ",\n  italic_labels = ", gtx_bool_code(input$modify_italic_labels),
+        ",\n  italic_levels = ", gtx_bool_code(input$modify_italic_levels),
+        ",\n  remove_N = ", gtx_bool_code(input$modify_remove_n),
+        ",\n  remove_N_obs = ", gtx_bool_code(input$modify_remove_n_obs),
+        ",\n  remove_abbreviations = ", gtx_bool_code(input$modify_remove_abbreviations),
+        ",\n  remove_adjustment_note = ", gtx_bool_code(input$modify_remove_adjustment_note),
+        if (gtx_has_text(input$modify_caveat)) paste0(",\n  caveat = ", object_code(input$modify_caveat)) else "",
+        "\n)\n",
+        "save_table(modified_table, filename = \"modified_table.docx\")"
       ))
     }
 
@@ -3230,7 +3529,8 @@ server <- function(input, output, session) {
 
   observeEvent(input$run_confounder, {
     data <- require_analysis_data()
-    req(data, input$conf_exposure, input$conf_candidate)
+    exposures <- input$conf_exposures %||% character(0)
+    req(data, length(exposures), input$conf_candidate)
     survival_advanced <- input$adv_approach %in% c("cox", "survreg")
     if (survival_advanced) {
       req(input$adv_time, input$adv_event)
@@ -3243,7 +3543,7 @@ server <- function(input, output, session) {
       outcome = if (survival_advanced) NULL else input$adv_outcome,
       time = if (survival_advanced) input$adv_time else NULL,
       event = if (survival_advanced) input$adv_event else NULL,
-      exposure = input$conf_exposure,
+      exposure = exposures,
       potential_confounder = input$conf_candidate,
       approach = input$adv_approach,
       distribution = if (identical(input$adv_approach, "survreg")) input$adv_distribution else NULL,
@@ -3262,7 +3562,7 @@ server <- function(input, output, session) {
         outcome = if (input$adv_approach %in% c("cox", "survreg")) NULL else gtx_null_code(input$adv_outcome),
         time = if (input$adv_approach %in% c("cox", "survreg")) gtx_null_code(input$adv_time) else NULL,
         event = if (input$adv_approach %in% c("cox", "survreg")) gtx_null_code(input$adv_event) else NULL,
-        exposure = gtx_null_code(input$conf_exposure),
+        exposure = gtx_vec_code(exposures),
         potential_confounder = gtx_null_code(input$conf_candidate),
         approach = shQuote(input$adv_approach),
         distribution = if (identical(input$adv_approach, "survreg")) shQuote(input$adv_distribution) else NULL,

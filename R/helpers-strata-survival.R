@@ -184,7 +184,10 @@
   }
 
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
-  variable_labels <- .var_label_map(data, unique(exposures))
+  variable_labels <- .var_label_map(
+    data,
+    unique(c(exposures, adjust_for, .interaction_vars(interaction)))
+  )
   per_stratum <- list()
   tds <- list()
   models <- list()
@@ -217,6 +220,10 @@
     if (is.null(res_i)) {
       next
     }
+
+    res_i$table_body <- .format_interaction_levels(
+      res_i$table_body, dlev, variable_labels
+    )
 
     tds[[key]] <- res_i$table_body
     models[[key]] <- res_i$models
@@ -484,7 +491,7 @@
     wide[[paste0("..p__", lev)]] <- cols$pval
   }
 
-  list(wide = wide, spanners = paste0(stratifier, " = ", names(per_stratum)))
+  list(wide = wide, spanners = names(per_stratum))
 }
 
 #' Survival footnotes for stratified Cox and survreg output
@@ -503,6 +510,7 @@
                                            show_ref = TRUE,
                                            extra_footnotes = NULL) {
   c(
+    .stratified_by_note(stratifier),
     .abbrev_note(approach),
     extra_footnotes,
     if (
@@ -512,8 +520,7 @@
     if (isTRUE(adjusted_mode)) .adjustment_note(adjust_for) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
-    .stratified_survival_sample_note(stratifier, n_by_stratum, show_sample),
-    paste0("Event variable: ", event, " (1 = event, 0 = censored after internal coding).")
+    .stratified_survival_sample_note(stratifier, n_by_stratum, show_sample)
   )
 }
 

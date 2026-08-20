@@ -416,7 +416,7 @@ test_that("forest_df builds side-by-side data for stratified regression outputs"
   multi_out <- forest_df(strat_multi)
 
   expect_s3_class(uni_out, "data.frame")
-  expect_true(all(paste0("race = ", c("White", "Black", "Other"), "\nOR (95% CI)") %in% names(uni_out)))
+  expect_true(all(paste0(c("White", "Black", "Other"), "\nOR (95% CI)") %in% names(uni_out)))
   expect_equal(length(attr(uni_out, "est")), nrow(uni_out))
   expect_false(any(uni_out$Characteristic %in% c("race = White", "race = Black", "race = Other")))
   expect_equal(sum(uni_out$Characteristic == "age"), 1L)
@@ -434,7 +434,7 @@ test_that("forest_df builds side-by-side data for stratified regression outputs"
   expect_equal(plain_plot$meta$strata_rows, uni_plot$meta$strata_rows)
 
   expect_s3_class(multi_out, "data.frame")
-  expect_true(all(paste0("race = ", c("White", "Black", "Other"), "\nAdjusted OR (95% CI)") %in% names(multi_out)))
+  expect_true(all(paste0(c("White", "Black", "Other"), "\nAdjusted OR (95% CI)") %in% names(multi_out)))
   expect_false("OR (95% CI)" %in% names(multi_out))
   expect_equal(length(attr(multi_out, "est")), nrow(multi_out))
   expect_equal(attr(multi_out, "forest_meta")$strata, c("White", "Black", "Other"))
@@ -482,9 +482,9 @@ test_that("forest_df builds side-by-side data for stratified Cox and surv output
   cox_adjusted_out <- forest_df(cox_adjusted_strat)
   surv_out <- forest_df(surv_strat)
 
-  expect_true(all(paste0("trt = ", c("Standard treatment", "Test treatment"), "\nHR (95% CI)") %in% names(cox_out)))
-  expect_true(all(paste0("trt = ", c("Standard treatment", "Test treatment"), "\nAdjusted HR (95% CI)") %in% names(cox_adjusted_out)))
-  expect_true(all(paste0("trt = ", c("Standard treatment", "Test treatment"), "\nTime Ratio (95% CI)") %in% names(surv_out)))
+  expect_true(all(paste0(c("Standard treatment", "Test treatment"), "\nHR (95% CI)") %in% names(cox_out)))
+  expect_true(all(paste0(c("Standard treatment", "Test treatment"), "\nAdjusted HR (95% CI)") %in% names(cox_adjusted_out)))
+  expect_true(all(paste0(c("Standard treatment", "Test treatment"), "\nTime Ratio (95% CI)") %in% names(surv_out)))
   expect_equal(length(attr(cox_out, "est")), nrow(cox_out))
   expect_equal(length(attr(cox_adjusted_out, "est")), nrow(cox_adjusted_out))
   expect_equal(length(attr(surv_out, "est")), nrow(surv_out))

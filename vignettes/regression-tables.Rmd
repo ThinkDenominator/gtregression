@@ -64,7 +64,7 @@ birthwt_uni <- uni_reg(
   theme = clinical
 )
 
-birthwt_uni$table
+birthwt_uni
 ```
 
 ## Multivariable Models
@@ -82,7 +82,7 @@ birthwt_full <- multi_reg(
   theme = clinical
 )
 
-birthwt_full$table
+birthwt_full
 ```
 
 ## Exposure-Specific Adjusted Models
@@ -101,7 +101,7 @@ birthwt_multi <- multi_reg(
   theme = striped
 )
 
-birthwt_multi$table
+birthwt_multi
 ```
 
 The adjustment variables are recorded in a compact table footnote, so the result
@@ -154,7 +154,7 @@ uni_reg(
   outcome = low,
   exposures = c("smoke", "ht", "ui", "ptl_cat"),
   approach = logbinomial
-)$table
+)
 ```
 
 Use `approach = firth` when a binary-outcome logistic model has sparse cells,
@@ -180,7 +180,7 @@ multi_reg(
   outcome = HG,
   exposures = c(NV, PI, EH),
   approach = firth
-)$table
+)
 ```
 
 ## Cox Survival Models
@@ -215,7 +215,7 @@ lung_hr <- cox_reg(
   theme = clinical
 )
 
-lung_hr$table
+lung_hr
 ```
 
 ```{r cox-adjusted, message=FALSE, warning=FALSE}
@@ -229,7 +229,7 @@ lung_adj_hr <- cox_reg(
   theme = striped
 )
 
-lung_adj_hr$table
+lung_adj_hr
 lung_adj_hr$model_stats
 ```
 
@@ -246,7 +246,7 @@ cox_interaction <- cox_reg(
   interaction = trt*prior
 )
 
-cox_interaction$table
+cox_interaction
 ```
 
 ## Parametric Survival Models
@@ -267,7 +267,7 @@ lung_time_ratio <- surv_reg(
   theme = clinical
 )
 
-lung_time_ratio$table
+lung_time_ratio
 ```
 
 ```{r surv-adjusted, message=FALSE, warning=FALSE}
@@ -282,7 +282,7 @@ lung_adj_time_ratio <- surv_reg(
   theme = striped
 )
 
-lung_adj_time_ratio$table
+lung_adj_time_ratio
 lung_adj_time_ratio$model_stats
 ```
 
@@ -297,7 +297,7 @@ surv_interaction <- surv_reg(
   distribution = weibull
 )
 
-surv_interaction$table
+surv_interaction
 ```
 
 ## Continuous Outcomes
@@ -313,7 +313,7 @@ birthwt_linear <- multi_reg(
   approach = linear
 )
 
-birthwt_linear$table
+birthwt_linear
 ```
 
 ## What To Inspect

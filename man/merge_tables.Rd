@@ -4,7 +4,12 @@
 \alias{merge_tables}
 \title{Merge gtregression tables and preserve structure and notes}
 \usage{
-merge_tables(..., spanners = NULL, theme = "minimal")
+merge_tables(
+  ...,
+  spanners = NULL,
+  theme = "minimal",
+  format = c("flextable", "gt")
+)
 }
 \arguments{
 \item{...}{Two or more \code{gtregression} objects containing
@@ -14,6 +19,10 @@ merge_tables(..., spanners = NULL, theme = "minimal")
 If \code{NULL}, defaults to \code{"Table 1"}, \code{"Table 2"}, etc.}
 
 \item{theme}{Merge theme preset or vector of primitives.}
+
+\item{format}{Output table format. One of \code{"flextable"} (default) or
+\code{"gt"}. The merged display is rebuilt in this format, independently
+of the formats used by the input tables.}
 }
 \value{
 A merged table object of class
@@ -21,6 +30,18 @@ A merged table object of class
 }
 \description{
 Merge gtregression tables and preserve structure and notes
+}
+\details{
+Binary variables should use the same row display across all input tables.
+For a descriptive, univariable, and multivariable merge, the clearest
+publication layout is usually \code{show_dichotomous = "all_levels"} in
+\code{descriptive_table()} and \code{show_ref = TRUE} in each regression
+function. Mixing these settings can create additional binary rows; in that
+situation \code{merge_tables()} issues a warning with the compatible
+settings.
+
+Footnotes created by each input table are retained unchanged. Exact duplicate
+notes are shown once in the merged table.
 }
 \examples{
 birthwt_data <- data_birthwt |>

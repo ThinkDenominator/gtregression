@@ -1,7 +1,7 @@
 {
-  "title": "gtregression: Simplifying regression modeling and reporting in R",
-  "version": "1.0.0",
-  "description": "CRAN release of the gtregression R package. This package simplifies regression modeling in R with a focus on publication-ready outputs, diagnostic checks, and accessible design for researchers and public health professionals, especially in LMIC settings.",
+  "title": "gtregression: Tools for Creating Publication-Ready Regression Tables",
+  "version": "1.1.0",
+  "description": "The gtregression R package simplifies regression modelling and reporting through publication-ready tables, plots, diagnostics, survival analysis, and causal mediation workflows. It is designed for accessible, reproducible epidemiological and clinical research, particularly in Low- and Middle-Income Countries (LMICs).",
   "creators": [
     {
       "name": "Polani, Rubeshkumar",
@@ -17,6 +17,10 @@
       "name": "Sakthivel, Manikandanesan",
       "affiliation": "SAFETYNET ASIA INC",
       "orcid": "0000-0002-5438-3970"
+    },
+    {
+      "name": "Kaviprawin, Mogan",
+      "orcid": "0000-0002-1659-059X"
     },
     {
       "name": "Krishnamoorthy, Yuvaraj",

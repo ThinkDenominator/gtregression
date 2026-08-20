@@ -1,9 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this package, please cite it using the metadata below."
-title: "gtregression: CRAN v1.1.0"
-version: "1.0.0"
-date-released: 2025-08-19
-doi: 10.5281/zenodo.16905350
+title: "gtregression: Tools for Creating Publication-Ready Regression Tables"
+version: "1.1.0"
+date-released: 2026-08-20
 authors:
   - family-names: Polani
     given-names: Rubeshkumar
@@ -14,6 +13,9 @@ authors:
   - family-names: Sakthivel
     given-names: Manikandanesan
     orcid: https://orcid.org/0000-0002-5438-3970
+  - family-names: Kaviprawin
+    given-names: Mogan
+    orcid: https://orcid.org/0000-0002-1659-059X
   - family-names: Krishnamoorthy
     given-names: Yuvaraj
     orcid: https://orcid.org/0000-0003-4688-510X

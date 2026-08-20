@@ -1,7 +1,7 @@
 test_that(".fit_multi_model returns correct model class for each approach", {
   skip_if_not_installed("risks")
 
-  df <- data_PimaIndiansDiabetes |>
+  df <- data_SynthDiabetes |>
     dplyr::mutate(
       diabetes = ifelse(diabetes == "pos", 1, 0),
       age_cat = dplyr::case_when(

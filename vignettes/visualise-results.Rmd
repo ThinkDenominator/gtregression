@@ -261,7 +261,7 @@ the observed Kaplan-Meier curve with fitted parametric survival curves, so users
 can check whether a distribution that looks good by AIC/BIC also follows the
 observed survival pattern.
 
-```{r plot-surv-fit, message=FALSE, warning=FALSE}
+```{r plot-surv-fit, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
 plot_surv_fit(
   data = lung_data,
   time = time,
@@ -276,7 +276,7 @@ Adjusted fitted curves can also be drawn. In that case, the curves are predicted
 at typical adjustment values, such as medians for numeric variables and the most
 common level for categorical variables.
 
-```{r plot-surv-fit-adjusted, message=FALSE, warning=FALSE}
+```{r plot-surv-fit-adjusted, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
 plot_surv_fit(
   data = lung_data,
   time = time,
@@ -295,7 +295,7 @@ survival probabilities at clinically useful follow-up times. This helps users
 move from a time-ratio table to a more direct statement such as predicted
 90-day, 180-day, or 1-year survival for a profile.
 
-```{r surv-predict, message=FALSE, warning=FALSE}
+```{r surv-predict, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
 surv_predict(
   model = lung_surv$models$trt,
   newdata = data.frame(
@@ -318,9 +318,26 @@ plot. By default, categorical reference levels are shown and labelled as
 `(Ref.)`; the caption explains the abbreviation. Variable labels set on the data
 are used automatically in the plot.
 
-```{r one-plot, message=FALSE, warning=FALSE}
+The default style uses colour-blind-safe blue estimates and vermillion for
+estimates whose confidence interval excludes the null. Use `point_size`,
+`point_stroke`, `ci_linewidth`, and `base_size` when preparing a slide or a
+larger single-panel figure.
+
+```{r one-plot, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
 plot_reg(
   birthwt_uni,
+  title = "Crude Associations With Low Birth Weight"
+)
+```
+
+```{r plot-style, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+plot_reg(
+  birthwt_uni,
+  show_ref = FALSE,
+  point_size = 3.5,
+  point_stroke = 0.7,
+  ci_linewidth = 0.75,
+  base_size = 13,
   title = "Crude Associations With Low Birth Weight"
 )
 ```
@@ -331,7 +348,7 @@ When the input comes from `multi_reg(adjust_for = ...)`, the adjustment set is
 shown in the plot caption by default. This keeps the figure interpretable when
 it is copied into slides or a manuscript draft.
 
-```{r adjusted-plot, message=FALSE, warning=FALSE}
+```{r adjusted-plot, fig.width=10, fig.height=5, message=FALSE, warning=FALSE}
 plot_reg(
   birthwt_multi,
   show_ref = FALSE,
@@ -348,7 +365,7 @@ For Yes/No, 1/0, true/false, or similar binary predictors, set
 `smoke`, `ht`, `ui`, and `ptl_cat` are easier to read than repeated
 `variable: Yes` labels.
 
-```{r compact-binary-plot, message=FALSE, warning=FALSE}
+```{r compact-binary-plot, fig.width=10, fig.height=7, message=FALSE, warning=FALSE}
 plot_reg(
   birthwt_uni,
   show_ref = FALSE,
@@ -362,7 +379,7 @@ For ratio measures such as odds ratios, risk ratios, and incidence rate ratios,
 `log_x = TRUE` uses a log-scaled x-axis. If you do not provide tick marks,
 `gtregression` chooses sensible defaults around the null value of 1.
 
-```{r log-axis-plot, message=FALSE, warning=FALSE}
+```{r log-axis-plot,fig.width=10, fig.height=7, message=FALSE, warning=FALSE}
 plot_reg(
   birthwt_uni,
   log_x = TRUE,
@@ -372,7 +389,7 @@ plot_reg(
 
 You can still take full control of the visible axis range and tick marks.
 
-```{r custom-axis-plot, message=FALSE, warning=FALSE}
+```{r custom-axis-plot, fig.width=10, fig.height=7, message=FALSE, warning=FALSE}
 plot_reg(
   birthwt_uni,
   show_ref = FALSE,
@@ -389,7 +406,7 @@ plot_reg(
 is useful when a manuscript needs to show how adjustment changes the estimate.
 Axis limits and tick marks can be controlled separately for each side.
 
-```{r combined-plot, message=FALSE, warning=FALSE}
+```{r combined-plot, fig.width=12, fig.height=7, message=FALSE, warning=FALSE}
 plot_reg_combine(
   tbl_uni = birthwt_uni,
   tbl_multi = birthwt_multi,
@@ -410,14 +427,13 @@ plot_reg_combine(
 the most manuscript-oriented plot when you want descriptive summaries and crude
 or adjusted estimates in the same figure.
 
-```{r forest-table, message=FALSE, warning=FALSE}
+```{r forest-table, fig.width=13, fig.height=10, message=FALSE, warning=FALSE}
 forest_data <- forest_df(
   uni = birthwt_uni,
   multi = birthwt_multi,
   desc = birthwt_desc
 )
-
-forest_reg(forest_data, quiet = TRUE)
+forest_reg(forest_data)
 ```
 
 ### Fine-Tune Forest Tables
@@ -428,7 +444,7 @@ control the axis range and tick marks with `xlim` and `ticks_at`.
 
 Use a list when the table has crude and adjusted forest plot columns.
 
-```{r forest-axis-control, message=FALSE, warning=FALSE}
+```{r forest-axis-control, fig.width=13, fig.height=10,message=FALSE, warning=FALSE}
 forest_reg(
   forest_data,
   xlim = list(c(0.25, 8), c(0.8, 25)),
@@ -445,7 +461,7 @@ This changes the blank spacer column that `forestploter` uses for drawing the
 confidence intervals. Larger values give the CI panel more room; smaller values
 make the overall table more compact.
 
-```{r forest-ci-width, message=FALSE, warning=FALSE}
+```{r forest-ci-width, fig.width=13, fig.height=10, message=FALSE, warning=FALSE}
 forest_reg(
   forest_data,
   ci_col_width = c(18, 22),
@@ -453,8 +469,7 @@ forest_reg(
   ticks_at = list(
     c(0.5, 1, 2, 4, 8),
     c(1, 2, 4, 8, 16)
-  ),
-  quiet = TRUE
+  )
 )
 ```
 
@@ -463,13 +478,12 @@ table includes several descriptive columns and two model columns.
 
 You can also build and draw in one call.
 
-```{r forest-one-call, message=FALSE, warning=FALSE}
+```{r forest-one-call, fig.width=13, fig.height=10,message=FALSE, warning=FALSE}
 forest_reg(
   uni = birthwt_uni,
   multi = birthwt_multi,
   desc = birthwt_desc,
-  side = "left",
-  quiet = TRUE
+  side = "left"
 )
 ```
 

@@ -100,6 +100,14 @@ study design, and causal diagrams such as DAGs. Automated change-in-estimate
 and interaction checks should not be used as the sole basis for model
 adjustment.
 
+For each exposure-candidate pair, the interaction screen fits
+\code{outcome ~ exposure + potential_confounder +
+exposure:potential_confounder}. It does not adjust for other covariates.
+Consequently, the reported interaction p-value is a candidate-only screening
+result, not a final adjusted interaction analysis. Use
+\code{interaction_models(covariates = ...)} when testing a planned,
+covariate-adjusted interaction.
+
 Use this function when you want to screen one or more candidate variables and
 organise crude, adjusted, Mantel-Haenszel, and effect-modification signals in
 one place. For a focused comparison of models with and without a planned

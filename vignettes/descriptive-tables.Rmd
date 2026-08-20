@@ -63,7 +63,7 @@ desc_column <- descriptive_table(
   theme = clinical
 )
 
-desc_column$table
+desc_column
 ```
 
 ## Row Percentages
@@ -101,7 +101,7 @@ descriptive_table(
   ),
   percent = column,
   show_missing = no
-)$table
+)
 ```
 
 The quoted form is equivalent and often clearer in saved scripts:
@@ -125,13 +125,15 @@ descriptive_table(
 `format = gt` when the output is mainly for HTML or pkgdown.
 
 ```{r desc-flex, message=FALSE, warning=FALSE}
-descriptive_table(
+desc_gt <- descriptive_table(
   data = birthwt_data,
   exposures = birthwt_exposures,
   by = "low",
   percent = "column",
   format = gt
-)$table
+)
+
+desc_gt$table
 ```
 
 ## What To Inspect

@@ -93,6 +93,8 @@ A list of class \code{c("gtregression","surv_reg", ...)} with elements:
   \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
   otherwise \code{NULL}.}
   \item{variable_labels}{Named character vector of display labels.}
+  \item{footnotes}{Character vector used by the rendered table. Adjustment
+  notes use the same display labels as the table.}
   \item{time,event,distribution,approach,format,source,adjust_for,exposures,interaction}{Metadata fields.}
 }
 }

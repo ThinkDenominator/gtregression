@@ -22,7 +22,7 @@
 library(gtregression)
 library(dplyr)
 
-data("data_PimaIndiansDiabetes", package = "gtregression")
+data("data_SynthDiabetes", package = "gtregression")
 
 
 ## 1. Prepare the diabetes clinic dataset ------------------------------------
@@ -31,7 +31,7 @@ data("data_PimaIndiansDiabetes", package = "gtregression")
 ## We create readable categories for descriptive summaries, stratified analyses,
 ## and interaction/confounding screening.
 
-pima_data <- data_PimaIndiansDiabetes |>
+synth_data <- data_SynthDiabetes |>
   mutate(
     diabetes = ifelse(diabetes == "pos", 1, 0),
     diabetes_cat = case_when(
@@ -99,34 +99,34 @@ categorical_predictors <- c(
 
 ## Clearer labels for the reader:
 ## Label once, then all gtregression tables and plots use these display names.
-attr(pima_data$glucose, "label") <- "Plasma glucose"
-attr(pima_data$age, "label") <- "Age"
-attr(pima_data$pregnant, "label") <- "Number of pregnancies"
-attr(pima_data$pressure, "label") <- "Blood pressure"
-attr(pima_data$triceps, "label") <- "Triceps skinfold"
-attr(pima_data$mass, "label") <- "Body mass index"
-attr(pima_data$insulin, "label") <- "Serum insulin"
-attr(pima_data$pedigree, "label") <- "Diabetes pedigree function"
-attr(pima_data$bmi, "label") <- "BMI category"
-attr(pima_data$age_cat, "label") <- "Age group"
-attr(pima_data$npreg_cat, "label") <- "Parity"
-attr(pima_data$bp_cat, "label") <- "Blood pressure category"
-attr(pima_data$insulin_cat, "label") <- "Serum insulin category"
-attr(pima_data$dpf_cat, "label") <- "Diabetes pedigree risk"
+attr(synth_data$glucose, "label") <- "Plasma glucose"
+attr(synth_data$age, "label") <- "Age"
+attr(synth_data$pregnant, "label") <- "Number of pregnancies"
+attr(synth_data$pressure, "label") <- "Blood pressure"
+attr(synth_data$triceps, "label") <- "Triceps skinfold"
+attr(synth_data$mass, "label") <- "Body mass index"
+attr(synth_data$insulin, "label") <- "Serum insulin"
+attr(synth_data$pedigree, "label") <- "Diabetes pedigree function"
+attr(synth_data$bmi, "label") <- "BMI category"
+attr(synth_data$age_cat, "label") <- "Age group"
+attr(synth_data$npreg_cat, "label") <- "Parity"
+attr(synth_data$bp_cat, "label") <- "Blood pressure category"
+attr(synth_data$insulin_cat, "label") <- "Serum insulin category"
+attr(synth_data$dpf_cat, "label") <- "Diabetes pedigree risk"
 
 
 ## 2. Inspect data before modelling ------------------------------------------
 
 ## Default output is a publication-style flextable.
-dissect(pima_data)
+dissect(synth_data)
 
 ## Use tibble output when you want to inspect compatibility programmatically.
-pima_dissect <- dissect(pima_data, format = "tibble")
-pima_dissect
+synth_dissect <- dissect(synth_data, format = "tibble")
+synth_dissect
 
 ## Optional external data overview when skimr is available.
 if (requireNamespace("skimr", quietly = TRUE)) {
-  skimr::skim(pima_data)
+  skimr::skim(synth_data)
 }
 
 
@@ -136,8 +136,8 @@ if (requireNamespace("skimr", quietly = TRUE)) {
 ## glucose, but this descriptive table helps readers understand the clinical
 ## profile of the cohort.
 
-pima_summary <- descriptive_table(
-  data = pima_data,
+synth_summary <- descriptive_table(
+  data = synth_data,
   exposures = c(
     "age", "pregnant", "glucose", "pressure", "triceps",
     "insulin", "mass", "pedigree", "bmi", "age_cat"
@@ -147,11 +147,11 @@ pima_summary <- descriptive_table(
   show_overall = "last"
 )
 
-pima_summary
+synth_summary
 
 ## Useful option: row percentages for clinical profile questions.
 descriptive_table(
-  data = pima_data,
+  data = synth_data,
   exposures = c("bmi", "age_cat", "npreg_cat", "insulin_cat"),
   by = "diabetes_cat",
   percent = "row",
@@ -163,7 +163,7 @@ descriptive_table(
 ## Treat pregnant as categorical when the number of pregnancies is easier to
 ## read as counts and percentages than as a continuous summary.
 descriptive_table(
-  data = pima_data,
+  data = synth_data,
   exposures = c("age", "mass", "pregnant", "bmi", "age_cat"),
   by = diabetes_cat,
   statistic = c(age = mean, mass = median, pregnant = categorical),
@@ -178,7 +178,7 @@ descriptive_table(
 ## Is BMI category associated with mean glucose?
 
 uni_bmi_lm <- uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = "glucose",
   exposures = "bmi",
   approach = "linear"
@@ -204,7 +204,7 @@ plot_model_fit(uni_bmi_lm, model_name = bmi)
 ## Which individual clinical measurements are associated with glucose?
 
 uni_lm <- uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = clinical_predictors,
   approach = "linear"
@@ -217,7 +217,7 @@ uni_lm$reg_check
 
 ## Optional model statistics are stored outside the publication table.
 uni_lm_stats <- uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = glucose,
   exposures = clinical_predictors,
   approach = linear,
@@ -228,11 +228,10 @@ uni_lm_stats$model_stats
 
 ## Useful option: add categorical predictors in a separate table.
 uni_cat_lm <- uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = categorical_predictors,
-  approach = "linear",
-  format = "gt"
+  approach = "linear"
 )
 
 uni_cat_lm
@@ -244,7 +243,7 @@ uni_cat_lm
 ## Which associations remain after all clinical predictors enter one model?
 
 multi_lm <- multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = clinical_predictors,
   approach = "linear"
@@ -264,7 +263,7 @@ plot_model_fit(multi_lm)
 ## core. This is useful for focused manuscript tables.
 
 multi_adj_lm <- multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = c("mass", "insulin", "pedigree"),
   adjust_for = c("age", "pregnant", "pressure"),
@@ -275,15 +274,15 @@ multi_adj_lm
 
 ## Friendly interactive syntax also works at the console.
 multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = glucose,
   exposures = c(mass, insulin, pedigree),
   adjust_for = c(age, pregnant, pressure),
-  approach = linear
+  approach = "linear"
 )
 
 multi_adj_lm_stats <- multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = glucose,
   exposures = c(mass, insulin, pedigree),
   adjust_for = c(age, pregnant, pressure),
@@ -332,6 +331,7 @@ multi_adj_lm_paper <- modify_table(
     p.value = "P value"
   ),
   caption = "Table 2. Adjusted linear regression for plasma glucose",
+  remove_adjustment_note= TRUE,
   caveat = "Adjusted for age, number of pregnancies, and blood pressure."
 )
 
@@ -342,6 +342,7 @@ modify_table(
   multi_adj_lm,
   remove_N_obs = TRUE,
   remove_abbreviations = TRUE,
+  remove_adjustment_note = TRUE,
   caption = "Compact adjusted linear model"
 )
 
@@ -399,7 +400,7 @@ plot_reg_combine(
 ## 9. Merge descriptive and regression tables --------------------------------
 
 final_lm_table <- merge_tables(
-  pima_summary,
+  synth_summary,
   uni_lm_paper,
   multi_adj_lm_paper,
   spanners = c("Clinical profile", "Crude", "Adjusted")
@@ -414,16 +415,16 @@ final_lm_table
 ## For linear regression, the forest plot displays beta coefficients.
 
 df_uni_lm <- forest_df(uni_lm)
-df_uni_lm
+
 
 df_multi_lm <- forest_df(multi_lm)
-df_multi_lm
+
 
 df_both_lm <- forest_df(uni_lm, multi_lm)
-df_both_lm
 
-df_lm_desc <- forest_df(uni_lm, multi_adj_lm, desc = pima_summary)
-df_lm_desc
+
+df_lm_desc <- forest_df(uni_lm, multi_adj_lm, desc = synth_summary)
+
 
 forest_reg(df_uni_lm)
 forest_reg(df_multi_lm)
@@ -461,21 +462,21 @@ check_collinearity(multi_lm, format = "gt")
 ## the change in a primary exposure such as BMI.
 
 lm_m0 <- multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = glucose,
   exposures = mass,
   approach = linear
 )
 
 lm_m1 <- multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = glucose,
   exposures = c(mass, age, pregnant, pressure),
   approach = linear
 )
 
 lm_m2 <- multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = glucose,
   exposures = c(mass, age, pregnant, pressure, insulin, pedigree),
   approach = linear
@@ -514,7 +515,7 @@ compare_models(
 ## selection was used.
 
 stepwise_forward <- select_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = clinical_predictors,
   approach = "linear",
@@ -527,7 +528,7 @@ stepwise_forward$best_model
 summary(stepwise_forward$best_model)
 
 select_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = clinical_predictors,
   approach = "linear",
@@ -536,7 +537,7 @@ select_models(
 )
 
 select_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = clinical_predictors,
   approach = "linear",
@@ -551,7 +552,7 @@ select_models(
 ## A plain call prints a tidy console summary. The formatted table is in $table.
 
 conf_age <- identify_confounder(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposure = "insulin",
   potential_confounder = "age_cat",
@@ -562,7 +563,7 @@ conf_age
 conf_age$table
 
 identify_confounder(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposure = c("insulin", "pedigree"),
   potential_confounder = c("age_cat", "bmi"),
@@ -576,7 +577,7 @@ identify_confounder(
 ## age group after accounting for pregnancy history.
 
 interaction_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposure = "insulin",
   effect_modifier = "age_cat",
@@ -585,7 +586,7 @@ interaction_models(
 )
 
 interaction_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposure = "insulin",
   effect_modifier = "age_cat",
@@ -606,7 +607,7 @@ interaction_models(
 ## First profile the age strata. This helps the reader understand whether each
 ## age group has a different metabolic profile before comparing coefficients.
 age_profile_lm <- descriptive_table(
-  data = pima_data,
+  data = synth_data,
   exposures = c("glucose", "mass", "pregnant", "pressure", "insulin", "pedigree"),
   by = age_cat,
   statistic = c(glucose = mean, mass = median),
@@ -617,7 +618,7 @@ age_profile_lm <- descriptive_table(
 age_profile_lm
 
 stratified_uni_lm <- stratified_uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = c("mass", "triceps", "pregnant", "pressure", "insulin"),
   stratifier = "age_cat",
@@ -628,7 +629,7 @@ stratified_uni_lm
 stratified_uni_lm$model_summaries
 
 stratified_multi_lm <- stratified_multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = c("mass", "triceps", "pregnant", "pressure", "insulin"),
   stratifier = "age_cat",
@@ -638,7 +639,7 @@ stratified_multi_lm <- stratified_multi_reg(
 stratified_multi_lm
 
 stratified_adj_lm <- stratified_multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = c("mass", "insulin", "pedigree"),
   stratifier = "age_cat",
@@ -665,7 +666,7 @@ plot_reg(
 ## side-by-side crude versus adjusted display is better for ordinary regression
 ## objects; forest_reg() is clearer for stratified publication tables.
 stratified_lm_forest_data <- forest_df(stratified_adj_lm)
-stratified_lm_forest_data
+
 
 forest_reg(stratified_lm_forest_data)
 
@@ -675,8 +676,8 @@ forest_reg(stratified_lm_forest_data)
 ## Files are written to a temporary folder by default when no full destination
 ## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
 
-save_table(final_lm_table, filename = "pima-linear-table", format = "docx")
-save_plot(plot_comb_lm, filename = "pima-linear-plot", format = "png")
+save_table(final_lm_table, filename = "synthetic-diabetes-linear-table", format = "docx")
+save_plot(plot_comb_lm, filename = "synthetic-diabetes-linear-plot", format = "png")
 
 save_docx(
   tables = list(uni_lm_paper, multi_adj_lm_paper, final_lm_table),
@@ -689,7 +690,7 @@ save_docx(
     "Forest plot - adjusted",
     "Crude versus adjusted beta plot"
   ),
-  filename = "pima-linear-report",
+  filename = "synthetic-diabetes-linear-report",
   table_width = 6.5
 )
 

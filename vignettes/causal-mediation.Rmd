@@ -36,7 +36,7 @@ library(dplyr)
 
 data("data_diabetes_mediation", package = "gtregression")
 
-glimpse(data_diabetes_mediation)
+dissect(data_diabetes_mediation)
 ```
 
 ## Logistic Outcome
@@ -61,7 +61,7 @@ diabetes_med <- mediation_analysis(
   seed = 123
 )
 
-diabetes_med$table
+diabetes_med
 ```
 
 The returned object keeps the table body, fitted models, bootstrap draws, and
@@ -115,7 +115,7 @@ med_quoted <- mediation_analysis(
   seed = 456
 )
 
-med_quoted$table
+med_quoted
 ```
 
 ## Linear Outcome
@@ -135,7 +135,7 @@ med_linear <- mediation_analysis(
   seed = 789
 )
 
-med_linear$table
+med_linear
 ```
 
 ```{r mediation-linear-plot, fig.width=7, fig.height=5}

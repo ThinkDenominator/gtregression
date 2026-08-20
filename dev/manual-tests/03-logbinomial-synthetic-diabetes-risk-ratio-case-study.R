@@ -26,7 +26,7 @@
 library(gtregression)
 library(dplyr)
 
-data("data_PimaIndiansDiabetes", package = "gtregression")
+data("data_SynthDiabetes", package = "gtregression")
 
 
 ## 1. Prepare the diabetes risk dataset --------------------------------------
@@ -35,7 +35,7 @@ data("data_PimaIndiansDiabetes", package = "gtregression")
 ## binary outcome. We also create clinical categories for readable tables and
 ## risk-ratio comparisons.
 
-pima_data <- data_PimaIndiansDiabetes |>
+synth_data <- data_SynthDiabetes |>
   mutate(
     diabetes = ifelse(diabetes == "pos", 1, 0),
     diabetes_cat = case_when(
@@ -109,30 +109,30 @@ core_risk_factors <- c("age_cat", "npreg_cat", "dpf_cat")
 
 ## Clearer labels for the reader:
 ## Label once, then all gtregression tables and plots use these display names.
-attr(pima_data$glucose, "label") <- "Plasma glucose"
-attr(pima_data$mass, "label") <- "Body mass index"
-attr(pima_data$bmi, "label") <- "BMI category"
-attr(pima_data$age_cat, "label") <- "Age group"
-attr(pima_data$npreg_cat, "label") <- "Parity"
-attr(pima_data$glucose_cat, "label") <- "Glucose category"
-attr(pima_data$bp_cat, "label") <- "Blood pressure category"
-attr(pima_data$triceps_cat, "label") <- "Triceps skinfold category"
-attr(pima_data$insulin_cat, "label") <- "Serum insulin category"
-attr(pima_data$dpf_cat, "label") <- "Diabetes pedigree risk"
+attr(synth_data$glucose, "label") <- "Plasma glucose"
+attr(synth_data$mass, "label") <- "Body mass index"
+attr(synth_data$bmi, "label") <- "BMI category"
+attr(synth_data$age_cat, "label") <- "Age group"
+attr(synth_data$npreg_cat, "label") <- "Parity"
+attr(synth_data$glucose_cat, "label") <- "Glucose category"
+attr(synth_data$bp_cat, "label") <- "Blood pressure category"
+attr(synth_data$triceps_cat, "label") <- "Triceps skinfold category"
+attr(synth_data$insulin_cat, "label") <- "Serum insulin category"
+attr(synth_data$dpf_cat, "label") <- "Diabetes pedigree risk"
 
 
 ## 2. Inspect data before modelling ------------------------------------------
 
 ## Default output is a publication-style flextable.
-dissect(pima_data)
+dissect(synth_data)
 
 ## Use tibble output for a quick scan of missingness, variable type, and levels.
-pima_dissect <- dissect(pima_data, format = "tibble")
-pima_dissect
+synth_dissect <- dissect(synth_data, format = "tibble")
+synth_dissect
 
 ## Optional external overview if skimr is installed.
 if (requireNamespace("skimr", quietly = TRUE)) {
-  skimr::skim(pima_data)
+  skimr::skim(synth_data)
 }
 
 
@@ -142,8 +142,8 @@ if (requireNamespace("skimr", quietly = TRUE)) {
 ## Column percentages answer:
 ## "Within each diabetes group, what proportion had each risk factor?"
 
-pima_summary <- descriptive_table(
-  data = pima_data,
+synth_summary <- descriptive_table(
+  data = synth_data,
   exposures = risk_factors,
   by = "diabetes_cat",
   percent = "column",
@@ -151,13 +151,13 @@ pima_summary <- descriptive_table(
   show_overall = "first"
 )
 
-pima_summary
+synth_summary
 
 ## Row percentages answer:
 ## "Within each risk-factor level, what proportion were diabetes positive?"
 
-pima_summary_row <- descriptive_table(
-  data = pima_data,
+synth_summary_row <- descriptive_table(
+  data = synth_data,
   exposures = risk_factors,
   by = "diabetes_cat",
   percent = "row",
@@ -165,11 +165,11 @@ pima_summary_row <- descriptive_table(
   show_overall = "last"
 )
 
-pima_summary_row
+synth_summary_row
 
 ## Explicit HTML-style output.
 descriptive_table(
-  data = pima_data,
+  data = synth_data,
   exposures = risk_factors,
   by = "diabetes_cat",
   percent = "column",
@@ -181,7 +181,7 @@ descriptive_table(
 ## A numeric variable can be treated as categorical when clinical reporting
 ## needs counts and percentages.
 descriptive_table(
-  data = pima_data,
+  data = synth_data,
   exposures = c("age_cat", "npreg_cat", "glucose", "mass"),
   by = diabetes_cat,
   statistic = c(glucose = mean, mass = median),
@@ -200,7 +200,7 @@ descriptive_table(
 ## RR < 1 suggests lower risk compared with the reference group.
 
 uni_bmi_rr <- uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = "diabetes",
   exposures = "bmi",
   approach = "logbinomial"
@@ -213,7 +213,7 @@ uni_bmi_rr$model_summaries
 
 ## The old spelling remains accepted for backward compatibility.
 uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = "diabetes",
   exposures = "bmi",
   approach = "log-binomial"
@@ -227,14 +227,14 @@ uni_reg(
 ## multivariable model.
 
 check_convergence(
-  data = pima_data,
+  data = synth_data,
   exposures = risk_factors,
   outcome = "diabetes",
   approach = "logbinomial"
 )
 
 check_convergence(
-  data = pima_data,
+  data = synth_data,
   exposures = risk_factors,
   outcome = "diabetes",
   approach = "logbinomial",
@@ -247,7 +247,7 @@ check_convergence(
 ## interpret and more likely to converge.
 
 check_convergence(
-  data = pima_data,
+  data = synth_data,
   exposures = core_risk_factors,
   outcome = "diabetes",
   approach = "logbinomial",
@@ -261,7 +261,7 @@ check_convergence(
 ## Which single risk factors are associated with diabetes?
 
 uni_rr <- uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = risk_factors,
   approach = "logbinomial"
@@ -274,7 +274,7 @@ uni_rr$table
 
 ## Optional model statistics are stored outside the publication table.
 uni_rr_stats <- uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = diabetes,
   exposures = risk_factors,
   approach = logbinomial,
@@ -285,7 +285,7 @@ uni_rr_stats$model_stats
 
 ## Useful option: gt output for HTML/pkgdown viewing.
 uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = risk_factors,
   approach = "logbinomial",
@@ -299,10 +299,10 @@ uni_reg(
 ## Which selected risk factors remain associated when modelled together?
 
 multi_rr <- multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = core_risk_factors,
-  approach = "logbinomial"
+  approach = logbinomial
 )
 
 multi_rr
@@ -314,7 +314,7 @@ multi_rr$model_summaries
 ## Estimate each exposure separately while adjusting for a common core.
 
 multi_adj_rr <- multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = c("npreg_cat", "dpf_cat"),
   adjust_for = c("age_cat", "bmi"),
@@ -325,7 +325,7 @@ multi_adj_rr
 
 ## Friendly interactive syntax also works at the console.
 multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = diabetes,
   exposures = c(npreg_cat, dpf_cat),
   adjust_for = c(age_cat, bmi),
@@ -333,7 +333,7 @@ multi_reg(
 )
 
 multi_adj_rr_stats <- multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = diabetes,
   exposures = c(npreg_cat, dpf_cat),
   adjust_for = c(age_cat, bmi),
@@ -387,7 +387,8 @@ multi_adj_rr_paper <- modify_table(
     p.value = "P value"
   ),
   caption = "Table 2. Adjusted log-binomial regression for diabetes risk",
-  caveat = "Adjusted for age group and BMI category."
+  remove_adjustment_note = TRUE,
+  caveat = "Adjusted for selected baseline characteristics"
 )
 
 multi_adj_rr_paper
@@ -397,6 +398,7 @@ modify_table(
   multi_adj_rr,
   remove_N_obs = TRUE,
   remove_abbreviations = TRUE,
+  remove_adjustment_note = TRUE,
   caption = "Compact adjusted risk-ratio table"
 )
 
@@ -459,7 +461,7 @@ plot_reg_combine(
 ## 10. Merge descriptive and risk-ratio tables --------------------------------
 
 final_rr_table <- merge_tables(
-  pima_summary,
+  synth_summary,
   uni_rr_paper,
   multi_adj_rr_paper,
   spanners = c("Clinical profile", "Crude RR", "Adjusted RR")
@@ -494,25 +496,25 @@ final_rr_table_paper
 ## For log-binomial regression, the forest plot displays RR estimates.
 
 df_uni_rr <- forest_df(uni_rr)
-df_uni_rr
+
 
 df_multi_rr <- forest_df(multi_rr)
-df_multi_rr
+
 
 df_both_rr <- forest_df(uni_rr, multi_rr)
-df_both_rr
 
-df_desc_rr <- forest_df(pima_summary)
-df_desc_rr
 
-df_uni_desc_rr <- forest_df(uni_rr, desc = pima_summary)
-df_uni_desc_rr
+df_desc_rr <- forest_df(synth_summary)
 
-df_multi_desc_rr <- forest_df(multi_adj_rr, desc = pima_summary)
-df_multi_desc_rr
 
-df_both_desc_rr <- forest_df(uni_rr, multi_adj_rr, desc = pima_summary)
-df_both_desc_rr
+df_uni_desc_rr <- forest_df(uni_rr, desc = synth_summary)
+
+
+df_multi_desc_rr <- forest_df(multi_adj_rr, desc = synth_summary)
+
+
+df_both_desc_rr <- forest_df(uni_rr, multi_adj_rr, desc = synth_summary)
+
 
 forest_reg(df_uni_rr)
 forest_reg(df_multi_rr)
@@ -543,7 +545,7 @@ forest_reg(df_both_desc_rr, side = "left")
 forest_reg(
   uni = uni_rr,
   multi = multi_adj_rr,
-  desc = pima_summary
+  desc = synth_summary
 )
 
 
@@ -560,7 +562,7 @@ check_collinearity(multi_rr, format = "gt")
 ## selection was used.
 
 select_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = core_risk_factors,
   approach = "logbinomial",
@@ -568,7 +570,7 @@ select_models(
 )
 
 select_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = core_risk_factors,
   approach = "logbinomial",
@@ -577,7 +579,7 @@ select_models(
 )
 
 select_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = core_risk_factors,
   approach = "logbinomial",
@@ -593,7 +595,7 @@ select_models(
 ## Mantel-Haenszel comparison when the variables are eligible.
 
 conf_age_rr <- identify_confounder(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposure = "npreg_cat",
   potential_confounder = "age_cat",
@@ -605,7 +607,7 @@ conf_age_rr
 conf_age_rr$table
 
 identify_confounder(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposure = c("npreg_cat", "dpf_cat"),
   potential_confounder = c("age_cat", "bmi"),
@@ -619,7 +621,7 @@ identify_confounder(
 ## adjusting for diabetes pedigree risk.
 
 interaction_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposure = "npreg_cat",
   effect_modifier = "age_cat",
@@ -628,7 +630,7 @@ interaction_models(
 )
 
 interaction_models(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposure = "npreg_cat",
   effect_modifier = "age_cat",
@@ -649,7 +651,7 @@ interaction_models(
 ## First profile the age strata. Risk ratios are easier to interpret when the
 ## reader can see how glucose, BMI, parity, and pedigree risk are distributed.
 age_profile_rr <- descriptive_table(
-  data = pima_data,
+  data = synth_data,
   exposures = c("glucose_cat", "bmi", "npreg_cat", "dpf_cat"),
   by = age_cat,
   percent = column,
@@ -659,7 +661,7 @@ age_profile_rr <- descriptive_table(
 age_profile_rr
 
 str_uni_rr <- stratified_uni_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = c("npreg_cat", "dpf_cat"),
   stratifier = "age_cat",
@@ -671,7 +673,7 @@ str_uni_rr$models
 str_uni_rr$model_summaries
 
 str_multi_rr <- stratified_multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = c("age_cat", "dpf_cat"),
   stratifier = "npreg_cat",
@@ -683,7 +685,7 @@ str_multi_rr$models
 str_multi_rr$model_summaries
 
 stratified_multi_reg(
-  data = pima_data,
+  data = synth_data,
   outcome = outcome,
   exposures = c("npreg_cat", "dpf_cat"),
   stratifier = "age_cat",
@@ -697,8 +699,8 @@ stratified_multi_reg(
 ## Files are written to a temporary folder by default when no full destination
 ## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
 
-save_table(final_rr_table_paper, filename = "pima-logbinomial-table", format = "docx")
-save_plot(plot_comb_rr, filename = "pima-logbinomial-plot", format = "png")
+save_table(final_rr_table_paper, filename = "synthetic-diabetes-logbinomial-table", format = "docx")
+save_plot(plot_comb_rr, filename = "synthetic-diabetes-logbinomial-plot", format = "png")
 
 save_docx(
   tables = list(uni_rr_paper, multi_adj_rr_paper, final_rr_table_paper),
@@ -711,7 +713,7 @@ save_docx(
     "Forest plot - adjusted",
     "Crude versus adjusted risk-ratio plot"
   ),
-  filename = "pima-logbinomial-report",
+  filename = "synthetic-diabetes-logbinomial-report",
   table_width = 6.5
 )
 

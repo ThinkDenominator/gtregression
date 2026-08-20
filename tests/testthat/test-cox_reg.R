@@ -69,6 +69,23 @@ test_that("cox_reg crude tables display survival complete-case N consistently", 
   expect_false("N" %in% names(modify_table(res, remove_N = TRUE)$table_display))
 })
 
+test_that("cox_reg adjustment notes use display labels", {
+  skip_if_not_installed("survival")
+
+  df <- lung_cox_data()
+  attr(df$age, "label") <- "Patient age"
+  attr(df$karno, "label") <- "Performance score"
+
+  res <- cox_reg(
+    data = df, time = time, event = status, exposures = trt,
+    adjust_for = c(age, karno)
+  )
+
+  expect_true(any(res$footnotes == "Adjusted for Patient age and Performance score"))
+  expect_false(any(res$footnotes == "Adjusted for age and karno"))
+  expect_false(any(grepl("^Event variable:", res$footnotes)))
+})
+
 test_that("cox_reg explains how to show reference rows when hidden", {
   skip_if_not_installed("survival")
 
@@ -161,6 +178,8 @@ test_that("cox_reg supports interaction terms", {
   skip_if_not_installed("survival")
 
   df <- lung_cox_data()
+  attr(df$trt, "label") <- "Treatment"
+  attr(df$prior, "label") <- "Prior therapy"
 
   adjusted <- cox_reg(
     data = df,
@@ -180,6 +199,7 @@ test_that("cox_reg supports interaction terms", {
   expect_equal(adjusted$interaction, "trt*prior")
   expect_true("Adjusted HR (95% CI)" %in% names(adjusted$table_display))
   expect_true(any(grepl(" x ", adjusted$table_body$level, fixed = TRUE)))
+  expect_true(any(adjusted$table_body$level == "Treatment: Test treatment x Prior therapy: Yes"))
   expect_equal(stats::coef(adjusted$models$trt), stats::coef(direct_adjusted), tolerance = 1e-8)
 
   multivariable <- cox_reg(
@@ -699,7 +719,6 @@ test_that("cox_reg validates stratifier inputs and supports stratified forest da
   forest_data <- forest_df(stratified)
   expect_s3_class(forest_data, "data.frame")
   expect_true(all(paste0(
-    "trt = ",
     c("Standard treatment", "Test treatment"),
     "\nHR (95% CI)"
   ) %in% names(forest_data)))

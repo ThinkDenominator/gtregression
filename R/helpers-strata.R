@@ -237,7 +237,7 @@
     wide[[paste0("..p__",   lev)]] <- cols$pval
   }
 
-  list(wide = wide, spanners = paste0(stratifier, " = ", names(per_stratum)))
+  list(wide = wide, spanners = names(per_stratum))
 }
 
 # ----- MULTIVARIABLE: pull Adjusted effect/p per stratum ---------------------
@@ -322,7 +322,7 @@
 
   list(
     wide = wide,
-    spanners = paste0(stratifier, " = ", strata_names)
+    spanners = strata_names
   )
 }
 

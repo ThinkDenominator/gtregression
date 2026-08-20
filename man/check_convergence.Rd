@@ -63,10 +63,10 @@ problems are common and robust Poisson may be a practical alternative.
 }
 \examples{
 if (requireNamespace("gtregression", quietly = TRUE)) {
-  data(data_PimaIndiansDiabetes, package = "gtregression")
+  data(data_SynthDiabetes, package = "gtregression")
 
   check_convergence(
-    data = data_PimaIndiansDiabetes,
+    data = data_SynthDiabetes,
     exposures = c("age", "mass"),
     outcome = "diabetes",
     approach = "logit",
@@ -74,7 +74,7 @@ if (requireNamespace("gtregression", quietly = TRUE)) {
   )
 
   check_convergence(
-    data = data_PimaIndiansDiabetes,
+    data = data_SynthDiabetes,
     exposures = c("age", "mass"),
     outcome = "diabetes",
     approach = "logit",

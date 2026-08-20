@@ -152,11 +152,13 @@ birthwt_multi$table
 
 ### Visualise
 
-```{r quick-plot, message=FALSE, warning=FALSE}
+```{r quick-plot, fig.width=12, fig.height=8,message=FALSE, warning=FALSE}
 plot_reg(
   birthwt_multi,
   title = "Adjusted Regression for Low Birth Weight"
 )
+
+forest_reg(forest_df(birthwt_uni, birthwt_multi))
 ```
 
 ### Merge and Polish

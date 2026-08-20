@@ -14,12 +14,17 @@
 #' @param ref_line Optional numeric value for the reference line.
 #'   Defaults to 0 for linear models and 1 otherwise.
 #' @param order_y Optional character vector specifying exposure order.
-#' @param log_x Logical; if \code{TRUE}, use a log-scaled x-axis for non-linear models.
+#' @param log_x Logical. If \code{TRUE}, use a log-scaled x-axis for ratio
+#'   measures. The default \code{FALSE} uses a linear x-axis.
 #' @param xlim Optional numeric vector of length 2 specifying x-axis limits.
 #' @param breaks Optional numeric vector of x-axis tick breaks.
-#' @param point_color Fill color for points.
-#' @param errorbar_color Color for error bars.
-#' @param base_size Base font size.
+#' @param point_color Fill color for non-significant estimate points.
+#' @param errorbar_color Color for non-significant confidence intervals.
+#' @param point_size Diameter of estimate points in millimetres.
+#' @param point_stroke Outline width of estimate points.
+#' @param ci_linewidth Line width of confidence intervals.
+#' @param base_size Base font size. The default is designed for a clear report
+#'   or slide figure; increase it for a single large plot.
 #' @param show_ref Logical or \code{NULL}. The default \code{NULL} inherits the
 #'   reference-row choice used to create \code{tbl}. If \code{TRUE}, reference
 #'   rows are shown. If \code{FALSE}, binary exposures are shown as compact rows
@@ -33,7 +38,7 @@
 #'
 #' @return A \code{ggplot2} object.
 #' @importFrom rlang .data
-#' @importFrom stats setNames
+#' @importFrom stats ave setNames
 #' @export
 plot_reg <- function(tbl,
                      title = NULL,
@@ -43,12 +48,15 @@ plot_reg <- function(tbl,
                      log_x = FALSE,
                      xlim = NULL,
                      breaks = NULL,
-                     point_color = "#1F77B4",
-                     errorbar_color = "#4C4C4C",
-                     base_size = 14,
+                     point_color = "#6B7280",
+                     errorbar_color = "#6B7280",
+                     point_size = 2.8,
+                     point_stroke = 0.55,
+                     ci_linewidth = 0.55,
+                     base_size = 12,
                      show_ref = NULL,
-                     sig_color = NULL,
-                     sig_errorbar_color = NULL,
+                     sig_color = "#0072B2",
+                     sig_errorbar_color = "#0072B2",
                      alpha = 0.05,
                      show_adjustment_note = TRUE) {
 
@@ -62,6 +70,8 @@ plot_reg <- function(tbl,
   if (is.null(source_type) || is.null(approach)) {
     stop("`tbl` must contain `source` and `approach`.", call. = FALSE)
   }
+
+  log_x <- .plot_resolve_log_x(log_x, approach)
 
   show_ref <- .plot_resolve_show_ref(show_ref, tbl)
 
@@ -77,6 +87,9 @@ plot_reg <- function(tbl,
       breaks = breaks,
       point_color = point_color,
       errorbar_color = errorbar_color,
+      point_size = point_size,
+      point_stroke = point_stroke,
+      ci_linewidth = ci_linewidth,
       base_size = base_size,
       show_ref = show_ref,
       sig_color = sig_color,
@@ -138,9 +151,6 @@ plot_reg <- function(tbl,
 
   x_axis_label <- if (isTRUE(is_multi)) paste("Adjusted", base_label) else base_label
 
-  if (identical(approach, "linear")) {
-    log_x <- FALSE
-  }
   if (log_x) {
     x_axis_label <- paste0(x_axis_label, " (log scale)")
   }
@@ -346,13 +356,13 @@ plot_reg <- function(tbl,
     plot_df,
     ggplot2::aes(x = .data$estimate, y = .data$row_id)
   ) +
-    .add_h_ci(plot_df[plot_df$is_data, , drop = FALSE]) +
+    .add_h_ci(plot_df[plot_df$is_data, , drop = FALSE], linewidth = ci_linewidth) +
     ggplot2::geom_point(
       data = plot_df[plot_df$is_data, , drop = FALSE],
       ggplot2::aes(fill = .data$is_sig),
       shape = 21,
-      size = 3,
-      stroke = 0.6,
+      size = point_size,
+      stroke = point_stroke,
       show.legend = FALSE,
       na.rm = TRUE
     ) +
@@ -369,16 +379,7 @@ plot_reg <- function(tbl,
       drop = FALSE
     ) +
     ggplot2::labs(title = title, x = x_axis_label, y = NULL, caption = caption) +
-    ggplot2::theme_minimal(base_size = base_size) +
-    ggplot2::theme(
-      panel.grid.major.y = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(),
-      panel.grid.minor.x = ggplot2::element_blank(),
-      axis.text.y = ggtext::element_markdown(hjust = 0),
-      axis.text.y.left = ggtext::element_markdown(hjust = 0),
-      plot.title = ggplot2::element_text(face = "bold"),
-      plot.margin = ggplot2::margin(10, 40, 10, 10)
-    )
+    .plot_reg_theme(base_size = base_size)
 
   if (log_x) {
     if (is.null(breaks)) {
@@ -437,12 +438,15 @@ plot_reg <- function(tbl,
                                  log_x = FALSE,
                                  xlim = NULL,
                                  breaks = NULL,
-                                 point_color = "#1F77B4",
-                                 errorbar_color = "#4C4C4C",
-                                 base_size = 14,
+                                 point_color = "#6B7280",
+                                 errorbar_color = "#6B7280",
+                                 point_size = 2.8,
+                                 point_stroke = 0.55,
+                                 ci_linewidth = 0.55,
+                                 base_size = 12,
                                  show_ref = TRUE,
-                                 sig_color = NULL,
-                                 sig_errorbar_color = NULL,
+                                 sig_color = "#0072B2",
+                                 sig_errorbar_color = "#0072B2",
                                  alpha = 0.05,
                                  show_adjustment_note = TRUE) {
   if (is.null(tbl$per_stratum) || !length(tbl$per_stratum)) {
@@ -467,6 +471,9 @@ plot_reg <- function(tbl,
       breaks = breaks,
       point_color = point_color,
       errorbar_color = errorbar_color,
+      point_size = point_size,
+      point_stroke = point_stroke,
+      ci_linewidth = ci_linewidth,
       base_size = base_size,
       show_ref = show_ref,
       sig_color = sig_color,
@@ -482,16 +489,24 @@ plot_reg <- function(tbl,
 
   plot_df <- do.call(rbind, parts)
   plot_df$stratum <- factor(plot_df$stratum, levels = strata)
-  plot_df$row_key <- factor(plot_df$row_key, levels = rev(unique(plot_df$row_key)))
-  label_map <- stats::setNames(plot_df$label_clean, as.character(plot_df$row_key))
+  row_count <- nrow(parts[[1]])
+  if (any(vapply(parts, nrow, integer(1)) != row_count)) {
+    stop("Each stratum must contain the same display rows for plot_reg().", call. = FALSE)
+  }
+  plot_df$row_index <- ave(
+    seq_len(nrow(plot_df)),
+    plot_df$stratum,
+    FUN = seq_along
+  )
+  plot_df$row_key <- factor(plot_df$row_index, levels = rev(seq_len(row_count)))
+  first_stratum <- plot_df[plot_df$stratum == strata[[1]], , drop = FALSE]
+  label_map <- stats::setNames(first_stratum$label_clean, as.character(first_stratum$row_key))
 
   approach <- .normalize_approach(tbl$approach)
   if (is.null(ref_line)) {
     ref_line <- if (identical(approach, "linear")) 0 else 1
   }
-  if (identical(approach, "linear")) {
-    log_x <- FALSE
-  }
+  log_x <- .plot_resolve_log_x(log_x, approach)
 
   x_axis_label <- .plot_axis_label(
     approach = approach,
@@ -534,18 +549,21 @@ plot_reg <- function(tbl,
     show_ref = show_ref,
     has_ref = any(plot_df$ref %in% TRUE)
   )
+  # Facets otherwise drop structural header rows because their estimate is NA.
+  plot_df$axis_anchor <- ref_line
 
   p <- ggplot2::ggplot(
     plot_df,
     ggplot2::aes(x = .data$estimate, y = .data$row_key)
   ) +
-    .add_h_ci(plot_df[plot_df$is_data, , drop = FALSE]) +
+    ggplot2::geom_blank(ggplot2::aes(x = .data$axis_anchor, y = .data$row_key)) +
+    .add_h_ci(plot_df[plot_df$is_data, , drop = FALSE], linewidth = ci_linewidth) +
     ggplot2::geom_point(
       data = plot_df[plot_df$is_data, , drop = FALSE],
       ggplot2::aes(fill = .data$is_sig),
       shape = 21,
-      size = 3,
-      stroke = 0.6,
+      size = point_size,
+      stroke = point_stroke,
       show.legend = FALSE,
       na.rm = TRUE
     ) +
@@ -554,24 +572,14 @@ plot_reg <- function(tbl,
       linetype = "dashed",
       colour = "gray60"
     ) +
-    ggplot2::facet_wrap(ggplot2::vars(.data$stratum), scales = "free_y") +
+    ggplot2::facet_wrap(ggplot2::vars(.data$stratum), scales = "fixed") +
     ggplot2::scale_fill_manual(values = fill_vals, guide = "none") +
     ggplot2::scale_color_manual(values = line_vals, guide = "none") +
     ggplot2::scale_y_discrete(
       labels = label_map
     ) +
     ggplot2::labs(title = title, x = x_axis_label, y = NULL, caption = caption) +
-    ggplot2::theme_minimal(base_size = base_size) +
-    ggplot2::theme(
-      panel.grid.major.y = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(),
-      panel.grid.minor.x = ggplot2::element_blank(),
-      axis.text.y = ggtext::element_markdown(hjust = 0),
-      axis.text.y.left = ggtext::element_markdown(hjust = 0),
-      strip.text = ggplot2::element_text(face = "bold"),
-      plot.title = ggplot2::element_text(face = "bold"),
-      plot.margin = ggplot2::margin(10, 40, 10, 10)
-    )
+    .plot_reg_theme(base_size = base_size, stratified = TRUE)
 
   if (log_x) {
     if (is.null(breaks)) {
@@ -604,6 +612,17 @@ plot_reg <- function(tbl,
 #' @noRd
 .plot_stratum_object <- function(parent, x) {
   if (inherits(x, "gtregression")) {
+    # Per-stratum uni_reg objects retain their own display data. Rebuild it
+    # with the parent label map so faceted plots match the stratified table.
+    label_map <- parent$variable_labels
+    if (is.null(label_map)) {
+      label_map <- x$variable_labels
+    }
+    x$table_display <- .plot_display_from_body(
+      x$table_body,
+      label_map
+    )
+    x$variable_labels <- label_map
     x$stratified <- FALSE
     return(x)
   }
@@ -676,6 +695,20 @@ plot_reg <- function(tbl,
     TRUE ~ "Effect Size"
   )
   if (isTRUE(adjusted)) paste("Adjusted", base) else base
+}
+
+#' Resolve automatic log-axis choice for regression plots (internal)
+#' @keywords internal
+#' @noRd
+.plot_resolve_log_x <- function(log_x, approach) {
+  if (is.null(log_x)) {
+    return(FALSE)
+  }
+  if (!is.logical(log_x) || length(log_x) != 1L || is.na(log_x)) {
+    stop("`log_x` must be TRUE, FALSE, or NULL.", call. = FALSE)
+  }
+  if (identical(approach, "linear")) return(FALSE)
+  isTRUE(log_x)
 }
 
 #' Stratified adjusted plot detector (internal)
@@ -765,8 +798,24 @@ plot_reg <- function(tbl,
   if (is.null(xlim) || length(xlim) != 2L || any(!is.finite(xlim))) {
     return(c(0.25, 0.5, 1, 2, 4, 8, 16))
   }
-  candidates <- c(0.1, 0.2, 0.25, 0.5, 1, 2, 4, 8, 10, 16, 20, 32, 50, 100)
+  # A doubling sequence stays legible in narrow panels. Users can supply
+  # `breaks` when clinically meaningful non-standard tick marks are needed.
+  candidates <- 2^seq(-4, 7)
   out <- candidates[candidates >= min(xlim) & candidates <= max(xlim)]
+  if (length(out) > 5L) {
+    targets <- exp(seq(log(min(out)), log(max(out)), length.out = 5L))
+    keep <- vapply(targets, function(target) {
+      which.min(abs(log(out) - log(target)))
+    }, integer(1))
+    keep <- unique(keep)
+
+    one_idx <- which(out == 1)
+    if (length(one_idx) && !one_idx %in% keep) {
+      replace_idx <- which.min(abs(log(out[keep])))
+      keep[replace_idx] <- one_idx[1]
+    }
+    out <- sort(unique(out[keep]))
+  }
   if (!length(out)) {
     out <- signif(exp(seq(log(min(xlim)), log(max(xlim)), length.out = 5)), 2)
   }
@@ -776,7 +825,7 @@ plot_reg <- function(tbl,
 #' Horizontal CI helper (internal)
 #' @keywords internal
 #' @noRd
-.add_h_ci <- function(data) {
+.add_h_ci <- function(data, linewidth = 0.55) {
   v <- utils::packageVersion("ggplot2")
 
   if (v >= "4.0.0") {
@@ -789,6 +838,7 @@ plot_reg <- function(tbl,
       ),
       orientation = "y",
       width = 0.2,
+      linewidth = linewidth,
       na.rm = TRUE
     )
   } else if (v >= "3.5.0") {
@@ -800,6 +850,7 @@ plot_reg <- function(tbl,
         colour = .data$is_sig
       ),
       width = 0.2,
+      linewidth = linewidth,
       na.rm = TRUE
     )
   } else {
@@ -811,7 +862,35 @@ plot_reg <- function(tbl,
         colour = .data$is_sig
       ),
       height = 0.2,
+      size = linewidth,
       na.rm = TRUE
     )
   }
+}
+
+#' Regression-plot theme (internal)
+#' @keywords internal
+#' @noRd
+.plot_reg_theme <- function(base_size = 12, stratified = FALSE) {
+  ggplot2::theme_minimal(base_size = base_size) +
+    ggplot2::theme(
+      panel.grid.major.y = ggplot2::element_blank(),
+      panel.grid.major.x = ggplot2::element_line(colour = "#D9E1E5", linewidth = 0.35),
+      panel.grid.minor.x = ggplot2::element_blank(),
+      axis.line.x = ggplot2::element_line(colour = "#6B7280", linewidth = 0.35),
+      axis.ticks.x = ggplot2::element_line(colour = "#6B7280", linewidth = 0.35),
+      axis.text.x = ggplot2::element_text(colour = "#374151", size = ggplot2::rel(0.9)),
+      axis.title.x = ggplot2::element_text(face = "bold", colour = "#1F2937",
+                                           margin = ggplot2::margin(t = 8)),
+      axis.text.y = ggtext::element_markdown(hjust = 0, colour = "#1F2937"),
+      axis.text.y.left = ggtext::element_markdown(hjust = 0, colour = "#1F2937"),
+      strip.text = if (stratified) ggplot2::element_text(face = "bold",
+                                                         colour = "#1F2937")
+      else ggplot2::element_blank(),
+      plot.title = ggplot2::element_text(face = "bold", colour = "#111827",
+                                         margin = ggplot2::margin(b = 8)),
+      plot.caption = ggplot2::element_text(colour = "#6B7280", hjust = 0,
+                                           size = ggplot2::rel(0.85)),
+      plot.margin = ggplot2::margin(12, 40, 12, 10)
+    )
 }

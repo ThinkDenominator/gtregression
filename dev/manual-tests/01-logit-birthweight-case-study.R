@@ -297,7 +297,8 @@ multi_adj_paper <- modify_table(
   ),
   caption = "Table 2. Adjusted logistic regression for selected risk factors",
   remove_N_obs = FALSE,
-  caveat = "Adjusted for maternal age, maternal weight, and race."
+  remove_adjustment_note= TRUE,
+  caveat = "Adjusted for baseline characteristics"
 )
 
 multi_adj_paper
@@ -397,7 +398,7 @@ final_table <- merge_tables(
 
 final_table
 
-
+merge_tables(uni_or, multi_adj)
 ## 9. Forest plot dataset and forest plot ------------------------------------
 
 ## forest_df() prepares the data. forest_reg() draws the plot.
@@ -514,13 +515,11 @@ stratified_multi_reg(
 ## direction of association looks broadly similar across race groups.
 plot_reg(
   strat_uni,
-  log_x = TRUE,
   title = "Crude odds ratios by race"
 )
 
 plot_reg(
   strat_multi,
-  log_x = TRUE,
   title = "Adjusted odds ratios by race"
 )
 
@@ -533,7 +532,7 @@ plot_reg(
 ## headers are shaded in forest_reg(), which makes it easier to scan the race
 ## groups without confusing them with ordinary predictor rows.
 strat_forest_data <- forest_df(strat_multi)
-View(strat_forest_data)
+
 
 forest_reg(strat_forest_data)
 

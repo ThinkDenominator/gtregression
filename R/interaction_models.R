@@ -12,6 +12,13 @@
 #' modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 #' \code{\link{identify_confounder}()}.
 #'
+#' With \code{covariates = c(age, sex)}, the two fitted models are
+#' \code{outcome ~ exposure + effect_modifier + age + sex} and
+#' \code{outcome ~ exposure + effect_modifier + age + sex +
+#' exposure:effect_modifier}. Both models use the same complete-case analysis
+#' data, so covariate adjustment is applied consistently to the interaction
+#' comparison.
+#'
 #' @param data A data frame containing all required variables.
 #' @param outcome Outcome variable name. Quoted and bare names are accepted.
 #'   Required for ordinary regression approaches. Leave unset for Cox and
@@ -19,8 +26,10 @@
 #'   instead.
 #' @param exposure Main exposure variable name. Quoted and bare names are
 #'   accepted.
-#' @param covariates Optional character vector of additional covariates. Quoted
-#'   names are recommended in scripts, and bare names are also accepted.
+#' @param covariates Optional character vector of adjustment covariates. They
+#'   are included in both the model without and the model with the interaction
+#'   term. Quoted names are recommended in scripts, and bare names are also
+#'   accepted.
 #' @param effect_modifier Variable name for the potential effect modifier.
 #'   Quoted and bare names are accepted.
 #' @param approach Regression approach. One of \code{"logit"},
@@ -322,6 +331,7 @@ interaction_models <- function(data,
     outcome = if (is_survival) paste0(time, "/", event) else outcome,
     exposure = exposure,
     effect_modifier = effect_modifier,
+    covariates = if (length(covariates)) paste(covariates, collapse = ", ") else "None",
     approach = approach,
     test = comparison$test_label,
     p_value = p_value,
@@ -348,10 +358,16 @@ interaction_models <- function(data,
     interpretation = interpretation,
     test = comparison$test_label,
     approach = approach,
+    covariates = covariates,
     source = "interaction_models"
   )
   if (format != "tibble") {
-    result$table <- .build_interaction_models_table(summary, format = format)
+    result$table <- .build_interaction_models_table(
+      summary,
+      formula_no_interaction = base_formula,
+      formula_with_interaction = interaction_formula,
+      format = format
+    )
   }
   class(result) <- c("interaction_models_result", class(result))
 
@@ -366,11 +382,17 @@ interaction_models <- function(data,
 #' @keywords internal
 #' @noRd
 .build_interaction_models_table <- function(summary_tbl,
+                                            formula_no_interaction,
+                                            formula_with_interaction,
                                             format = c("flextable", "gt")) {
   format <- match.arg(format, c("flextable", "gt"))
   note <- paste(
     "Screening aid only; interaction decisions should be interpreted with",
     "subject-matter knowledge, study design, and stratum-specific estimates."
+  )
+  model_note <- paste0(
+    "Models tested: ", paste(deparse(formula_no_interaction), collapse = " "),
+    "; ", paste(deparse(formula_with_interaction), collapse = " "), "."
   )
 
   display <- summary_tbl |>
@@ -398,7 +420,8 @@ interaction_models <- function(data,
     dplyr::transmute(
       "Outcome" = .data$outcome,
       "Exposure" = .data$exposure,
-      "Effect modifier" = .data$effect_modifier,
+      "Effect modifier tested" = .data$effect_modifier,
+      "Adjustment covariates" = .data$covariates,
       "Approach" = .data$approach,
       "Test" = .data$test,
       "p-value" = .data$p_value,
@@ -414,7 +437,7 @@ interaction_models <- function(data,
         gt::tab_header(title = "Interaction screening") |>
         gt::cols_align(
           align = "left",
-          columns = c("Outcome", "Exposure", "Effect modifier",
+          columns = c("Outcome", "Exposure", "Effect modifier tested", "Adjustment covariates",
                       "Approach", "Test", "Decision", "Interpretation")
         ) |>
         gt::cols_align(
@@ -425,6 +448,7 @@ interaction_models <- function(data,
           style = gt::cell_text(weight = "bold"),
           locations = gt::cells_column_labels()
         ) |>
+        gt::tab_source_note(gt::md(model_note)) |>
         gt::tab_source_note(gt::md(note)) |>
         .compact_gt_source_notes()
     )
@@ -434,7 +458,7 @@ interaction_models <- function(data,
   ft <- flextable::set_caption(ft, caption = "Interaction screening")
   ft <- flextable::align(
     ft,
-    j = c("Outcome", "Exposure", "Effect modifier",
+    j = c("Outcome", "Exposure", "Effect modifier tested", "Adjustment covariates",
           "Approach", "Test", "Decision", "Interpretation"),
     align = "left",
     part = "all"
@@ -446,7 +470,7 @@ interaction_models <- function(data,
     part = "all"
   )
   ft <- flextable::bold(ft, part = "header", bold = TRUE)
-  ft <- flextable::add_footer_lines(ft, values = note)
+  ft <- flextable::add_footer_lines(ft, values = c(model_note, note))
   ft <- .compact_flex_footer(ft)
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   flextable::autofit(ft)

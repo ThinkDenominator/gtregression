@@ -109,7 +109,10 @@ stratified_multi_reg <- function(data,
 
   format <- match.arg(format, c("flextable","gt"))
   theme <- .resolve_theme(theme)
-  variable_labels <- .var_label_map(data, unique(exposures))
+  variable_labels <- .var_label_map(
+    data,
+    unique(c(exposures, adjust_for, .interaction_vars(interaction)))
+  )
 
   if (!stratifier %in% names(data)) {
     stop("Stratifier not found in dataset.", call. = FALSE)
@@ -152,6 +155,10 @@ stratified_multi_reg <- function(data,
       next
     }
 
+    res_i$table_body <- .format_interaction_levels(
+      res_i$table_body, dlev, variable_labels
+    )
+
     tds[[key]] <- res_i$table_body
     models[[key]] <- res_i$models
     sums[[key]] <- res_i$model_summaries
@@ -180,11 +187,12 @@ stratified_multi_reg <- function(data,
     variable_labels = variable_labels,
     show_ref = show_ref
   )
-  wide <- .strata_add_model_n(built$wide, models)
+  wide <- built$wide
   spanners <- built$spanners
   eff_lab <- paste("Adjusted", .get_effect_label(approach))
 
   footnotes <- c(
+    .stratified_by_note(stratifier),
     .abbrev_note(approach),
     if (
       isTRUE(show_ref) &&
@@ -216,7 +224,7 @@ stratified_multi_reg <- function(data,
     models = models,
     model_summaries = sums,
     variable_labels = variable_labels,
-    reg_check = diags,
+    reg_check = .as_reg_check_result(diags, format = format),
     by = stratifier,
     levels = levs,
     approach = approach,

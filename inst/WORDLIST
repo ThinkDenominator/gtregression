@@ -3,6 +3,7 @@ Agresti
 BMI
 Baystate
 Birthweight
+Bolds
 CMD
 Codecov
 Confounder
@@ -31,10 +32,9 @@ Multivariable
 Neovascularization
 OG
 Organises
-Pima
-PimaIndians
 Preflight
 Pulsatility
+Pima
 RCT
 README
 RL
@@ -44,6 +44,8 @@ RTF
 Reselect
 Schemper
 Schoenfeld
+Shiny
+Shiny's
 Spiegelman
 Stata
 Summarise
@@ -68,6 +70,8 @@ colour
 colours
 confounder
 copyable
+callouts
+customised
 customisation
 df
 doi
@@ -75,6 +79,7 @@ estimand
 et
 flextable
 forestploter
+grey
 ggplot
 glm
 gtable
@@ -95,6 +100,7 @@ loglogistic
 mlbench
 modelling
 multivariable
+millimetres
 negbin
 neovascularization
 organise
@@ -127,4 +133,5 @@ univariable
 visualisation
 visualisations
 visualise
+vermillion
 walkthrough

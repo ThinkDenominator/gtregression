@@ -42,11 +42,10 @@ print.gtregression <- function(x, ...) {
 #' @noRd
 #' @export
 print.identify_confounder_result <- function(x, ...) {
-  if (!is.null(x$summary)) {
-    cat("Confounder and effect-modifier screening\n")
+  if (!is.null(x$table)) {
+    print(x$table)
+  } else if (!is.null(x$summary)) {
     print(x$summary)
-    cat("\n")
-    cat("Use `$table` for the formatted display table.\n")
   } else {
     utils::str(x)
   }

@@ -72,14 +72,37 @@ utils::globalVariables(c(
 #'
 #' @keywords internal
 #' @noRd
-.vars_arg <- function(expr, env = parent.frame(), allow_null = FALSE) {
+.vars_arg <- function(expr,
+                      env = parent.frame(),
+                      allow_null = FALSE,
+                      data_names = NULL) {
   if (identical(expr, quote(NULL))) {
     if (allow_null) {
       return(NULL)
     }
     stop("Variable names cannot be NULL.", call. = FALSE)
   }
-  out <- .choice_arg(expr, env = env, lower = FALSE)
+  normalize_variable <- function(x) {
+    if (is.symbol(x)) {
+      name <- as.character(x)
+      # A data-column name takes precedence over an unrelated object such as
+      # the built-in `pressure` dataset.
+      if (!is.null(data_names) && name %in% data_names) {
+        return(name)
+      }
+    }
+
+    if (is.call(x) && identical(x[[1L]], as.name("c"))) {
+      return(unlist(
+        lapply(as.list(x)[-1L], normalize_variable),
+        use.names = FALSE
+      ))
+    }
+
+    .choice_arg(x, env = env, lower = FALSE)
+  }
+
+  out <- normalize_variable(expr)
   if (is.null(out) && allow_null) {
     return(NULL)
   }

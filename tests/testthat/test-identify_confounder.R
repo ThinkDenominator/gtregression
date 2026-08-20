@@ -74,7 +74,7 @@ test_that("identify_confounder keeps detailed fields for single-pair calls", {
   expect_equal(nrow(result$summary), 1)
 })
 
-test_that("identify_confounder prints a console summary for plain calls", {
+test_that("identify_confounder stores its formatted table by default", {
   df <- birthwt_confounder_data()
 
   result <- identify_confounder(
@@ -85,12 +85,14 @@ test_that("identify_confounder prints a console summary for plain calls", {
     approach = "logit"
   )
 
-  output <- capture.output(print(result))
-
-  expect_match(output[1], "Confounder and effect-modifier screening")
-  expect_true(any(grepl("smoke", output, fixed = TRUE)))
-  expect_true(any(grepl("race", output, fixed = TRUE)))
-  expect_true(any(grepl("Use `$table`", output, fixed = TRUE)))
+  expect_invisible(print(result))
+  expect_s3_class(result$table, "flextable")
+  expect_true("Potential confounder" %in% names(result$table$header$dataset))
+  expect_true(any(grepl(
+    "Outcome: low. For each exposure E",
+    unlist(result$table$footer$dataset, use.names = FALSE),
+    fixed = TRUE
+  )))
 })
 
 test_that("identify_confounder supports Mantel-Haenszel method", {
@@ -324,10 +326,9 @@ test_that("identify_confounder display table includes caveat", {
   expect_true("Effect modifier?" %in% display_cols)
   expect_true("is_confounder" %in% names(result$summary))
   expect_true("is_effect_modifier" %in% names(result$summary))
-  expect_match(
-    as.character(result$table$`_source_notes`[[1]]),
-    "Screening aid only"
-  )
+  source_notes <- vapply(result$table$`_source_notes`, as.character, character(1))
+  expect_true(any(grepl("Outcome: low", source_notes, fixed = TRUE)))
+  expect_true(any(grepl("Screening aid only", source_notes, fixed = TRUE)))
 })
 
 test_that("identify_confounder validates inputs clearly", {

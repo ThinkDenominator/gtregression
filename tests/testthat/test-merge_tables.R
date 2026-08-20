@@ -37,7 +37,8 @@ test_that("merge_tables combines native gtregression objects", {
     desc_tbl,
     uni_tbl,
     spanners = c("Descriptive", "Univariable"),
-    theme = shaded
+    theme = shaded,
+    format = gt
   )
 
   expect_s3_class(merged, "gtregression")
@@ -57,6 +58,32 @@ test_that("merge_tables combines native gtregression objects", {
   expect_false(any(grepl("_p[0-9]+$", gt_labels)))
   expect_true(all(c("Normal BW", "Low BW", "Overall", "N", "OR (95% CI)", "p-value") %in%
                     gt_labels))
+})
+
+test_that("merge_tables defaults to flextable independently of input format", {
+  skip_if_not_installed("flextable")
+
+  df <- birthwt_merge_data()
+  uni_gt <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = "smoke",
+    approach = logit,
+    format = gt
+  )
+  multi_gt <- multi_reg(
+    df,
+    outcome = "low",
+    exposures = "smoke",
+    approach = logit,
+    format = gt
+  )
+
+  merged <- merge_tables(uni_gt, multi_gt)
+
+  expect_equal(merged$format, "flextable")
+  expect_s3_class(merged, "ft_merge")
+  expect_s3_class(merged$table, "flextable")
 })
 
 test_that("merge_tables aligns univariable and adjusted multivariable tables", {
@@ -90,6 +117,28 @@ test_that("merge_tables aligns univariable and adjusted multivariable tables", {
   )
 })
 
+test_that("merge_tables carries stored multivariable footnotes unchanged", {
+  df <- birthwt_merge_data()
+  attr(df$age, "label") <- "Maternal age"
+  attr(df$lwt, "label") <- "Maternal weight"
+  uni_tbl <- uni_reg(df, outcome = "low", exposures = c("smoke", "ht"), approach = logit)
+  multi_tbl <- multi_reg(
+    df,
+    outcome = "low",
+    exposures = c("smoke", "ht"),
+    adjust_for = c("age", "lwt"),
+    approach = logit
+  )
+  merged <- merge_tables(uni_tbl, multi_tbl, spanners = c("Crude", "Adjusted"))
+
+  expect_true(any(multi_tbl$footnotes == "Adjusted for Maternal age and Maternal weight"))
+  expect_true(all(multi_tbl$footnotes %in% merged$footnotes))
+  expect_equal(
+    merged$footnotes[grepl("^Adjusted for ", merged$footnotes)],
+    multi_tbl$footnotes[grepl("^Adjusted for ", multi_tbl$footnotes)]
+  )
+})
+
 test_that("merge_tables supports three-table merges and default spanners", {
   df <- birthwt_merge_data()
 
@@ -103,6 +152,55 @@ test_that("merge_tables supports three-table merges and default spanners", {
   expect_equal(merged$spanners, c("Table 1", "Table 2", "Table 3"))
   expect_equal(merged$part_sources, c("descriptive_table", "uni_reg", "multi_reg"))
   expect_true(ncol(merged$table_display) > ncol(desc_tbl$table_display))
+})
+
+test_that("merge_tables warns for mixed binary rows in descriptive-regression merges", {
+  df <- birthwt_merge_data()
+
+  desc_tbl <- descriptive_table(
+    df,
+    exposures = "smoke",
+    by = "low",
+    show_dichotomous = "all_levels"
+  )
+  uni_compact <- suppressMessages(uni_reg(
+    df,
+    outcome = "low",
+    exposures = "smoke",
+    approach = logit,
+    show_ref = FALSE
+  ))
+  multi_compact <- suppressMessages(multi_reg(
+    df,
+    outcome = "low",
+    exposures = "smoke",
+    approach = logit,
+    show_ref = FALSE
+  ))
+
+  expect_warning(
+    suppressMessages(merge_tables(desc_tbl, uni_compact, multi_compact)),
+    "show_dichotomous = \"all_levels\".*show_ref = TRUE"
+  )
+
+  uni_expanded <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = "smoke",
+    approach = logit,
+    show_ref = TRUE
+  )
+  multi_expanded <- multi_reg(
+    df,
+    outcome = "low",
+    exposures = "smoke",
+    approach = logit,
+    show_ref = TRUE
+  )
+
+  expect_no_warning(suppressMessages(
+    merge_tables(desc_tbl, uni_expanded, multi_expanded)
+  ))
 })
 
 test_that("merge_tables aligns compact binary regression rows to descriptive levels", {
@@ -140,9 +238,16 @@ test_that("merge_tables aligns compact binary regression rows to descriptive lev
   ]
 
   merged <- NULL
-  expect_message(
-    merged <- merge_tables(desc_tbl, compact_uni, spanners = c("Descriptive", "Crude")),
-    "show_ref = TRUE"
+  expect_warning(
+    expect_message(
+      merged <- merge_tables(
+        desc_tbl,
+        compact_uni,
+        spanners = c("Descriptive", "Crude")
+      ),
+      "show_ref = TRUE"
+    ),
+    "binary display mode mismatch"
   )
 
   out <- merged$table_display
@@ -198,9 +303,8 @@ test_that("merge_tables keeps compact descriptive and regression binary rows ali
   ]
 
   merged <- NULL
-  expect_message(
-    merged <- merge_tables(desc_tbl, compact_uni, spanners = c("Descriptive", "Crude")),
-    "show_ref = TRUE"
+  expect_no_message(
+    merged <- merge_tables(desc_tbl, compact_uni, spanners = c("Descriptive", "Crude"))
   )
 
   out <- merged$table_display

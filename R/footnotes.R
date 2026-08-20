@@ -4,6 +4,13 @@
   c(.abbrev_note(approach))
 }
 
+#' Describe the stratification variable once without repeating it in headings
+#' @keywords internal
+#' @noRd
+.stratified_by_note <- function(stratifier) {
+  paste0("Stratified by: ", stratifier, ".")
+}
+
 #' Compose footnotes for multivariable strata (abbrev + per-stratum N)
 #' @keywords internal
 .footnotes_multi_strata <- function(approach, fits_by_stratum, stratifier) {
@@ -72,6 +79,19 @@
     ", and ",
     adjust_for[length(adjust_for)]
   )
+}
+
+#' Compose an adjustment note using displayed variable labels
+#' @keywords internal
+#' @noRd
+.display_adjustment_note <- function(adjust_for, variable_labels = NULL) {
+  display_vars <- vapply(
+    adjust_for,
+    .label_var,
+    character(1),
+    label_map = variable_labels
+  )
+  .adjustment_note(display_vars)
 }
 
 #' @keywords internal

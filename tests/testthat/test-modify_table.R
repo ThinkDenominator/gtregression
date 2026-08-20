@@ -99,6 +99,21 @@ test_that("modify_table works for adjusted multivariable tables and footnote opt
   expect_s3_class(renamed$table, "gt_tbl")
   expect_true(any(grepl("OR = Odds Ratio", keep_notes$footnotes, fixed = TRUE)))
   expect_true(any(grepl("Adjusted model", keep_notes$footnotes, fixed = TRUE)))
+  relabelled <- modify_table(
+    tbl,
+    variable_labels = c(age = "Maternal age", lwt = "Maternal weight")
+  )
+  expect_true(any(relabelled$footnotes == "Adjusted for Maternal age and Maternal weight"))
+  expect_false(any(relabelled$footnotes == "Adjusted for age and lwt"))
+  custom_adjustment <- modify_table(
+    tbl,
+    remove_adjustment_note = TRUE,
+    caveat = "Adjusted for baseline maternal characteristics."
+  )
+  hidden_adjustment <- modify_table(tbl, remove_adjustment_note = TRUE)
+  expect_true(any(custom_adjustment$footnotes == "Adjusted for baseline maternal characteristics."))
+  expect_false(any(custom_adjustment$footnotes == "Adjusted for age and lwt"))
+  expect_false(any(grepl("^Adjusted for ", hidden_adjustment$footnotes)))
   expect_false(any(grepl("OR = Odds Ratio", drop_notes$footnotes, fixed = TRUE)))
   expect_false(any(grepl("complete observations included", drop_notes$footnotes, fixed = TRUE)))
 })
@@ -146,6 +161,21 @@ test_that("modify_table works for Cox and survival regression tables", {
   expect_s3_class(aft_mod$table, "flextable")
   expect_true("Treatment group" %in% aft_mod$table_display$Characteristic)
   expect_true("Cancer cell type" %in% aft_mod$table_display$Characteristic)
+
+  cox_no_adjustment_note <- modify_table(
+    cox_tbl,
+    remove_adjustment_note = TRUE,
+    caveat = "Adjusted survival model."
+  )
+  aft_no_adjustment_note <- modify_table(
+    aft_tbl,
+    remove_adjustment_note = TRUE,
+    caveat = "Adjusted parametric survival model."
+  )
+  expect_false(any(grepl("^Adjusted for ", cox_no_adjustment_note$footnotes)))
+  expect_false(any(grepl("^Adjusted for ", aft_no_adjustment_note$footnotes)))
+  expect_true(any(cox_no_adjustment_note$footnotes == "Adjusted survival model."))
+  expect_true(any(aft_no_adjustment_note$footnotes == "Adjusted parametric survival model."))
 })
 
 test_that("modify_table preserves stratified Cox sample-column controls", {
@@ -299,12 +329,33 @@ test_that("modify_table works for flextable outputs", {
     header_labels = c(estimate = "Crude OR"),
     bold_labels = TRUE,
     bold_levels = TRUE,
+    italic_labels = TRUE,
+    italic_levels = TRUE,
     caption = "Flextable regression"
   )
 
   expect_s3_class(modified, "ft_uni")
   expect_s3_class(modified$table, "flextable")
   expect_true("Smoking" %in% modified$table_display$Characteristic)
+})
+
+test_that("modify_table preserves existing publication notes", {
+  df <- birthwt_modify_data()
+  tbl <- multi_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("smoke", "ht"),
+    adjust_for = "age",
+    approach = logit,
+    format = flextable
+  )
+
+  modified <- modify_table(tbl, caption = "Adjusted model")
+
+  expect_true(any(grepl("Abbreviations:", modified$footnotes)))
+  expect_true(any(grepl("Ref\\. = reference category", modified$footnotes)))
+  expect_true(any(grepl("complete observations", modified$footnotes)))
+  expect_true(any(grepl("Adjusted for", modified$footnotes)))
 })
 
 test_that("modify_table validates inputs clearly", {
@@ -317,6 +368,8 @@ test_that("modify_table validates inputs clearly", {
   expect_error(modify_table(tbl, level_labels = list(smoke = c("Smoker"))), "level_labels\\$smoke")
   expect_error(modify_table(tbl, bold_labels = NA), "`bold_labels` must be")
   expect_error(modify_table(tbl, bold_levels = 1), "`bold_levels` must be")
+  expect_error(modify_table(tbl, italic_labels = 1), "`italic_labels` must be")
+  expect_error(modify_table(tbl, italic_levels = NA), "`italic_levels` must be")
   expect_error(modify_table(tbl, remove_N = NA), "`remove_N` must be")
   expect_error(modify_table(tbl, remove_N_obs = c(TRUE, FALSE)), "`remove_N_obs` must be")
   expect_error(modify_table(tbl, remove_abbreviations = "yes"), "`remove_abbreviations` must be")

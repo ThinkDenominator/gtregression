@@ -45,10 +45,11 @@ test_that("interaction_models returns focused result for logit LRT", {
       "formula_no_interaction", "formula_with_interaction",
       "interaction_terms", "comparison", "p_value", "alpha",
       "has_interaction", "decision", "interpretation", "test",
-      "approach", "source"
+      "approach", "covariates", "source"
     )
   )
   expect_s3_class(result$summary, "tbl_df")
+  expect_equal(result$covariates, c("age", "lwt"))
   expect_equal(result$test, "Likelihood Ratio Test")
   expect_true(is.numeric(result$p_value) || is.na(result$p_value))
   expect_true(result$decision %in%
@@ -99,10 +100,15 @@ test_that("interaction_models can add gt and flextable viewing tables", {
   expect_s3_class(gt_result$summary, "tbl_df")
   expect_s3_class(gt_result$table, "gt_tbl")
   expect_s3_class(ft_result$table, "flextable")
-  expect_match(
-    as.character(gt_result$table$`_source_notes`[[1]]),
-    "Screening aid only"
-  )
+  gt_notes <- vapply(gt_result$table$`_source_notes`, as.character, character(1))
+  expect_true(any(grepl("Models tested:", gt_notes, fixed = TRUE)))
+  expect_true(any(grepl("Screening aid only", gt_notes, fixed = TRUE)))
+  expect_true("Effect modifier tested" %in% names(ft_result$table$header$dataset))
+  expect_true(any(grepl(
+    "Models tested:",
+    unlist(ft_result$table$footer$dataset, use.names = FALSE),
+    fixed = TRUE
+  )))
 })
 
 test_that("interaction_models supports robpoisson and robust coefficient tables", {

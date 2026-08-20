@@ -9,6 +9,10 @@ test_that("internal data-preparation helpers apply safe, traceable changes", {
   expect_identical(names(renamed), c("age_years", "sex"))
   expect_error(gt_dp_rename(data, "age", "sex"), "already exists")
 
+  labelled <- gt_dp_set_label(data, "age", "Maternal age")
+  expect_identical(attr(labelled$age, "label"), "Maternal age")
+  expect_identical(attr(gt_dp_set_label(labelled, "age", "")$age, "label"), NULL)
+
   recoded <- gt_dp_recode(data, "sex", c("M", "F"), c("Male", "Female"))
   expect_equal(recoded$sex[1:2], c("Male", "Female"))
   expect_equal(attr(recoded, "gt_dp_affected"), 2)
@@ -95,7 +99,7 @@ test_that("group creation respects first-match order and numeric ranges", {
   )
 })
 
-test_that("Data Prep requires an explicit analysis-data choice", {
+test_that("Data Prep activates original data by default and supports prepared-data choice", {
   skip_if_not_installed("shiny")
   source_data <- shiny::reactiveVal(data.frame(
     age = c(20, 30),
@@ -108,7 +112,8 @@ test_that("Data Prep requires an explicit analysis-data choice", {
     args = list(source_data = source_data),
     {
     session$flushReact()
-    expect_null(session$returned$result())
+    expect_identical(session$returned$result(), source_data())
+    expect_false(session$returned$using_prepared())
 
     session$setInputs(continue_original = 1)
     session$flushReact()
@@ -123,15 +128,53 @@ test_that("Data Prep requires an explicit analysis-data choice", {
   ))
 })
 
+test_that("Set display label can also polish categorical levels", {
+  skip_if_not_installed("shiny")
+  source_data <- shiny::reactiveVal(data.frame(
+    smoking = factor(c("N", "Y"), levels = c("N", "Y")),
+    stringsAsFactors = FALSE
+  ))
+
+  suppressWarnings(shiny::testServer(
+    mod_data_prep_server,
+    args = list(source_data = source_data),
+    {
+      session$flushReact()
+      session$setInputs(variable = "smoking")
+      session$flushReact()
+      session$setInputs(
+        variable_label = "Smoking during pregnancy",
+        label_level_to_1 = "No",
+        label_level_to_2 = "Yes"
+      )
+      session$flushReact()
+      session$setInputs(apply = 0)
+      session$flushReact()
+      session$setInputs(apply = 1)
+      session$flushReact()
+
+      prepared <- session$returned$working_data()
+      expect_identical(attr(prepared$smoking, "label"), "Smoking during pregnancy")
+      expect_identical(levels(prepared$smoking), c("No", "Yes"))
+      expect_false(session$returned$using_prepared())
+    }
+  ))
+})
+
 test_that("Data Prep module retains its core recovery and reuse controls", {
   ui_text <- paste(deparse(body(mod_data_prep_ui)), collapse = " ")
   server_text <- paste(deparse(body(mod_data_prep_server)), collapse = " ")
 
   expect_match(ui_text, "Quick starts", fixed = TRUE)
+  expect_match(ui_text, "Set display label", fixed = TRUE)
   expect_match(ui_text, "Undo", fixed = TRUE)
   expect_match(ui_text, "Redo", fixed = TRUE)
   expect_match(ui_text, "Reset", fixed = TRUE)
   expect_match(server_text, "confirm_reset", fixed = TRUE)
   expect_match(server_text, "download_prepared", fixed = TRUE)
   expect_match(server_text, "download_code", fixed = TRUE)
+  expect_match(server_text, "gt_dp_set_label", fixed = TRUE)
+  expect_match(server_text, "Category display labels", fixed = TRUE)
+  expect_match(server_text, "label_level_mapping", fixed = TRUE)
+  expect_match(server_text, 'reactiveVal("label")', fixed = TRUE)
 })

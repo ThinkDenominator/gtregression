@@ -13,9 +13,13 @@
 #' @param ref_line Optional numeric reference line. If \code{NULL}, uses 0 for
 #'   linear models and 1 otherwise.
 #' @param order_y Optional character vector to customize exposure ordering.
-#' @param log_x Logical; if \code{TRUE}, uses log x-axis for non-linear models.
+#' @param log_x Logical. If \code{TRUE}, use a log-scaled x-axis for ratio
+#'   measures. The default \code{FALSE} uses a linear x-axis.
 #' @param point_color,errorbar_color Base colors for non-significant rows.
-#' @param base_size Base font size for \code{theme_minimal()}.
+#' @param point_size Diameter of estimate points in millimetres.
+#' @param point_stroke Outline width of estimate points.
+#' @param ci_linewidth Line width of confidence intervals.
+#' @param base_size Base font size for the plot theme.
 #' @param show_ref Logical or \code{NULL}. The default \code{NULL} inherits the
 #'   setting used to create the supplied tables. If \code{TRUE}, include
 #'   reference levels as \code{(Ref.)}. If \code{FALSE}, binary exposures are
@@ -45,12 +49,15 @@ plot_reg_combine <- function(tbl_uni,
                              ref_line = NULL,
                              order_y = NULL,
                              log_x = FALSE,
-                             point_color = "#1F77B4",
-                             errorbar_color = "#4C4C4C",
-                             base_size = 14,
+                             point_color = "#6B7280",
+                             errorbar_color = "#6B7280",
+                             point_size = 2.8,
+                             point_stroke = 0.55,
+                             ci_linewidth = 0.55,
+                             base_size = 12,
                              show_ref = NULL,
-                             sig_color = NULL,
-                             sig_errorbar_color = NULL,
+                             sig_color = "#0072B2",
+                             sig_errorbar_color = "#0072B2",
                              xlim_uni = NULL,
                              breaks_uni = NULL,
                              xlim_multi = NULL,
@@ -283,8 +290,8 @@ plot_reg_combine <- function(tbl_uni,
   xlab_uni <- get_axis_label(approach_uni, adjusted = FALSE)
   xlab_multi <- get_axis_label(approach_multi, adjusted = TRUE)
 
-  log_x_uni <- isTRUE(log_x) && !identical(approach_uni, "linear")
-  log_x_multi <- isTRUE(log_x) && !identical(approach_multi, "linear")
+  log_x_uni <- .plot_resolve_log_x(log_x, .normalize_approach(approach_uni))
+  log_x_multi <- .plot_resolve_log_x(log_x, .normalize_approach(approach_multi))
 
   if (log_x_uni) xlab_uni <- paste0(xlab_uni, " (log scale)")
   if (log_x_multi) xlab_multi <- paste0(xlab_multi, " (log scale)")
@@ -388,13 +395,13 @@ plot_reg_combine <- function(tbl_uni,
     }
 
     p <- ggplot2::ggplot(df, ggplot2::aes(x = .data$estimate, y = .data$row_id)) +
-      .add_h_ci(df[df$is_data, , drop = FALSE]) +
+      .add_h_ci(df[df$is_data, , drop = FALSE], linewidth = ci_linewidth) +
       ggplot2::geom_point(
         data = df[df$is_data, , drop = FALSE],
         ggplot2::aes(fill = .data$is_sig),
         shape = 21,
-        size = 3,
-        stroke = 0.6,
+        size = point_size,
+        stroke = point_stroke,
         show.legend = FALSE,
         na.rm = TRUE
       ) +
@@ -411,20 +418,15 @@ plot_reg_combine <- function(tbl_uni,
         drop = FALSE
       ) +
       ggplot2::labs(title = panel_title, x = x_label, y = NULL) +
-      ggplot2::theme_minimal(base_size = base_size) +
+      .plot_reg_theme(base_size = base_size) +
       ggplot2::theme(
-        panel.grid.major.y = ggplot2::element_blank(),
-        panel.grid.major.x = ggplot2::element_blank(),
-        panel.grid.minor.x = ggplot2::element_blank(),
-        axis.text.y = if (show_y) ggtext::element_markdown(family = "mono", hjust = 0) else ggplot2::element_blank(),
-        axis.text.y.left = if (show_y) {
-          ggtext::element_markdown(family = "mono", hjust = 0)
-        } else {
-          ggplot2::element_blank()
-        },
-        axis.title.y = ggplot2::element_blank(),
-        plot.title = ggplot2::element_text(face = "bold"),
-        plot.margin = ggplot2::margin(10, 40, 10, 10)
+        axis.text.y = if (show_y) ggtext::element_markdown(hjust = 0,
+                                                           colour = "#1F2937")
+        else ggplot2::element_blank(),
+        axis.text.y.left = if (show_y) ggtext::element_markdown(hjust = 0,
+                                                                colour = "#1F2937")
+        else ggplot2::element_blank(),
+        axis.title.y = ggplot2::element_blank()
       )
 
     if (use_log) {

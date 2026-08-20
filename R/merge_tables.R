@@ -252,6 +252,170 @@
   )
 }
 
+#' Inspect binary row representations across tables before merging.
+#'
+#' - `compact` indicates the variable is represented by one row (for example
+#'   `smoke` as a single row in regression output with reference rows hidden).
+#' - `expanded` indicates the variable is represented with explicit levels,
+#'   e.g. `smoke = No`, `smoke = Yes`.
+#'
+#' @keywords internal
+#' @noRd
+.binary_mode_profile <- function(tbl) {
+  body <- tbl[["table_body"]]
+  display <- tbl[["table_display"]]
+  if (!is.data.frame(body) || !nrow(body)) {
+    return(list(compact = character(), expanded = character()))
+  }
+  body <- as.data.frame(body, stringsAsFactors = FALSE)
+  if (is.data.frame(display)) {
+    display <- as.data.frame(display, stringsAsFactors = FALSE)
+  }
+
+  compact <- character()
+  expanded <- character()
+
+  if (all(c("var", "type", "level") %in% names(body))) {
+    for (v in unique(body$var)) {
+      rows <- body[which(body$var == v), , drop = FALSE]
+      data_rows <- rows[which(rows$type != "header"), , drop = FALSE]
+
+      if (any(data_rows$type %in% "dichotomous")) {
+        compact <- c(compact, v)
+        next
+      }
+
+      level_rows <- data_rows[
+        which(data_rows$type %in% c(
+          "categorical", "dichotomous", "categorical_missing"
+        )),
+        ,
+        drop = FALSE
+      ]
+      if (nrow(level_rows) == 0L) {
+        next
+      }
+
+      level_vals <- trimws(as.character(level_rows$level))
+      level_vals <- level_vals[nzchar(level_vals)]
+      if (length(level_vals) %in% c(2L, 3L)) {
+        # Two levels for all-level binary, or two levels + (Missing).
+        expanded <- c(expanded, v)
+      }
+    }
+    return(list(compact = unique(compact), expanded = unique(expanded)))
+  }
+
+  if (all(c("exposure", "level", "ref") %in% names(body))) {
+    for (v in unique(body$exposure)) {
+      rows <- body[which(body$exposure == v), , drop = FALSE]
+      is_factor <- any(rows$ref %in% TRUE)
+
+      if (is_factor && is.data.frame(display) &&
+          all(c("Characteristic", "is_header") %in% names(display))) {
+        header <- which(
+          display$is_header %in% TRUE &
+            trimws(as.character(display$Characteristic)) == v
+        )
+        if (length(header) == 1L) {
+          next_header <- which(
+            display$is_header %in% TRUE & seq_len(nrow(display)) > header
+          )
+          last_row <- if (length(next_header)) {
+            next_header[1L] - 1L
+          } else {
+            nrow(display)
+          }
+          visible_levels <- if (header < last_row) {
+            sum(!display$is_header[(header + 1L):last_row])
+          } else {
+            0L
+          }
+
+          # `show_ref = FALSE` represents a binary predictor on its header row.
+          if (visible_levels == 0L && nrow(rows) == 2L) {
+            compact <- c(compact, v)
+          } else {
+            expanded <- c(expanded, v)
+          }
+          next
+        }
+      }
+
+      if (nrow(rows) == 1L) {
+        # Regression compact binary row usually has level different from variable
+        # name because reference rows are removed.
+        lev <- as.character(rows$level[[1]])
+        if (!identical(trimws(lev), trimws(v))) {
+          compact <- c(compact, v)
+        }
+      } else if (is_factor && any(!rows$ref %in% TRUE)) {
+        expanded <- c(expanded, v)
+      }
+    }
+  }
+
+  list(compact = unique(compact), expanded = unique(expanded))
+}
+
+#' Warn when binary rows are mixed as compact versus expanded across inputs.
+#'
+#' @keywords internal
+#' @noRd
+.binary_merge_mismatch <- function(tbls) {
+  profiles <- lapply(tbls, .binary_mode_profile)
+
+  compact_vars <- list()
+  expanded_vars <- list()
+
+  for (i in seq_along(profiles)) {
+    profile <- profiles[[i]]
+
+    for (v in profile$compact) {
+      previous <- compact_vars[[v]]
+      if (is.null(previous)) {
+        previous <- integer()
+      }
+      compact_vars[[v]] <- unique(c(previous, i))
+    }
+
+    for (v in profile$expanded) {
+      previous <- expanded_vars[[v]]
+      if (is.null(previous)) {
+        previous <- integer()
+      }
+      expanded_vars[[v]] <- unique(c(previous, i))
+    }
+  }
+
+  vars_compact <- names(compact_vars)
+  vars_expanded <- names(expanded_vars)
+  mismatch <- intersect(vars_compact, vars_expanded)
+
+  unique(mismatch)
+}
+
+#' Warn when binary rows are mixed as compact versus expanded across inputs.
+#'
+#' @keywords internal
+#' @noRd
+.warn_binary_merge_mode <- function(tbls) {
+  mismatch <- .binary_merge_mismatch(tbls)
+
+  if (!length(mismatch)) return(invisible(NULL))
+
+  warning(
+    "merge_tables(): binary display mode mismatch for variable(s): ",
+    paste(mismatch, collapse = ", "),
+    ". When merging descriptive, univariable, and multivariable tables, use ",
+    "`show_dichotomous = \"all_levels\"` in descriptive_table() and ",
+    "`show_ref = TRUE` in every regression table to prevent extra binary rows. ",
+    "Alternatively, use compact display consistently: `show_dichotomous = ",
+    "\"single_row\"` and `show_ref = FALSE`.",
+    call. = FALSE
+  )
+}
+
 #' Build merged skeleton using the union of canonical row ids
 #' across all input tables
 #' @keywords internal
@@ -305,6 +469,16 @@
 #' @keywords internal
 #' @noRd
 .collect_footnotes <- function(obj) {
+  # Prefer the notes created by the source function. A merge must preserve the
+  # source table's reporting decisions rather than recreate them.
+  stored_footnotes <- obj[["footnotes"]]
+  if (!is.null(stored_footnotes)) {
+    stored_footnotes <- as.character(stored_footnotes)
+    return(unique(stored_footnotes[nzchar(stored_footnotes)]))
+  }
+
+  # Compatibility fallback for objects created by earlier gtregression
+  # versions that did not retain their rendered notes.
   out <- character()
 
   approach <- obj[["approach"]]
@@ -334,15 +508,10 @@
         out,
         paste0(
           "N = ", n_used,
-          " complete observations included in the multivariable model"
+          " complete observations included in the model."
         )
       )
     }
-  }
-
-  foots <- obj[["footnotes"]]
-  if (!is.null(foots)) {
-    out <- c(out, foots)
   }
 
   unique(out[nzchar(out)])
@@ -359,6 +528,20 @@
 #' @param spanners Character vector of spanner labels, one per table.
 #'   If \code{NULL}, defaults to \code{"Table 1"}, \code{"Table 2"}, etc.
 #' @param theme Merge theme preset or vector of primitives.
+#' @param format Output table format. One of \code{"flextable"} (default) or
+#'   \code{"gt"}. The merged display is rebuilt in this format, independently
+#'   of the formats used by the input tables.
+#' @details
+#' Binary variables should use the same row display across all input tables.
+#' For a descriptive, univariable, and multivariable merge, the clearest
+#' publication layout is usually \code{show_dichotomous = "all_levels"} in
+#' \code{descriptive_table()} and \code{show_ref = TRUE} in each regression
+#' function. Mixing these settings can create additional binary rows; in that
+#' situation \code{merge_tables()} issues a warning with the compatible
+#' settings.
+#'
+#' Footnotes created by each input table are retained unchanged. Exact duplicate
+#' notes are shown once in the merged table.
 #'
 #' @return A merged table object of class
 #'   \code{c("gtregression", "merged_table", ...)}.
@@ -394,8 +577,17 @@
 #'   spanners = c("Univariable", "Adjusted")
 #' )
 #' @export
-merge_tables <- function(..., spanners = NULL, theme = "minimal") {
+merge_tables <- function(...,
+                         spanners = NULL,
+                         theme = "minimal",
+                         format = c("flextable", "gt")) {
   theme <- .choice_arg(substitute(theme), env = parent.frame())
+  format <- .choice_arg(
+    substitute(format),
+    env = parent.frame(),
+    choices = c("flextable", "gt")
+  )
+  format <- match.arg(format, c("flextable", "gt"))
 
   tbls <- list(...)
 
@@ -442,7 +634,7 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
     )
   }
 
-  engine <- unique(engines)
+  engine <- format
   theme <- .resolve_theme_merge(theme)
 
   if (is.null(spanners)) {
@@ -452,14 +644,18 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
     stop("Length of `spanners` must equal number of tables.", call. = FALSE)
   }
 
+  .warn_binary_merge_mode(tbls)
+  binary_mismatch <- .binary_merge_mismatch(tbls)
+
   maps <- lapply(tbls, .canonical_map)
   aligned <- .align_compact_binary_maps(maps)
   maps <- aligned$maps
-  if (length(aligned$remapped)) {
+  aligned_mismatch <- intersect(aligned$remapped, binary_mismatch)
+  if (length(aligned_mismatch)) {
     message(
       "merge_tables(): compact binary regression rows were aligned to ",
       "descriptive level rows for ",
-      paste(aligned$remapped, collapse = ", "),
+      paste(aligned_mismatch, collapse = ", "),
       ". To display Ref., use `show_ref = TRUE` in the regression ",
       "function before merging."
     )
@@ -761,6 +957,7 @@ merge_tables <- function(..., spanners = NULL, theme = "minimal") {
     column_labels = col_labels,
     spanners = spanners,
     engine = engine,
+    format = format,
     footnotes = footnotes,
     part_sources = part_sources,
     part_formats = part_formats,

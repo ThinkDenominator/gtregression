@@ -91,6 +91,8 @@
 #'   \item{model_stats}{Model-fit statistics when \code{model_stats = TRUE};
 #'   otherwise \code{NULL}.}
 #'   \item{variable_labels}{Named character vector of display labels.}
+#'   \item{footnotes}{Character vector used by the rendered table. Adjustment
+#'   notes use the same display labels as the table.}
 #'   \item{time,event,distribution,approach,format,source,adjust_for,exposures,interaction}{Metadata fields.}
 #' }
 #'
@@ -268,7 +270,13 @@ surv_reg <- function(data,
     "Time Ratio (95% CI)"
   }
 
-  variable_labels <- .var_label_map(data, unique(exposures))
+  variable_labels <- .var_label_map(
+    data,
+    unique(c(exposures, adjust_for, .interaction_vars(interaction)))
+  )
+  core$table_body <- .format_interaction_levels(
+    core$table_body, core$data_clean, variable_labels
+  )
   crude_mode <- !adjusted_mode && !isTRUE(multivariable)
 
   if (crude_mode) {
@@ -298,13 +306,10 @@ surv_reg <- function(data,
     .abbrev_note("survreg"),
     paste0("Distribution: ", distribution, "."),
     if (isTRUE(show_ref) && any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
-    if (adjusted_mode) .adjustment_note(adjust_for) else NULL,
+    if (adjusted_mode) .display_adjustment_note(adjust_for, variable_labels) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
-    paste0(
-      "Event variable: ", event,
-      " (1 = event, 0 = censored after internal coding)."
-    )
+    NULL
   )
 
   .message_hidden_ref_rows("surv_reg", core$table_body, show_ref)
@@ -331,6 +336,7 @@ surv_reg <- function(data,
     model_summaries = core$model_summaries,
     model_stats = if (isTRUE(model_stats)) .surv_model_stats_table(core$models) else NULL,
     variable_labels = variable_labels,
+    footnotes = footnotes,
     time = time,
     event = event,
     distribution = distribution,

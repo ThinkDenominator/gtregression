@@ -31,9 +31,13 @@ Each analysis tab includes a **Code** panel with a copy button. This is importan
 the app helps users learn the package while creating reproducible code they can
 edit, save, and share.
 
-Screenshots can be added later if needed. Suggested screenshot files are:
-`man/figures/app-data.png`, `man/figures/app-regression.png`,
-`man/figures/app-survival.png`, and `man/figures/app-visualise-export.png`.
+> **Guide update:** annotated screenshots are being added to this manual. The
+> written workflow and generated-code examples are current; visual callouts will
+> follow as the screenshots are uploaded.
+
+Suggested screenshot files are `man/figures/app-data.png`,
+`man/figures/app-regression.png`, `man/figures/app-survival.png`, and
+`man/figures/app-visualise-export.png`.
 
 ## Launch the App
 
@@ -99,8 +103,9 @@ If a dependency is missing, the app gives a message explaining what to install.
 The app is easiest to use when users follow a deliberate order:
 
 1. **Data**: load a built-in dataset or import CSV, Excel, RDS, Stata, SPSS, or SAS data.
-2. **Data Prep**: review the data and explicitly choose **Use original data**
-   or **Use prepared data**.
+2. **Data Prep**: review the data only when changes are needed. The original
+   data are active automatically; choose **Use prepared data** after applying
+   changes.
 3. **Descriptive**: inspect variables and create a baseline table.
 4. **Regression**: run univariable models first.
 5. **Regression**: reselect the clinically important variables and run the
@@ -116,46 +121,16 @@ The app intentionally encourages users to run analyses one step at a time. For
 example, run univariable regression first, then decide which variables to keep,
 then run the multivariable model.
 
-## Simple and Advanced Modes
+## Core and Additional Options
 
-The app starts in **Simple** mode. This is the best setting for most users,
-especially when they are learning the package or running a standard analysis.
-Simple mode keeps the screen focused on the common workflow:
+The app does not use a global Simple/Advanced switch. Each tab presents its
+core workflow first and keeps uncommon controls in a local **Additional
+options** section. This keeps the interface calm without hiding package
+features behind a separate experience-level choice.
 
-- load data;
-- create a descriptive table;
-- run regression or survival models;
-- visualise results;
-- merge and export outputs;
-- copy reproducible code.
-
-In Simple mode, the app hides technical options that are not needed for routine
-table generation. This keeps the interface cleaner and helps users move through
-the analysis without feeling they need to understand every modelling argument.
-
-Switch to **Advanced** mode when extra control is needed for diagnostics,
-manuscript polishing, or reviewer requests. Advanced mode reveals options such
-as:
-
-- custom descriptive statistic overrides;
-- model statistics for diagnostics and model comparison;
-- additional Kaplan-Meier display controls;
-- forest plot confidence interval column width;
-- forest plot x-axis limits and tick marks;
-- export size tuning for wider or longer outputs.
-
-| Mode | Best for | What users see |
-|---|---|---|
-| Simple | Beginners, teaching, routine analysis, quick manuscript tables | Core workflow controls only |
-| Advanced | Experienced users, diagnostics, publication polishing, complex outputs | Extra modelling, plotting, and export controls |
-
-A practical rule is:
-
-- use **Simple** mode to build the analysis;
-- switch to **Advanced** mode only when the output needs fine-tuning.
-
-This design keeps the app friendly for new users while still allowing full
-control when the analysis becomes more technical.
+For example, the Descriptive tab keeps grouping, percentage, missing-value,
+binary-display, and numeric-statistic choices together. The Survival tab keeps
+the less-common time-break interval under **Additional KM options**.
 
 ## Quick-Start Templates
 
@@ -276,20 +251,37 @@ The recovery controls are deliberately prominent:
 - **Download prepared data** saves the current prepared dataset;
 - **Download code** saves the preparation recipe.
 
-Loading data does not silently decide the analysis dataset. Before any model or
-table can run, explicitly select one of:
+The original dataset is active immediately after loading, so users can run a
+table or model without visiting Data Prep. Select a different analysis dataset
+only when preparation is wanted:
 
 - **Use original data**: subsequent analyses use the untouched imported data;
 - **Use prepared data**: subsequent analyses use the current prepared version.
 
-If preparation is changed later, review the tab and make the choice again. The
-generated workflow records that choice and includes the preparation operations
-when prepared data are selected.
+Data Prep is optional. Use **Set display label** when an internal variable name such as
+`age` should remain unchanged but publication output should show a clearer name
+such as *Maternal age*. Labels are reversible, are retained in prepared-data
+downloads, and are included in the reusable code.
+
+For a categorical variable, the same page also shows its observed categories.
+Edit a category display label such as `0` to `No` or `1` to `Yes` there. This
+creates a labelled factor only when a category label changes, retaining a clean
+and reproducible analysis dataset from the outset.
+
+If preparation is changed later, choose **Use prepared data** when those latest
+changes should be used for subsequent analyses. The generated workflow records
+that choice and includes the preparation operations when prepared data are
+selected.
 
 ## Descriptive Tab
 
 Use the **Descriptive** tab to create baseline tables with
 `descriptive_table()`.
+
+Choose **Group by** first: leave it as `None` for one overall table, or select
+the comparison variable before choosing the variables to summarise. Then choose
+column or row percentages, overall-column placement, missing-value display, and
+binary-category display to suit the reporting question.
 
 Typical steps:
 
@@ -347,6 +339,11 @@ descriptive_table(
 Use the **Regression** tab for standard regression tables:
 
 - logistic regression;
+
+Choose the outcome before the exposures. Run univariable models first, then
+move clinically justified variables into the multivariable model. The app does
+not select adjustment variables automatically: use the study question, a DAG,
+and clinical knowledge.
 - Firth logistic regression;
 - log-binomial regression;
 - Poisson regression;
@@ -420,8 +417,10 @@ but merged descriptive-regression outputs may be clearer when `show_ref = TRUE`.
 
 ### Model Statistics
 
-The **Store model statistics** option attaches fit statistics such as AIC, BIC,
-log-likelihood, pseudo R-squared where appropriate, and N.
+Model statistics are stored by default. The **Model Stats** tab then shows fit
+statistics such as AIC, BIC, log-likelihood, pseudo R-squared where
+appropriate, and N. They are not added to the publication-ready regression
+table. Clear **Store model statistics** before fitting when they are not needed.
 
 For logistic, Poisson, Cox, and parametric survival models, ordinary linear
 `R2` is not usually available. In those settings, pseudo R-squared or survival
@@ -464,6 +463,11 @@ quick presentation-style views. For publication forest outputs, use
 Use the **Survival** tab for:
 
 - Cox regression with `cox_reg()`;
+
+Choose Cox regression for hazard ratios when no baseline-hazard distribution is
+specified. Choose parametric survival regression when a distributional model
+and time-ratio interpretation are appropriate. Kaplan-Meier plots describe the
+observed curves and should not be used as a substitute for either fitted model.
 - parametric survival regression with `surv_reg()`;
 - Kaplan-Meier curves with `km_plot()`;
 - log-rank tests and survival summaries.
@@ -581,13 +585,13 @@ p1 + p2
 ## Visualise & Export Tab
 
 The **Visualise & Export** tab turns fitted results into tables and figures.
-It also provides **Download complete R script**, which saves a single
+The top-level **Session Code** tab provides **Download complete R script**, which saves a single
 `gtregression-session.R` file for the current session. The script records the
 selected data source, any Data Prep changes, categorical reference levels,
 completed descriptive and modelling steps, visualisations, and export calls.
 Only analyses that have actually been run are included.
 
-Open **Full Workflow Code** to review the same script before downloading it.
+Open **Session Code** to review the same script before downloading it.
 The downloaded script begins with `library(gtregression)` and can be edited or
 rerun in RStudio as the reproducible record of the app workflow.
 
@@ -615,6 +619,16 @@ It can also generate code for:
 - `save_plot()`;
 - `save_forest()`.
 
+### Model Fit
+
+The **Model Fit** menu exposes the full `plot_model_fit()` choice set:
+**Auto**, **All diagnostics**, residuals versus fitted, normal Q-Q,
+scale-location, Cook's distance, observed versus predicted, and calibration.
+Use **Auto** for the appropriate diagnostic panel. Calibration uses the chosen
+number of bins; the base font size applies to every model-fit view. The generated
+code and Session Code preserve the selected type, model name, bins, and font
+size.
+
 Browser plots should be treated as previews. For final output, copy the code
 into RStudio and export with explicit width and height.
 
@@ -635,7 +649,7 @@ file.
 
 ### Forest Plot Controls
 
-These controls remain visible in both Simple and Advanced modes:
+These controls are available directly from the Forest Plot menu:
 
 | Control | What it does | When to change it |
 |---|---|---|
@@ -653,17 +667,20 @@ Every custom tick must lie inside the selected limits.
 Table previews offer **DOCX**, **RTF**, and **HTML**. HTML is the browser-ready
 copy; DOCX and RTF are editable manuscript formats. Plot previews offer **PNG**
 and **PDF**, because plots are graphics objects rather than HTML tables.
+Each download is generated in Shiny's temporary download location and passed to
+the browser. The app does not choose, overwrite, or write directly into a user
+folder; the browser handles the final save location.
 
-### Full Workflow Code
+### Session Code
 
-The **Full Workflow Code** panel collects the analysis steps completed in the
+The **Session Code** panel collects the analysis steps completed in the
 app into one script-style block. This is useful after a user has loaded data,
 run descriptive tables, fitted models, and created plots.
 
 The recommended behaviour is:
 
 1. Run the app steps interactively.
-2. Open **Full Workflow Code**.
+2. Open **Session Code**.
 3. Click the copy button.
 4. Paste the code into RStudio.
 5. Save and edit the script as the final reproducible analysis.
@@ -731,6 +748,33 @@ save_plot(
   height = 7
 )
 ```
+
+### Modify Table
+
+Choose **Modify table** to polish any completed descriptive, regression, or
+merged table without changing the original analysis result. The app creates a
+separate modified table that can be downloaded as DOCX, RTF, or HTML.
+
+All `modify_table()` options are available: variable, level, and header labels;
+a caption; bold or italic characteristic and level rows; removal of displayed
+N columns, complete-case notes, abbreviations, or the automatic adjustment
+note; and a final custom note. Label mappings are entered one per line:
+
+```text
+age = Maternal age
+smoke: Yes = Smoker
+estimate = Adjusted OR
+```
+
+The first line changes a variable label, the second changes one factor level,
+and the third changes a visible header. The generated code remains available in
+the Visualise & Export **Code** tab, while the whole reproducible workflow is
+available from the top-level **Session Code** tab.
+
+For a level label, the text before the colon must be the internal variable name,
+and the text between `:` and `=` must match the current level exactly. For
+example, use `smoke: Yes = Smoker`, not `Smoking during pregnancy: Yes =
+Smoker` after changing the variable's display label.
 
 `plot_reg_combine()` is intended for standard univariable and multivariable
 outputs. Stratified outputs are better handled carefully with separate

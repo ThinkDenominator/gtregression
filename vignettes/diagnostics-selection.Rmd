@@ -44,8 +44,7 @@ check_convergence(
   exposures = exposures,
   outcome = low,
   approach = logit,
-  multivariate = TRUE,
-  format = gt
+  multivariate = TRUE
 )
 ```
 
@@ -59,8 +58,7 @@ check_convergence(
   exposures = c("smoke", "ht", "ui", "ptl_cat"),
   outcome = low,
   approach = logbinomial,
-  multivariate = TRUE,
-  format = flextable
+  multivariate = TRUE
 )
 ```
 
@@ -326,11 +324,10 @@ selected <- select_models(
   outcome = low,
   exposures = exposures,
   approach = logit,
-  direction = forward,
-  format = gt
+  direction = forward
 )
 
-selected$table
+selected
 ```
 
 The selected direction is recorded in the formatted table footer. Backward and
