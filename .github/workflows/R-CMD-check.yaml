@@ -1,4 +1,5 @@
-# Adopted from https://github.com/r-lib/actions/tree/v2/examples
+# Use Ubuntu's R package directly so CI does not depend on R-hub's
+# transient version-resolution service.
 
 on:
   push:
@@ -12,22 +13,8 @@ permissions: read-all
 
 jobs:
   R-CMD-check:
-    runs-on: ${{ matrix.config.os }}
-
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
-
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          # Pin a stable, cross-platform R version instead of the external release alias.
-          - {os: windows-latest, r: '4.5.2'}
-          - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,   r: '4.5.2'}
-          - {os: ubuntu-latest,   r: 'oldrel-1'}
-          # - {os: ubuntu-latest,   r: 'oldrel-2'}
-          # - {os: ubuntu-latest,   r: 'oldrel-3'}
-          # - {os: ubuntu-latest,   r: 'oldrel-4'}
+    runs-on: ubuntu-latest
+    name: ubuntu-latest (system R)
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
@@ -37,11 +24,10 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v2
 
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: ${{ matrix.config.r }}
-          http-user-agent: ${{ matrix.config.http-user-agent }}
-          use-public-rspm: true
+      - name: Install R and system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes r-base r-base-dev ghostscript qpdf
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
