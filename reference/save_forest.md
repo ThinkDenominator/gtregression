@@ -92,7 +92,7 @@ uni_or <- uni_reg(
 
 forest <- forest_reg(uni = uni_or)
 save_forest(forest, filename = tempfile("forest"), format = "pdf")
-#> Forest plot saved at: /tmp/RtmpXlUn4M/forest1bc12b4374ef.pdf
+#> Forest plot saved at: /tmp/RtmpOTuIKG/forest19f4268dd5a4.pdf
 
 # For large forest plots, increase width, height, scale, or padding.
 save_forest(
@@ -103,5 +103,5 @@ save_forest(
   padding = 0.35,
   dpi = 300
 )
-#> Forest plot saved at: /tmp/RtmpXlUn4M/forest-wide1bc17aac2939.png
+#> Forest plot saved at: /tmp/RtmpOTuIKG/forest-wide19f4260f73b2.png
 ```
