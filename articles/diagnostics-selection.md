@@ -50,7 +50,7 @@ check_convergence(
 | age + lwt + race + smoke + ht + ui + ptl_cat | logit | Yes | 0.880 |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-ce8a8128 quarto-disable-processing="true"}
+Convergence check {.table .cl-ae8bebf4 quarto-disable-processing="true"}
 
 For risk-ratio workflows, this same check helps users decide whether a
 log-binomial model fitted cleanly or whether a robust Poisson approach
@@ -72,7 +72,7 @@ check_convergence(
 | smoke + ht + ui + ptl_cat | logbinomial | No |  |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-ceac8868 quarto-disable-processing="true"}
+Convergence check {.table .cl-aebafeb2 quarto-disable-processing="true"}
 
 ## Collinearity Screening
 
