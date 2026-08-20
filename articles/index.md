@@ -40,7 +40,7 @@
 - [Diagnostics and Model
   Selection](https://gtregression.thinkdenominator.com/articles/diagnostics-selection.md):
 
-### Interpret
+### Confounding & Causal Analysis
 
 - [Confounding and
   Interaction](https://gtregression.thinkdenominator.com/articles/confounding-interaction.md):

@@ -43,8 +43,10 @@ interaction_models(
 
 - covariates:
 
-  Optional character vector of additional covariates. Quoted names are
-  recommended in scripts, and bare names are also accepted.
+  Optional character vector of adjustment covariates. They are included
+  in both the model without and the model with the interaction term.
+  Quoted names are recommended in scripts, and bare names are also
+  accepted.
 
 - effect_modifier:
 
@@ -104,6 +106,12 @@ candidate confounders or effect modifiers, including
 Mantel-Haenszel-supported checks when appropriate, use
 [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md).
 
+With `covariates = c(age, sex)`, the two fitted models are
+`outcome ~ exposure + effect_modifier + age + sex` and
+`outcome ~ exposure + effect_modifier + age + sex + exposure:effect_modifier`.
+Both models use the same complete-case analysis data, so covariate
+adjustment is applied consistently to the interaction comparison.
+
 ## See also
 
 [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md)
@@ -129,11 +137,12 @@ interaction_models(
   approach = logit
 )
 #> $summary
-#> # A tibble: 1 × 10
-#>   outcome exposure effect_modifier approach test   p_value alpha has_interaction
-#>   <chr>   <chr>    <chr>           <chr>    <chr>    <dbl> <dbl> <lgl>          
-#> 1 low     smoke    race            logit    Likel…   0.319  0.05 FALSE          
-#> # ℹ 2 more variables: decision <chr>, interpretation <chr>
+#> # A tibble: 1 × 11
+#>   outcome exposure effect_modifier covariates approach test        p_value alpha
+#>   <chr>   <chr>    <chr>           <chr>      <chr>    <chr>         <dbl> <dbl>
+#> 1 low     smoke    race            age, lwt   logit    Likelihood…   0.319  0.05
+#> # ℹ 3 more variables: has_interaction <lgl>, decision <chr>,
+#> #   interpretation <chr>
 #> 
 #> $model_no_interaction
 #> 
@@ -171,11 +180,11 @@ interaction_models(
 #> 
 #> $formula_no_interaction
 #> low ~ smoke + race + age + lwt
-#> <environment: 0x55770fcd11e0>
+#> <environment: 0x5634df81d138>
 #> 
 #> $formula_with_interaction
 #> low ~ smoke + race + age + lwt + smoke:race
-#> <environment: 0x55770fcd11e0>
+#> <environment: 0x5634df81d138>
 #> 
 #> $interaction_terms
 #> [1] "smokeYes:raceBlack" "smokeYes:raceOther"
@@ -210,6 +219,9 @@ interaction_models(
 #> $approach
 #> [1] "logit"
 #> 
+#> $covariates
+#> [1] "age" "lwt"
+#> 
 #> $source
 #> [1] "interaction_models"
 #> 
@@ -235,11 +247,12 @@ interaction_models(
   approach = cox
 )
 #> $summary
-#> # A tibble: 1 × 10
-#>   outcome  exposure effect_modifier approach test  p_value alpha has_interaction
-#>   <chr>    <chr>    <chr>           <chr>    <chr>   <dbl> <dbl> <lgl>          
-#> 1 time/st… trt      prior           cox      Like…  0.0683  0.05 FALSE          
-#> # ℹ 2 more variables: decision <chr>, interpretation <chr>
+#> # A tibble: 1 × 11
+#>   outcome     exposure effect_modifier covariates approach test    p_value alpha
+#>   <chr>       <chr>    <chr>           <chr>      <chr>    <chr>     <dbl> <dbl>
+#> 1 time/status trt      prior           age, karno cox      Likeli…  0.0683  0.05
+#> # ℹ 3 more variables: has_interaction <lgl>, decision <chr>,
+#> #   interpretation <chr>
 #> 
 #> $model_no_interaction
 #> Call:
@@ -276,12 +289,12 @@ interaction_models(
 #> 
 #> $formula_no_interaction
 #> survival::Surv(time, status) ~ trt + prior + age + karno
-#> <environment: 0x557718482688>
+#> <environment: 0x5634dfe2b958>
 #> 
 #> $formula_with_interaction
 #> survival::Surv(time, status) ~ trt + prior + age + karno + trt * 
 #>     prior
-#> <environment: 0x557718482688>
+#> <environment: 0x5634dfe2b958>
 #> 
 #> $interaction_terms
 #> [1] "trtTest treatment:priorYes"
@@ -317,6 +330,9 @@ interaction_models(
 #> 
 #> $approach
 #> [1] "cox"
+#> 
+#> $covariates
+#> [1] "age"   "karno"
 #> 
 #> $source
 #> [1] "interaction_models"

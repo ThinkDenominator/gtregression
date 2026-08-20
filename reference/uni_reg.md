@@ -100,7 +100,9 @@ A list of class `c("gtregression","uni_reg", ...)` with elements:
 
 - reg_check:
 
-  Diagnostics for linear models; message otherwise.
+  Diagnostics for linear models. Printing this element renders a
+  publication-ready table; individual diagnostic rows remain available
+  for programmatic use. Other approaches return a message.
 
 - approach, format, source:
 

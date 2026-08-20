@@ -60,35 +60,8 @@ desc_column <- descriptive_table(
   theme = clinical
 )
 
-desc_column$table
+desc_column
 ```
-
-| Characteristic | Normal BW, N=130 | Low BW, N=59 | Overall, N=189 |
-|----|----|----|----|
-| Maternal age | 23.0 (19.0-28.0) | 22.0 (19.5-25.0) | 23.0 (19.0-26.0) |
-| Maternal weight | 123.5 (113.0-147.0) | 120.0 (104.0-130.0) | 121.0 (110.0-140.0) |
-| Maternal race |  |  |  |
-|  White | 73 (56.2%) | 23 (39.0%) | 96 (50.8%) |
-|  Black | 15 (11.5%) | 11 (18.6%) | 26 (13.8%) |
-|  Other | 42 (32.3%) | 25 (42.4%) | 67 (35.4%) |
-| Smoking during pregnancy |  |  |  |
-|  No | 86 (66.2%) | 29 (49.2%) | 115 (60.8%) |
-|  Yes | 44 (33.8%) | 30 (50.8%) | 74 (39.2%) |
-| Hypertension |  |  |  |
-|  No | 125 (96.2%) | 52 (88.1%) | 177 (93.7%) |
-|  Yes | 5 (3.8%) | 7 (11.9%) | 12 (6.3%) |
-| Uterine irritability |  |  |  |
-|  No | 116 (89.2%) | 45 (76.3%) | 161 (85.2%) |
-|  Yes | 14 (10.8%) | 14 (23.7%) | 28 (14.8%) |
-| Previous preterm labour |  |  |  |
-|  No | 118 (90.8%) | 41 (69.5%) | 159 (84.1%) |
-|  Yes | 12 (9.2%) | 18 (30.5%) | 30 (15.9%) |
-| First trimester visits |  |  |  |
-|  None | 64 (49.2%) | 36 (61.0%) | 100 (52.9%) |
-|  One | 36 (27.7%) | 11 (18.6%) | 47 (24.9%) |
-|  Two or more | 30 (23.1%) | 12 (20.3%) | 42 (22.2%) |
-| Categorical variables shown as n (%); percentages are by column. |  |  |  |
-| Continuous variables shown as Median (IQR). |  |  |  |
 
 ## Row Percentages
 
@@ -156,25 +129,8 @@ descriptive_table(
   ),
   percent = column,
   show_missing = no
-)$table
+)
 ```
-
-| Characteristic | Normal BW, N=130 | Low BW, N=59 |
-|----|----|----|
-| Maternal age | 23.7 (5.6) | 22.3 (4.5) |
-| Maternal weight | 123.5 (113.0-147.0) | 120.0 (104.0-130.0) |
-| ftv |  |  |
-|  0 | 64 (49.2%) | 36 (61.0%) |
-|  1 | 36 (27.7%) | 11 (18.6%) |
-|  2 | 23 (17.7%) | 7 (11.9%) |
-|  3 | 3 (2.3%) | 4 (6.8%) |
-|  4 | 3 (2.3%) | 1 (1.7%) |
-|  6 | 1 (0.8%) | 0 (0.0%) |
-| Smoking during pregnancy |  |  |
-|  No | 86 (66.2%) | 29 (49.2%) |
-|  Yes | 44 (33.8%) | 30 (50.8%) |
-| Categorical variables shown as n (%); percentages are by column. |  |  |
-| Continuous summaries: age = Mean (SD); lwt = Median (IQR). |  |  |
 
 The quoted form is equivalent and often clearer in saved scripts:
 
@@ -199,13 +155,15 @@ Use `format = gt` when the output is mainly for HTML or pkgdown.
 
 ``` r
 
-descriptive_table(
+desc_gt <- descriptive_table(
   data = birthwt_data,
   exposures = birthwt_exposures,
   by = "low",
   percent = "column",
   format = gt
-)$table
+)
+
+desc_gt$table
 ```
 
 | Characteristic | Normal BW, N=130 | Low BW, N=59 |

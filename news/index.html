@@ -15,8 +15,7 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html">Get started</a></li>
-<li class="nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
@@ -25,11 +24,11 @@
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Interpret</a></li>
     <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -116,6 +115,7 @@
 <li>Fixed regression and publication-ready outputs so user-supplied variable order is preserved rather than alphabetically reordered.</li>
 <li>Fixed forest plot merging so adjusted reference rows are left blank for variables that were not included in the adjusted model.</li>
 <li>Fixed <code><a href="../reference/forest_df.html">forest_df()</a></code> row-order handling after joins and merges so forest plots follow the same display order as the source regression table.</li>
+<li>Replaced CRAN-incompatible diabetes demo data that depended on removed mlbench Pima data with <code>data_SynthDiabetes</code>, a synthetic replacement based on <code><a href="https://rdrr.io/pkg/mlbench/man/SynthDiabetes.html" class="external-link">mlbench::SynthDiabetes2</a></code> (mlbench &gt;= 2.1-11), and regenerated all mediation teaching fixtures that depended on the prior dataset.</li>
 </ul></div>
 </div>
     <div class="section level2">

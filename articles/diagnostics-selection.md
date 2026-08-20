@@ -41,16 +41,16 @@ check_convergence(
   exposures = exposures,
   outcome = low,
   approach = logit,
-  multivariate = TRUE,
-  format = gt
+  multivariate = TRUE
 )
 ```
 
-| Convergence check |  |  |  |
-|----|----|----|----|
 | Exposure | Model | Converged | Max fitted value |
+|----|----|----|----|
 | age + lwt + race + smoke + ht + ui + ptl_cat | logit | Yes | 0.880 |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
+
+Convergence check {.table .cl-ce8a8128 quarto-disable-processing="true"}
 
 For risk-ratio workflows, this same check helps users decide whether a
 log-binomial model fitted cleanly or whether a robust Poisson approach
@@ -63,8 +63,7 @@ check_convergence(
   exposures = c("smoke", "ht", "ui", "ptl_cat"),
   outcome = low,
   approach = logbinomial,
-  multivariate = TRUE,
-  format = flextable
+  multivariate = TRUE
 )
 ```
 
@@ -73,7 +72,7 @@ check_convergence(
 | smoke + ht + ui + ptl_cat | logbinomial | No |  |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-fbacc8e2 quarto-disable-processing="true"}
+Convergence check {.table .cl-ceac8868 quarto-disable-processing="true"}
 
 ## Collinearity Screening
 
@@ -476,24 +475,114 @@ selected <- select_models(
   outcome = low,
   exposures = exposures,
   approach = logit,
-  direction = forward,
-  format = gt
+  direction = forward
 )
 
-selected$table
+selected
 ```
 
-| Stepwise model selection |  |  |  |  |  |  |  |
-|----|----|----|----|----|----|----|----|
-| Model | Selected variables | Predictors | AIC | BIC | Log-likelihood | deviance | Best AIC |
-| 1 | Intercept only | 0 | 236.67 | 239.91 | -117.34 | 234.67 | No |
-| 2 | ptl_cat | 1 | 225.90 | 232.38 | -110.95 | 221.90 | No |
-| 3 | ptl_cat + age | 2 | 223.30 | 233.02 | -108.65 | 217.30 | No |
-| 4 | ptl_cat + age + ht | 3 | 221.12 | 234.09 | -106.56 | 213.12 | No |
-| 5 | ptl_cat + age + ht + lwt | 4 | 217.43 | 233.64 | -103.72 | 207.43 | No |
-| 6 | ptl_cat + age + ht + lwt + ui | 5 | 217.15 | 236.60 | -102.58 | 205.15 | Yes |
-| Selection direction: forward. |  |  |  |  |  |  |  |
-| Screening aid only; compare candidate models with study design, clinical or subject-matter judgement, and model diagnostics. |  |  |  |  |  |  |  |
+    ## $results_table
+    ## # A tibble: 6 × 9
+    ##   model_id formula          model_terms n_predictors   AIC   BIC logLik deviance
+    ##      <int> <chr>            <chr>              <int> <dbl> <dbl>  <dbl>    <dbl>
+    ## 1        1 low ~ 1          Intercept …            0  237.  240.  -117.     235.
+    ## 2        2 low ~ ptl_cat    ptl_cat                1  226.  232.  -111.     222.
+    ## 3        3 low ~ ptl_cat +… ptl_cat + …            2  223.  233.  -109.     217.
+    ## 4        4 low ~ ptl_cat +… ptl_cat + …            3  221.  234.  -107.     213.
+    ## 5        5 low ~ ptl_cat +… ptl_cat + …            4  217.  234.  -104.     207.
+    ## 6        6 low ~ ptl_cat +… ptl_cat + …            5  217.  237.  -103.     205.
+    ## # ℹ 1 more variable: selected_vars <chr>
+    ## 
+    ## $best_model
+    ## 
+    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
+    ## 
+    ## Coefficients:
+    ## (Intercept)   ptl_catYes          age        htYes          lwt        uiYes  
+    ##     1.74560      1.42123     -0.05331      1.90580     -0.01437      0.69193  
+    ## 
+    ## Degrees of Freedom: 188 Total (i.e. Null);  183 Residual
+    ## Null Deviance:       234.7 
+    ## Residual Deviance: 205.2     AIC: 217.2
+    ## 
+    ## $all_models
+    ## $all_models$model_1
+    ## 
+    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
+    ## 
+    ## Coefficients:
+    ## (Intercept)  
+    ##       -0.79  
+    ## 
+    ## Degrees of Freedom: 188 Total (i.e. Null);  188 Residual
+    ## Null Deviance:       234.7 
+    ## Residual Deviance: 234.7     AIC: 236.7
+    ## 
+    ## $all_models$model_2
+    ## 
+    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
+    ## 
+    ## Coefficients:
+    ## (Intercept)   ptl_catYes  
+    ##      -1.057        1.463  
+    ## 
+    ## Degrees of Freedom: 188 Total (i.e. Null);  187 Residual
+    ## Null Deviance:       234.7 
+    ## Residual Deviance: 221.9     AIC: 225.9
+    ## 
+    ## $all_models$model_3
+    ## 
+    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
+    ## 
+    ## Coefficients:
+    ## (Intercept)   ptl_catYes          age  
+    ##     0.53225      1.60766     -0.07054  
+    ## 
+    ## Degrees of Freedom: 188 Total (i.e. Null);  186 Residual
+    ## Null Deviance:       234.7 
+    ## Residual Deviance: 217.3     AIC: 223.3
+    ## 
+    ## $all_models$model_4
+    ## 
+    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
+    ## 
+    ## Coefficients:
+    ## (Intercept)   ptl_catYes          age        htYes  
+    ##     0.44082      1.63465     -0.07091      1.28704  
+    ## 
+    ## Degrees of Freedom: 188 Total (i.e. Null);  185 Residual
+    ## Null Deviance:       234.7 
+    ## Residual Deviance: 213.1     AIC: 221.1
+    ## 
+    ## $all_models$model_5
+    ## 
+    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
+    ## 
+    ## Coefficients:
+    ## (Intercept)   ptl_catYes          age        htYes          lwt  
+    ##     2.04619      1.52899     -0.05648      1.82544     -0.01536  
+    ## 
+    ## Degrees of Freedom: 188 Total (i.e. Null);  184 Residual
+    ## Null Deviance:       234.7 
+    ## Residual Deviance: 207.4     AIC: 217.4
+    ## 
+    ## $all_models$model_6
+    ## 
+    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
+    ## 
+    ## Coefficients:
+    ## (Intercept)   ptl_catYes          age        htYes          lwt        uiYes  
+    ##     1.74560      1.42123     -0.05331      1.90580     -0.01437      0.69193  
+    ## 
+    ## Degrees of Freedom: 188 Total (i.e. Null);  183 Residual
+    ## Null Deviance:       234.7 
+    ## Residual Deviance: 205.2     AIC: 217.2
+    ## 
+    ## 
+    ## $direction
+    ## [1] "forward"
+    ## 
+    ## $table
 
 The selected direction is recorded in the formatted table footer.
 Backward and both-direction searches are available using the same

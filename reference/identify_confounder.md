@@ -129,6 +129,14 @@ knowledge, study design, and causal diagrams such as DAGs. Automated
 change-in-estimate and interaction checks should not be used as the sole
 basis for model adjustment.
 
+For each exposure-candidate pair, the interaction screen fits
+`outcome ~ exposure + potential_confounder + exposure:potential_confounder`.
+It does not adjust for other covariates. Consequently, the reported
+interaction p-value is a candidate-only screening result, not a final
+adjusted interaction analysis. Use
+`interaction_models(covariates = ...)` when testing a planned,
+covariate-adjusted interaction.
+
 Use this function when you want to screen one or more candidate
 variables and organise crude, adjusted, Mantel-Haenszel, and
 effect-modification signals in one place. For a focused comparison of
@@ -159,16 +167,6 @@ identify_confounder(
   potential_confounder = race,
   approach = logit
 )
-#> Confounder and effect-modifier screening
-#> # A tibble: 1 × 13
-#>   exposure candidate crude_est adjusted_est mh_est percent_change
-#>   <chr>    <chr>         <dbl>        <dbl>  <dbl>          <dbl>
-#> 1 smoke    race           2.02         3.05   3.09           51.0
-#> # ℹ 7 more variables: percent_change_model <dbl>, percent_change_mh <dbl>,
-#> #   is_confounder <lgl>, interaction_p <dbl>, is_effect_modifier <lgl>,
-#> #   decision <chr>, recommendation <chr>
-#> 
-#> Use `$table` for the formatted display table.
 
 lung_data <- data_lungcancer |>
   dplyr::mutate(
@@ -185,14 +183,4 @@ identify_confounder(
   potential_confounder = prior,
   approach = cox
 )
-#> Confounder and effect-modifier screening
-#> # A tibble: 1 × 13
-#>   exposure candidate crude_est adjusted_est mh_est percent_change
-#>   <chr>    <chr>         <dbl>        <dbl>  <dbl>          <dbl>
-#> 1 trt      prior          1.02         1.03     NA           0.84
-#> # ℹ 7 more variables: percent_change_model <dbl>, percent_change_mh <dbl>,
-#> #   is_confounder <lgl>, interaction_p <dbl>, is_effect_modifier <lgl>,
-#> #   decision <chr>, recommendation <chr>
-#> 
-#> Use `$table` for the formatted display table.
 ```

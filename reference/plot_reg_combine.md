@@ -20,12 +20,15 @@ plot_reg_combine(
   ref_line = NULL,
   order_y = NULL,
   log_x = FALSE,
-  point_color = "#1F77B4",
-  errorbar_color = "#4C4C4C",
-  base_size = 14,
+  point_color = "#6B7280",
+  errorbar_color = "#6B7280",
+  point_size = 2.8,
+  point_stroke = 0.55,
+  ci_linewidth = 0.55,
+  base_size = 12,
   show_ref = NULL,
-  sig_color = NULL,
-  sig_errorbar_color = NULL,
+  sig_color = "#0072B2",
+  sig_errorbar_color = "#0072B2",
   xlim_uni = NULL,
   breaks_uni = NULL,
   xlim_multi = NULL,
@@ -67,15 +70,28 @@ plot_reg_combine(
 
 - log_x:
 
-  Logical; if `TRUE`, uses log x-axis for non-linear models.
+  Logical. If `TRUE`, use a log-scaled x-axis for ratio measures. The
+  default `FALSE` uses a linear x-axis.
 
 - point_color, errorbar_color:
 
   Base colors for non-significant rows.
 
+- point_size:
+
+  Diameter of estimate points in millimetres.
+
+- point_stroke:
+
+  Outline width of estimate points.
+
+- ci_linewidth:
+
+  Line width of confidence intervals.
+
 - base_size:
 
-  Base font size for `theme_minimal()`.
+  Base font size for the plot theme.
 
 - show_ref:
 

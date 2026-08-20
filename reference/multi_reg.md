@@ -120,7 +120,9 @@ A list of class `c("gtregression","multi_reg", ...)` with elements:
 
 - reg_check:
 
-  Regression diagnostics for linear models; otherwise a message.
+  Regression diagnostics for linear models. Printing this element
+  renders a publication-ready table; individual diagnostic rows remain
+  available for programmatic use. Other approaches return a message.
 
 - approach:
 

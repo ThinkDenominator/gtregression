@@ -163,7 +163,7 @@ survival_summary(
 | Test treatment | 68 | 64 | 4 | 52.5 (44.0-95.0) |
 | Median survival is estimated using Kaplan-Meier methods. Not reached means survival did not fall to 50% during observed follow-up. |  |  |  |  |
 
-Kaplan-Meier survival summary {.table .cl-125b659e
+Kaplan-Meier survival summary {.table .cl-e1255542
 quarto-disable-processing="true"}
 
 ``` r
@@ -187,7 +187,7 @@ survival_prob(
 | Test treatment | 365.0 | 6 | 7 | 1 | 11.0% (5.3%-22.7%) |
 | Survival probabilities are estimated using Kaplan-Meier methods. Events and censored counts are interval counts up to each requested time point. |  |  |  |  |  |
 
-Kaplan-Meier survival probabilities {.table .cl-127d2602
+Kaplan-Meier survival probabilities {.table .cl-e13e8332
 quarto-disable-processing="true"}
 
 [`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md)
@@ -213,7 +213,7 @@ rmst_table(
 | Difference (Test treatment - Standard treatment) | 365.0 |  |  |  | -6.6 (-45.3-32.2) | 0.740 |
 | RMST is restricted mean survival time up to tau. For two groups, the difference is the second group minus the first group. |  |  |  |  |  |  |
 
-Restricted mean survival time {.table .cl-12a6676a
+Restricted mean survival time {.table .cl-e15f6322
 quarto-disable-processing="true"}
 
 ## 3. Compare Survival Curves
@@ -238,7 +238,7 @@ logrank_test(
 | Test treatment | 68 | 64 | 63.50 |
 | Log-rank test: chi-square = 0.01, df = 1, p-value = 0.928. This compares survival curves; use cox_reg() when a hazard ratio is needed. |  |  |  |
 
-Log-rank test {.table .cl-12cb3590 quarto-disable-processing="true"}
+Log-rank test {.table .cl-e17b91f0 quarto-disable-processing="true"}
 
 ## 4. Fit Cox Regression
 
@@ -282,8 +282,7 @@ cox_adjusted$table
 |  Yes | 0.96 (0.64–1.42) | 0.820 |
 | Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |
 | Ref. = reference category. |  |  |
-| Adjusted for age and karno |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
+| Adjusted for Age and Karnofsky performance score |  |  |
 
 Planned interactions use the same `interaction = exposure*modifier`
 grammar as
@@ -310,12 +309,11 @@ cox_interaction$table
 | Treatment group |  |  |
 | Standard treatment | Ref. |  |
 |  Test treatment | 1.52 (0.98–2.36) | 0.061 |
-|  trtTest treatment x priorYes | 0.47 (0.21–1.06) | 0.070 |
+|  Treatment group: Test treatment x Prior therapy: Yes | 0.47 (0.21–1.06) | 0.070 |
 | Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |
 | Ref. = reference category. |  |  |
-| Adjusted for age and karno |  |  |
+| Adjusted for Age and Karnofsky performance score |  |  |
 | Model includes interaction term: trt\*prior |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
 
 Check the proportional hazards assumption before treating Cox hazard
 ratios as final.
@@ -360,7 +358,7 @@ surv_model_compare(
 | weibull | 1,449.11 | 1,475.39 | -715.55 | 0.93 | 137 | 128 | No | No |
 | Lower AIC or BIC indicates better relative fit among the compared distributions. Use model fit statistics with clinical judgment and visual checks. |  |  |  |  |  |  |  |  |
 
-Parametric survival model comparison {.table .cl-1393f1a6
+Parametric survival model comparison {.table .cl-e212efbe
 quarto-disable-processing="true"}
 
 ``` r
@@ -420,8 +418,7 @@ surv_adjusted$table
 | Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |
 | Distribution: loglogistic. |  |  |
 | Ref. = reference category. |  |  |
-| Adjusted for age and karno |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
+| Adjusted for Age and Karnofsky performance score |  |  |
 
 ``` r
 
@@ -457,13 +454,12 @@ surv_interaction$table
 | Treatment group |  |  |
 | Standard treatment | Ref. |  |
 |  Test treatment | 0.84 (0.55–1.30) | 0.444 |
-|  trtTest treatment x priorYes | 1.52 (0.66–3.47) | 0.323 |
+|  Treatment group: Test treatment x Prior therapy: Yes | 1.52 (0.66–3.47) | 0.323 |
 | Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |
 | Distribution: loglogistic. |  |  |
 | Ref. = reference category. |  |  |
-| Adjusted for age and karno |  |  |
+| Adjusted for Age and Karnofsky performance score |  |  |
 | Model includes interaction term: trt\*prior |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
 
 ## 6. Predict Survival Probabilities
 
@@ -491,7 +487,7 @@ surv_predict(
 | 1 | Test treatment | 60 | 70 | 365.0 | 11.1% | loglogistic |
 | Model-based predictions from a parametric survival regression model. Distribution: loglogistic. Predictions depend on the supplied profile and model specification. |  |  |  |  |  |  |
 
-Predicted survival probabilities {.table .cl-14662680
+Predicted survival probabilities {.table .cl-e2b23506
 quarto-disable-processing="true"}
 
 ## 7. Visualise And Export Model Results

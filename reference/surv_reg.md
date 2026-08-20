@@ -145,6 +145,11 @@ A list of class `c("gtregression","surv_reg", ...)` with elements:
 
   Named character vector of display labels.
 
+- footnotes:
+
+  Character vector used by the rendered table. Adjustment notes use the
+  same display labels as the table.
+
 - time,event,distribution,approach,format,source,adjust_for,exposures,interaction:
 
   Metadata fields.

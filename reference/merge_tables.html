@@ -15,8 +15,7 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html">Get started</a></li>
-<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
@@ -25,11 +24,11 @@
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Interpret</a></li>
     <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -52,7 +51,12 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">merge_tables</span><span class="op">(</span><span class="va">...</span>, spanners <span class="op">=</span> <span class="cn">NULL</span>, theme <span class="op">=</span> <span class="st">"minimal"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">merge_tables</span><span class="op">(</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  spanners <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  theme <span class="op">=</span> <span class="st">"minimal"</span>,</span>
+<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"flextable"</span>, <span class="st">"gt"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -72,11 +76,29 @@ If <code>NULL</code>, defaults to <code>"Table 1"</code>, <code>"Table 2"</code>
 <dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>
 <dd><p>Merge theme preset or vector of primitives.</p></dd>
 
+
+<dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
+<dd><p>Output table format. One of <code>"flextable"</code> (default) or
+<code>"gt"</code>. The merged display is rebuilt in this format, independently
+of the formats used by the input tables.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A merged table object of class
   <code>c("gtregression", "merged_table", ...)</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Binary variables should use the same row display across all input tables.
+For a descriptive, univariable, and multivariable merge, the clearest
+publication layout is usually <code>show_dichotomous = "all_levels"</code> in
+<code><a href="descriptive_table.html">descriptive_table()</a></code> and <code>show_ref = TRUE</code> in each regression
+function. Mixing these settings can create additional binary rows; in that
+situation <code>merge_tables()</code> issues a warning with the compatible
+settings.</p>
+<p>Footnotes created by each input table are retained unchanged. Exact duplicate
+notes are shown once in the merged table.</p>
     </div>
 
     <div class="section level2">

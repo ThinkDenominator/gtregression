@@ -363,6 +363,11 @@ levels are shown and labelled as `(Ref.)`; the caption explains the
 abbreviation. Variable labels set on the data are used automatically in
 the plot.
 
+The default style uses colour-blind-safe blue estimates and vermillion
+for estimates whose confidence interval excludes the null. Use
+`point_size`, `point_stroke`, `ci_linewidth`, and `base_size` when
+preparing a slide or a larger single-panel figure.
+
 ``` r
 
 plot_reg(
@@ -372,6 +377,21 @@ plot_reg(
 ```
 
 ![](visualise-results_files/figure-html/one-plot-1.png)
+
+``` r
+
+plot_reg(
+  birthwt_uni,
+  show_ref = FALSE,
+  point_size = 3.5,
+  point_stroke = 0.7,
+  ci_linewidth = 0.75,
+  base_size = 13,
+  title = "Crude Associations With Low Birth Weight"
+)
+```
+
+![](visualise-results_files/figure-html/plot-style-1.png)
 
 ## Adjusted Regression Plot
 
@@ -486,8 +506,7 @@ forest_data <- forest_df(
   multi = birthwt_multi,
   desc = birthwt_desc
 )
-
-forest_reg(forest_data, quiet = TRUE)
+forest_reg(forest_data)
 ```
 
 ![](visualise-results_files/figure-html/forest-table-1.png)
@@ -530,8 +549,7 @@ forest_reg(
   ticks_at = list(
     c(0.5, 1, 2, 4, 8),
     c(1, 2, 4, 8, 16)
-  ),
-  quiet = TRUE
+  )
 )
 ```
 
@@ -549,8 +567,7 @@ forest_reg(
   uni = birthwt_uni,
   multi = birthwt_multi,
   desc = birthwt_desc,
-  side = "left",
-  quiet = TRUE
+  side = "left"
 )
 ```
 

@@ -31,13 +31,54 @@ workflows, including adjusted and stratified models.
 | Interpretation helpers | Confounding, interaction, mediation, convergence, collinearity, model selection, and survival diagnostics |
 | Exports | HTML, PDF, PNG, and Word-ready outputs |
 
-**Describe**Build baseline tables with grouped summaries.
+## From Data to Manuscript
 
-**Model**Fit crude, adjusted, and stratified regressions.
+One connected workflow
 
-**Visualise**Create plots and forest tables for estimates.
+### Start with the question. Finish with a result you can use.
 
-**Export**Save polished tables, figures, and Word outputs.
+Each step leaves an inspectable object behind, so beginners have a clear
+path and experienced analysts retain full control.
+
+01
+
+**Prepare**
+
+Check variables, labels, levels, and missing data.
+
+`dissect(data)` Analysis-ready data
+
+02
+
+**Describe**
+
+Build a clear baseline table before modelling.
+
+`descriptive_table(...)` Table 1
+
+03
+
+**Model**
+
+Fit crude, adjusted, stratified, or survival models.
+
+`uni_reg() + multi_reg()` Effect estimates
+
+04
+
+**Interpret**
+
+Review assumptions, confounding, interaction, and fit.
+
+`check_*() + compare_models()` Defensible model
+
+05
+
+**Publish**
+
+Merge, visualise, and export polished outputs.
+
+`forest_reg() + save_table()` Manuscript-ready output
 
 ## Why It Exists
 
@@ -66,40 +107,21 @@ The user-facing functions return objects with fitted models, table
 bodies, and display metadata that advanced users can audit, modify, or
 reuse.
 
-## Menu-Driven App
-
-Launch the optional interface with:
+## Install
 
 ``` r
 
-gtregression_app()
-```
-
-The app supports data preparation, descriptive and regression tables,
-survival analysis, visualisation, export, mediation, diagnostics, and
-prespecified model comparison. Under **Advanced \> Compare models**,
-users can name two to six candidates, select each model’s exposures and
-adjustment variables, add an optional interaction, and track a primary
-exposure. The app fits gtregression model objects and displays their
-AIC, BIC, log-likelihood, sample checks, survival events where relevant,
-and estimate changes. Every step is available as copyable R code.
-
-See the [gtregression App
-manual](https://gtregression.thinkdenominator.com/articles/gtregression-app.md)
-for detailed birth weight, Cox, and parametric survival examples.
-
-## Install
-
-``` R
+# CRAN
 install.packages("gtregression")
 
 # Development version
-devtools::install_github("ThinkDenominator/gtregression")
+remotes::install_github("ThinkDenominator/gtregression")
 ```
 
 ## Five-Minute Workflow
 
-``` R
+``` r
+
 library(gtregression)
 library(dplyr)
 
@@ -145,6 +167,10 @@ multi <- multi_reg(
 )
 
 plot_reg(multi, title = "Adjusted Regression for Low Birth Weight")
+
+forest_reg = forest_reg(forest_df(uni, multi)) 
+
+merge_tables(desc, uni, multi)
 ```
 
 Variable labels set with `attr(x, "label")` or
@@ -155,7 +181,8 @@ testing.
 
 Objects stay inspectable:
 
-``` R
+``` r
+
 desc$table
 uni$table
 multi$table
@@ -165,7 +192,8 @@ multi$models
 Optional model-fit statistics can be requested without changing the
 publication table:
 
-``` R
+``` r
+
 uni_stats <- uni_reg(
   data = birthwt_data,
   outcome = "low",
@@ -189,7 +217,7 @@ uni_stats$model_stats
 | Visualise estimates | [Visualise Results](https://gtregression.thinkdenominator.com/articles/visualise-results.html) |
 | Stratified models | [Stratified Analysis](https://gtregression.thinkdenominator.com/articles/stratified-analysis.html) |
 | Diagnostics and selection | [Diagnostics](https://gtregression.thinkdenominator.com/articles/diagnostics-selection.html) |
-| Confounding and interaction | [Interpret](https://gtregression.thinkdenominator.com/articles/confounding-interaction.html) |
+| Confounding and interaction | [Confounding & Interaction](https://gtregression.thinkdenominator.com/articles/confounding-interaction.html) |
 | Merge and export | [Customize and Export](https://gtregression.thinkdenominator.com/articles/customize-export.html) |
 
 ## Function Map
@@ -209,9 +237,9 @@ uni_stats$model_stats
 
 If you use `gtregression` in your work, please cite it as:
 
-Polani R, Eliyas SK, Sakthivel M, Krishnamoorthy Y, Majella MG.
-*gtregression: Tools for Creating Publication-Ready Regression Tables.*
-Zenodo. <https://doi.org/10.5281/zenodo.16905350>
+Polani R, Eliyas SK, Sakthivel M, Kaviprawin M, Krishnamoorthy Y,
+Majella MG. *gtregression: Tools for Creating Publication-Ready
+Regression Tables.* Zenodo. <https://doi.org/10.5281/zenodo.16905350>
 
 ## Acknowledgements
 

@@ -134,8 +134,8 @@ Built-in datasets for examples, teaching, and tests.
 
 - [`data_birthwt`](https://gtregression.thinkdenominator.com/reference/data_birthwt.md)
   : Birth Weight Data
-- [`data_PimaIndiansDiabetes`](https://gtregression.thinkdenominator.com/reference/data_PimaIndiansDiabetes.md)
-  : PimaIndians2 Diabetes Dataset
+- [`data_SynthDiabetes`](https://gtregression.thinkdenominator.com/reference/data_SynthDiabetes.md)
+  : Synthetic Diabetes Dataset
 - [`data_gt_quin`](https://gtregression.thinkdenominator.com/reference/data_gt_quin.md)
   : Student Absenteeism in Rural Schools
 - [`data_epilepsy`](https://gtregression.thinkdenominator.com/reference/data_epilepsy.md)

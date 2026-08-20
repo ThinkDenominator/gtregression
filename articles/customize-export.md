@@ -63,6 +63,36 @@ Footnotes and caveats are styled compactly by default across flextable
 and gt outputs, which keeps abbreviation notes and adjustment notes
 readable without making final tables unnecessarily tall.
 
+> **Figure placeholder: anatomy of a gtregression table.** Add the slide
+> image here to identify the caption, headers, characteristic labels,
+> category levels, sample-size columns, abbreviations, automatic
+> adjustment note, and custom caveat. The intended asset path is
+> `vignettes/figures/modify-table-anatomy.png`.
+
+### Customisation Options At A Glance
+
+| Table part | Argument | Default | What it changes | Example |
+|----|----|---:|----|----|
+| Characteristic label | `variable_labels` | `NULL` | Renames variable/header rows using internal variable names. | `c(age = "Maternal age")` |
+| Category level | `level_labels` | `NULL` | Renames factor levels while retaining their indentation and reference category. | `list(smoke = c(Yes = "Smoker"))` |
+| Column header | `header_labels` | `NULL` | Renames visible headers. Common aliases include `estimate`, `p.value`, and `N`. | `c(estimate = "Adjusted OR")` |
+| Caption | `caption` | `NULL` | Adds a manuscript-style title above the table. | `"Factors associated with low birth weight"` |
+| Characteristic emphasis | `bold_labels` | `TRUE` | Bolds variable/characteristic rows. | `FALSE` |
+| Category emphasis | `bold_levels` | `FALSE` | Bolds category-level rows. | `TRUE` |
+| Characteristic style | `italic_labels` | `FALSE` | Italicizes variable/characteristic rows. | `TRUE` |
+| Category style | `italic_levels` | `FALSE` | Italicizes category-level rows. | `TRUE` |
+| Displayed N columns | `remove_N` | `FALSE` | Removes visible sample-size columns where present. | `TRUE` |
+| Complete-case note | `remove_N_obs` | `FALSE` | Removes the `N = ... complete observations` footnote. | `TRUE` |
+| Abbreviations | `remove_abbreviations` | `FALSE` | Removes the abbreviations footnote only. | `TRUE` |
+| Adjustment note | `remove_adjustment_note` | `FALSE` | Removes the automatic `Adjusted for ...` note. | `TRUE` |
+| Extra footnote | `caveat` | `NULL` | Adds a final study-specific interpretation or manuscript note. | `"Estimates use complete-case analysis."` |
+
+Use raw internal variable names on the left side of `variable_labels`
+and `level_labels`. `remove_N` removes visible table columns, whereas
+`remove_N_obs` removes only the complete-case footnote. When replacing
+the automatic adjustment note, use `remove_adjustment_note = TRUE`
+together with a custom `caveat`.
+
 ``` r
 
 birthwt_custom <- modify_table(
@@ -81,25 +111,8 @@ birthwt_custom <- modify_table(
   caveat = "Adjusted for maternal age, maternal weight, and maternal race."
 )
 
-birthwt_custom$table
+birthwt_custom
 ```
-
-| Characteristic | Adjusted OR | P |
-|----|----|----|
-| Smoked during pregnancy |  |  |
-| No | Ref. |  |
-|  Smoker | 2.87 (1.36–6.04) | 0.006 |
-| History of hypertension |  |  |
-| No | Ref. |  |
-|  Hypertensive | 5.99 (1.51–23.79) | 0.011 |
-| Uterine irritability |  |  |
-| No | Ref. |  |
-|  Yes | 2.27 (0.98–5.24) | 0.055 |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
-| Adjusted for maternal age, maternal weight, and maternal race. |  |  |
-
-Adjusted regression for low birth weight {.table .cl-f5b376de
-quarto-disable-processing="true"}
 
 ## Merge Tables
 
@@ -107,6 +120,60 @@ quarto-disable-processing="true"}
 combines descriptive, crude, and adjusted results. Matching is based on
 the original variable names, so merged tables remain aligned even when
 the visible labels differ across input tables.
+
+Merged tables use `flextable` by default, including when one or more
+input tables were created with `format = "gt"`. Use `format = "gt"`
+explicitly for an HTML-first merged table.
+
+### Keep Binary Rows Consistent
+
+Before merging a descriptive, crude, and adjusted table, use the same
+binary row layout in every input. The clearest publication layout keeps
+both levels in the descriptive table and displays the regression
+reference row:
+
+``` r
+
+birthwt_desc <- descriptive_table(
+  birthwt_data,
+  exposures = exposures,
+  by = "low",
+  show_dichotomous = "all_levels"
+)
+
+birthwt_uni <- uni_reg(
+  birthwt_data,
+  outcome = "low",
+  exposures = exposures,
+  approach = "logit",
+  show_ref = TRUE
+)
+```
+
+Use `show_ref = TRUE` for the adjusted regression table as well. If one
+table uses compact binary rows while another displays both levels,
+[`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md)
+warns before merging because additional rows can otherwise appear.
+Compact tables are also supported when used consistently: set
+`show_dichotomous = "single_row"` and `show_ref = FALSE` across the
+relevant tables.
+
+[`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md)
+carries the footnotes already present in each input table. Exact
+duplicate notes are shown once, while table-specific notes, including
+the adjustment note from
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+are retained unchanged. The adjustment note uses the same display labels
+as the multivariable table; labels supplied through variable metadata or
+[`modify_table()`](https://gtregression.thinkdenominator.com/reference/modify_table.md)
+are therefore reflected in the note. The same rule applies to adjusted
+[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
+and
+[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
+tables.
+
+Use `modify_table(remove_adjustment_note = TRUE, caveat = "...")` when a
+custom manuscript note is preferred.
 
 ``` r
 
@@ -141,7 +208,9 @@ birthwt_merged$table
 | Categorical variables shown as n (%); percentages are by column. |  |  |  |  |  |  |  |
 | Continuous variables shown as Median (IQR). |  |  |  |  |  |  |  |
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |
-| Adjusted for age, lwt, and race |  |  |  |  |  |  |  |
+| Ref. = reference category. |  |  |  |  |  |  |  |
+| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |  |  |  |  |
+| N = 189 complete observations included in each adjusted model. |  |  |  |  |  |  |  |
 
 The merged table can be polished after merging too.
 
@@ -182,10 +251,16 @@ birthwt_merged_paper$table
 | Uterine irritability |  |  | 189 |  |  |  |  |
 |  No | 116 (89.2%) | 45 (76.3%) |  | Ref. |  | Ref. |  |
 |  Yes | 14 (10.8%) | 14 (23.7%) |  | 2.58 (1.14-5.83) | 0.023 | 2.27 (0.98–5.24) | 0.055 |
+| Categorical variables shown as n (%); percentages are by column. |  |  |  |  |  |  |  |
+| Continuous variables shown as Median (IQR). |  |  |  |  |  |  |  |
+| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |
+| Ref. = reference category. |  |  |  |  |  |  |  |
+| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |  |  |  |  |
+| N = 189 complete observations included in each adjusted model. |  |  |  |  |  |  |  |
 | Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-f63d1d1c quarto-disable-processing="true"}
+.cl-ca467df6 quarto-disable-processing="true"}
 
 ## Save Outputs
 

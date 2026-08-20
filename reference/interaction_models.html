@@ -21,8 +21,7 @@ interaction."><link rel="stylesheet" href="https://thinkdenominator.com/analytic
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html">Get started</a></li>
-<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
@@ -31,11 +30,11 @@ interaction."><link rel="stylesheet" href="https://thinkdenominator.com/analytic
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Interpret</a></li>
     <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -99,8 +98,10 @@ accepted.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
-<dd><p>Optional character vector of additional covariates. Quoted
-names are recommended in scripts, and bare names are also accepted.</p></dd>
+<dd><p>Optional character vector of adjustment covariates. They
+are included in both the model without and the model with the interaction
+term. Quoted names are recommended in scripts, and bare names are also
+accepted.</p></dd>
 
 
 <dt id="arg-effect-modifier">effect_modifier<a class="anchor" aria-label="anchor" href="#arg-effect-modifier"></a></dt>
@@ -163,6 +164,12 @@ is not used here because this function tests an explicit interaction term in
 a regression model. For broader screening of candidate confounders or effect
 modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 <code><a href="identify_confounder.html">identify_confounder()</a></code>.</p>
+<p>With <code>covariates = c(age, sex)</code>, the two fitted models are
+<code>outcome ~ exposure + effect_modifier + age + sex</code> and
+<code>outcome ~ exposure + effect_modifier + age + sex +
+exposure:effect_modifier</code>. Both models use the same complete-case analysis
+data, so covariate adjustment is applied consistently to the interaction
+comparison.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -189,11 +196,12 @@ modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 <span class="r-in"><span>  approach <span class="op">=</span> <span class="va">logit</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 10</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   outcome exposure effect_modifier approach test   p_value alpha has_interaction</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> low     smoke    race            logit    Likel…   0.319  0.05 FALSE          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: decision &lt;chr&gt;, interpretation &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   outcome exposure effect_modifier covariates approach test        p_value alpha</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> low     smoke    race            age, lwt   logit    Likelihood…   0.319  0.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: has_interaction &lt;lgl&gt;, decision &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   interpretation &lt;chr&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $model_no_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -231,11 +239,11 @@ modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_no_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> low ~ smoke + race + age + lwt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55770fcd11e0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x5634df81d138&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_with_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> low ~ smoke + race + age + lwt + smoke:race</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55770fcd11e0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x5634df81d138&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $interaction_terms</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "smokeYes:raceBlack" "smokeYes:raceOther"</span>
@@ -270,6 +278,9 @@ modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 <span class="r-out co"><span class="r-pr">#&gt;</span> $approach</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "logit"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $covariates</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "age" "lwt"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $source</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interaction_models"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -295,11 +306,12 @@ modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 <span class="r-in"><span>  approach <span class="op">=</span> <span class="va">cox</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $summary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 10</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   outcome  exposure effect_modifier approach test  p_value alpha has_interaction</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> time/st… trt      prior           cox      Like…  0.068<span style="text-decoration: underline;">3</span>  0.05 FALSE          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: decision &lt;chr&gt;, interpretation &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   outcome     exposure effect_modifier covariates approach test    p_value alpha</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> time/status trt      prior           age, karno cox      Likeli…  0.068<span style="text-decoration: underline;">3</span>  0.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: has_interaction &lt;lgl&gt;, decision &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   interpretation &lt;chr&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $model_no_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
@@ -336,12 +348,12 @@ modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_no_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> survival::Surv(time, status) ~ trt + prior + age + karno</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x557718482688&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x5634dfe2b958&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_with_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> survival::Surv(time, status) ~ trt + prior + age + karno + trt * </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     prior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x557718482688&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x5634dfe2b958&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $interaction_terms</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "trtTest treatment:priorYes"</span>
@@ -377,6 +389,9 @@ modifiers, including Mantel-Haenszel-supported checks when appropriate, use
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $approach</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "cox"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $covariates</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "age"   "karno"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $source</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "interaction_models"</span>

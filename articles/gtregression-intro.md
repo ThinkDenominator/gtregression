@@ -187,8 +187,8 @@ birthwt_multi$table
 |  Two or more | 0.86 (0.38–1.96) | 0.717 |
 | Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
 | Ref. = reference category. |  |  |
-| Adjusted for age, lwt, and race |  |  |
-| N = 189 complete observations included across outcome, exposure, and adjustment variables |  |  |
+| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |
+| N = 189 complete observations included in each adjusted model. |  |  |
 
 #### Visualise
 
@@ -201,6 +201,13 @@ plot_reg(
 ```
 
 ![](gtregression-intro_files/figure-html/quick-plot-1.png)
+
+``` r
+
+forest_reg(forest_df(birthwt_uni, birthwt_multi))
+```
+
+![](gtregression-intro_files/figure-html/quick-plot-2.png)
 
 #### Merge and Polish
 
@@ -247,10 +254,16 @@ birthwt_final$table
 |  None | 64 (49.2%) | 36 (61.0%) | 100 (52.9%) |  | Ref. |  | Ref. |  |
 |  One | 36 (27.7%) | 11 (18.6%) | 47 (24.9%) |  | 0.54 (0.25-1.20) | 0.130 | 0.60 (0.26–1.38) | 0.230 |
 |  Two or more | 30 (23.1%) | 12 (20.3%) | 42 (22.2%) |  | 0.71 (0.32-1.56) | 0.394 | 0.86 (0.38–1.96) | 0.717 |
+| Categorical variables shown as n (%); percentages are by column. |  |  |  |  |  |  |  |  |
+| Continuous variables shown as Median (IQR). |  |  |  |  |  |  |  |  |
+| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |  |
+| Ref. = reference category. |  |  |  |  |  |  |  |  |
+| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |  |  |  |  |  |
+| N = 189 complete observations included in each adjusted model. |  |  |  |  |  |  |  |  |
 | Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-05a5bb88 quarto-disable-processing="true"}
+.cl-d7435588 quarto-disable-processing="true"}
 
 Save helpers return file paths and use
 [`tempdir()`](https://rdrr.io/r/base/tempfile.html) when no directory is

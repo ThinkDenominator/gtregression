@@ -30,19 +30,23 @@ library(dplyr)
 
 data("data_diabetes_mediation", package = "gtregression")
 
-glimpse(data_diabetes_mediation)
+dissect(data_diabetes_mediation)
 ```
 
-    ## Rows: 724
-    ## Columns: 8
-    ## $ diabetes          <fct> Yes, No, Yes, No, Yes, No, Yes, Yes, No, Yes, No, Ye…
-    ## $ obesity           <fct> Yes, No, No, No, Yes, No, Yes, Yes, Yes, Yes, No, Ye…
-    ## $ glucose           <dbl> 148, 85, 183, 89, 137, 116, 78, 197, 110, 168, 139, …
-    ## $ bmi               <dbl> 33.6, 26.6, 23.3, 28.1, 43.1, 25.6, 31.0, 30.5, 37.6…
-    ## $ age               <dbl> 50, 31, 32, 21, 33, 30, 26, 53, 30, 34, 57, 59, 51, …
-    ## $ blood_pressure    <dbl> 72, 66, 64, 66, 40, 74, 50, 70, 92, 74, 80, 60, 72, …
-    ## $ pregnancies       <dbl> 6, 1, 8, 1, 0, 5, 3, 2, 4, 10, 10, 1, 5, 0, 7, 1, 1,…
-    ## $ diabetes_pedigree <dbl> 0.627, 0.351, 0.672, 0.167, 2.288, 0.201, 0.248, 0.1…
+| Variable | Type | Missing (%) | Unique | Levels | Compatibility | Hint |
+|----|----|----|----|----|----|----|
+| diabetes | factor | 0% | 2 | No, Yes | compatible | Factor variable can be used as categorical. |
+| obesity | factor | 0% | 2 | No, Yes | compatible | Factor variable can be used as categorical. |
+| glucose | numeric | 0% | 90 | - | compatible | Numeric variable can be used as continuous. |
+| bmi | numeric | 0% | 200 | - | compatible | Numeric variable can be used as continuous. |
+| age | numeric | 0% | 49 | - | compatible | Numeric variable can be used as continuous. |
+| blood_pressure | numeric | 0% | 37 | - | compatible | Numeric variable can be used as continuous. |
+| pregnancies | numeric | 0% | 14 | - | compatible | Numeric variable can be used as continuous. |
+| diabetes_pedigree | numeric | 0% | 352 | - | compatible | Numeric variable can be used as continuous. |
+| Screening aid only; review coding, missingness, sparse levels, and study context before modeling. |  |  |  |  |  |  |
+
+Dataset dissection before regression {.table .cl-c1e5024a
+quarto-disable-processing="true"}
 
 ## Logistic Outcome
 
@@ -67,19 +71,8 @@ diabetes_med <- mediation_analysis(
   seed = 123
 )
 
-diabetes_med$table
+diabetes_med
 ```
-
-| Effect | Estimate | 95% CI | p-value | Interpretation |
-|----|----|----|----|----|
-| Total effect | 0.268 | 0.188 to 0.341 | \<0.001 | Overall exposure-outcome association |
-| Direct effect | 0.200 | 0.131 to 0.266 | \<0.001 | Association not through the mediator |
-| Indirect effect | 0.068 | 0.037 to 0.106 | \<0.001 | Association through the mediator |
-| Proportion mediated | 0.255 | 0.137 to 0.392 | \<0.001 | Share of total effect through the mediator |
-| Effects are predicted probability differences from logistic outcome models. |  |  |  |  |
-| Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100. |  |  |  |  |
-| Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
-| Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |
 
 The returned object keeps the table body, fitted models, bootstrap
 draws, and exposure comparison values available for checking.
@@ -89,11 +82,11 @@ draws, and exposure comparison values available for checking.
 diabetes_med$table_body
 ```
 
-    ##                effect              Effect   estimate  conf.low conf.high
-    ## total           total        Total effect 0.26811037 0.1882239 0.3413496
-    ## direct         direct       Direct effect 0.19978127 0.1306665 0.2664345
-    ## indirect     indirect     Indirect effect 0.06832911 0.0368084 0.1057748
-    ## proportion proportion Proportion mediated 0.25485440 0.1365921 0.3920930
+    ##                effect              Effect   estimate   conf.low conf.high
+    ## total           total        Total effect 0.22624186 0.16258768 0.2907013
+    ## direct         direct       Direct effect 0.17561583 0.11427535 0.2347698
+    ## indirect     indirect     Indirect effect 0.05062603 0.01899140 0.0870712
+    ## proportion proportion Proportion mediated 0.22376950 0.08741395 0.3821232
     ##            p.value                             Interpretation
     ## total            0       Overall exposure-outcome association
     ## direct           0       Association not through the mediator
@@ -123,9 +116,9 @@ diabetes_med$models$mediator
     ## 
     ## Coefficients:
     ##       (Intercept)         obesityYes                age     blood_pressure  
-    ##           69.9217             9.4519             0.5894             0.3050  
+    ##          98.23467            6.66535            0.39847            0.06945  
     ##       pregnancies  diabetes_pedigree  
-    ##           -0.2092            10.7711
+    ##           0.40874            5.56161
 
 ``` r
 
@@ -137,13 +130,13 @@ diabetes_med$models$outcome
     ## 
     ## Coefficients:
     ##       (Intercept)         obesityYes            glucose                age  
-    ##         -7.220509           1.241446           0.035385           0.014817  
+    ##         -6.848643           0.952467           0.034610           0.012419  
     ##    blood_pressure        pregnancies  diabetes_pedigree  
-    ##         -0.002162           0.106363           1.028275  
+    ##          0.003185           0.052420           0.590009  
     ## 
-    ## Degrees of Freedom: 723 Total (i.e. Null);  717 Residual
-    ## Null Deviance:       931.9 
-    ## Residual Deviance: 674.4     AIC: 688.4
+    ## Degrees of Freedom: 726 Total (i.e. Null);  720 Residual
+    ## Null Deviance:       953.8 
+    ## Residual Deviance: 731.1     AIC: 745.1
 
 ``` r
 
@@ -151,12 +144,12 @@ head(diabetes_med$boot)
 ```
 
     ##       total    direct   indirect proportion
-    ## 1 0.3002124 0.2192066 0.08100578  0.2698283
-    ## 2 0.2902380 0.2287934 0.06144464  0.2117043
-    ## 3 0.3568782 0.2291300 0.12774815  0.3579601
-    ## 4 0.2234355 0.1744756 0.04895991  0.2191232
-    ## 5 0.2609932 0.2003587 0.06063449  0.2323221
-    ## 6 0.3104067 0.2250761 0.08533069  0.2748996
+    ## 1 0.2299255 0.1705385 0.05938700  0.2582880
+    ## 2 0.2550856 0.1917216 0.06336401  0.2484029
+    ## 3 0.2126707 0.1747508 0.03791990  0.1783034
+    ## 4 0.2907202 0.2280457 0.06267444  0.2155834
+    ## 5 0.2906804 0.2387094 0.05197098  0.1787908
+    ## 6 0.2486133 0.1939385 0.05467481  0.2199191
 
 ## Path Diagram
 
@@ -206,19 +199,8 @@ med_quoted <- mediation_analysis(
   seed = 456
 )
 
-med_quoted$table
+med_quoted
 ```
-
-| Effect | Estimate | 95% CI | p-value | Interpretation |
-|----|----|----|----|----|
-| Total effect | 0.268 | 0.191 to 0.337 | \<0.001 | Overall exposure-outcome association |
-| Direct effect | 0.200 | 0.136 to 0.268 | \<0.001 | Association not through the mediator |
-| Indirect effect | 0.068 | 0.035 to 0.097 | \<0.001 | Association through the mediator |
-| Proportion mediated | 0.255 | 0.131 to 0.379 | \<0.001 | Share of total effect through the mediator |
-| Effects are predicted probability differences from logistic outcome models. |  |  |  |  |
-| Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100. |  |  |  |  |
-| Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
-| Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |
 
 ## Linear Outcome
 
@@ -239,19 +221,8 @@ med_linear <- mediation_analysis(
   seed = 789
 )
 
-med_linear$table
+med_linear
 ```
-
-| Effect | Estimate | 95% CI | p-value | Interpretation |
-|----|----|----|----|----|
-| Total effect | 10.306 | 9.844 to 10.864 | \<0.001 | Overall exposure-outcome association |
-| Direct effect | 10.179 | 9.716 to 10.755 | \<0.001 | Association not through the mediator |
-| Indirect effect | 0.127 | 0.027 to 0.241 | \<0.001 | Association through the mediator |
-| Proportion mediated | 0.012 | 0.003 to 0.023 | \<0.001 | Share of total effect through the mediator |
-| Effects are mean differences from linear outcome models. |  |  |  |  |
-| Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Body mass index. Bootstrap replicates = 100. |  |  |  |  |
-| Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
-| Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |
 
 ``` r
 

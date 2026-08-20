@@ -21,8 +21,7 @@ plots or compresses forest columns."><link rel="stylesheet" href="https://thinkd
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html">Get started</a></li>
-<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
@@ -31,11 +30,11 @@ plots or compresses forest columns."><link rel="stylesheet" href="https://thinkd
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Interpret</a></li>
     <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -143,7 +142,7 @@ use the fallback row/column-based sizing.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">forest</span> <span class="op">&lt;-</span> <span class="fu"><a href="forest_reg.html">forest_reg</a></span><span class="op">(</span>uni <span class="op">=</span> <span class="va">uni_or</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">save_forest</span><span class="op">(</span><span class="va">forest</span>, filename <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"forest"</span><span class="op">)</span>, format <span class="op">=</span> <span class="st">"pdf"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Forest plot saved at: /tmp/RtmpaFHEEe/forest1a043e6d737f.pdf</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Forest plot saved at: /tmp/RtmpwfNHVp/forest1bf52907cec9.pdf</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># For large forest plots, increase width, height, scale, or padding.</span></span></span>
 <span class="r-in"><span><span class="fu">save_forest</span><span class="op">(</span></span></span>
@@ -154,7 +153,7 @@ use the fallback row/column-based sizing.</p></dd>
 <span class="r-in"><span>  padding <span class="op">=</span> <span class="fl">0.35</span>,</span></span>
 <span class="r-in"><span>  dpi <span class="op">=</span> <span class="fl">300</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Forest plot saved at: /tmp/RtmpaFHEEe/forest-wide1a04289ee36b.png</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Forest plot saved at: /tmp/RtmpwfNHVp/forest-wide1bf5ad95163.png</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

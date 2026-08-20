@@ -32,7 +32,6 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../index.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
@@ -43,11 +42,11 @@
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Interpret</a></li>
     <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
   </ul>
 </li>
@@ -106,17 +105,97 @@ and diabetes?</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"data_diabetes_mediation"</span>, package <span class="op">=</span> <span class="st">"gtregression"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">data_diabetes_mediation</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Rows: 724</span></span>
-<span><span class="co">## Columns: 8</span></span>
-<span><span class="co">## $ diabetes          <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> Yes<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>Ye…</span></span>
-<span><span class="co">## $ obesity           <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> Yes<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>Yes<span style="color: #949494;">, </span>No<span style="color: #949494;">, </span>Ye…</span></span>
-<span><span class="co">## $ glucose           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 148<span style="color: #949494;">, </span>85<span style="color: #949494;">, </span>183<span style="color: #949494;">, </span>89<span style="color: #949494;">, </span>137<span style="color: #949494;">, </span>116<span style="color: #949494;">, </span>78<span style="color: #949494;">, </span>197<span style="color: #949494;">, </span>110<span style="color: #949494;">, </span>168<span style="color: #949494;">, </span>139<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">## $ bmi               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 33.6<span style="color: #949494;">, </span>26.6<span style="color: #949494;">, </span>23.3<span style="color: #949494;">, </span>28.1<span style="color: #949494;">, </span>43.1<span style="color: #949494;">, </span>25.6<span style="color: #949494;">, </span>31.0<span style="color: #949494;">, </span>30.5<span style="color: #949494;">, </span>37.6…</span></span>
-<span><span class="co">## $ age               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 50<span style="color: #949494;">, </span>31<span style="color: #949494;">, </span>32<span style="color: #949494;">, </span>21<span style="color: #949494;">, </span>33<span style="color: #949494;">, </span>30<span style="color: #949494;">, </span>26<span style="color: #949494;">, </span>53<span style="color: #949494;">, </span>30<span style="color: #949494;">, </span>34<span style="color: #949494;">, </span>57<span style="color: #949494;">, </span>59<span style="color: #949494;">, </span>51<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">## $ blood_pressure    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 72<span style="color: #949494;">, </span>66<span style="color: #949494;">, </span>64<span style="color: #949494;">, </span>66<span style="color: #949494;">, </span>40<span style="color: #949494;">, </span>74<span style="color: #949494;">, </span>50<span style="color: #949494;">, </span>70<span style="color: #949494;">, </span>92<span style="color: #949494;">, </span>74<span style="color: #949494;">, </span>80<span style="color: #949494;">, </span>60<span style="color: #949494;">, </span>72<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">## $ pregnancies       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 6<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>8<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>0<span style="color: #949494;">, </span>5<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>4<span style="color: #949494;">, </span>10<span style="color: #949494;">, </span>10<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>5<span style="color: #949494;">, </span>0<span style="color: #949494;">, </span>7<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">,</span>…</span></span>
-<span><span class="co">## $ diabetes_pedigree <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.627<span style="color: #949494;">, </span>0.351<span style="color: #949494;">, </span>0.672<span style="color: #949494;">, </span>0.167<span style="color: #949494;">, </span>2.288<span style="color: #949494;">, </span>0.201<span style="color: #949494;">, </span>0.248<span style="color: #949494;">, </span>0.1…</span></span></code></pre>
+<span><span class="fu"><a href="../reference/dissect.html">dissect</a></span><span class="op">(</span><span class="va">data_diabetes_mediation</span><span class="op">)</span></span></code></pre></div>
+<div class="tabwid">
+<style>.cl-c1e5024a{}.cl-c1dcd5a2{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-c1dcd5ac{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-c1dcd5ad{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:italic;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-c1e025ae{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-c1e025c2{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-c1e025c3{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-c1e05aa6{width:1.697in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05ab0{width:0.911in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05ab1{width:1.288in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05aba{width:0.892in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05abb{width:0.857in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05abc{width:1.438in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05ac4{width:3.731in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05ac5{width:1.697in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05ac6{width:0.911in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05ace{width:1.288in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05af6{width:0.892in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05af7{width:0.857in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05af8{width:1.438in;background-color:rgba(231, 245, 236, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05af9{width:3.731in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b00{width:1.697in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b01{width:0.911in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b02{width:1.288in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b0a{width:0.892in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b0b{width:0.857in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b14{width:1.438in;background-color:rgba(231, 245, 236, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b15{width:3.731in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b16{width:1.697in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b1e{width:0.911in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b1f{width:1.288in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b28{width:0.892in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b29{width:0.857in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b2a{width:1.438in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-c1e05b32{width:3.731in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
+<table data-quarto-disable-processing="true" class="table cl-c1e5024a">
+<caption style="display:table-caption;margin:0pt;text-align:center;border-bottom: 0.00pt solid transparent;border-top: 0.00pt solid transparent;border-left: 0.00pt solid transparent;border-right: 0.00pt solid transparent;padding-top:3pt;padding-bottom:3pt;padding-left:3pt;padding-right:3pt;line-height: 1;background-color:transparent;"><span>Dataset dissection before regression</span></caption>
+<thead><tr style="overflow-wrap:break-word;">
+<th class="cl-c1e05aa6"><p class="cl-c1e025ae"><span class="cl-c1dcd5a2">Variable</span></p></th>
+<th class="cl-c1e05ab0"><p class="cl-c1e025ae"><span class="cl-c1dcd5a2">Type</span></p></th>
+<th class="cl-c1e05ab1"><p class="cl-c1e025c2"><span class="cl-c1dcd5a2">Missing (%)</span></p></th>
+<th class="cl-c1e05aba"><p class="cl-c1e025c2"><span class="cl-c1dcd5a2">Unique</span></p></th>
+<th class="cl-c1e05abb"><p class="cl-c1e025ae"><span class="cl-c1dcd5a2">Levels</span></p></th>
+<th class="cl-c1e05abc"><p class="cl-c1e025ae"><span class="cl-c1dcd5a2">Compatibility</span></p></th>
+<th class="cl-c1e05ac4"><p class="cl-c1e025ae"><span class="cl-c1dcd5a2">Hint</span></p></th>
+</tr></thead>
+<tbody>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-c1e05ac5"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">diabetes</span></p></td>
+<td class="cl-c1e05ac6"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">factor</span></p></td>
+<td class="cl-c1e05ace"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">0%</span></p></td>
+<td class="cl-c1e05af6"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">2</span></p></td>
+<td class="cl-c1e05af7"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">No, Yes</span></p></td>
+<td class="cl-c1e05af8"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">compatible</span></p></td>
+<td class="cl-c1e05af9"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">Factor variable can be used as categorical.</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-c1e05ac5"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">obesity</span></p></td>
+<td class="cl-c1e05ac6"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">factor</span></p></td>
+<td class="cl-c1e05ace"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">0%</span></p></td>
+<td class="cl-c1e05af6"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">2</span></p></td>
+<td class="cl-c1e05af7"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">No, Yes</span></p></td>
+<td class="cl-c1e05af8"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">compatible</span></p></td>
+<td class="cl-c1e05af9"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">Factor variable can be used as categorical.</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-c1e05ac5"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">glucose</span></p></td>
+<td class="cl-c1e05ac6"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">numeric</span></p></td>
+<td class="cl-c1e05ace"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">0%</span></p></td>
+<td class="cl-c1e05af6"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">90</span></p></td>
+<td class="cl-c1e05af7"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">-</span></p></td>
+<td class="cl-c1e05af8"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">compatible</span></p></td>
+<td class="cl-c1e05af9"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">Numeric variable can be used as continuous.</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-c1e05ac5"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">bmi</span></p></td>
+<td class="cl-c1e05ac6"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">numeric</span></p></td>
+<td class="cl-c1e05ace"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">0%</span></p></td>
+<td class="cl-c1e05af6"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">200</span></p></td>
+<td class="cl-c1e05af7"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">-</span></p></td>
+<td class="cl-c1e05af8"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">compatible</span></p></td>
+<td class="cl-c1e05af9"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">Numeric variable can be used as continuous.</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-c1e05ac5"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">age</span></p></td>
+<td class="cl-c1e05ac6"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">numeric</span></p></td>
+<td class="cl-c1e05ace"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">0%</span></p></td>
+<td class="cl-c1e05af6"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">49</span></p></td>
+<td class="cl-c1e05af7"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">-</span></p></td>
+<td class="cl-c1e05af8"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">compatible</span></p></td>
+<td class="cl-c1e05af9"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">Numeric variable can be used as continuous.</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-c1e05ac5"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">blood_pressure</span></p></td>
+<td class="cl-c1e05ac6"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">numeric</span></p></td>
+<td class="cl-c1e05ace"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">0%</span></p></td>
+<td class="cl-c1e05af6"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">37</span></p></td>
+<td class="cl-c1e05af7"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">-</span></p></td>
+<td class="cl-c1e05af8"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">compatible</span></p></td>
+<td class="cl-c1e05af9"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">Numeric variable can be used as continuous.</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-c1e05ac5"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">pregnancies</span></p></td>
+<td class="cl-c1e05ac6"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">numeric</span></p></td>
+<td class="cl-c1e05ace"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">0%</span></p></td>
+<td class="cl-c1e05af6"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">14</span></p></td>
+<td class="cl-c1e05af7"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">-</span></p></td>
+<td class="cl-c1e05af8"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">compatible</span></p></td>
+<td class="cl-c1e05af9"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">Numeric variable can be used as continuous.</span></p></td>
+</tr>
+<tr style="overflow-wrap:break-word;">
+<td class="cl-c1e05b00"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">diabetes_pedigree</span></p></td>
+<td class="cl-c1e05b01"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">numeric</span></p></td>
+<td class="cl-c1e05b02"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">0%</span></p></td>
+<td class="cl-c1e05b0a"><p class="cl-c1e025c2"><span class="cl-c1dcd5ac">352</span></p></td>
+<td class="cl-c1e05b0b"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">-</span></p></td>
+<td class="cl-c1e05b14"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">compatible</span></p></td>
+<td class="cl-c1e05b15"><p class="cl-c1e025ae"><span class="cl-c1dcd5ac">Numeric variable can be used as continuous.</span></p></td>
+</tr>
+</tbody>
+<tfoot><tr style="overflow-wrap:break-word;"><td colspan="7" class="cl-c1e05b16"><p class="cl-c1e025c3"><span class="cl-c1dcd5ad">Screening aid only; review coding, missingness, sparse levels, and study context before modeling.</span></p></td></tr></tfoot>
+</table>
+</div>
 </div>
 <div class="section level2">
 <h2 id="logistic-outcome">Logistic Outcome<a class="anchor" aria-label="anchor" href="#logistic-outcome"></a>
@@ -127,7 +206,7 @@ often easier to explain than odds ratios in a mediation table.</p>
 <p>For final analyses, use a larger number of bootstrap simulations such
 as <code>sims = 500</code> or <code>sims = 1000</code>. The article uses
 a smaller value to keep the example quick to run.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diabetes_med</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mediation_analysis.html">mediation_analysis</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data_diabetes_mediation</span>,</span>
 <span>  exposure <span class="op">=</span> <span class="va">obesity</span>,</span>
@@ -139,77 +218,29 @@ a smaller value to keep the example quick to run.</p>
 <span>  seed <span class="op">=</span> <span class="fl">123</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">diabetes_med</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
-<div class="tabwid">
-<style>.cl-ec618828{}.cl-ec59039c{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ec5903a6{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ec5903b0{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ec5c4fac{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-ec5c4fc0{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-ec5c4fc1{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-ec5c77de{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c77e8{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c77f2{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c77fc{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c77fd{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c77fe{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7806{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7807{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7808{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7810{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7811{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c781a{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c781b{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c781c{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7824{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7825{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c782e{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c782f{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7838{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7839{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c783a{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7842{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c7843{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c784c{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ec5c784d{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
-<table data-quarto-disable-processing="true" class="table cl-ec618828">
-<thead><tr style="overflow-wrap:break-word;">
-<th class="cl-ec5c77de"><p class="cl-ec5c4fac"><span class="cl-ec59039c">Effect</span></p></th>
-<th class="cl-ec5c77e8"><p class="cl-ec5c4fc0"><span class="cl-ec59039c">Estimate</span></p></th>
-<th class="cl-ec5c77f2"><p class="cl-ec5c4fc0"><span class="cl-ec59039c">95% CI</span></p></th>
-<th class="cl-ec5c77fc"><p class="cl-ec5c4fc0"><span class="cl-ec59039c">p-value</span></p></th>
-<th class="cl-ec5c77fd"><p class="cl-ec5c4fac"><span class="cl-ec59039c">Interpretation</span></p></th>
-</tr></thead>
-<tbody>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ec5c77fe"><p class="cl-ec5c4fac"><span class="cl-ec5903a6">Total effect</span></p></td>
-<td class="cl-ec5c7806"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">0.268</span></p></td>
-<td class="cl-ec5c7807"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">0.188 to 0.341</span></p></td>
-<td class="cl-ec5c7808"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">&lt;0.001</span></p></td>
-<td class="cl-ec5c7810"><p class="cl-ec5c4fac"><span class="cl-ec5903a6">Overall exposure-outcome association</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ec5c7811"><p class="cl-ec5c4fac"><span class="cl-ec5903a6">Direct effect</span></p></td>
-<td class="cl-ec5c781a"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">0.200</span></p></td>
-<td class="cl-ec5c781b"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">0.131 to 0.266</span></p></td>
-<td class="cl-ec5c781c"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">&lt;0.001</span></p></td>
-<td class="cl-ec5c7824"><p class="cl-ec5c4fac"><span class="cl-ec5903a6">Association not through the mediator</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ec5c7811"><p class="cl-ec5c4fac"><span class="cl-ec5903a6">Indirect effect</span></p></td>
-<td class="cl-ec5c781a"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">0.068</span></p></td>
-<td class="cl-ec5c781b"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">0.037 to 0.106</span></p></td>
-<td class="cl-ec5c781c"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">&lt;0.001</span></p></td>
-<td class="cl-ec5c7824"><p class="cl-ec5c4fac"><span class="cl-ec5903a6">Association through the mediator</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ec5c7825"><p class="cl-ec5c4fac"><span class="cl-ec5903a6">Proportion mediated</span></p></td>
-<td class="cl-ec5c782e"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">0.255</span></p></td>
-<td class="cl-ec5c782f"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">0.137 to 0.392</span></p></td>
-<td class="cl-ec5c7838"><p class="cl-ec5c4fc0"><span class="cl-ec5903a6">&lt;0.001</span></p></td>
-<td class="cl-ec5c7839"><p class="cl-ec5c4fac"><span class="cl-ec5903a6">Share of total effect through the mediator</span></p></td>
-</tr>
-</tbody>
-<tfoot>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ec5c783a"><p class="cl-ec5c4fc1"><span class="cl-ec5903b0">Effects are predicted probability differences from logistic outcome models.</span></p></td></tr>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ec5c783a"><p class="cl-ec5c4fc1"><span class="cl-ec5903b0">Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100.</span></p></td></tr>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ec5c783a"><p class="cl-ec5c4fc1"><span class="cl-ec5903b0">Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function.</span></p></td></tr>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ec5c783a"><p class="cl-ec5c4fc1"><span class="cl-ec5903b0">Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions.</span></p></td></tr>
-</tfoot>
-</table>
-</div>
+<span><span class="va">diabetes_med</span></span></code></pre></div>
 <p>The returned object keeps the table body, fitted models, bootstrap
 draws, and exposure comparison values available for checking.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diabetes_med</span><span class="op">$</span><span class="va">table_body</span></span></code></pre></div>
-<pre><code><span><span class="co">##                effect              Effect   estimate  conf.low conf.high</span></span>
-<span><span class="co">## total           total        Total effect 0.26811037 0.1882239 0.3413496</span></span>
-<span><span class="co">## direct         direct       Direct effect 0.19978127 0.1306665 0.2664345</span></span>
-<span><span class="co">## indirect     indirect     Indirect effect 0.06832911 0.0368084 0.1057748</span></span>
-<span><span class="co">## proportion proportion Proportion mediated 0.25485440 0.1365921 0.3920930</span></span>
+<pre><code><span><span class="co">##                effect              Effect   estimate   conf.low conf.high</span></span>
+<span><span class="co">## total           total        Total effect 0.22624186 0.16258768 0.2907013</span></span>
+<span><span class="co">## direct         direct       Direct effect 0.17561583 0.11427535 0.2347698</span></span>
+<span><span class="co">## indirect     indirect     Indirect effect 0.05062603 0.01899140 0.0870712</span></span>
+<span><span class="co">## proportion proportion Proportion mediated 0.22376950 0.08741395 0.3821232</span></span>
 <span><span class="co">##            p.value                             Interpretation</span></span>
 <span><span class="co">## total            0       Overall exposure-outcome association</span></span>
 <span><span class="co">## direct           0       Association not through the mediator</span></span>
 <span><span class="co">## indirect         0           Association through the mediator</span></span>
 <span><span class="co">## proportion       0 Share of total effect through the mediator</span></span></code></pre>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diabetes_med</span><span class="op">$</span><span class="va">values</span></span></code></pre></div>
 <pre><code><span><span class="co">## $reference_value</span></span>
 <span><span class="co">## [1] "No"</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## $exposure_value</span></span>
 <span><span class="co">## [1] "Yes"</span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diabetes_med</span><span class="op">$</span><span class="va">models</span><span class="op">$</span><span class="va">mediator</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Call:</span></span>
@@ -218,44 +249,44 @@ draws, and exposure comparison values available for checking.</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## Coefficients:</span></span>
 <span><span class="co">##       (Intercept)         obesityYes                age     blood_pressure  </span></span>
-<span><span class="co">##           69.9217             9.4519             0.5894             0.3050  </span></span>
+<span><span class="co">##          98.23467            6.66535            0.39847            0.06945  </span></span>
 <span><span class="co">##       pregnancies  diabetes_pedigree  </span></span>
-<span><span class="co">##           -0.2092            10.7711</span></span></code></pre>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<span><span class="co">##           0.40874            5.56161</span></span></code></pre>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diabetes_med</span><span class="op">$</span><span class="va">models</span><span class="op">$</span><span class="va">outcome</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Call:  stats::glm(formula = f, family = stats::binomial(), data = df)</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Coefficients:</span></span>
 <span><span class="co">##       (Intercept)         obesityYes            glucose                age  </span></span>
-<span><span class="co">##         -7.220509           1.241446           0.035385           0.014817  </span></span>
+<span><span class="co">##         -6.848643           0.952467           0.034610           0.012419  </span></span>
 <span><span class="co">##    blood_pressure        pregnancies  diabetes_pedigree  </span></span>
-<span><span class="co">##         -0.002162           0.106363           1.028275  </span></span>
+<span><span class="co">##          0.003185           0.052420           0.590009  </span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Degrees of Freedom: 723 Total (i.e. Null);  717 Residual</span></span>
-<span><span class="co">## Null Deviance:       931.9 </span></span>
-<span><span class="co">## Residual Deviance: 674.4     AIC: 688.4</span></span></code></pre>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<span><span class="co">## Degrees of Freedom: 726 Total (i.e. Null);  720 Residual</span></span>
+<span><span class="co">## Null Deviance:       953.8 </span></span>
+<span><span class="co">## Residual Deviance: 731.1     AIC: 745.1</span></span></code></pre>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">diabetes_med</span><span class="op">$</span><span class="va">boot</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       total    direct   indirect proportion</span></span>
-<span><span class="co">## 1 0.3002124 0.2192066 0.08100578  0.2698283</span></span>
-<span><span class="co">## 2 0.2902380 0.2287934 0.06144464  0.2117043</span></span>
-<span><span class="co">## 3 0.3568782 0.2291300 0.12774815  0.3579601</span></span>
-<span><span class="co">## 4 0.2234355 0.1744756 0.04895991  0.2191232</span></span>
-<span><span class="co">## 5 0.2609932 0.2003587 0.06063449  0.2323221</span></span>
-<span><span class="co">## 6 0.3104067 0.2250761 0.08533069  0.2748996</span></span></code></pre>
+<span><span class="co">## 1 0.2299255 0.1705385 0.05938700  0.2582880</span></span>
+<span><span class="co">## 2 0.2550856 0.1917216 0.06336401  0.2484029</span></span>
+<span><span class="co">## 3 0.2126707 0.1747508 0.03791990  0.1783034</span></span>
+<span><span class="co">## 4 0.2907202 0.2280457 0.06267444  0.2155834</span></span>
+<span><span class="co">## 5 0.2906804 0.2387094 0.05197098  0.1787908</span></span>
+<span><span class="co">## 6 0.2486133 0.1939385 0.05467481  0.2199191</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="path-diagram">Path Diagram<a class="anchor" aria-label="anchor" href="#path-diagram"></a>
 </h2>
 <p><code><a href="../reference/plot_mediation.html">plot_mediation()</a></code> draws the exposure, mediator, outcome,
 and the direct and indirect paths.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_mediation.html">plot_mediation</a></span><span class="op">(</span><span class="va">diabetes_med</span><span class="op">)</span></span></code></pre></div>
 <p><img src="causal-mediation_files/figure-html/mediation-plot-1.png" class="r-plt" alt="" width="672"></p>
 <p>If the figure is being used only to explain the causal structure,
 hide the estimates.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_mediation.html">plot_mediation</a></span><span class="op">(</span><span class="va">diabetes_med</span>, show_estimates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="causal-mediation_files/figure-html/mediation-plot-no-estimates-1.png" class="r-plt" alt="" width="672"></p>
 </div>
@@ -264,7 +295,7 @@ hide the estimates.</p>
 </h2>
 <p>Quoted column names and stored character vectors work too. This is
 useful inside scripts, functions, and Shiny-style workflows.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exposure_var</span> <span class="op">&lt;-</span> <span class="st">"obesity"</span></span>
 <span><span class="va">mediator_var</span> <span class="op">&lt;-</span> <span class="st">"glucose"</span></span>
 <span><span class="va">outcome_var</span> <span class="op">&lt;-</span> <span class="st">"diabetes"</span></span>
@@ -283,55 +314,7 @@ useful inside scripts, functions, and Shiny-style workflows.</p>
 <span>  seed <span class="op">=</span> <span class="fl">456</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">med_quoted</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
-<div class="tabwid">
-<style>.cl-ed83b794{}.cl-ed7a8dcc{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ed7a8de0{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ed7a8dea{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ed7dda9a{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-ed7ddaae{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-ed7ddab8{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-ed7e0178{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e0182{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e018c{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e0196{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e0197{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01a0{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01a1{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01aa{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01ab{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01b4{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01b5{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01be{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01bf{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01c8{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01c9{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01d2{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01dc{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01dd{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01e6{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01f0{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01fa{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e01fb{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e0204{width:1.41in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e020e{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ed7e020f{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
-<table data-quarto-disable-processing="true" class="table cl-ed83b794">
-<thead><tr style="overflow-wrap:break-word;">
-<th class="cl-ed7e0178"><p class="cl-ed7dda9a"><span class="cl-ed7a8dcc">Effect</span></p></th>
-<th class="cl-ed7e0182"><p class="cl-ed7ddaae"><span class="cl-ed7a8dcc">Estimate</span></p></th>
-<th class="cl-ed7e018c"><p class="cl-ed7ddaae"><span class="cl-ed7a8dcc">95% CI</span></p></th>
-<th class="cl-ed7e0196"><p class="cl-ed7ddaae"><span class="cl-ed7a8dcc">p-value</span></p></th>
-<th class="cl-ed7e0197"><p class="cl-ed7dda9a"><span class="cl-ed7a8dcc">Interpretation</span></p></th>
-</tr></thead>
-<tbody>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ed7e01a0"><p class="cl-ed7dda9a"><span class="cl-ed7a8de0">Total effect</span></p></td>
-<td class="cl-ed7e01a1"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">0.268</span></p></td>
-<td class="cl-ed7e01aa"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">0.191 to 0.337</span></p></td>
-<td class="cl-ed7e01ab"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">&lt;0.001</span></p></td>
-<td class="cl-ed7e01b4"><p class="cl-ed7dda9a"><span class="cl-ed7a8de0">Overall exposure-outcome association</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ed7e01b5"><p class="cl-ed7dda9a"><span class="cl-ed7a8de0">Direct effect</span></p></td>
-<td class="cl-ed7e01be"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">0.200</span></p></td>
-<td class="cl-ed7e01bf"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">0.136 to 0.268</span></p></td>
-<td class="cl-ed7e01c8"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">&lt;0.001</span></p></td>
-<td class="cl-ed7e01c9"><p class="cl-ed7dda9a"><span class="cl-ed7a8de0">Association not through the mediator</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ed7e01b5"><p class="cl-ed7dda9a"><span class="cl-ed7a8de0">Indirect effect</span></p></td>
-<td class="cl-ed7e01be"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">0.068</span></p></td>
-<td class="cl-ed7e01bf"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">0.035 to 0.097</span></p></td>
-<td class="cl-ed7e01c8"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">&lt;0.001</span></p></td>
-<td class="cl-ed7e01c9"><p class="cl-ed7dda9a"><span class="cl-ed7a8de0">Association through the mediator</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ed7e01d2"><p class="cl-ed7dda9a"><span class="cl-ed7a8de0">Proportion mediated</span></p></td>
-<td class="cl-ed7e01dc"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">0.255</span></p></td>
-<td class="cl-ed7e01dd"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">0.131 to 0.379</span></p></td>
-<td class="cl-ed7e01e6"><p class="cl-ed7ddaae"><span class="cl-ed7a8de0">&lt;0.001</span></p></td>
-<td class="cl-ed7e01f0"><p class="cl-ed7dda9a"><span class="cl-ed7a8de0">Share of total effect through the mediator</span></p></td>
-</tr>
-</tbody>
-<tfoot>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ed7e01fa"><p class="cl-ed7ddab8"><span class="cl-ed7a8dea">Effects are predicted probability differences from logistic outcome models.</span></p></td></tr>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ed7e01fa"><p class="cl-ed7ddab8"><span class="cl-ed7a8dea">Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100.</span></p></td></tr>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ed7e01fa"><p class="cl-ed7ddab8"><span class="cl-ed7a8dea">Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function.</span></p></td></tr>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ed7e01fa"><p class="cl-ed7ddab8"><span class="cl-ed7a8dea">Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions.</span></p></td></tr>
-</tfoot>
-</table>
-</div>
+<span><span class="va">med_quoted</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="linear-outcome">Linear Outcome<a class="anchor" aria-label="anchor" href="#linear-outcome"></a>
@@ -339,7 +322,7 @@ useful inside scripts, functions, and Shiny-style workflows.</p>
 <p>For a continuous outcome, use <code>outcome_approach = linear</code>.
 In this example, the outcome is body mass index, so the effects are
 reported as mean differences.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">med_linear</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mediation_analysis.html">mediation_analysis</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data_diabetes_mediation</span>,</span>
 <span>  exposure <span class="op">=</span> <span class="va">obesity</span>,</span>
@@ -351,56 +334,8 @@ reported as mean differences.</p>
 <span>  seed <span class="op">=</span> <span class="fl">789</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">med_linear</span><span class="op">$</span><span class="va">table</span></span></code></pre></div>
-<div class="tabwid">
-<style>.cl-ee1bcfb6{}.cl-ee147568{font-family:'DejaVu Sans';font-size:11pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ee14757c{font-family:'DejaVu Sans';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ee147586{font-family:'DejaVu Sans';font-size:8pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-ee17a29c{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-ee17a2b0{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-ee17a2b1{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:0;padding-top:0;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-ee17c7fe{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c808{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c812{width:1.508in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c813{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c81c{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c81d{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c830{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c831{width:1.508in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c83a{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c83b{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c844{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c845{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c846{width:1.508in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c84e{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c84f{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0.75pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c858{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c862{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c86c{width:1.508in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c86d{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c86e{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0.75pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c876{width:1.855in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c877{width:1.045in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c880{width:1.508in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c881{width:0.925in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-ee17c88a{width:3.503in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style>
-<table data-quarto-disable-processing="true" class="table cl-ee1bcfb6">
-<thead><tr style="overflow-wrap:break-word;">
-<th class="cl-ee17c7fe"><p class="cl-ee17a29c"><span class="cl-ee147568">Effect</span></p></th>
-<th class="cl-ee17c808"><p class="cl-ee17a2b0"><span class="cl-ee147568">Estimate</span></p></th>
-<th class="cl-ee17c812"><p class="cl-ee17a2b0"><span class="cl-ee147568">95% CI</span></p></th>
-<th class="cl-ee17c813"><p class="cl-ee17a2b0"><span class="cl-ee147568">p-value</span></p></th>
-<th class="cl-ee17c81c"><p class="cl-ee17a29c"><span class="cl-ee147568">Interpretation</span></p></th>
-</tr></thead>
-<tbody>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ee17c81d"><p class="cl-ee17a29c"><span class="cl-ee14757c">Total effect</span></p></td>
-<td class="cl-ee17c830"><p class="cl-ee17a2b0"><span class="cl-ee14757c">10.306</span></p></td>
-<td class="cl-ee17c831"><p class="cl-ee17a2b0"><span class="cl-ee14757c">9.844 to 10.864</span></p></td>
-<td class="cl-ee17c83a"><p class="cl-ee17a2b0"><span class="cl-ee14757c">&lt;0.001</span></p></td>
-<td class="cl-ee17c83b"><p class="cl-ee17a29c"><span class="cl-ee14757c">Overall exposure-outcome association</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ee17c844"><p class="cl-ee17a29c"><span class="cl-ee14757c">Direct effect</span></p></td>
-<td class="cl-ee17c845"><p class="cl-ee17a2b0"><span class="cl-ee14757c">10.179</span></p></td>
-<td class="cl-ee17c846"><p class="cl-ee17a2b0"><span class="cl-ee14757c">9.716 to 10.755</span></p></td>
-<td class="cl-ee17c84e"><p class="cl-ee17a2b0"><span class="cl-ee14757c">&lt;0.001</span></p></td>
-<td class="cl-ee17c84f"><p class="cl-ee17a29c"><span class="cl-ee14757c">Association not through the mediator</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ee17c844"><p class="cl-ee17a29c"><span class="cl-ee14757c">Indirect effect</span></p></td>
-<td class="cl-ee17c845"><p class="cl-ee17a2b0"><span class="cl-ee14757c">0.127</span></p></td>
-<td class="cl-ee17c846"><p class="cl-ee17a2b0"><span class="cl-ee14757c">0.027 to 0.241</span></p></td>
-<td class="cl-ee17c84e"><p class="cl-ee17a2b0"><span class="cl-ee14757c">&lt;0.001</span></p></td>
-<td class="cl-ee17c84f"><p class="cl-ee17a29c"><span class="cl-ee14757c">Association through the mediator</span></p></td>
-</tr>
-<tr style="overflow-wrap:break-word;">
-<td class="cl-ee17c858"><p class="cl-ee17a29c"><span class="cl-ee14757c">Proportion mediated</span></p></td>
-<td class="cl-ee17c862"><p class="cl-ee17a2b0"><span class="cl-ee14757c">0.012</span></p></td>
-<td class="cl-ee17c86c"><p class="cl-ee17a2b0"><span class="cl-ee14757c">0.003 to 0.023</span></p></td>
-<td class="cl-ee17c86d"><p class="cl-ee17a2b0"><span class="cl-ee14757c">&lt;0.001</span></p></td>
-<td class="cl-ee17c86e"><p class="cl-ee17a29c"><span class="cl-ee14757c">Share of total effect through the mediator</span></p></td>
-</tr>
-</tbody>
-<tfoot>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ee17c876"><p class="cl-ee17a2b1"><span class="cl-ee147586">Effects are mean differences from linear outcome models.</span></p></td></tr>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ee17c876"><p class="cl-ee17a2b1"><span class="cl-ee147586">Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Body mass index. Bootstrap replicates = 100.</span></p></td></tr>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ee17c876"><p class="cl-ee17a2b1"><span class="cl-ee147586">Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function.</span></p></td></tr>
-<tr style="overflow-wrap:break-word;"><td colspan="5" class="cl-ee17c876"><p class="cl-ee17a2b1"><span class="cl-ee147586">Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions.</span></p></td></tr>
-</tfoot>
-</table>
-</div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<span><span class="va">med_linear</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_mediation.html">plot_mediation</a></span><span class="op">(</span><span class="va">med_linear</span><span class="op">)</span></span></code></pre></div>
 <p><img src="causal-mediation_files/figure-html/mediation-linear-plot-1.png" class="r-plt" alt="" width="672"></p>
 </div>

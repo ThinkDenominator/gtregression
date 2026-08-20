@@ -283,6 +283,12 @@
   [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
   row-order handling after joins and merges so forest plots follow the
   same display order as the source regression table.
+- Replaced CRAN-incompatible diabetes demo data that depended on removed
+  mlbench Pima data with `data_SynthDiabetes`, a synthetic replacement
+  based on
+  [`mlbench::SynthDiabetes2`](https://rdrr.io/pkg/mlbench/man/SynthDiabetes.html)
+  (mlbench \>= 2.1-11), and regenerated all mediation teaching fixtures
+  that depended on the prior dataset.
 
 ## gtregression 1.0.0
 

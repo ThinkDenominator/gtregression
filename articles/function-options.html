@@ -34,7 +34,6 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../index.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
@@ -45,11 +44,11 @@
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Interpret</a></li>
     <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
   </ul>
 </li>
@@ -1631,7 +1630,9 @@ estimates.</td>
 <td>
 <code>TRUE</code>, <code>FALSE</code>
 </td>
-<td>Uses log x-axis for ratio measures.</td>
+<td>Uses a linear x-axis by default. Set <code>TRUE</code> for the
+conventional log-scale display of odds, risk, hazard, or time
+ratios.</td>
 </tr>
 <tr class="even">
 <td>
@@ -1646,15 +1647,40 @@ estimates.</td>
 <td>
 <code>point_color</code>, <code>errorbar_color</code>
 </td>
-<td align="right">default colours</td>
+<td align="right"><code>"#6B7280"</code></td>
 <td>colour values</td>
-<td>Styles estimates and confidence intervals.</td>
+<td>Styles non-significant estimates and confidence intervals with
+neutral grey.</td>
+</tr>
+<tr class="even">
+<td>
+<code>sig_color</code>, <code>sig_errorbar_color</code>
+</td>
+<td align="right"><code>"#0072B2"</code></td>
+<td>colour values or <code>NULL</code>
+</td>
+<td>Highlights estimates whose confidence interval excludes the null
+with accessible blue; use <code>NULL</code> to reuse the base
+colours.</td>
+</tr>
+<tr class="odd">
+<td>
+<code>point_size</code>, <code>point_stroke</code>,
+<code>ci_linewidth</code>
+</td>
+<td align="right">
+<code>2.8</code>, <code>0.55</code>,
+<code>0.55</code>
+</td>
+<td>positive numbers</td>
+<td>Controls estimate marker size, marker outline, and
+confidence-interval thickness.</td>
 </tr>
 <tr class="even">
 <td><code>base_size</code></td>
-<td align="right"><code>14</code></td>
+<td align="right"><code>12</code></td>
 <td>number</td>
-<td>Base font size.</td>
+<td>Base font size. Increase for a single large figure.</td>
 </tr>
 <tr class="odd">
 <td><code>show_ref</code></td>
@@ -1665,21 +1691,12 @@ estimates.</td>
 <td>Displays or hides reference rows.</td>
 </tr>
 <tr class="even">
-<td>
-<code>sig_color</code>, <code>sig_errorbar_color</code>
-</td>
-<td align="right"><code>NULL</code></td>
-<td>colour values or <code>NULL</code>
-</td>
-<td>Optional significance highlighting.</td>
-</tr>
-<tr class="odd">
 <td><code>alpha</code></td>
 <td align="right"><code>0.05</code></td>
 <td>number</td>
 <td>Significance threshold.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>show_adjustment_note</code></td>
 <td align="right"><code>TRUE</code></td>
 <td>
@@ -1733,7 +1750,8 @@ estimates.</td>
 <td align="right">automatic/<code>NULL</code>/<code>FALSE</code>
 </td>
 <td>number, order vector, logical</td>
-<td>Controls null line, order, and scale.</td>
+<td>Controls the null line, order, and scale; set
+<code>log_x = TRUE</code> for a ratio-scale log axis.</td>
 </tr>
 <tr class="even">
 <td>
@@ -1757,32 +1775,47 @@ estimates.</td>
 <td>
 <code>point_color</code>, <code>errorbar_color</code>
 </td>
-<td align="right">default colours</td>
+<td align="right"><code>"#6B7280"</code></td>
 <td>colour values</td>
-<td>Styles estimates and confidence intervals.</td>
+<td>Styles non-significant estimates and confidence intervals with
+neutral grey.</td>
 </tr>
 <tr class="odd">
 <td>
 <code>sig_color</code>, <code>sig_errorbar_color</code>
 </td>
-<td align="right"><code>NULL</code></td>
+<td align="right"><code>"#0072B2"</code></td>
 <td>colour values or <code>NULL</code>
 </td>
-<td>Optional significance highlighting.</td>
+<td>Highlights estimates whose confidence interval excludes the null
+with accessible blue.</td>
 </tr>
 <tr class="even">
+<td>
+<code>point_size</code>, <code>point_stroke</code>,
+<code>ci_linewidth</code>
+</td>
+<td align="right">
+<code>2.8</code>, <code>0.55</code>,
+<code>0.55</code>
+</td>
+<td>positive numbers</td>
+<td>Controls estimate marker size, marker outline, and
+confidence-interval thickness.</td>
+</tr>
+<tr class="odd">
 <td>
 <code>base_size</code>, <code>show_ref</code>,
 <code>alpha</code>
 </td>
 <td align="right">
-<code>14</code>, <code>TRUE</code>,
+<code>12</code>, <code>TRUE</code>,
 <code>0.05</code>
 </td>
 <td>number, logical, number</td>
 <td>Controls readability, reference rows, and highlighting.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>show_adjustment_note</code></td>
 <td align="right"><code>TRUE</code></td>
 <td>
@@ -2100,6 +2133,21 @@ supplied.</td>
 <div class="section level3">
 <h3 id="diagnostics-selection-and-model-comparison">Diagnostics, Selection, and Model Comparison<a class="anchor" aria-label="anchor" href="#diagnostics-selection-and-model-comparison"></a>
 </h3>
+<p><code><a href="../reference/select_models.html">select_models()</a></code> and <code><a href="../reference/compare_models.html">compare_models()</a></code> answer
+different questions. <code><a href="../reference/select_models.html">select_models()</a></code> generates and ranks
+models as part of a selection workflow. <code><a href="../reference/compare_models.html">compare_models()</a></code>
+compares specific fitted models that you have named and chosen, checks
+whether their analysis samples are comparable, and preserves all fit
+statistics for transparent reporting. Use
+<code><a href="../reference/interaction_models.html">interaction_models()</a></code> for one planned interaction comparison
+and <code><a href="../reference/identify_confounder.html">identify_confounder()</a></code> for candidate-level
+confounding/effect-modification screening rather than final causal
+decisions.</p>
+<p>For linear models, typing <code>result$reg_check</code> displays a
+publication-ready diagnostic table. The underlying rows remain available
+for scripts, for example
+<code>result$reg_check$multivariable_model</code>. These checks
+complement, rather than replace, residual and influence plots.</p>
 <div class="section level4">
 <h4 id="check_convergence">
 <code>check_convergence()</code><a class="anchor" aria-label="anchor" href="#check_convergence"></a>
@@ -2496,7 +2544,8 @@ panel contains the complete <code><a href="../reference/multi_reg.html">multi_re
 <td><code>potential_confounder</code></td>
 <td align="right">required</td>
 <td>one column name</td>
-<td>Variable being assessed.</td>
+<td>Candidate screened as a potential confounder and effect
+modifier.</td>
 </tr>
 <tr class="odd">
 <td><code>approach</code></td>
@@ -2554,7 +2603,8 @@ panel contains the complete <code><a href="../reference/multi_reg.html">multi_re
 <td><code>interaction_alpha</code></td>
 <td align="right"><code>0.05</code></td>
 <td>number</td>
-<td>P-value threshold for interaction test.</td>
+<td>P-value threshold for the candidate-only interaction screen; no
+other covariates are adjusted for.</td>
 </tr>
 <tr class="odd">
 <td><code>format</code></td>
@@ -2615,7 +2665,7 @@ panel contains the complete <code><a href="../reference/multi_reg.html">multi_re
 <td align="right"><code>NULL</code></td>
 <td>column names or <code>NULL</code>
 </td>
-<td>Adjustment variables.</td>
+<td>Adjustment variables included in both models being compared.</td>
 </tr>
 <tr class="odd">
 <td><code>effect_modifier</code></td>
@@ -2863,8 +2913,29 @@ compatible tables.</td>
 <td>table theme preset</td>
 <td>Table styling.</td>
 </tr>
+<tr class="even">
+<td><code>format</code></td>
+<td align="right"><code>"flextable"</code></td>
+<td>
+<code>"flextable"</code>, <code>"gt"</code>
+</td>
+<td>Output engine for the merged table, independent of the input-table
+formats.</td>
+</tr>
 </tbody>
 </table>
+<p>For descriptive + crude + adjusted tables, keep binary-variable rows
+consistent. The recommended publication layout is
+<code>show_dichotomous = "all_levels"</code> in
+<code><a href="../reference/descriptive_table.html">descriptive_table()</a></code> and <code>show_ref = TRUE</code> in
+every regression table. Mixing these settings can add unexpected rows,
+and <code><a href="../reference/merge_tables.html">merge_tables()</a></code> issues a warning that explains how to
+correct it.</p>
+<p>The merged result carries the footnotes already present in each input
+table. Exact duplicate notes are shown once; table-specific notes,
+including an adjustment note from <code><a href="../reference/multi_reg.html">multi_reg()</a></code>, are retained
+unchanged. Multivariable adjustment notes use the same display labels as
+the table body.</p>
 </div>
 <div class="section level4">
 <h4 id="modify_table">
@@ -2900,9 +2971,9 @@ compatible tables.</td>
 <tr class="odd">
 <td><code>level_labels</code></td>
 <td align="right"><code>NULL</code></td>
-<td>named character vector or <code>NULL</code>
+<td>named list of named character vectors or <code>NULL</code>
 </td>
-<td>Relabels factor levels.</td>
+<td>Relabels factor levels within each variable.</td>
 </tr>
 <tr class="even">
 <td><code>header_labels</code></td>
@@ -2920,11 +2991,12 @@ compatible tables.</td>
 </tr>
 <tr class="even">
 <td><code>bold_labels</code></td>
-<td align="right"><code>FALSE</code></td>
+<td align="right"><code>TRUE</code></td>
 <td>
 <code>TRUE</code>, <code>FALSE</code>
 </td>
-<td>Displays variable label rows in bold.</td>
+<td>Displays variable label rows in bold. This preserves the default
+gtregression hierarchy.</td>
 </tr>
 <tr class="odd">
 <td><code>bold_levels</code></td>
@@ -2935,22 +3007,54 @@ compatible tables.</td>
 <td>Displays level rows in bold.</td>
 </tr>
 <tr class="even">
-<td>
-<code>remove_N</code>, <code>remove_N_obs</code>
-</td>
+<td><code>italic_labels</code></td>
 <td align="right"><code>FALSE</code></td>
 <td>
 <code>TRUE</code>, <code>FALSE</code>
 </td>
-<td>Removes sample-size columns when present.</td>
+<td>Italicizes variable label rows.</td>
 </tr>
 <tr class="odd">
+<td><code>italic_levels</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Italicizes factor level rows.</td>
+</tr>
+<tr class="even">
+<td><code>remove_N</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Removes displayed sample-size columns when present.</td>
+</tr>
+<tr class="odd">
+<td><code>remove_N_obs</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Removes the complete-case <code>N = ... observations</code>
+footnote.</td>
+</tr>
+<tr class="even">
 <td><code>remove_abbreviations</code></td>
 <td align="right"><code>FALSE</code></td>
 <td>
 <code>TRUE</code>, <code>FALSE</code>
 </td>
 <td>Removes abbreviation footnotes.</td>
+</tr>
+<tr class="odd">
+<td><code>remove_adjustment_note</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Removes the automatic adjustment note; use <code>caveat</code> for
+customised wording.</td>
 </tr>
 <tr class="even">
 <td><code>caveat</code></td>

@@ -16,6 +16,8 @@ basis for model adjustment.
 |----|----|----|
 | Could these candidate variables be confounders or effect modifiers? | [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md) | Screens crude, adjusted, Mantel-Haenszel, and interaction signals together. |
 | Does this planned interaction term improve the model? | [`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md) | Compares models with and without `exposure:effect_modifier` using LRT or Wald tests. |
+| Which automatically generated candidate model has the strongest fit? | [`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md) | Fits and ranks a defined set of candidate models using model-fit statistics. |
+| How do my named, fitted gtregression models differ? | [`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md) | Compares supplied fitted models, checks analysis-sample consistency, and reports fit statistics transparently. |
 | Could part of an exposure-outcome association operate through a mediator? | [`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md) | Estimates direct, indirect, total, and proportion mediated effects with explicit causal caveats. |
 | Do I need a Mantel-Haenszel estimate? | `identify_confounder(method = "mh")` or `identify_confounder(method = "both")` | MH is a stratified pooled estimate for eligible binary/categorical settings, not a formal interaction-term test. |
 
@@ -38,6 +40,42 @@ A practical workflow is:
     [`stratified_uni_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_uni_reg.md)
     or
     [`stratified_multi_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_multi_reg.md).
+
+## How the Interaction Tests Differ
+
+[`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md)
+is a candidate-by-candidate screening aid. For each exposure and
+potential confounder, it compares `outcome ~ exposure` with
+`outcome ~ exposure + potential_confounder`, examines stratum-specific
+estimates, and screens the candidate interaction:
+
+``` r
+
+outcome ~ exposure + potential_confounder + exposure:potential_confounder
+```
+
+No other covariates are included in this interaction screen. Its
+interaction p-value helps organise early evidence; it is not a final
+covariate-adjusted interaction analysis.
+
+Use
+[`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md)
+for a planned interaction analysis. Its `covariates` are included in
+both nested models, preserving a common adjusted analysis sample. For
+example, `covariates = c(age, lwt)` fits:
+
+``` r
+
+outcome ~ exposure + effect_modifier + age + lwt
+outcome ~ exposure + effect_modifier + age + lwt + exposure:effect_modifier
+```
+
+Choose covariates using the study design, a DAG, and subject-matter
+knowledge. Do not automatically adjust for mediators or colliders.
+
+The formatted interaction table labels the **effect modifier tested**,
+displays the outcome, and records the two fitted model formulas in its
+table notes.
 
 ``` r
 
@@ -65,7 +103,11 @@ attr(birthwt_data$ht, "label") <- "Hypertension"
 Use `method = "change"` for the model-based change-in-estimate method.
 Use `method = "mh"` or `method = "both"` when Mantel-Haenszel is
 appropriate. The output is intentionally tidy and intended for viewing,
-not as a final publication table.
+not as a final publication table. Calling the object displays the
+formatted table; use `$summary` when you want the underlying tibble. Its
+table notes identify the outcome and the three candidate-level models:
+crude, adjusted for the potential confounder, and the interaction
+screen.
 
 ``` r
 
@@ -82,10 +124,11 @@ confounder_check <- identify_confounder(
 confounder_check$table
 ```
 
-| Exposure | Candidate | Crude estimate | Adjusted estimate | MH estimate | % change model | % change MH | Confounder? | Interaction p | Effect modifier? | Decision | Recommendation |
+| Exposure | Potential confounder | Crude estimate | Adjusted estimate | MH estimate | % change model | % change MH | Confounder? | Interaction p | Effect modifier? | Decision | Recommendation |
 |----|----|----|----|----|----|----|----|----|----|----|----|
 | smoke | race | 2.022 | 3.053 | 3.086 | 50.98 | 52.64 | Yes | 0.206 | No | Confounder | Adjust for race. |
 | smoke | ht | 2.022 | 2.038 | 2.032 | 0.78 | 0.51 | No | 0.607 | No | No evidence | No clear statistical evidence to include ht as a confounder. |
+| Outcome: low. For each exposure E and potential confounder C, models tested: low ~ E; low ~ E + C; and interaction screen: low ~ E + C + E:C (OR (95% CI) scale). |  |  |  |  |  |  |  |  |  |  |  |
 | Screening aid only; use DAGs, subject-matter knowledge, and study design to decide confounding and effect modification. |  |  |  |  |  |  |  |  |  |  |  |
 
 The underlying summary remains available for inspection or further
@@ -125,9 +168,10 @@ identify_confounder(
 )$table
 ```
 
-| Exposure | Candidate | Crude estimate | Adjusted estimate | MH estimate | % change model | % change MH | Confounder? | Interaction p | Effect modifier? | Decision | Recommendation |
+| Exposure | Potential confounder | Crude estimate | Adjusted estimate | MH estimate | % change model | % change MH | Confounder? | Interaction p | Effect modifier? | Decision | Recommendation |
 |----|----|----|----|----|----|----|----|----|----|----|----|
 | smoke | race | 2.022 | 3.053 | 3.086 | 50.98 | 52.64 | Yes | 0.206 | No | Confounder | Adjust for race. |
+| Outcome: low. For each exposure E and potential confounder C, models tested: low ~ E; low ~ E + C; and interaction screen: low ~ E + C + E:C (OR (95% CI) scale). |  |  |  |  |  |  |  |  |  |  |  |
 | Screening aid only; use DAGs, subject-matter knowledge, and study design to decide confounding and effect modification. |  |  |  |  |  |  |  |  |  |  |  |
 
 ## Test Interaction
@@ -136,7 +180,9 @@ identify_confounder(
 compares models with and without the interaction term. It is
 deliberately model-based and uses `LRT` or `Wald`, not Mantel-Haenszel.
 Use it when the interaction term is planned or supported by clinical,
-causal, or subject-matter reasoning.
+causal, or subject-matter reasoning. Covariates are included in both
+models, so this is the appropriate function for an adjusted interaction
+test.
 
 ``` r
 
@@ -154,11 +200,12 @@ interaction_check <- interaction_models(
 interaction_check$table
 ```
 
-| Interaction screening |  |  |  |  |  |  |  |  |  |
-|----|----|----|----|----|----|----|----|----|----|
-| Outcome | Exposure | Effect modifier | Approach | Test | p-value | Alpha | Interaction? | Decision | Interpretation |
-| low | smoke | race | logit | Likelihood Ratio Test | 0.319 | 0.050 | No | No interaction | No statistical evidence of interaction between smoke and race at alpha = 0.05. |
-| Screening aid only; interaction decisions should be interpreted with subject-matter knowledge, study design, and stratum-specific estimates. |  |  |  |  |  |  |  |  |  |
+| Interaction screening |  |  |  |  |  |  |  |  |  |  |
+|----|----|----|----|----|----|----|----|----|----|----|
+| Outcome | Exposure | Effect modifier tested | Adjustment covariates | Approach | Test | p-value | Alpha | Interaction? | Decision | Interpretation |
+| low | smoke | race | age, lwt | logit | Likelihood Ratio Test | 0.319 | 0.050 | No | No interaction | No statistical evidence of interaction between smoke and race at alpha = 0.05. |
+| Models tested: low ~ smoke + race + age + lwt; low ~ smoke + race + age + lwt + smoke:race. |  |  |  |  |  |  |  |  |  |  |
+| Screening aid only; interaction decisions should be interpreted with subject-matter knowledge, study design, and stratum-specific estimates. |  |  |  |  |  |  |  |  |  |  |
 
 ## Survival Confounding and Interaction
 
@@ -192,9 +239,10 @@ survival_confounder <- identify_confounder(
 survival_confounder$table
 ```
 
-| Exposure | Candidate | Crude estimate | Adjusted estimate | MH estimate | % change model | % change MH | Confounder? | Interaction p | Effect modifier? | Decision | Recommendation |
+| Exposure | Potential confounder | Crude estimate | Adjusted estimate | MH estimate | % change model | % change MH | Confounder? | Interaction p | Effect modifier? | Decision | Recommendation |
 |----|----|----|----|----|----|----|----|----|----|----|----|
 | trt | prior | 1.018 | 1.026 |  | 0.84 |  | No |  | No | No evidence | No clear statistical evidence to include prior as a confounder. |
+| Outcome: Surv(time, status). For each exposure E and potential confounder C, models tested: Surv(time, status) ~ E; Surv(time, status) ~ E + C; and interaction screen: Surv(time, status) ~ E + C + E:C (HR (95% CI) scale). |  |  |  |  |  |  |  |  |  |  |  |
 | Screening aid only; use DAGs, subject-matter knowledge, and study design to decide confounding and effect modification. |  |  |  |  |  |  |  |  |  |  |  |
 
 ``` r
@@ -214,11 +262,12 @@ survival_interaction <- interaction_models(
 survival_interaction$table
 ```
 
-| Interaction screening |  |  |  |  |  |  |  |  |  |
-|----|----|----|----|----|----|----|----|----|----|
-| Outcome | Exposure | Effect modifier | Approach | Test | p-value | Alpha | Interaction? | Decision | Interpretation |
-| time/status | trt | prior | cox | Likelihood Ratio Test | 0.068 | 0.050 | No | No interaction | No statistical evidence of interaction between trt and prior at alpha = 0.05. |
-| Screening aid only; interaction decisions should be interpreted with subject-matter knowledge, study design, and stratum-specific estimates. |  |  |  |  |  |  |  |  |  |
+| Interaction screening |  |  |  |  |  |  |  |  |  |  |
+|----|----|----|----|----|----|----|----|----|----|----|
+| Outcome | Exposure | Effect modifier tested | Adjustment covariates | Approach | Test | p-value | Alpha | Interaction? | Decision | Interpretation |
+| time/status | trt | prior | age, karno | cox | Likelihood Ratio Test | 0.068 | 0.050 | No | No interaction | No statistical evidence of interaction between trt and prior at alpha = 0.05. |
+| Models tested: survival::Surv(time, status) ~ trt + prior + age + karno; survival::Surv(time, status) ~ trt + prior + age + karno + trt \* prior. |  |  |  |  |  |  |  |  |  |  |
+| Screening aid only; interaction decisions should be interpreted with subject-matter knowledge, study design, and stratum-specific estimates. |  |  |  |  |  |  |  |  |  |  |
 
 ## Causal Mediation
 
@@ -263,19 +312,8 @@ diabetes_med <- mediation_analysis(
   seed = 123
 )
 
-diabetes_med$table
+diabetes_med
 ```
-
-| Effect | Estimate | 95% CI | p-value | Interpretation |
-|----|----|----|----|----|
-| Total effect | 0.268 | 0.188 to 0.341 | \<0.001 | Overall exposure-outcome association |
-| Direct effect | 0.200 | 0.131 to 0.266 | \<0.001 | Association not through the mediator |
-| Indirect effect | 0.068 | 0.037 to 0.106 | \<0.001 | Association through the mediator |
-| Proportion mediated | 0.255 | 0.137 to 0.392 | \<0.001 | Share of total effect through the mediator |
-| Effects are predicted probability differences from logistic outcome models. |  |  |  |  |
-| Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100. |  |  |  |  |
-| Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
-| Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |
 
 The underlying values remain available for audit, reporting, or custom
 formatting.
@@ -285,11 +323,11 @@ formatting.
 diabetes_med$table_body
 ```
 
-    ##                effect              Effect   estimate  conf.low conf.high
-    ## total           total        Total effect 0.26811037 0.1882239 0.3413496
-    ## direct         direct       Direct effect 0.19978127 0.1306665 0.2664345
-    ## indirect     indirect     Indirect effect 0.06832911 0.0368084 0.1057748
-    ## proportion proportion Proportion mediated 0.25485440 0.1365921 0.3920930
+    ##                effect              Effect   estimate   conf.low conf.high
+    ## total           total        Total effect 0.22624186 0.16258768 0.2907013
+    ## direct         direct       Direct effect 0.17561583 0.11427535 0.2347698
+    ## indirect     indirect     Indirect effect 0.05062603 0.01899140 0.0870712
+    ## proportion proportion Proportion mediated 0.22376950 0.08741395 0.3821232
     ##            p.value                             Interpretation
     ## total            0       Overall exposure-outcome association
     ## direct           0       Association not through the mediator
@@ -318,10 +356,10 @@ med_gt$table
 
 | Effect | Estimate | 95% CI | p-value | Interpretation |
 |----|----|----|----|----|
-| Total effect | 0.268 | 0.188 to 0.341 | \<0.001 | Overall exposure-outcome association |
-| Direct effect | 0.200 | 0.131 to 0.266 | \<0.001 | Association not through the mediator |
-| Indirect effect | 0.068 | 0.037 to 0.106 | \<0.001 | Association through the mediator |
-| Proportion mediated | 0.255 | 0.137 to 0.392 | \<0.001 | Share of total effect through the mediator |
+| Total effect | 0.226 | 0.163 to 0.291 | \<0.001 | Overall exposure-outcome association |
+| Direct effect | 0.176 | 0.114 to 0.235 | \<0.001 | Association not through the mediator |
+| Indirect effect | 0.051 | 0.019 to 0.087 | \<0.001 | Association through the mediator |
+| Proportion mediated | 0.224 | 0.087 to 0.382 | \<0.001 | Share of total effect through the mediator |
 | Effects are predicted probability differences from logistic outcome models. |  |  |  |  |
 | Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100. |  |  |  |  |
 | Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |

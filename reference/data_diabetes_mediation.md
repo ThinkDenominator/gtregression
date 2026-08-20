@@ -1,9 +1,9 @@
 # Diabetes Mediation Teaching Dataset
 
-A health-related teaching dataset prepared from the Pima Indians
-Diabetes data. It is designed for the practical question: could part of
-the obesity and diabetes relationship operate through plasma glucose,
-after adjustment for basic clinical covariates?
+A health-related teaching dataset prepared from synthetic diabetes data.
+It is designed for the practical question: could part of the obesity and
+diabetes relationship operate through plasma glucose, after adjustment
+for basic clinical covariates?
 
 ## Usage
 
@@ -49,7 +49,9 @@ A data frame with variables:
 
 ## Source
 
-Derived from `data_PimaIndiansDiabetes`.
+Derived from `data_SynthDiabetes`, which is based on
+[`mlbench::SynthDiabetes2`](https://rdrr.io/pkg/mlbench/man/SynthDiabetes.html)
+(mlbench version 2.1-11 or later).
 
 ## Details
 

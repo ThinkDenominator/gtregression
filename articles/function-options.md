@@ -270,12 +270,13 @@ descriptive_table(
 | `title`, `caption` | `NULL` | character or `NULL` | Plot title and caption. |
 | `ref_line` | automatic | number or `NULL` | Null reference line; usually 1 for ratios and 0 for linear estimates. |
 | `order_y` | `NULL` | character vector or `NULL` | Manually controls vertical order. |
-| `log_x` | `FALSE` | `TRUE`, `FALSE` | Uses log x-axis for ratio measures. |
+| `log_x` | `FALSE` | `TRUE`, `FALSE` | Uses a linear x-axis by default. Set `TRUE` for the conventional log-scale display of odds, risk, hazard, or time ratios. |
 | `xlim`, `breaks` | `NULL` | numeric vectors or `NULL` | Controls axis range and tick marks. |
-| `point_color`, `errorbar_color` | default colours | colour values | Styles estimates and confidence intervals. |
-| `base_size` | `14` | number | Base font size. |
+| `point_color`, `errorbar_color` | `"#6B7280"` | colour values | Styles non-significant estimates and confidence intervals with neutral grey. |
+| `sig_color`, `sig_errorbar_color` | `"#0072B2"` | colour values or `NULL` | Highlights estimates whose confidence interval excludes the null with accessible blue; use `NULL` to reuse the base colours. |
+| `point_size`, `point_stroke`, `ci_linewidth` | `2.8`, `0.55`, `0.55` | positive numbers | Controls estimate marker size, marker outline, and confidence-interval thickness. |
+| `base_size` | `12` | number | Base font size. Increase for a single large figure. |
 | `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference rows. |
-| `sig_color`, `sig_errorbar_color` | `NULL` | colour values or `NULL` | Optional significance highlighting. |
 | `alpha` | `0.05` | number | Significance threshold. |
 | `show_adjustment_note` | `TRUE` | `TRUE`, `FALSE` | Adds adjustment note when available. |
 
@@ -285,12 +286,13 @@ descriptive_table(
 |----|---:|----|----|
 | `tbl_uni`, `tbl_multi` | required | two compatible regression objects | Plots crude and adjusted estimates side by side. |
 | `title_uni`, `title_multi`, `caption` | `NULL` | character or `NULL` | Plot labels. |
-| `ref_line`, `order_y`, `log_x` | automatic/`NULL`/`FALSE` | number, order vector, logical | Controls null line, order, and scale. |
+| `ref_line`, `order_y`, `log_x` | automatic/`NULL`/`FALSE` | number, order vector, logical | Controls the null line, order, and scale; set `log_x = TRUE` for a ratio-scale log axis. |
 | `xlim_uni`, `breaks_uni` | `NULL` | numeric vectors or `NULL` | Axis control for the crude plot. |
 | `xlim_multi`, `breaks_multi` | `NULL` | numeric vectors or `NULL` | Axis control for the adjusted plot. |
-| `point_color`, `errorbar_color` | default colours | colour values | Styles estimates and confidence intervals. |
-| `sig_color`, `sig_errorbar_color` | `NULL` | colour values or `NULL` | Optional significance highlighting. |
-| `base_size`, `show_ref`, `alpha` | `14`, `TRUE`, `0.05` | number, logical, number | Controls readability, reference rows, and highlighting. |
+| `point_color`, `errorbar_color` | `"#6B7280"` | colour values | Styles non-significant estimates and confidence intervals with neutral grey. |
+| `sig_color`, `sig_errorbar_color` | `"#0072B2"` | colour values or `NULL` | Highlights estimates whose confidence interval excludes the null with accessible blue. |
+| `point_size`, `point_stroke`, `ci_linewidth` | `2.8`, `0.55`, `0.55` | positive numbers | Controls estimate marker size, marker outline, and confidence-interval thickness. |
+| `base_size`, `show_ref`, `alpha` | `12`, `TRUE`, `0.05` | number, logical, number | Controls readability, reference rows, and highlighting. |
 | `show_adjustment_note` | `TRUE` | `TRUE`, `FALSE` | Adds adjustment note when available. |
 
 #### `plot_model_fit()`
@@ -346,6 +348,27 @@ descriptive_table(
 | `dpi` | `300` | number | Image resolution for raster formats. |
 
 ### Diagnostics, Selection, and Model Comparison
+
+[`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md)
+and
+[`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md)
+answer different questions.
+[`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md)
+generates and ranks models as part of a selection workflow.
+[`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md)
+compares specific fitted models that you have named and chosen, checks
+whether their analysis samples are comparable, and preserves all fit
+statistics for transparent reporting. Use
+[`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md)
+for one planned interaction comparison and
+[`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md)
+for candidate-level confounding/effect-modification screening rather
+than final causal decisions.
+
+For linear models, typing `result$reg_check` displays a
+publication-ready diagnostic table. The underlying rows remain available
+for scripts, for example `result$reg_check$multivariable_model`. These
+checks complement, rather than replace, residual and influence plots.
 
 #### `check_convergence()`
 
@@ -428,7 +451,7 @@ calls followed by
 | `data` | required | data frame | Analysis dataset. |
 | `outcome` | `NULL` | column name or `NULL` | Outcome for non-survival models. |
 | `exposure` | required | one column name | Main exposure. |
-| `potential_confounder` | required | one column name | Variable being assessed. |
+| `potential_confounder` | required | one column name | Candidate screened as a potential confounder and effect modifier. |
 | `approach` | `"logit"` | standard approaches plus `"cox"` and `"survreg"` | Model family. |
 | `time`, `event` | `NULL` | column names or `NULL` | Required for survival approaches. |
 | `distribution` | `"weibull"` | survival distributions | Parametric distribution for `approach = "survreg"`. |
@@ -436,7 +459,7 @@ calls followed by
 | `threshold` | `10` | number | Percent-change threshold for confounding. |
 | `emm_threshold` | `10` | number | Percent-change threshold for effect-measure modification. |
 | `emm_test` | `"interaction"` | `"interaction"`, `"both"`, `"estimate"` | How to assess effect modification. |
-| `interaction_alpha` | `0.05` | number | P-value threshold for interaction test. |
+| `interaction_alpha` | `0.05` | number | P-value threshold for the candidate-only interaction screen; no other covariates are adjusted for. |
 | `format` | `"flextable"` | `"flextable"`, `"gt"` | Output format. |
 | `theme` | `"minimal"` | table theme preset | Table styling. |
 
@@ -447,7 +470,7 @@ calls followed by
 | `data` | required | data frame | Analysis dataset. |
 | `outcome` | `NULL` | column name or `NULL` | Outcome for non-survival models. |
 | `exposure` | required | one column name | Main exposure. |
-| `covariates` | `NULL` | column names or `NULL` | Adjustment variables. |
+| `covariates` | `NULL` | column names or `NULL` | Adjustment variables included in both models being compared. |
 | `effect_modifier` | required | one column name | Candidate effect modifier. |
 | `approach` | `"logit"` | standard approaches plus `"cox"` and `"survreg"` | Model family. |
 | `time`, `event` | `NULL` | column names or `NULL` | Required for survival approaches. |
@@ -490,6 +513,23 @@ calls followed by
 | `...` | required | gtregression table objects | Merges descriptive, crude, adjusted, Cox, survival, or other compatible tables. |
 | `spanners` | `NULL` | character vector or `NULL` | Adds group headers above merged table blocks. |
 | `theme` | `"minimal"` | table theme preset | Table styling. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output engine for the merged table, independent of the input-table formats. |
+
+For descriptive + crude + adjusted tables, keep binary-variable rows
+consistent. The recommended publication layout is
+`show_dichotomous = "all_levels"` in
+[`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md)
+and `show_ref = TRUE` in every regression table. Mixing these settings
+can add unexpected rows, and
+[`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md)
+issues a warning that explains how to correct it.
+
+The merged result carries the footnotes already present in each input
+table. Exact duplicate notes are shown once; table-specific notes,
+including an adjustment note from
+[`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
+are retained unchanged. Multivariable adjustment notes use the same
+display labels as the table body.
 
 #### `modify_table()`
 
@@ -497,13 +537,17 @@ calls followed by
 |----|---:|----|----|
 | `gt_table` | required | gtregression table object | Table to modify. |
 | `variable_labels` | `NULL` | named character vector or `NULL` | Relabels variables. |
-| `level_labels` | `NULL` | named character vector or `NULL` | Relabels factor levels. |
+| `level_labels` | `NULL` | named list of named character vectors or `NULL` | Relabels factor levels within each variable. |
 | `header_labels` | `NULL` | named character vector or `NULL` | Relabels column headers. |
 | `caption` | `NULL` | character or `NULL` | Adds table caption. |
-| `bold_labels` | `FALSE` | `TRUE`, `FALSE` | Displays variable label rows in bold. |
+| `bold_labels` | `TRUE` | `TRUE`, `FALSE` | Displays variable label rows in bold. This preserves the default gtregression hierarchy. |
 | `bold_levels` | `FALSE` | `TRUE`, `FALSE` | Displays level rows in bold. |
-| `remove_N`, `remove_N_obs` | `FALSE` | `TRUE`, `FALSE` | Removes sample-size columns when present. |
+| `italic_labels` | `FALSE` | `TRUE`, `FALSE` | Italicizes variable label rows. |
+| `italic_levels` | `FALSE` | `TRUE`, `FALSE` | Italicizes factor level rows. |
+| `remove_N` | `FALSE` | `TRUE`, `FALSE` | Removes displayed sample-size columns when present. |
+| `remove_N_obs` | `FALSE` | `TRUE`, `FALSE` | Removes the complete-case `N = ... observations` footnote. |
 | `remove_abbreviations` | `FALSE` | `TRUE`, `FALSE` | Removes abbreviation footnotes. |
+| `remove_adjustment_note` | `FALSE` | `TRUE`, `FALSE` | Removes the automatic adjustment note; use `caveat` for customised wording. |
 | `caveat` | `NULL` | character or `NULL` | Adds custom caveat or interpretation note. |
 
 #### Save helpers

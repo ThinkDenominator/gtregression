@@ -26,12 +26,15 @@ plot_reg(
   log_x = FALSE,
   xlim = NULL,
   breaks = NULL,
-  point_color = "#1F77B4",
-  errorbar_color = "#4C4C4C",
-  base_size = 14,
+  point_color = "#6B7280",
+  errorbar_color = "#6B7280",
+  point_size = 2.8,
+  point_stroke = 0.55,
+  ci_linewidth = 0.55,
+  base_size = 12,
   show_ref = NULL,
-  sig_color = NULL,
-  sig_errorbar_color = NULL,
+  sig_color = "#0072B2",
+  sig_errorbar_color = "#0072B2",
   alpha = 0.05,
   show_adjustment_note = TRUE
 )
@@ -65,7 +68,8 @@ plot_reg(
 
 - log_x:
 
-  Logical; if `TRUE`, use a log-scaled x-axis for non-linear models.
+  Logical. If `TRUE`, use a log-scaled x-axis for ratio measures. The
+  default `FALSE` uses a linear x-axis.
 
 - xlim:
 
@@ -77,15 +81,28 @@ plot_reg(
 
 - point_color:
 
-  Fill color for points.
+  Fill color for non-significant estimate points.
 
 - errorbar_color:
 
-  Color for error bars.
+  Color for non-significant confidence intervals.
+
+- point_size:
+
+  Diameter of estimate points in millimetres.
+
+- point_stroke:
+
+  Outline width of estimate points.
+
+- ci_linewidth:
+
+  Line width of confidence intervals.
 
 - base_size:
 
-  Base font size.
+  Base font size. The default is designed for a clear report or slide
+  figure; increase it for a single large plot.
 
 - show_ref:
 

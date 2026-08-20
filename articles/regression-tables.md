@@ -61,35 +61,8 @@ birthwt_uni <- uni_reg(
   theme = clinical
 )
 
-birthwt_uni$table
+birthwt_uni
 ```
-
-| Characteristic | N | OR (95% CI) | p-value |
-|----|----|----|----|
-| Maternal age | 189 | 0.95 (0.89-1.01) | 0.105 |
-| Maternal weight | 189 | 0.99 (0.97-1.00) | 0.023 |
-| Maternal race | 189 |  |  |
-| White |  | Ref. |  |
-|  Black |  | 2.33 (0.94-5.77) | 0.068 |
-|  Other |  | 1.89 (0.96-3.74) | 0.067 |
-| Smoking during pregnancy | 189 |  |  |
-| No |  | Ref. |  |
-|  Yes |  | 2.02 (1.08-3.78) | 0.028 |
-| Hypertension | 189 |  |  |
-| No |  | Ref. |  |
-|  Yes |  | 3.37 (1.02-11.09) | 0.046 |
-| Uterine irritability | 189 |  |  |
-| No |  | Ref. |  |
-|  Yes |  | 2.58 (1.14-5.83) | 0.023 |
-| Previous preterm labour | 189 |  |  |
-| No |  | Ref. |  |
-|  Yes |  | 4.32 (1.92-9.73) | \<0.001 |
-| First trimester visits | 189 |  |  |
-| None |  | Ref. |  |
-|  One |  | 0.54 (0.25-1.20) | 0.130 |
-|  Two or more |  | 0.71 (0.32-1.56) | 0.394 |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |
-| Ref. = reference category. |  |  |  |
 
 ## Multivariable Models
 
@@ -109,29 +82,8 @@ birthwt_full <- multi_reg(
   theme = clinical
 )
 
-birthwt_full$table
+birthwt_full
 ```
-
-| Characteristic | Adjusted OR (95% CI) | p-value |
-|----|----|----|
-| Maternal age | 0.98 (0.92–1.05) | 0.606 |
-| Maternal weight | 0.98 (0.97–1.00) | 0.018 |
-| Maternal race |  |  |
-| White | Ref. |  |
-|  Black | 3.60 (1.28–10.10) | 0.015 |
-|  Other | 2.46 (1.05–5.77) | 0.038 |
-| Smoking during pregnancy |  |  |
-| No | Ref. |  |
-|  Yes | 2.79 (1.29–6.05) | 0.009 |
-| Hypertension |  |  |
-| No | Ref. |  |
-|  Yes | 6.41 (1.66–24.72) | 0.007 |
-| Uterine irritability |  |  |
-| No | Ref. |  |
-|  Yes | 2.45 (1.02–5.90) | 0.046 |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| N = 189 complete observations included in the multivariable model |  |  |
 
 ## Exposure-Specific Adjusted Models
 
@@ -151,31 +103,8 @@ birthwt_multi <- multi_reg(
   theme = striped
 )
 
-birthwt_multi$table
+birthwt_multi
 ```
-
-| Characteristic | Adjusted OR (95% CI) | p-value |
-|----|----|----|
-| Smoking during pregnancy |  |  |
-| No | Ref. |  |
-|  Yes | 2.87 (1.36–6.04) | 0.006 |
-| Hypertension |  |  |
-| No | Ref. |  |
-|  Yes | 5.99 (1.51–23.79) | 0.011 |
-| Uterine irritability |  |  |
-| No | Ref. |  |
-|  Yes | 2.27 (0.98–5.24) | 0.055 |
-| Previous preterm labour |  |  |
-| No | Ref. |  |
-|  Yes | 4.49 (1.90–10.58) | \<0.001 |
-| First trimester visits |  |  |
-| None | Ref. |  |
-|  One | 0.60 (0.26–1.38) | 0.230 |
-|  Two or more | 0.86 (0.38–1.96) | 0.717 |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for age, lwt, and race |  |  |
-| N = 189 complete observations included across outcome, exposure, and adjustment variables |  |  |
 
 The adjustment variables are recorded in a compact table footnote, so
 the result is ready for manuscript-style reporting without making the
@@ -261,25 +190,8 @@ uni_reg(
   outcome = low,
   exposures = c("smoke", "ht", "ui", "ptl_cat"),
   approach = logbinomial
-)$table
+)
 ```
-
-| Characteristic | N | RR (95% CI) | p-value |
-|----|----|----|----|
-| Smoking during pregnancy | 189 |  |  |
-| No |  | Ref. |  |
-|  Yes |  | 1.61 (1.06-2.44) | 0.026 |
-| Hypertension | 189 |  |  |
-| No |  | Ref. |  |
-|  Yes |  | 1.99 (1.17-3.37) | 0.011 |
-| Uterine irritability | 189 |  |  |
-| No |  | Ref. |  |
-|  Yes |  | 1.79 (1.15-2.79) | 0.011 |
-| Previous preterm labour | 189 |  |  |
-| No |  | Ref. |  |
-|  Yes |  | 2.33 (1.57-3.45) | \<0.001 |
-| Abbreviations: RR = Risk Ratio; CI = Confidence Interval. |  |  |  |
-| Ref. = reference category. |  |  |  |
 
 Use `approach = firth` when a binary-outcome logistic model has sparse
 cells, very wide intervals, or separation concerns. The output remains
@@ -306,19 +218,8 @@ multi_reg(
   outcome = HG,
   exposures = c(NV, PI, EH),
   approach = firth
-)$table
+)
 ```
-
-| Characteristic | Adjusted OR (95% CI) | p-value |
-|----|----|----|
-| NV |  |  |
-| Absent | Ref. |  |
-|  Present | 18.71 (1.84–2,577.65) | 0.009 |
-| PI | 0.97 (0.88–1.04) | 0.387 |
-| EH | 0.07 (0.01–0.29) | \<0.001 |
-| Abbreviations: OR = Odds Ratio from Firth penalized logistic regression; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| N = 79 complete observations included in the multivariable model |  |  |
 
 ## Cox Survival Models
 
@@ -355,24 +256,8 @@ lung_hr <- cox_reg(
   theme = clinical
 )
 
-lung_hr$table
+lung_hr
 ```
-
-| Characteristic | N | HR (95% CI) | p-value |
-|----|----|----|----|
-| Treatment group | 137 |  |  |
-| Standard treatment |  | Ref. |  |
-|  Test treatment |  | 1.02 (0.71–1.45) | 0.922 |
-| Cancer cell type | 137 |  |  |
-| squamous |  | Ref. |  |
-|  smallcell |  | 2.72 (1.66–4.47) | \<0.001 |
-|  adeno |  | 3.15 (1.77–5.59) | \<0.001 |
-|  large |  | 1.26 (0.73–2.17) | 0.407 |
-| Karnofsky performance score | 137 | 0.97 (0.96–0.98) | \<0.001 |
-| Age | 137 | 1.01 (0.99–1.03) | 0.433 |
-| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |  |
-| Ref. = reference category. |  |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |  |
 
 ``` r
 
@@ -386,29 +271,7 @@ lung_adj_hr <- cox_reg(
   theme = striped
 )
 
-lung_adj_hr$table
-```
-
-| Characteristic | Adjusted HR (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 1.21 (0.84–1.74) | 0.307 |
-| Cancer cell type |  |  |
-| squamous | Ref. |  |
-|  smallcell | 2.06 (1.26–3.39) | 0.004 |
-|  adeno | 3.23 (1.82–5.74) | \<0.001 |
-|  large | 1.38 (0.80–2.37) | 0.244 |
-| Prior therapy |  |  |
-| No | Ref. |  |
-|  Yes | 0.96 (0.64–1.42) | 0.820 |
-| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for age and karno |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
-
-``` r
-
+lung_adj_hr
 lung_adj_hr$model_stats
 ```
 
@@ -431,20 +294,8 @@ cox_interaction <- cox_reg(
   interaction = trt*prior
 )
 
-cox_interaction$table
+cox_interaction
 ```
-
-| Characteristic | Adjusted HR (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 1.52 (0.98–2.36) | 0.061 |
-|  trtTest treatment x priorYes | 0.47 (0.21–1.06) | 0.070 |
-| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for age and karno |  |  |
-| Model includes interaction term: trt\*prior |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
 
 ## Parametric Survival Models
 
@@ -468,25 +319,8 @@ lung_time_ratio <- surv_reg(
   theme = clinical
 )
 
-lung_time_ratio$table
+lung_time_ratio
 ```
-
-| Characteristic | N | Time Ratio (95% CI) | p-value |
-|----|----|----|----|
-| Treatment group | 137 |  |  |
-| Standard treatment |  | Ref. |  |
-|  Test treatment |  | 1.05 (0.70–1.58) | 0.818 |
-| Cancer cell type | 137 |  |  |
-| squamous |  | Ref. |  |
-|  smallcell |  | 0.34 (0.21–0.54) | \<0.001 |
-|  adeno |  | 0.30 (0.17–0.51) | \<0.001 |
-|  large |  | 0.77 (0.45–1.32) | 0.339 |
-| Karnofsky performance score | 137 | 1.04 (1.03–1.05) | \<0.001 |
-| Age | 137 | 0.99 (0.97–1.01) | 0.284 |
-| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |  |
-| Distribution: weibull. |  |  |  |
-| Ref. = reference category. |  |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |  |
 
 ``` r
 
@@ -501,30 +335,7 @@ lung_adj_time_ratio <- surv_reg(
   theme = striped
 )
 
-lung_adj_time_ratio$table
-```
-
-| Characteristic | Adjusted Time Ratio (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 0.87 (0.60–1.27) | 0.468 |
-| Cancer cell type |  |  |
-| squamous | Ref. |  |
-|  smallcell | 0.58 (0.36–0.93) | 0.025 |
-|  adeno | 0.53 (0.31–0.91) | 0.022 |
-|  large | 1.15 (0.67–1.99) | 0.609 |
-| Prior therapy |  |  |
-| No | Ref. |  |
-|  Yes | 1.03 (0.68–1.57) | 0.885 |
-| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |
-| Distribution: lognormal. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for age and karno |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
-
-``` r
-
+lung_adj_time_ratio
 lung_adj_time_ratio$model_stats
 ```
 
@@ -545,21 +356,8 @@ surv_interaction <- surv_reg(
   distribution = weibull
 )
 
-surv_interaction$table
+surv_interaction
 ```
-
-| Characteristic | Adjusted Time Ratio (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 0.68 (0.44–1.04) | 0.073 |
-|  trtTest treatment x priorYes | 2.29 (1.03–5.09) | 0.042 |
-| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |
-| Distribution: weibull. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for age and karno |  |  |
-| Model includes interaction term: trt\*prior |  |  |
-| Event variable: status (1 = event, 0 = censored after internal coding). |  |  |
 
 ## Continuous Outcomes
 
@@ -575,29 +373,8 @@ birthwt_linear <- multi_reg(
   approach = linear
 )
 
-birthwt_linear$table
+birthwt_linear
 ```
-
-| Characteristic | Adjusted Beta (95% CI) | p-value |
-|----|----|----|
-| Maternal age | -4.67 (-22.97–13.63) | 0.617 |
-| Maternal weight | 4.40 (1.05–7.74) | 0.011 |
-| Maternal race |  |  |
-| White | Ref. |  |
-|  Black | -490.64 (-783.04–-198.23) | 0.001 |
-|  Other | -356.61 (-579.77–-133.46) | 0.002 |
-| Smoking during pregnancy |  |  |
-| No | Ref. |  |
-|  Yes | -360.71 (-564.60–-156.82) | \<0.001 |
-| Hypertension |  |  |
-| No | Ref. |  |
-|  Yes | -590.03 (-982.59–-197.47) | 0.004 |
-| Uterine irritability |  |  |
-| No | Ref. |  |
-|  Yes | -528.53 (-793.30–-263.77) | \<0.001 |
-| Abbreviations: Beta = Linear regression coefficient; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| N = 189 complete observations included in the multivariable model |  |  |
 
 ## What To Inspect
 

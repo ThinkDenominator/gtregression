@@ -34,7 +34,6 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../index.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
@@ -45,11 +44,11 @@
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Interpret</a></li>
     <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
   </ul>
 </li>
@@ -98,8 +97,13 @@ output.</li>
 <p>Each analysis tab includes a <strong>Code</strong> panel with a copy
 button. This is important: the app helps users learn the package while
 creating reproducible code they can edit, save, and share.</p>
-<p>Screenshots can be added later if needed. Suggested screenshot files
-are: <code>man/figures/app-data.png</code>,
+<blockquote>
+<p><strong>Guide update:</strong> annotated screenshots are being added
+to this manual. The written workflow and generated-code examples are
+current; visual callouts will follow as the screenshots are
+uploaded.</p>
+</blockquote>
+<p>Suggested screenshot files are <code>man/figures/app-data.png</code>,
 <code>man/figures/app-regression.png</code>,
 <code>man/figures/app-survival.png</code>, and
 <code>man/figures/app-visualise-export.png</code>.</p>
@@ -193,9 +197,9 @@ to install.</p>
 <strong>Data</strong>: load a built-in dataset or import CSV, Excel,
 RDS, Stata, SPSS, or SAS data.</li>
 <li>
-<strong>Data Prep</strong>: review the data and explicitly choose
-<strong>Use original data</strong> or <strong>Use prepared
-data</strong>.</li>
+<strong>Data Prep</strong>: review the data only when changes are
+needed. The original data are active automatically; choose <strong>Use
+prepared data</strong> after applying changes.</li>
 <li>
 <strong>Descriptive</strong>: inspect variables and create a
 baseline table.</li>
@@ -222,68 +226,17 @@ time. For example, run univariable regression first, then decide which
 variables to keep, then run the multivariable model.</p>
 </div>
 <div class="section level3">
-<h3 id="simple-and-advanced-modes">Simple and Advanced Modes<a class="anchor" aria-label="anchor" href="#simple-and-advanced-modes"></a>
+<h3 id="core-and-additional-options">Core and Additional Options<a class="anchor" aria-label="anchor" href="#core-and-additional-options"></a>
 </h3>
-<p>The app starts in <strong>Simple</strong> mode. This is the best
-setting for most users, especially when they are learning the package or
-running a standard analysis. Simple mode keeps the screen focused on the
-common workflow:</p>
-<ul>
-<li>load data;</li>
-<li>create a descriptive table;</li>
-<li>run regression or survival models;</li>
-<li>visualise results;</li>
-<li>merge and export outputs;</li>
-<li>copy reproducible code.</li>
-</ul>
-<p>In Simple mode, the app hides technical options that are not needed
-for routine table generation. This keeps the interface cleaner and helps
-users move through the analysis without feeling they need to understand
-every modelling argument.</p>
-<p>Switch to <strong>Advanced</strong> mode when extra control is needed
-for diagnostics, manuscript polishing, or reviewer requests. Advanced
-mode reveals options such as:</p>
-<ul>
-<li>custom descriptive statistic overrides;</li>
-<li>model statistics for diagnostics and model comparison;</li>
-<li>additional Kaplan-Meier display controls;</li>
-<li>forest plot confidence interval column width;</li>
-<li>forest plot x-axis limits and tick marks;</li>
-<li>export size tuning for wider or longer outputs.</li>
-</ul>
-<table class="table">
-<colgroup>
-<col width="33%">
-<col width="33%">
-<col width="33%">
-</colgroup>
-<thead><tr class="header">
-<th>Mode</th>
-<th>Best for</th>
-<th>What users see</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>Simple</td>
-<td>Beginners, teaching, routine analysis, quick manuscript tables</td>
-<td>Core workflow controls only</td>
-</tr>
-<tr class="even">
-<td>Advanced</td>
-<td>Experienced users, diagnostics, publication polishing, complex
-outputs</td>
-<td>Extra modelling, plotting, and export controls</td>
-</tr>
-</tbody>
-</table>
-<p>A practical rule is:</p>
-<ul>
-<li>use <strong>Simple</strong> mode to build the analysis;</li>
-<li>switch to <strong>Advanced</strong> mode only when the output needs
-fine-tuning.</li>
-</ul>
-<p>This design keeps the app friendly for new users while still allowing
-full control when the analysis becomes more technical.</p>
+<p>The app does not use a global Simple/Advanced switch. Each tab
+presents its core workflow first and keeps uncommon controls in a local
+<strong>Additional options</strong> section. This keeps the interface
+calm without hiding package features behind a separate experience-level
+choice.</p>
+<p>For example, the Descriptive tab keeps grouping, percentage,
+missing-value, binary-display, and numeric-statistic choices together.
+The Survival tab keeps the less-common time-break interval under
+<strong>Additional KM options</strong>.</p>
 </div>
 <div class="section level3">
 <h3 id="quick-start-templates">Quick-Start Templates<a class="anchor" aria-label="anchor" href="#quick-start-templates"></a>
@@ -450,8 +403,9 @@ dataset;</li>
 <li>
 <strong>Download code</strong> saves the preparation recipe.</li>
 </ul>
-<p>Loading data does not silently decide the analysis dataset. Before
-any model or table can run, explicitly select one of:</p>
+<p>The original dataset is active immediately after loading, so users
+can run a table or model without visiting Data Prep. Select a different
+analysis dataset only when preparation is wanted:</p>
 <ul>
 <li>
 <strong>Use original data</strong>: subsequent analyses use the
@@ -460,8 +414,19 @@ untouched imported data;</li>
 <strong>Use prepared data</strong>: subsequent analyses use the
 current prepared version.</li>
 </ul>
-<p>If preparation is changed later, review the tab and make the choice
-again. The generated workflow records that choice and includes the
+<p>Data Prep is optional. Use <strong>Set display label</strong> when an
+internal variable name such as <code>age</code> should remain unchanged
+but publication output should show a clearer name such as <em>Maternal
+age</em>. Labels are reversible, are retained in prepared-data
+downloads, and are included in the reusable code.</p>
+<p>For a categorical variable, the same page also shows its observed
+categories. Edit a category display label such as <code>0</code> to
+<code>No</code> or <code>1</code> to <code>Yes</code> there. This
+creates a labelled factor only when a category label changes, retaining
+a clean and reproducible analysis dataset from the outset.</p>
+<p>If preparation is changed later, choose <strong>Use prepared
+data</strong> when those latest changes should be used for subsequent
+analyses. The generated workflow records that choice and includes the
 preparation operations when prepared data are selected.</p>
 </div>
 <div class="section level3">
@@ -469,6 +434,11 @@ preparation operations when prepared data are selected.</p>
 </h3>
 <p>Use the <strong>Descriptive</strong> tab to create baseline tables
 with <code><a href="../reference/descriptive_table.html">descriptive_table()</a></code>.</p>
+<p>Choose <strong>Group by</strong> first: leave it as <code>None</code>
+for one overall table, or select the comparison variable before choosing
+the variables to summarise. Then choose column or row percentages,
+overall-column placement, missing-value display, and binary-category
+display to suit the reporting question.</p>
 <p>Typical steps:</p>
 <ol style="list-style-type: decimal">
 <li>Select variables in <strong>Exposures</strong>.</li>
@@ -521,13 +491,14 @@ overrides such as:</p>
 tables:</p>
 <ul>
 <li>logistic regression;</li>
-<li>Firth logistic regression;</li>
-<li>log-binomial regression;</li>
-<li>Poisson regression;</li>
-<li>robust Poisson regression;</li>
-<li>negative binomial regression;</li>
-<li>linear regression.</li>
 </ul>
+<p>Choose the outcome before the exposures. Run univariable models
+first, then move clinically justified variables into the multivariable
+model. The app does not select adjustment variables automatically: use
+the study question, a DAG, and clinical knowledge. - Firth logistic
+regression; - log-binomial regression; - Poisson regression; - robust
+Poisson regression; - negative binomial regression; - linear
+regression.</p>
 <p>The recommended order is:</p>
 <ol style="list-style-type: decimal">
 <li>Choose the outcome.</li>
@@ -592,9 +563,11 @@ clearer when <code>show_ref = TRUE</code>.</p>
 <div class="section level4">
 <h4 id="model-statistics">Model Statistics<a class="anchor" aria-label="anchor" href="#model-statistics"></a>
 </h4>
-<p>The <strong>Store model statistics</strong> option attaches fit
-statistics such as AIC, BIC, log-likelihood, pseudo R-squared where
-appropriate, and N.</p>
+<p>Model statistics are stored by default. The <strong>Model
+Stats</strong> tab then shows fit statistics such as AIC, BIC,
+log-likelihood, pseudo R-squared where appropriate, and N. They are not
+added to the publication-ready regression table. Clear <strong>Store
+model statistics</strong> before fitting when they are not needed.</p>
 <p>For logistic, Poisson, Cox, and parametric survival models, ordinary
 linear <code>R2</code> is not usually available. In those settings,
 pseudo R-squared or survival model statistics are more appropriate.</p>
@@ -637,10 +610,14 @@ readable.</p>
 <p>Use the <strong>Survival</strong> tab for:</p>
 <ul>
 <li>Cox regression with <code><a href="../reference/cox_reg.html">cox_reg()</a></code>;</li>
-<li>parametric survival regression with <code><a href="../reference/surv_reg.html">surv_reg()</a></code>;</li>
-<li>Kaplan-Meier curves with <code><a href="../reference/km_plot.html">km_plot()</a></code>;</li>
-<li>log-rank tests and survival summaries.</li>
 </ul>
+<p>Choose Cox regression for hazard ratios when no baseline-hazard
+distribution is specified. Choose parametric survival regression when a
+distributional model and time-ratio interpretation are appropriate.
+Kaplan-Meier plots describe the observed curves and should not be used
+as a substitute for either fitted model. - parametric survival
+regression with <code><a href="../reference/surv_reg.html">surv_reg()</a></code>; - Kaplan-Meier curves with
+<code><a href="../reference/km_plot.html">km_plot()</a></code>; - log-rank tests and survival summaries.</p>
 <p>At the top of the workspace, choose <strong>Cox regression</strong>
 or <strong>Parametric survival</strong>. The app shows one model
 workflow at a time: Cox mode hides the distribution control, while
@@ -746,15 +723,15 @@ later:</p>
 <h3 id="visualise-export-tab">Visualise &amp; Export Tab<a class="anchor" aria-label="anchor" href="#visualise-export-tab"></a>
 </h3>
 <p>The <strong>Visualise &amp; Export</strong> tab turns fitted results
-into tables and figures. It also provides <strong>Download complete R
-script</strong>, which saves a single
-<code>gtregression-session.R</code> file for the current session. The
-script records the selected data source, any Data Prep changes,
+into tables and figures. The top-level <strong>Session Code</strong> tab
+provides <strong>Download complete R script</strong>, which saves a
+single <code>gtregression-session.R</code> file for the current session.
+The script records the selected data source, any Data Prep changes,
 categorical reference levels, completed descriptive and modelling steps,
 visualisations, and export calls. Only analyses that have actually been
 run are included.</p>
-<p>Open <strong>Full Workflow Code</strong> to review the same script
-before downloading it. The downloaded script begins with
+<p>Open <strong>Session Code</strong> to review the same script before
+downloading it. The downloaded script begins with
 <code><a href="https://gtregression.thinkdenominator.com/">library(gtregression)</a></code> and can be edited or rerun in RStudio
 as the reproducible record of the app workflow.</p>
 <p>Choose the task from the menu across the top. The left panel then
@@ -790,8 +767,20 @@ outputs;</li>
 <li>
 <code><a href="../reference/save_forest.html">save_forest()</a></code>.</li>
 </ul>
+<div class="section level4">
+<h4 id="model-fit">Model Fit<a class="anchor" aria-label="anchor" href="#model-fit"></a>
+</h4>
+<p>The <strong>Model Fit</strong> menu exposes the full
+<code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code> choice set: <strong>Auto</strong>,
+<strong>All diagnostics</strong>, residuals versus fitted, normal Q-Q,
+scale-location, Cook’s distance, observed versus predicted, and
+calibration. Use <strong>Auto</strong> for the appropriate diagnostic
+panel. Calibration uses the chosen number of bins; the base font size
+applies to every model-fit view. The generated code and Session Code
+preserve the selected type, model name, bins, and font size.</p>
 <p>Browser plots should be treated as previews. For final output, copy
 the code into RStudio and export with explicit width and height.</p>
+</div>
 <div class="section level4">
 <h4 id="export-size-presets">Export Size Presets<a class="anchor" aria-label="anchor" href="#export-size-presets"></a>
 </h4>
@@ -832,7 +821,7 @@ on the exported file.</p>
 <div class="section level4">
 <h4 id="forest-plot-controls">Forest Plot Controls<a class="anchor" aria-label="anchor" href="#forest-plot-controls"></a>
 </h4>
-<p>These controls remain visible in both Simple and Advanced modes:</p>
+<p>These controls are available directly from the Forest Plot menu:</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -884,19 +873,22 @@ lie inside the selected limits.</p>
 <strong>HTML</strong>. HTML is the browser-ready copy; DOCX and RTF are
 editable manuscript formats. Plot previews offer <strong>PNG</strong>
 and <strong>PDF</strong>, because plots are graphics objects rather than
-HTML tables.</p>
+HTML tables. Each download is generated in Shiny’s temporary download
+location and passed to the browser. The app does not choose, overwrite,
+or write directly into a user folder; the browser handles the final save
+location.</p>
 </div>
 <div class="section level4">
-<h4 id="full-workflow-code">Full Workflow Code<a class="anchor" aria-label="anchor" href="#full-workflow-code"></a>
+<h4 id="session-code">Session Code<a class="anchor" aria-label="anchor" href="#session-code"></a>
 </h4>
-<p>The <strong>Full Workflow Code</strong> panel collects the analysis
-steps completed in the app into one script-style block. This is useful
-after a user has loaded data, run descriptive tables, fitted models, and
-created plots.</p>
+<p>The <strong>Session Code</strong> panel collects the analysis steps
+completed in the app into one script-style block. This is useful after a
+user has loaded data, run descriptive tables, fitted models, and created
+plots.</p>
 <p>The recommended behaviour is:</p>
 <ol style="list-style-type: decimal">
 <li>Run the app steps interactively.</li>
-<li>Open <strong>Full Workflow Code</strong>.</li>
+<li>Open <strong>Session Code</strong>.</li>
 <li>Click the copy button.</li>
 <li>Paste the code into RStudio.</li>
 <li>Save and edit the script as the final reproducible analysis.</li>
@@ -961,6 +953,33 @@ models are available:</p>
 <span>  width <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  height <span class="op">=</span> <span class="fl">7</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="modify-table">Modify Table<a class="anchor" aria-label="anchor" href="#modify-table"></a>
+</h4>
+<p>Choose <strong>Modify table</strong> to polish any completed
+descriptive, regression, or merged table without changing the original
+analysis result. The app creates a separate modified table that can be
+downloaded as DOCX, RTF, or HTML.</p>
+<p>All <code><a href="../reference/modify_table.html">modify_table()</a></code> options are available: variable,
+level, and header labels; a caption; bold or italic characteristic and
+level rows; removal of displayed N columns, complete-case notes,
+abbreviations, or the automatic adjustment note; and a final custom
+note. Label mappings are entered one per line:</p>
+<pre class="text"><code>age = Maternal age
+smoke: Yes = Smoker
+estimate = Adjusted OR</code></pre>
+<p>The first line changes a variable label, the second changes one
+factor level, and the third changes a visible header. The generated code
+remains available in the Visualise &amp; Export <strong>Code</strong>
+tab, while the whole reproducible workflow is available from the
+top-level <strong>Session Code</strong> tab.</p>
+<p>For a level label, the text before the colon must be the internal
+variable name, and the text between <code>:</code> and <code>=</code>
+must match the current level exactly. For example, use
+<code>smoke: Yes = Smoker</code>, not
+<code>Smoking during pregnancy: Yes = Smoker</code> after changing the
+variable’s display label.</p>
 <p><code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code> is intended for standard univariable
 and multivariable outputs. Stratified outputs are better handled
 carefully with separate <code><a href="../reference/plot_reg.html">plot_reg()</a></code> calls or forest tables,
@@ -985,7 +1004,7 @@ regression result from being combined with the currently selected
 survival analysis by accident.</p>
 <p>Use forest plots for manuscript-style effect summaries.</p>
 <p>For one regression object:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">forest_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/forest_df.html">forest_df</a></span><span class="op">(</span><span class="va">multi_result</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">forest_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/forest_reg.html">forest_reg</a></span><span class="op">(</span></span>
@@ -993,7 +1012,7 @@ survival analysis by accident.</p>
 <span>  ci_col_width <span class="op">=</span> <span class="fl">20</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>For descriptive plus crude plus adjusted results:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">forest_both</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/forest_df.html">forest_df</a></span><span class="op">(</span></span>
 <span>  <span class="va">uni_result</span>,</span>
 <span>  <span class="va">multi_result</span>,</span>
@@ -1025,7 +1044,7 @@ drawing area is narrow;</li>
 overlap.</li>
 </ul>
 <p>Example for a crowded odds-ratio forest plot:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/forest_reg.html">forest_reg</a></span><span class="op">(</span></span>
 <span>  <span class="va">forest_both</span>,</span>
 <span>  ci_col_width <span class="op">=</span> <span class="fl">28</span>,</span>
@@ -1034,7 +1053,7 @@ overlap.</li>
 <span><span class="op">)</span></span></code></pre></div>
 <p>For a very long table, export instead of judging the small browser
 preview:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/save_forest.html">save_forest</a></span><span class="op">(</span></span>
 <span>  <span class="va">forest_both_plot</span>,</span>
 <span>  filename <span class="op">=</span> <span class="st">"large_forest_plot.pdf"</span>,</span>
@@ -1320,7 +1339,7 @@ HTML.</p>
 </h4>
 <p>Use <code><a href="../reference/select_models.html">select_models()</a></code> when exploring candidate model
 paths:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">selected_models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_models.html">select_models</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
@@ -1331,7 +1350,7 @@ paths:</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p>The app builds the fitted objects before calling
 <code><a href="../reference/compare_models.html">compare_models()</a></code>. The equivalent R workflow is:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">clinical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multi_reg.html">multi_reg</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
@@ -1355,7 +1374,7 @@ paths:</p>
 <p>The comparison output warns users when models are fitted on different
 analysis samples or when likelihood-ratio comparisons need caution.</p>
 <p>For Cox models, the equivalent generated workflow is:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">treatment_only</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cox_reg.html">cox_reg</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">lung_data</span>,</span>
 <span>  time <span class="op">=</span> <span class="va">time</span>,</span>
@@ -1406,7 +1425,7 @@ cleaner.</p>
 <code><a href="../reference/interaction_models.html">interaction_models()</a></code> as screening aids, not as replacements
 for study design and subject-matter judgement.</p>
 <p>Example confounder check:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">confounder_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/identify_confounder.html">identify_confounder</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
@@ -1416,7 +1435,7 @@ for study design and subject-matter judgement.</p>
 <span>  format <span class="op">=</span> <span class="st">"flextable"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Example interaction check:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">interaction_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interaction_models.html">interaction_models</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
@@ -1449,7 +1468,7 @@ diagram.</p>
 <li>Copy the code.</li>
 </ol>
 <p>Example:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mediation_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mediation_analysis.html">mediation_analysis</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  exposure <span class="op">=</span> <span class="st">"obesity"</span>,</span>
@@ -1473,7 +1492,7 @@ assumptions are defensible.</p>
 <p>The app provides download buttons for tables and plots. For final
 publication work, copied code gives more control.</p>
 <p>Tables:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/save_table.html">save_table</a></span><span class="op">(</span><span class="va">merged_table</span>, filename <span class="op">=</span> <span class="st">"table_1.docx"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/save_table.html">save_table</a></span><span class="op">(</span><span class="va">merged_table</span>, filename <span class="op">=</span> <span class="st">"table_1.rtf"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/save_table.html">save_table</a></span><span class="op">(</span><span class="va">merged_table</span>, filename <span class="op">=</span> <span class="st">"table_1.html"</span><span class="op">)</span></span></code></pre></div>
@@ -1483,11 +1502,11 @@ browser-friendly copy of the same table. Direct table PDF export is
 intentionally not shown in the app because flextable output is more
 reliable through DOCX, RTF, or HTML.</p>
 <p>Plots:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/save_plot.html">save_plot</a></span><span class="op">(</span><span class="va">reg_plot</span>, filename <span class="op">=</span> <span class="st">"regression_plot.png"</span>, width <span class="op">=</span> <span class="fl">9</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/save_plot.html">save_plot</a></span><span class="op">(</span><span class="va">km_result</span>, filename <span class="op">=</span> <span class="st">"km_plot.png"</span>, width <span class="op">=</span> <span class="fl">8</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
 <p>Forest plots:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/save_forest.html">save_forest</a></span><span class="op">(</span></span>
 <span>  <span class="va">forest_both_plot</span>,</span>
 <span>  filename <span class="op">=</span> <span class="st">"forest_plot.pdf"</span>,</span>
@@ -1505,10 +1524,10 @@ testing, and CRAN-safe documentation.</p>
 <h4 id="the-app-does-not-open">The App Does Not Open<a class="anchor" aria-label="anchor" href="#the-app-does-not-open"></a>
 </h4>
 <p>Check that <code>shiny</code> is installed:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"shiny"</span><span class="op">)</span></span></code></pre></div>
 <p>Then run:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gtregression_app.html">gtregression_app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
@@ -1518,14 +1537,14 @@ testing, and CRAN-safe documentation.</p>
 RStudio Viewer size. A cramped preview does not always mean the exported
 figure will be cramped.</p>
 <p>For final outputs, copy the code and export with a wider canvas:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/save_forest.html">save_forest</a></span><span class="op">(</span><span class="va">forest_plot</span>, <span class="st">"forest_plot.pdf"</span>, width <span class="op">=</span> <span class="fl">16</span>, height <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="forest-plot-x-axis-labels-overlap">Forest Plot X-Axis Labels Overlap<a class="anchor" aria-label="anchor" href="#forest-plot-x-axis-labels-overlap"></a>
 </h4>
 <p>Control the axis explicitly:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/forest_reg.html">forest_reg</a></span><span class="op">(</span></span>
 <span>  <span class="va">forest_data</span>,</span>
 <span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">20</span><span class="op">)</span>,</span>
@@ -1537,20 +1556,20 @@ figure will be cramped.</p>
 <h4 id="forest-plot-columns-feel-too-narrow">Forest Plot Columns Feel Too Narrow<a class="anchor" aria-label="anchor" href="#forest-plot-columns-feel-too-narrow"></a>
 </h4>
 <p>Increase the confidence interval column width:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/forest_reg.html">forest_reg</a></span><span class="op">(</span></span>
 <span>  <span class="va">forest_data</span>,</span>
 <span>  ci_col_width <span class="op">=</span> <span class="fl">28</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Also increase the saved output width:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/save_forest.html">save_forest</a></span><span class="op">(</span><span class="va">forest_plot</span>, <span class="st">"forest_plot.pdf"</span>, width <span class="op">=</span> <span class="fl">16</span>, height <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="kaplan-meier-curves-look-almost-flat">Kaplan-Meier Curves Look Almost Flat<a class="anchor" aria-label="anchor" href="#kaplan-meier-curves-look-almost-flat"></a>
 </h4>
 <p>If survival probabilities stay high, use y-axis limits:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/km_plot.html">km_plot</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  time <span class="op">=</span> <span class="st">"time"</span>,</span>
@@ -1561,7 +1580,7 @@ figure will be cramped.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p>If <code>y_percent = FALSE</code>, use probability limits
 instead:</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/km_plot.html">km_plot</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  time <span class="op">=</span> <span class="st">"time"</span>,</span>
@@ -1575,7 +1594,7 @@ instead:</p>
 <h4 id="merged-tables-do-not-align-as-expected">Merged Tables Do Not Align as Expected<a class="anchor" aria-label="anchor" href="#merged-tables-do-not-align-as-expected"></a>
 </h4>
 <p>Use reference rows in regression tables:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">uni_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/uni_reg.html">uni_reg</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
@@ -1584,17 +1603,17 @@ instead:</p>
 <span>  show_ref <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Then rerun the merged table:</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/merge_tables.html">merge_tables</a></span><span class="op">(</span><span class="va">desc_result</span>, <span class="va">uni_result</span>, <span class="va">multi_result</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="chrome-or-browser-crashes">Chrome or Browser Crashes<a class="anchor" aria-label="anchor" href="#chrome-or-browser-crashes"></a>
 </h4>
 <p>Use the RStudio Viewer where available by running:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gtregression_app.html">gtregression_app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>If the browser keeps causing problems, run:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gtregression_app.html">gtregression_app</a></span><span class="op">(</span>launch.browser <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>and open the printed local Shiny URL manually in another browser.</p>
 </div>
@@ -1617,7 +1636,7 @@ running <strong>Compare models</strong>;</li>
 <h3 id="beginner-case-study-birth-weight">Beginner Case Study: Birth Weight<a class="anchor" aria-label="anchor" href="#beginner-case-study-birth-weight"></a>
 </h3>
 <p>This example mirrors a common app workflow.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gtregression.thinkdenominator.com/">gtregression</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>

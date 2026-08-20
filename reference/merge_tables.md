@@ -5,7 +5,12 @@ Merge gtregression tables and preserve structure and notes
 ## Usage
 
 ``` r
-merge_tables(..., spanners = NULL, theme = "minimal")
+merge_tables(
+  ...,
+  spanners = NULL,
+  theme = "minimal",
+  format = c("flextable", "gt")
+)
 ```
 
 ## Arguments
@@ -23,9 +28,29 @@ merge_tables(..., spanners = NULL, theme = "minimal")
 
   Merge theme preset or vector of primitives.
 
+- format:
+
+  Output table format. One of `"flextable"` (default) or `"gt"`. The
+  merged display is rebuilt in this format, independently of the formats
+  used by the input tables.
+
 ## Value
 
 A merged table object of class `c("gtregression", "merged_table", ...)`.
+
+## Details
+
+Binary variables should use the same row display across all input
+tables. For a descriptive, univariable, and multivariable merge, the
+clearest publication layout is usually `show_dichotomous = "all_levels"`
+in
+[`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md)
+and `show_ref = TRUE` in each regression function. Mixing these settings
+can create additional binary rows; in that situation `merge_tables()`
+issues a warning with the compatible settings.
+
+Footnotes created by each input table are retained unchanged. Exact
+duplicate notes are shown once in the merged table.
 
 ## Examples
 

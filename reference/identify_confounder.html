@@ -17,8 +17,7 @@ effect modifiers for one or more exposures."><link rel="stylesheet" href="https:
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html">Get started</a></li>
-<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
@@ -27,11 +26,11 @@ effect modifiers for one or more exposures."><link rel="stylesheet" href="https:
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Interpret</a></li>
     <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -182,6 +181,13 @@ effect modification should be interpreted using subject-matter knowledge,
 study design, and causal diagrams such as DAGs. Automated change-in-estimate
 and interaction checks should not be used as the sole basis for model
 adjustment.</p>
+<p>For each exposure-candidate pair, the interaction screen fits
+<code>outcome ~ exposure + potential_confounder +
+exposure:potential_confounder</code>. It does not adjust for other covariates.
+Consequently, the reported interaction p-value is a candidate-only screening
+result, not a final adjusted interaction analysis. Use
+<code>interaction_models(covariates = ...)</code> when testing a planned,
+covariate-adjusted interaction.</p>
 <p>Use this function when you want to screen one or more candidate variables and
 organise crude, adjusted, Mantel-Haenszel, and effect-modification signals in
 one place. For a focused comparison of models with and without a planned
@@ -210,16 +216,6 @@ exposure-by-modifier interaction term, use <code><a href="interaction_models.htm
 <span class="r-in"><span>  potential_confounder <span class="op">=</span> <span class="va">race</span>,</span></span>
 <span class="r-in"><span>  approach <span class="op">=</span> <span class="va">logit</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Confounder and effect-modifier screening</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 13</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   exposure candidate crude_est adjusted_est mh_est percent_change</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> smoke    race           2.02         3.05   3.09           51.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 7 more variables: percent_change_model &lt;dbl&gt;, percent_change_mh &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   is_confounder &lt;lgl&gt;, interaction_p &lt;dbl&gt;, is_effect_modifier &lt;lgl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   decision &lt;chr&gt;, recommendation &lt;chr&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Use `$table` for the formatted display table.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">lung_data</span> <span class="op">&lt;-</span> <span class="va">data_lungcancer</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span></span>
@@ -236,16 +232,6 @@ exposure-by-modifier interaction term, use <code><a href="interaction_models.htm
 <span class="r-in"><span>  potential_confounder <span class="op">=</span> <span class="va">prior</span>,</span></span>
 <span class="r-in"><span>  approach <span class="op">=</span> <span class="va">cox</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Confounder and effect-modifier screening</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 13</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   exposure candidate crude_est adjusted_est mh_est percent_change</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> trt      prior          1.02         1.03     <span style="color: #BB0000;">NA</span>           0.84</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 7 more variables: percent_change_model &lt;dbl&gt;, percent_change_mh &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   is_confounder &lt;lgl&gt;, interaction_p &lt;dbl&gt;, is_effect_modifier &lt;lgl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   decision &lt;chr&gt;, recommendation &lt;chr&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Use `$table` for the formatted display table.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -24,7 +24,7 @@
 <url><loc>https://gtregression.thinkdenominator.com/reference/check_ph.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/compare_models.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/cox_reg.html</loc></url>
-<url><loc>https://gtregression.thinkdenominator.com/reference/data_PimaIndiansDiabetes.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/data_SynthDiabetes.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/data_birthwt.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/data_diabetes_mediation.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/data_endometrial.html</loc></url>
@@ -64,6 +64,7 @@
 <url><loc>https://gtregression.thinkdenominator.com/reference/plot_reg_combine.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/plot_surv_fit.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/print.gtregression.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/print.gtregression_reg_check.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/rmst_table.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/save_docx.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/save_forest.html</loc></url>

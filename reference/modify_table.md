@@ -20,11 +20,14 @@ modify_table(
   level_labels = NULL,
   header_labels = NULL,
   caption = NULL,
-  bold_labels = FALSE,
+  bold_labels = TRUE,
   bold_levels = FALSE,
+  italic_labels = FALSE,
+  italic_levels = FALSE,
   remove_N = FALSE,
   remove_N_obs = FALSE,
   remove_abbreviations = FALSE,
+  remove_adjustment_note = FALSE,
   caveat = NULL
 )
 ```
@@ -56,11 +59,20 @@ modify_table(
 
 - bold_labels:
 
-  Logical; bold variable (header) rows in the body.
+  Logical; bold variable (header) rows in the body. Defaults to `TRUE`
+  to preserve the package table hierarchy.
 
 - bold_levels:
 
   Logical; bold factor level rows in the body.
+
+- italic_labels:
+
+  Logical; italicize variable (header) rows in the body.
+
+- italic_levels:
+
+  Logical; italicize factor level rows in the body.
 
 - remove_N:
 
@@ -76,6 +88,11 @@ modify_table(
 - remove_abbreviations:
 
   Logical; if `TRUE`, removes the Abbreviations footnote line.
+
+- remove_adjustment_note:
+
+  Logical; if `TRUE`, removes the automatic `Adjusted for ...` footnote.
+  Use `caveat` to add customised wording.
 
 - caveat:
 

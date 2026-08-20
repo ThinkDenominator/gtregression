@@ -19,8 +19,7 @@ multi_reg(), cox_reg(), or surv_reg()."><link rel="stylesheet" href="https://thi
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html">Get started</a></li>
-<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-workflows"><li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
@@ -29,11 +28,11 @@ multi_reg(), cox_reg(), or surv_reg()."><link rel="stylesheet" href="https://thi
     <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
     <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
     <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
     <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
     <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
     <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Interpret</a></li>
     <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -67,12 +66,15 @@ regression objects such as crude and adjusted outputs from <code><a href="uni_re
 <span>  ref_line <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  order_y <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  log_x <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  point_color <span class="op">=</span> <span class="st">"#1F77B4"</span>,</span>
-<span>  errorbar_color <span class="op">=</span> <span class="st">"#4C4C4C"</span>,</span>
-<span>  base_size <span class="op">=</span> <span class="fl">14</span>,</span>
+<span>  point_color <span class="op">=</span> <span class="st">"#6B7280"</span>,</span>
+<span>  errorbar_color <span class="op">=</span> <span class="st">"#6B7280"</span>,</span>
+<span>  point_size <span class="op">=</span> <span class="fl">2.8</span>,</span>
+<span>  point_stroke <span class="op">=</span> <span class="fl">0.55</span>,</span>
+<span>  ci_linewidth <span class="op">=</span> <span class="fl">0.55</span>,</span>
+<span>  base_size <span class="op">=</span> <span class="fl">12</span>,</span>
 <span>  show_ref <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sig_color <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sig_errorbar_color <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sig_color <span class="op">=</span> <span class="st">"#0072B2"</span>,</span>
+<span>  sig_errorbar_color <span class="op">=</span> <span class="st">"#0072B2"</span>,</span>
 <span>  xlim_uni <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  breaks_uni <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  xlim_multi <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -114,15 +116,28 @@ linear models and 1 otherwise.</p></dd>
 
 
 <dt id="arg-log-x">log_x<a class="anchor" aria-label="anchor" href="#arg-log-x"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, uses log x-axis for non-linear models.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, use a log-scaled x-axis for ratio
+measures. The default <code>FALSE</code> uses a linear x-axis.</p></dd>
 
 
 <dt id="arg-point-color-errorbar-color">point_color, errorbar_color<a class="anchor" aria-label="anchor" href="#arg-point-color-errorbar-color"></a></dt>
 <dd><p>Base colors for non-significant rows.</p></dd>
 
 
+<dt id="arg-point-size">point_size<a class="anchor" aria-label="anchor" href="#arg-point-size"></a></dt>
+<dd><p>Diameter of estimate points in millimetres.</p></dd>
+
+
+<dt id="arg-point-stroke">point_stroke<a class="anchor" aria-label="anchor" href="#arg-point-stroke"></a></dt>
+<dd><p>Outline width of estimate points.</p></dd>
+
+
+<dt id="arg-ci-linewidth">ci_linewidth<a class="anchor" aria-label="anchor" href="#arg-ci-linewidth"></a></dt>
+<dd><p>Line width of confidence intervals.</p></dd>
+
+
 <dt id="arg-base-size">base_size<a class="anchor" aria-label="anchor" href="#arg-base-size"></a></dt>
-<dd><p>Base font size for <code>theme_minimal()</code>.</p></dd>
+<dd><p>Base font size for the plot theme.</p></dd>
 
 
 <dt id="arg-show-ref">show_ref<a class="anchor" aria-label="anchor" href="#arg-show-ref"></a></dt>
