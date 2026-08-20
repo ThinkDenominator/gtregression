@@ -336,9 +336,9 @@ uni_stats$model_stats
 
 If you use `gtregression` in your work, please cite it as:
 
-Polani R, Eliyas SK, Sakthivel M, Krishnamoorthy Y, Majella MG.
-*gtregression: Tools for Creating Publication-Ready Regression Tables.*
-Zenodo. <https://doi.org/10.5281/zenodo.16905350>
+Polani R, Eliyas SK, Sakthivel M, Kaviprawin M, Krishnamoorthy Y,
+Majella MG. *gtregression: Tools for Creating Publication-Ready
+Regression Tables.* Zenodo. <https://doi.org/10.5281/zenodo.16905350>
 
 ## Acknowledgements
 
