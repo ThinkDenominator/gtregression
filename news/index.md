@@ -4,6 +4,8 @@
 
 CRAN release: 2026-08-21
 
+Archived release: <https://doi.org/10.5281/zenodo.22049943>
+
 ### Added
 
 - Added an internal Data Prep workflow to the gtregression app, with

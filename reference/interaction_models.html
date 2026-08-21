@@ -47,7 +47,7 @@ interaction."><link rel="stylesheet" href="https://thinkdenominator.com/analytic
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Compare Models With and Without an Interaction Term</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ThinkDenominator/gtregression/blob/v1.1.0/R/interaction_models.R" class="external-link"><code>R/interaction_models.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ThinkDenominator/gtregression/blob/main/R/interaction_models.R" class="external-link"><code>R/interaction_models.R</code></a></small>
       <div class="d-none name"><code>interaction_models.Rd</code></div>
     </div>
 
@@ -239,11 +239,11 @@ comparison.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_no_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> low ~ smoke + race + age + lwt</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55cfaa8fe440&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55f8cf4d1c98&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_with_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> low ~ smoke + race + age + lwt + smoke:race</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55cfaa8fe440&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55f8cf4d1c98&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $interaction_terms</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "smokeYes:raceBlack" "smokeYes:raceOther"</span>
@@ -348,12 +348,12 @@ comparison.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_no_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> survival::Surv(time, status) ~ trt + prior + age + karno</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55cfaaed2940&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55f8cfabe6a0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $formula_with_interaction</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> survival::Surv(time, status) ~ trt + prior + age + karno + trt * </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     prior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55cfaaed2940&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55f8cfabe6a0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $interaction_terms</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "trtTest treatment:priorYes"</span>
