@@ -22,7 +22,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/ThinkDenominator/gtregression/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/ThinkDenominator/gtregression/blob/v1.1.0/DESCRIPTION)
 
 Polani R, Eliyas S, Sakthivel M, Kaviprawin M, Krishnamoorthy Y, Majella
 M (2026). *gtregression: Tools for Creating Publication-Ready Regression

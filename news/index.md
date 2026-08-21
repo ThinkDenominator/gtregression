@@ -2,6 +2,8 @@
 
 ## gtregression 1.1.0
 
+CRAN release: 2026-08-21
+
 ### Added
 
 - Added an internal Data Prep workflow to the gtregression app, with
