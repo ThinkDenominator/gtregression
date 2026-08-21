@@ -18,8 +18,8 @@ hand-formatting every coefficient.
 
 <div class="gtreg-actions">
 
-<a href="articles/gtregression-intro.html">Start the
-workflow</a><a class="secondary" href="reference/index.html">Explore
+<a href="https://gtregression.thinkdenominator.com/articles/gtregression-intro.html">Start the
+workflow</a><a class="secondary" href="https://gtregression.thinkdenominator.com/reference/">Explore
 functions</a>
 
 </div>
@@ -37,7 +37,7 @@ functions</a>
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/ThinkDenominator/gtregression/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ThinkDenominator/gtregression/actions/workflows/R-CMD-check.yaml)
-[![pkgdown](https://github.com/ThinkDenominator/gtregression/actions/workflows/pkgdown.yaml/badge.svg)](https://ThinkDenominator.github.io/gtregression/)
+[![pkgdown](https://github.com/ThinkDenominator/gtregression/actions/workflows/pkgdown.yaml/badge.svg)](https://gtregression.thinkdenominator.com/)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/gtregression)](https://CRAN.R-project.org/package=gtregression)
 [![CRAN
@@ -45,11 +45,11 @@ checks](https://badges.cranchecks.info/worst/gtregression.svg)](https://cran.r-p
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/last-month/gtregression)](https://cranlogs.r-pkg.org/downloads/total/last-month/gtregression)
 [![CRAN downloads
-total](https://cranlogs.r-pkg.org/badges/grand-total/gtregression)](https://cranlogs.r-pkg.org/downloads/total/grand-total/gtregression)
+total](https://cranlogs.r-pkg.org/badges/grand-total/gtregression)](https://CRAN.R-project.org/package=gtregression)
 [![Lifecycle:
 stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![License:
-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ThinkDenominator/gtregression/blob/main/LICENSE.md)
 [![Codecov](https://codecov.io/gh/ThinkDenominator/gtregression/branch/main/graph/badge.svg)](https://app.codecov.io/gh/ThinkDenominator/gtregression)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16905350.svg)](https://doi.org/10.5281/zenodo.16905350)
 
