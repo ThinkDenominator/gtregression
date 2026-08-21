@@ -1,5 +1,7 @@
 # gtregression 1.1.0
 
+Archived release: <https://doi.org/10.5281/zenodo.22049943>
+
 ## Added
 
 * Added an internal Data Prep workflow to the gtregression app, with explicit

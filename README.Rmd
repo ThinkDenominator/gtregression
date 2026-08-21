@@ -49,7 +49,7 @@ stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ThinkDenominator/gtregression/blob/main/LICENSE.md)
 [![Codecov](https://codecov.io/gh/ThinkDenominator/gtregression/branch/main/graph/badge.svg)](https://app.codecov.io/gh/ThinkDenominator/gtregression)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16905350.svg)](https://doi.org/10.5281/zenodo.16905350)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16905349.svg)](https://doi.org/10.5281/zenodo.16905349)
 
 <!-- badges: end -->
 
@@ -305,7 +305,7 @@ If you use `gtregression` in your work, please cite it as:
 
 Polani R, Eliyas SK, Sakthivel M, Kaviprawin M, Krishnamoorthy Y, Majella MG.
 *gtregression: Tools for Creating Publication-Ready Regression Tables.*
-Zenodo. <https://doi.org/10.5281/zenodo.16905350>
+Zenodo. <https://doi.org/10.5281/zenodo.16905349>
 
 ## Acknowledgements
 
