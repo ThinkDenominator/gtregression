@@ -6,8 +6,8 @@ visualise results, and export manuscript-ready outputs without
 hand-formatting every coefficient.
 
 [Start the
-workflow](https://gtregression.thinkdenominator.com/articles/gtregression-intro.md)[Explore
-functions](https://gtregression.thinkdenominator.com/reference/index.md)
+workflow](https://gtregression.thinkdenominator.com/articles/gtregression-intro.html)[Explore
+functions](https://gtregression.thinkdenominator.com/reference/)
 
 ![gtregression logo](reference/figures/gtregression_hex.png)
 

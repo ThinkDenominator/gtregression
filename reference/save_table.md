@@ -77,7 +77,7 @@ tbl <- uni_reg(
 )
 
 save_table(tbl, filename = tempfile("table"), format = "html")
-#> Table saved at: /tmp/RtmpOTuIKG/table19f43c16002a.html
+#> Table saved at: /tmp/RtmpXbBroD/table1ab752f306df.html
 
 # Wide Word tables can be saved in landscape orientation.
 # \donttest{
@@ -90,6 +90,6 @@ save_table(
   font_size = 9,
   min_font_size = 8
 )
-#> Table saved at: /tmp/RtmpOTuIKG/table-wide19f47114d045.docx
+#> Table saved at: /tmp/RtmpXbBroD/table-wide1ab7456134c7.docx
 # }
 ```

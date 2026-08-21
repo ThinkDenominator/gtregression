@@ -260,7 +260,7 @@ birthwt_merged_paper$table
 | Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-af9a8544 quarto-disable-processing="true"}
+.cl-bab97bd0 quarto-disable-processing="true"}
 
 ## Save Outputs
 
