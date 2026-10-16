@@ -5,14 +5,27 @@
 # handler through gtx_guard(), which turns any error into a short, plain
 # notification and keeps the session alive. Statistical code is not touched.
 
-# Plain-language version of an error message.
+# Plain-language version of an error message. Never fails itself: if the
+# message cannot be processed (for example characters the current locale
+# cannot represent), the original message is returned.
 gtx_friendly_error <- function(e) {
+  tryCatch(
+    .gtx_friendly_error(e),
+    error = function(err) {
+      msg <- if (inherits(e, "condition")) conditionMessage(e) else as.character(e)
+      msg <- paste(msg[!is.na(msg)], collapse = " ")
+      if (nzchar(msg)) msg else "This step could not be completed. Check the selected variables and try again."
+    }
+  )
+}
+
+.gtx_friendly_error <- function(e) {
   msg <- if (inherits(e, "condition")) conditionMessage(e) else as.character(e)
   msg <- paste(msg[!is.na(msg)], collapse = " ")
   msg <- gsub("\033\\[[0-9;]*m", "", msg)
   msg <- trimws(gsub("[[:space:]]+", " ", msg))
   msg <- sub("^Error( in [^:]*)?: ", "", msg)
-  msg <- sub("^(✖|ℹ|!|x) ", "", msg)
+  msg <- sub("^(\u2716|\u2139|!|x) ", "", msg)
 
   rules <- list(
     list("Package '(readxl|haven)' is required",
