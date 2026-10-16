@@ -7,6 +7,13 @@
 #' @param data A data frame containing the variables.
 #' @param outcome Character scalar; name of the outcome variable. Quoted and
 #'   bare names are accepted.
+#'   For binary-outcome approaches (\code{"logit"}, \code{"firth"},
+#'   \code{"logbinomial"}, \code{"robpoisson"}) the outcome may be numeric
+#'   0/1 or 1/2 (2 is the event; integer or double), logical (\code{TRUE} is
+#'   the event), or a two-level factor or character variable (the second
+#'   level is the event, which is reported in a message). The same factor,
+#'   character and logical coding is accepted by \code{"poisson"}.
+#'   The coding is decided once on the full data, before stratification.
 #' @param exposures Character vector of exposure variables to model. Quoted
 #'   names are recommended in scripts, and bare names are also accepted.
 #' @param stratifier Character scalar; name of the stratifying variable. Quoted
@@ -90,9 +97,12 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
                                format   = c("flextable","gt"),
                                theme    = c("minimal"),
                                show_ref = TRUE) {
-  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
-  stratifier <- .vars_arg(substitute(stratifier), env = parent.frame())
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame(),
+                       data_names = names(data))
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame(),
+                         data_names = names(data))
+  stratifier <- .vars_arg(substitute(stratifier), env = parent.frame(),
+                          data_names = names(data))
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
@@ -104,13 +114,19 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   .validate_show_ref(show_ref)
 
   format <- match.arg(format, c("flextable","gt"))
+  .validate_theme_arg(theme)
   theme  <- .resolve_theme(theme)
   variable_labels <- .var_label_map(data, unique(exposures))
 
   .validate_uni_inputs(data, outcome, exposures, approach)
   if (!stratifier %in% names(data)) stop("Stratifier not found in dataset.", call. = FALSE)
+  .validate_variable_roles(outcome, exposures, stratifier = stratifier)
+  stratifier_label <- .stratifier_label(data, stratifier)
+  # Recode the outcome once on the full data so that every stratum is fitted
+  # on the same coding.
+  data <- .normalize_outcome_once(data, outcome, approach)
 
-  data <- data[!is.na(data[[stratifier]]), , drop = FALSE]
+  data <- .strata_prepare_data(data, stratifier)
   levs <- .strata_levels(data, stratifier)
 
   message("Running stratified univariate regression by: ", stratifier)
@@ -146,19 +162,17 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
   )
   wide      <- built$wide
   spanners  <- built$spanners
-  has_ref <- any(unlist(
-    lapply(per_stratum, function(x) x$table_body$ref %in% TRUE),
-    use.names = FALSE
-  ))
   .message_hidden_ref_rows(
     "stratified_uni_reg",
     do.call(rbind, lapply(per_stratum, `[[`, "table_body")),
     show_ref
   )
   footnotes <- c(
-    .stratified_by_note(stratifier),
+    .stratified_by_note(stratifier, stratifier_label),
     .abbrev_note(approach),
-    if (isTRUE(show_ref) && has_ref) .ref_note() else NULL
+    if (.has_visible_reference(
+      do.call(rbind, lapply(per_stratum, `[[`, "table_body")), show_ref
+    )) .ref_note() else NULL
   )
   eff_lab   <- .get_effect_label(approach)
 
@@ -181,6 +195,7 @@ stratified_uni_reg <- function(data, outcome, exposures, stratifier,
     models        = models_list,
     model_summaries = summaries,
     variable_labels = variable_labels,
+    footnotes = footnotes,
     reg_check     = .as_reg_check_result(diags, format = format),
     by            = stratifier,
     levels        = levs,

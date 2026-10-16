@@ -1,9 +1,9 @@
 ---
-title: "Using the gtregression App"
-description: "A beginner-friendly manual for the menu-driven gtregression Shiny app."
+title: "Using the GT Regression App"
+description: "A beginner-friendly manual for GT Regression, the menu-driven app for gtregression."
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using the gtregression App}
+  %\VignetteIndexEntry{Using the GT Regression App}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -12,9 +12,9 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
 ```
 
-# gtregression App Manual
+# GT Regression App Manual
 
-The `gtregression` app is a menu-driven companion to the R package. It is
+GT Regression is the menu-driven app for the `gtregression` R package. It is
 designed for users who want to explore data, create publication-ready tables,
 visualise model results, and export outputs without remembering every function
 argument.
@@ -49,8 +49,10 @@ library(gtregression)
 gtregression_app()
 ```
 
-When the app is launched from RStudio, it opens in the RStudio Viewer when
-available. Outside RStudio, it opens in a browser during an interactive session.
+`gtregression_app()` opens GT Regression in your web browser. In RStudio you
+can also choose **Addins > GT Regression app**, which opens the same app in an
+RStudio dialog window. Both are the same app: only the window differs, and
+data frames in your R environment are available in either.
 
 You can pass arguments to `shiny::runApp()` through `gtregression_app()`:
 
@@ -68,7 +70,7 @@ gtregression_app(launch.browser = FALSE)
 
 The app keeps the R session busy while it is running. This is normal for Shiny.
 
-Use the **Close app** button in the bottom-right corner of the app to stop the
+Use the **Close** button (power icon) at the top right of the app to stop the
 session cleanly. This avoids the confusing console behaviour that can happen
 when users stop the app manually from RStudio.
 
@@ -94,7 +96,7 @@ The app uses standard, trusted R packages:
 | HTML table fallback | `gt` |
 | Plot display | `ggplot2`, `patchwork`, `forestploter` |
 | Data upload and preview | `readxl`, `DT` where available |
-| RStudio Viewer support | `rstudioapi` where available |
+| RStudio Addin (dialog window) | `rstudioapi` where available |
 
 If a dependency is missing, the app gives a message explaining what to install.
 
@@ -110,11 +112,13 @@ The app is easiest to use when users follow a deliberate order:
 4. **Regression**: run univariable models first.
 5. **Regression**: reselect the clinically important variables and run the
    multivariable model.
-6. **Visualise & Export**: merge descriptive, crude, and adjusted outputs.
-7. **Visualise & Export**: create `plot_reg()` or `forest_reg()` previews.
-8. **Advanced**: check model fit, compare models, assess confounding, and assess
+6. **Special Models**: use the dedicated workspace when the outcome is ordered
+   or multinomial, observations are clustered, or the study is matched.
+7. **Visualise & Export**: merge descriptive, crude, and adjusted outputs.
+8. **Visualise & Export**: create `plot_reg()` or `forest_reg()` previews.
+9. **Advanced**: check model fit, compare models, assess confounding, and assess
    interaction where appropriate.
-9. **Code panels**: copy the generated code into RStudio for reproducible
+10. **Code panels**: copy the generated code into RStudio for reproducible
    saving and editing.
 
 The app intentionally encourages users to run analyses one step at a time. For
@@ -169,11 +173,12 @@ loaded dataset, whether modelling uses the original or prepared data, the
 current sample size, and the selected regression outcome and approach. This
 helps prevent an analysis being run on the wrong version of the data.
 
-The Regression and Survival tabs also show a short preflight summary immediately
-above their run buttons. Review it before fitting a model. It confirms the
-outcome or survival variables, the number of exposures and adjustment variables,
-the modelling mode, and any selected categorical reference levels. If a required
-choice is missing, the summary states what must be selected next.
+The Regression, Special Models, and Survival tabs also show a short preflight
+summary immediately above their run buttons. Review it before fitting a model.
+It confirms the outcome or survival variables, the number of exposures and
+adjustment variables, the modelling mode, and any selected categorical
+reference levels. If a required choice is missing, the summary states what must
+be selected next.
 
 ## Select and Clear Variable Buttons
 
@@ -183,6 +188,7 @@ variables, including:
 
 - descriptive table variables;
 - regression exposures and adjustment variables;
+- special-model exposures and adjustment variables;
 - survival exposures and adjustment variables;
 - advanced model-building variables;
 - mediation covariates.
@@ -200,24 +206,25 @@ Use the **Data** tab to start the analysis.
 Users can:
 
 - load a built-in `gtregression` teaching dataset;
-- upload a CSV or Excel file;
+- upload a CSV, TSV, TXT, or Excel file;
 - import an RDS file containing a data frame or tibble;
 - import Stata (`.dta`), SPSS (`.sav`, `.zsav`, `.por`), or SAS (`.sas7bdat`, `.xpt`) data when `haven` is installed;
 - preview the dataset;
 - inspect a quick data summary;
 - copy reusable data-loading code.
 
-For uploaded CSV files, check:
+For uploaded delimited files, check:
 
 - whether the file has a header;
 - the separator: comma, semicolon, or tab.
 
 For Excel files, optionally provide the sheet name or sheet number.
 
-CSV controls are ignored for other formats, and the Excel sheet field is
+Delimited controls are ignored for other formats, and the Excel sheet field is
 ignored unless an Excel file is selected. An RDS file must contain a data frame
-or tibble. Generated code records the appropriate `readRDS()`,
-`readxl::read_excel()`, or `haven::read_*()` call.
+or tibble. Generated code uses `import_data()` so the app and exported script
+share the same validation and format handling. The app passes the original
+extension explicitly because browser-upload temporary paths may not retain it.
 
 After loading data, check the preview before moving to the next tab. This helps
 catch common issues such as numeric variables imported as character, missing
@@ -225,7 +232,7 @@ factor labels, or incorrect event coding.
 
 ## Data Prep Tab
 
-The **Data Prep** tab is an internal part of the gtregression app. It does not
+The **Data Prep** tab is an internal part of GT Regression. It does not
 load or depend on the `gtstats` package. It provides a safe, visible sequence of
 common preparation steps while retaining the original imported dataset.
 
@@ -458,11 +465,67 @@ Stratified outputs are useful for tables. For plots, `plot_reg()` can create
 quick presentation-style views. For publication forest outputs, use
 `forest_df()` and `forest_reg()` after checking that the display remains readable.
 
+## Special Models Tab
+
+Use **Special Models** when the study design does not fit the ordinary
+Regression workspace. The top menu keeps four less-common workflows together
+without adding controls to the standard regression screen.
+
+| Choice | Function | Use when |
+|---|---|---|
+| Ordered outcome | `ordinal_reg()` | Outcome categories have a meaningful order |
+| Unordered outcome | `multinomial_reg()` | Outcome has three or more categories without a natural order |
+| Clustered data | `multilevel_reg()` | Observations are grouped within clinics, schools, centres, or another cluster |
+| Matched case-control | `conditional_logit_reg()` | Cases and controls share a matched-set identifier |
+
+The workspace follows the same sequence for each design: choose the outcome,
+reported exposures, optional adjustment variables, and any design-specific
+variable; review the preflight note; then run the model. Predictor reference
+categories are shown only for categorical predictors and are written into the
+generated code.
+
+The app retains two Special Models results. Leave **Single multivariable
+model** off to place separate exposure models in **Exposure Models**. Turn it
+on to place the joint model in **Multivariable Model**. Running the second form
+does not replace the first, so both can be reviewed, modified, merged, plotted
+where supported, and reproduced in Session Code. Clustered models are joint
+models and therefore appear under **Multivariable Model**.
+
+When both results are retained, **Model Stats** and **Assumption Check** show a
+**Result to inspect** control. Choose Exposure Models or Multivariable Model
+before interpreting the diagnostics. The app identifies when model statistics
+were not stored and when the proportional-odds check does not apply, rather
+than leaving an unexplained blank panel.
+
+For an ordinal model, create an **ordered factor** in Data Prep and verify the
+displayed order before fitting. For a multinomial model, create an unordered
+factor; its first level is the outcome reference. These outcome choices are
+deliberately made in Data Prep so the dataset and exported script record the
+same analysis definition.
+
+Clustered models require a grouping variable and offer continuous or binary
+outcome models. Matched case-control models require the matched-set identifier.
+Do not use an ordinary logistic model when matching must be retained in the
+analysis.
+
+Multinomial output contains one comparison for each non-reference outcome.
+Those comparisons are offered separately under **Regression plot** and
+**Forest plot**, with the retained exposure or multivariable role stated in
+the menu. Each comparison is also available separately in **Merge tables**.
+Ordinal, multilevel, and matched case-control results are also
+available in the merge and modify-table menus after they have been fitted.
+Special models are not offered under **Model fit**, because
+the general `plot_model_fit()` diagnostics do not apply consistently across
+these four model families. Use the model statistics and assumption output in
+the Special Models workspace instead.
+
 ## Survival Tab
 
 Use the **Survival** tab for:
 
 - Cox regression with `cox_reg()`;
+- competing-risk regression with `competing_risk_reg()`;
+- cumulative-incidence curves with `cuminc_plot()`;
 
 Choose Cox regression for hazard ratios when no baseline-hazard distribution is
 specified. Choose parametric survival regression when a distributional model
@@ -472,15 +535,38 @@ observed curves and should not be used as a substitute for either fitted model.
 - Kaplan-Meier curves with `km_plot()`;
 - log-rank tests and survival summaries.
 
-At the top of the workspace, choose **Cox regression** or **Parametric
-survival**. The app shows one model workflow at a time: Cox mode hides the
-distribution control, while Parametric survival mode asks for the Weibull,
+At the top of the workspace, choose **Cox regression**, **Parametric
+survival**, or **Competing risks**. The app shows one model workflow at a time:
+Cox mode hides the distribution control, while Parametric survival mode asks for the Weibull,
 exponential, log-normal, or log-logistic distribution. The active mode also
 controls the run button, model result, and reusable code. Each method retains
 two independent result slots: **Exposure models** and **Multivariable model**.
 Running one does not replace the other. Both completed tables remain available
 as separate choices in **Visualise & Export**, including the merge-table menu,
 and in compatible **Advanced** tools.
+
+Choose **Competing risks** when another event can prevent the event of interest
+from occurring. Select the observed censoring code and event-of-interest code
+explicitly; the preflight note displays the observed event counts. At least one
+additional observed code must represent a competing event.
+
+The Fine-Gray table reports subdistribution hazard ratios. An SHR above 1
+indicates higher cumulative incidence of the selected event over follow-up,
+accounting for competing events. It is not a cause-specific Cox hazard ratio.
+The cumulative-incidence plot shows absolute event probability. With a grouping
+variable, Gray's test compares the curves; it is an unadjusted comparison, not
+an adjusted effect estimate.
+
+Kaplan-Meier controls are hidden in competing-risk mode because treating a
+competing event as ordinary censoring can overestimate event probability. Use
+the **Cumulative Incidence** output instead. The table and plot can be downloaded
+independently, and both calls are included in Session Code.
+
+The package dataset `data_competing_risk` provides a ready-to-use practice
+example. Select `follow_up_months` as time, `outcome` as event status,
+`Censored` as the censoring code, and `Relapse` as the event of interest. Use
+`treatment` to compare cumulative-incidence curves, then fit a Fine-Gray model
+with `treatment` as the exposure and `age` plus `stage` as covariates.
 
 For a complete GUI workflow, first leave **Single multivariable model** clear
 and run the exposure models. Then select the predictors for the joint model,
@@ -717,9 +803,12 @@ merged output.
 Choose **Regression plot** from the top menu. Choose **Selected result** to
 preview the object named in **Result** with `plot_reg()`. When a matching pair
 has been fitted, the app also offers **Regression crude + adjusted**, **Cox
-exposure + multivariable**, or **Parametric exposure + multivariable**. These
-choices call `plot_reg_combine()` with the two corresponding stored results;
-an option appears only after both members of that pair exist.
+exposure + multivariable**, **Parametric exposure + multivariable**, or a
+compatible Special Models pair. These choices call `plot_reg_combine()` with
+the two corresponding stored results; an option appears only after both
+members of that pair exist. Ordinal and matched case-control results combine
+only with the same model family and outcome. Multinomial results provide one
+combined choice for each outcome comparison shared by both retained models.
 
 Use `plot_reg()` for quick presentation-style plots:
 
@@ -776,9 +865,10 @@ and the text between `:` and `=` must match the current level exactly. For
 example, use `smoke: Yes = Smoker`, not `Smoking during pregnancy: Yes =
 Smoker` after changing the variable's display label.
 
-`plot_reg_combine()` is intended for standard univariable and multivariable
-outputs. Stratified outputs are better handled carefully with separate
-`plot_reg()` calls or forest tables, depending on the publication need.
+`plot_reg_combine()` supports compatible standard, survival, ordinal, matched
+case-control, Fine-Gray, and individual multinomial-comparison outputs.
+Stratified outputs are better handled carefully with separate `plot_reg()`
+calls or forest tables, depending on the publication need.
 
 ### Forest Tables
 
@@ -794,6 +884,12 @@ option. If a descriptive table is also available, choose the corresponding
 **Descriptive + ...** option to place those columns beside the survival effect
 estimates. This prevents an older regression result from being combined with
 the currently selected survival analysis by accident.
+
+Compatible retained Special Models follow the same pattern. Multinomial
+forest combinations are offered separately for each shared non-reference
+outcome. When a descriptive table is available, the corresponding
+**Descriptive + ...** choice adds it without changing the selected outcome
+comparison.
 
 Use forest plots for manuscript-style effect summaries.
 
@@ -1225,7 +1321,7 @@ gtregression_app()
 ### The Browser Preview Looks Cramped
 
 Browser preview size depends on the device, browser, zoom level, and RStudio
-Viewer size. A cramped preview does not always mean the exported figure will be
+dialog size. A cramped preview does not always mean the exported figure will be
 cramped.
 
 For final outputs, copy the code and export with a wider canvas:
@@ -1315,10 +1411,11 @@ merge_tables(desc_result, uni_result, multi_result)
 
 ### Chrome or Browser Crashes
 
-Use the RStudio Viewer where available by running:
+In RStudio, open the app in an RStudio dialog window instead: choose
+**Addins > GT Regression app**, or run:
 
 ```r
-gtregression_app()
+gtregression_addin()
 ```
 
 If the browser keeps causing problems, run:

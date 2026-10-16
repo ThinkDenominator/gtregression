@@ -12,6 +12,16 @@
 #' @noRd
 .apply_theme_flex <- function(ft, df, theme) {
   ft <- flextable::theme_vanilla(ft)
+  # theme_vanilla() realigns columns by data type; restore the package layout
+  # (labels left, value columns centred) for every table type.
+  keys <- ft$col_keys
+  if ("Characteristic" %in% keys) {
+    ft <- flextable::align(ft, j = "Characteristic", align = "left", part = "all")
+    value_keys <- setdiff(keys, "Characteristic")
+    if (length(value_keys)) {
+      ft <- flextable::align(ft, j = value_keys, align = "center", part = "all")
+    }
+  }
   hdr_idx <- which(df$is_header %in% TRUE)
   lvl_idx <- which(df$is_header %in% FALSE)
 
@@ -24,18 +34,21 @@
   if ("zebra" %in% theme && length(lvl_idx)) {
     ft <- flextable::bg(ft, i = lvl_idx[seq(1, length(lvl_idx), by = 2)], bg = "#f6f8fa")
   }
-  # lines — use hline
+  # lines: use hline
   if ("lines" %in% theme) {
     n_body <- nrow(ft$body$dataset)
     if (!is.null(n_body) && n_body > 0) {
-      ft <- flextable::hline(ft, i = 1, part = "body")
+      ft <- flextable::hline_top(ft, part = "body")
       ft <- flextable::hline(ft, i = n_body, part = "body")
     }
   }
   # bold exposure labels by default
   if (length(hdr_idx)) ft <- flextable::bold(ft, i = hdr_idx, j = "Characteristic", bold = TRUE)
 
-  if ("compact" %in% theme) ft <- flextable::padding(ft, padding = 2)
+  # Vertical padding only: the left padding carries the level indent.
+  if ("compact" %in% theme) {
+    ft <- flextable::padding(ft, padding.top = 2, padding.bottom = 2)
+  }
   ft
 }
 
@@ -69,10 +82,13 @@
   if (!requireNamespace("flextable", quietly = TRUE))
     stop("Install 'flextable' or use format='gt'.", call. = FALSE)
 
-  out <- df[, c("Characteristic", effect_label, "p-value"), drop = FALSE]
+  columns <- c("Characteristic", if ("N" %in% names(df)) "N", effect_label,
+               "p-value")
+  out <- df[, columns, drop = FALSE]
   ft <- flextable::flextable(out)
   ft <- flextable::align(ft, j = "Characteristic", align = "left")
-  ft <- flextable::align(ft, j = c(effect_label, "p-value"), align = "center")
+  ft <- flextable::align(ft, j = setdiff(names(out), "Characteristic"),
+                         align = "center")
   ft <- flextable::bold(ft, part = "header", bold = TRUE)
 
   hdr_idx <- which(df$is_header %in% TRUE)
@@ -118,11 +134,14 @@
   if ("lines" %in% theme) {
     n_body <- nrow(df)
     if (!is.null(n_body) && n_body > 0) {
-      ft <- flextable::hline(ft, i = 1,      part = "body")
+      ft <- flextable::hline_top(ft, part = "body")
       ft <- flextable::hline(ft, i = n_body, part = "body")
     }
   }
-  if ("compact" %in% theme) ft <- flextable::padding(ft, padding = 2, part = "body")
+  # Vertical padding only: the left padding carries the level indent.
+  if ("compact" %in% theme) {
+    ft <- flextable::padding(ft, padding.top = 2, padding.bottom = 2, part = "body")
+  }
 
   ft <- flextable::autofit(ft)
   ft <- flextable::add_footer_lines(ft, values = footnotes)
@@ -157,11 +176,14 @@
   if ("lines" %in% theme) {
     n_body <- nrow(df)
     if (!is.null(n_body) && n_body > 0) {
-      ft <- flextable::hline(ft, i = 1,      part = "body")
+      ft <- flextable::hline_top(ft, part = "body")
       ft <- flextable::hline(ft, i = n_body, part = "body")
     }
   }
-  if ("compact" %in% theme) ft <- flextable::padding(ft, padding = 2, part = "body")
+  # Vertical padding only: the left padding carries the level indent.
+  if ("compact" %in% theme) {
+    ft <- flextable::padding(ft, padding.top = 2, padding.bottom = 2, part = "body")
+  }
 
   ft <- flextable::autofit(ft)
   ft <- flextable::add_footer_lines(ft, values = footnotes)

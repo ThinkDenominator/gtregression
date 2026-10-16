@@ -30,11 +30,15 @@ is treated as the event.}
 bare names are accepted.}
 
 \item{tau}{Restriction time for RMST. For example, \code{tau = 365} reports
-mean survival time restricted to the first 365 days of follow-up.}
+mean survival time restricted to the first 365 days of follow-up. If
+\code{tau} is beyond the last follow-up time of a group, the estimate
+extrapolates the survival curve; a warning is raised and a footnote is
+added to the table.}
 
 \item{digits}{Number of digits for displayed survival time summaries.}
 
-\item{conf.level}{Confidence level for RMST confidence intervals.}
+\item{conf.level}{Confidence level for RMST confidence intervals. The
+column headers show the level used, for example \code{"RMST (90\% CI)"}.}
 
 \item{format}{Output format. One of \code{"flextable"} (default),
 \code{"gt"}, or \code{"tibble"}.}

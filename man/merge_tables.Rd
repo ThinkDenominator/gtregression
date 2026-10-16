@@ -2,7 +2,7 @@
 % Please edit documentation in R/merge_tables.R
 \name{merge_tables}
 \alias{merge_tables}
-\title{Merge gtregression tables and preserve structure and notes}
+\title{Merge two or more tables side by side}
 \usage{
 merge_tables(
   ...,
@@ -29,7 +29,7 @@ A merged table object of class
   \code{c("gtregression", "merged_table", ...)}.
 }
 \description{
-Merge gtregression tables and preserve structure and notes
+Merge two or more tables side by side
 }
 \details{
 Binary variables should use the same row display across all input tables.
@@ -42,6 +42,11 @@ settings.
 
 Footnotes created by each input table are retained unchanged. Exact duplicate
 notes are shown once in the merged table.
+
+Tables of the same type can be merged directly. This is useful for
+sensitivity analyses such as complete-case, best-case, and worst-case
+models. Supply one table per scenario and use \code{spanners} to identify
+each analysis; rows are aligned by their underlying variable and level.
 }
 \examples{
 birthwt_data <- data_birthwt |>
@@ -72,5 +77,11 @@ merge_tables(
   uni_tbl,
   multi_tbl,
   spanners = c("Univariable", "Adjusted")
+)
+
+merge_tables(
+  multi_tbl,
+  multi_tbl,
+  spanners = c("Primary analysis", "Sensitivity analysis")
 )
 }

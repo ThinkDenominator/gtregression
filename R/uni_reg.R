@@ -1,4 +1,4 @@
-#' Univariate regression
+#' Univariable regression
 #'
 #' Fit one model per exposure and return a clean regression table in
 #' \pkg{flextable} or \pkg{gt} format.
@@ -6,6 +6,12 @@
 #' @param data A data frame containing the outcome and exposure variables.
 #' @param outcome Character scalar; outcome column name. Quoted and bare names
 #'   are accepted.
+#'   For binary-outcome approaches (\code{"logit"}, \code{"firth"},
+#'   \code{"logbinomial"}, \code{"robpoisson"}) the outcome may be numeric
+#'   0/1 or 1/2 (2 is the event; integer or double), logical (\code{TRUE} is
+#'   the event), or a two-level factor or character variable (the second
+#'   level is the event, which is reported in a message). The same factor,
+#'   character and logical coding is accepted by \code{"poisson"}.
 #' @param exposures Character vector; exposure column names. Quoted names are
 #'   recommended in scripts, and bare names are also accepted.
 #' @param approach Regression approach. One of \code{"logit"}, \code{"firth"},
@@ -34,6 +40,15 @@
 #' \code{labelled::var_label()}, those labels are used automatically in the
 #' displayed table and plots. Internal matching still uses the original column
 #' names.
+#'
+#' Confidence intervals are Wald intervals; for \code{approach = "linear"}
+#' they use the t distribution with the residual degrees of freedom (as
+#' \code{confint()} for \code{lm}), consistent with the t-based p-values.
+#' Factor exposures are always fitted with treatment contrasts (each level
+#' versus the reference), whatever \code{options(contrasts = )} or a
+#' \code{contrasts} attribute says. An exposure whose model cannot be fitted
+#' is kept in the table with a dash and named in a footnote and in
+#' \code{failed_exposures}.
 #'
 #' @return A list of class \code{c("gtregression","uni_reg", ...)} with elements:
 #' \describe{
@@ -103,20 +118,39 @@ uni_reg <- function(data,
   .validate_show_ref(show_ref)
 
   format <- match.arg(format, c("flextable","gt"))
+  .validate_theme_arg(theme)
   theme  <- .resolve_theme(theme)
 
   # ---- validate inputs (package helper) -------------------------------------
   .validate_uni_inputs(data, outcome, exposures, approach)
+  # Binary outcomes are recoded to 0/1 once, on the full data (factor and
+  # character: second level = event; logical: TRUE = event; numeric 1/2: 2).
+  data <- .normalize_outcome_once(data, outcome, approach)
 
   # engine tag for S3 class chain
   fmt_class <- if (format == "gt") "gt_uni" else "ft_uni"
 
   # ---- fit, tidy, stack ------------------------------------------------------
-  model_list <- lapply(exposures, function(x) .fit_uni_model(data, outcome, x, approach))
+  fit_errors <- character(0)
+  model_list <- lapply(exposures, function(x) {
+    withCallingHandlers(
+      .fit_uni_model(data, outcome, x, approach),
+      warning = function(w) {
+        if (startsWith(conditionMessage(w), "Model failed for exposure")) {
+          fit_errors[[x]] <<- conditionMessage(w)
+        }
+      }
+    )
+  })
   names(model_list) <- exposures
   model_list <- Filter(Negate(is.null), model_list)
-  if (!length(model_list))
-    stop("All models failed. Check data and exposure specifications.", call. = FALSE)
+  if (!length(model_list)) {
+    stop(
+      "All models failed. Check data and exposure specifications.",
+      if (length(fit_errors)) paste0("\n", paste(unique(fit_errors), collapse = "\n")),
+      call. = FALSE
+    )
+  }
 
   tidy_list <- Map(function(fit, var) .tidy_uni(fit, var, approach), model_list, names(model_list))
   tidy_list <- Filter(Negate(is.null), tidy_list)
@@ -125,15 +159,36 @@ uni_reg <- function(data,
 
   td <- do.call(rbind, tidy_list)
 
+  # Exposures whose model could not be fitted or estimated are kept visible
+  # in the table (dash) instead of disappearing.
+  failed_exposures <- setdiff(exposures, names(tidy_list))
+
   # ---- display + build table -------------------------------------------------
   effect_label <- .get_effect_label(approach)
   .message_hidden_ref_rows("uni_reg", td, show_ref)
-  display_df   <- .make_display(td, data, outcome, approach, effect_label, show_ref = show_ref)
+  display_df   <- .make_display_uni(
+    td, data, outcome, effect_label,
+    show_ref = show_ref,
+    exposure_order = exposures,
+    failed_exposures = failed_exposures
+  )
   .must_be_display_df(display_df)
 
   source_note  <- c(
     .abbrev_note(approach),
-    if (isTRUE(show_ref) && any(td$ref %in% TRUE)) .ref_note() else NULL
+    if (.has_visible_reference(td, show_ref)) .ref_note() else NULL,
+    if (length(failed_exposures)) {
+      paste0(
+        "\u2014 = model could not be fitted for: ",
+        paste(vapply(failed_exposures, .label_var, character(1),
+                     label_map = attr(display_df, "variable_labels",
+                                      exact = TRUE)),
+              collapse = ", "),
+        "."
+      )
+    } else {
+      NULL
+    }
   )
 
   tbl <- if (format == "gt") {
@@ -167,6 +222,7 @@ uni_reg <- function(data,
     model_stats     = fit_stats,
     variable_labels = attr(display_df, "variable_labels", exact = TRUE),
     footnotes       = source_note,
+    failed_exposures = failed_exposures,
     reg_check       = .as_reg_check_result(reg_diagnostics, format = format),
     approach        = approach,
     format          = format,
@@ -175,4 +231,82 @@ uni_reg <- function(data,
   )
   class(res) <- c("gtregression", "uni_reg", fmt_class, class(res))
   res
+}
+
+
+#' Display frame for univariable regression tables
+#'
+#' Same layout as the multivariable tables: `Characteristic`, `N`, effect,
+#' `p-value`, with an en dash between the confidence limits.
+#'
+#' @keywords internal
+#' @noRd
+.make_display_uni <- function(td, data, outcome, effect_label, show_ref = TRUE,
+                              exposure_order = NULL,
+                              failed_exposures = character(0)) {
+  stopifnot(all(c("exposure", "level", "estimate", "conf.low", "conf.high",
+                  "p.value", "ref") %in% names(td)))
+  shown <- unique(td$exposure)
+  if (is.null(exposure_order)) exposure_order <- shown
+  exposure_order <- unique(exposure_order[exposure_order %in%
+                                            c(shown, failed_exposures)])
+  label_map <- .var_label_map(data, exposure_order)
+  fmt_est_ci <- function(est, lo, hi, digits = 2) {
+    f <- function(x) formatC(x, digits = digits, format = "f", big.mark = ",")
+    paste0(f(est), " (", f(lo), "\u2013", f(hi), ")")
+  }
+  complete_n <- function(x) {
+    sum(stats::complete.cases(data[, c(outcome, x), drop = FALSE]))
+  }
+  columns <- c("Characteristic", "N", effect_label, "p-value", "is_header")
+  header_row <- function(exp_nm, effect = "", p = "") {
+    header <- data.frame(Characteristic = .label_var(exp_nm, label_map),
+                         stringsAsFactors = FALSE)
+    header$N <- complete_n(exp_nm)
+    header[[effect_label]] <- effect
+    header[["p-value"]] <- p
+    header$is_header <- TRUE
+    header[, columns, drop = FALSE]
+  }
+
+  blocks <- lapply(exposure_order, function(exp_nm) {
+    if (!exp_nm %in% shown) {
+      return(header_row(exp_nm, effect = "\u2014"))
+    }
+    df <- td[td$exposure == exp_nm, , drop = FALSE]
+    is_fact <- any(df$ref)
+
+    if (!is_fact) {
+      return(header_row(
+        exp_nm,
+        fmt_est_ci(df$estimate[1], df$conf.low[1], df$conf.high[1]),
+        .fmt_p(df$p.value[1])
+      ))
+    }
+    if (!isTRUE(show_ref) && nrow(df) == 2L && sum(df$ref %in% TRUE) == 1L) {
+      row <- df[!(df$ref %in% TRUE), , drop = FALSE][1, ]
+      return(header_row(
+        exp_nm,
+        fmt_est_ci(row$estimate, row$conf.low, row$conf.high),
+        .fmt_p(row$p.value)
+      ))
+    }
+
+    lev <- df
+    lev$Characteristic <- paste0("  ", lev$level)
+    lev$N <- NA_integer_
+    lev[[effect_label]] <- ifelse(
+      lev$ref, "Ref.", fmt_est_ci(lev$estimate, lev$conf.low, lev$conf.high)
+    )
+    lev[["p-value"]] <- ifelse(lev$ref, "", .fmt_p(lev$p.value))
+    lev$is_header <- FALSE
+    rbind(header_row(exp_nm), lev[, columns, drop = FALSE],
+          make.row.names = FALSE)
+  })
+  names(blocks) <- exposure_order
+  out <- do.call(rbind, blocks)
+  rownames(out) <- NULL
+  row_exposure <- rep(names(blocks), vapply(blocks, nrow, integer(1)))
+  .attach_display_metadata(out, row_exposure = row_exposure,
+                           variable_labels = label_map)
 }

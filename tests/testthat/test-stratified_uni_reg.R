@@ -46,7 +46,7 @@ test_that("stratified_uni_reg returns a gtregression object for logit models", {
   expect_named(
     res,
     c("table", "table_display", "per_stratum", "models",
-      "model_summaries", "variable_labels", "reg_check", "by", "levels", "approach",
+      "model_summaries", "variable_labels", "footnotes", "reg_check", "by", "levels", "approach",
       "format", "source", "show_ref")
   )
   expect_named(res$per_stratum, c("White", "Black", "Other"))

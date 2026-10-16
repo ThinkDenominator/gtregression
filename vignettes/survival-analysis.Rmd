@@ -214,7 +214,37 @@ Check the proportional hazards assumption before treating Cox hazard ratios as
 final.
 
 ```{r surv-check-ph, message=FALSE, warning=FALSE}
-check_ph(cox_adjusted)$table
+ph_check <- check_ph(cox_adjusted)
+ph_check
+plot(ph_check, model = "trt")
+```
+
+Adjusted survival curves complement the hazard-ratio table. Here, the model
+for treatment holds age and Karnofsky score at representative values while
+drawing one curve for each treatment level.
+
+```{r surv-cox-adjusted-curves, message=FALSE, warning=FALSE, fig.width=7, fig.height=5}
+plot_cox_survival(cox_adjusted, model_name = "trt", by = trt)
+```
+
+For delayed entry or time-varying records expressed in start-stop form, supply
+`time_start`. Use `cluster` for correlated observations and `weights` for case
+weights. These roles are different from `baseline_strata`: clustering changes
+the variance estimate, whereas baseline strata allow separate baseline hazards
+without estimating a hazard ratio for the strata variable.
+
+```{r surv-cox-advanced-api, eval=FALSE}
+cox_reg(
+  data = repeated_followup,
+  time_start = entry,
+  time = exit,
+  event = status,
+  exposures = c(treatment, age),
+  multivariable = TRUE,
+  cluster = patient_id,
+  weights = analysis_weight,
+  ties = efron
+)
 ```
 
 ## 5. Fit Parametric Survival Regression

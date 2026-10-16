@@ -1,184 +1,248 @@
 url: https://gtregression.thinkdenominator.com/
 template:
   bootstrap: 5
-  bootswatch: zephyr
+  light-switch: false
+  bslib:
+    primary: "#0F6F73"
+    link-color: "#0F6F73"
+    body-color: "#1B2530"
+    border-radius: "0.5rem"
+    font-size-base: "1rem"
   logo: man/figures/gtregression_hex.png
   includes:
     in_header: |
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
       <link rel="stylesheet" href="https://thinkdenominator.com/analytics-consent.css">
       <script>window.TD_GA_MEASUREMENT_ID = "G-3DE4ZZV06B";</script>
       <script defer src="https://thinkdenominator.com/analytics-consent.js"></script>
 
 home:
-  title: Home
-  description: Publication-ready regression, survival, mediation, diagnostics, and Word-friendly outputs
+  title: gtregression
+  description: >
+    Publication-ready regression, survival and risk-difference tables, forest
+    plots and survival curves for health research, with Word-ready export.
+  sidebar:
+    structure: [links, license, citation, authors, dev]
   links:
-    - text: Start Here
-      href: articles/gtregression-intro.html
-    - text: Visualise Regression Results
-      href: articles/visualise-results.html
-    - text: Survival Analysis
-      href: articles/survival-analysis.html
-    - text: Confounding & Interaction
-      href: articles/confounding-interaction.html
-    - text: Causal Mediation
-      href: articles/causal-mediation.html
-    - text: Function Overview
-      href: reference/index.html
+    - text: Which function should I use?
+      href: articles/choose-model.html
+    - text: Function options
+      href: articles/function-options.html
+    - text: What's new
+      href: news/index.html
 
 navbar:
   structure:
-    left: [reference, articles]
-    right: [github]
+    left: [intro, guides, reference, news]
+    right: [search, github]
   components:
-    reference:
-      text: Functions
-      href: reference/index.html
-    articles:
-      text: Workflows
+    intro:
+      text: Get started
+      href: articles/gtregression-intro.html
+    guides:
+      text: Guides
       menu:
-      - text: Start Here
-        href: articles/gtregression-intro.html
-      - text: Function Options
+      - text: Choose
+      - text: Which function should I use?
+        href: articles/choose-model.html
+      - text: Function options
         href: articles/function-options.html
-      - text: App Manual
-        href: articles/gtregression-app.html
+      - text: -------
       - text: Tables
+      - text: Descriptive tables
         href: articles/descriptive-tables.html
-      - text: Regression
+      - text: Regression tables
         href: articles/regression-tables.html
-      - text: Survival
-        href: articles/survival-analysis.html
-      - text: Confounding & Interaction
-        href: articles/confounding-interaction.html
-      - text: Causal Mediation
-        href: articles/causal-mediation.html
-      - text: Visualise
-        href: articles/visualise-results.html
-      - text: Stratify
+      - text: Special study designs
+        href: articles/special-models.html
+      - text: Risk difference and NNT
+        href: articles/risk-difference.html
+      - text: Stratified analysis
         href: articles/stratified-analysis.html
-      - text: Diagnostics
+      - text: -------
+      - text: Survival
+      - text: Survival analysis
+        href: articles/survival-analysis.html
+      - text: -------
+      - text: Interpret
+      - text: Confounding and interaction
+        href: articles/confounding-interaction.html
+      - text: Causal mediation
+        href: articles/causal-mediation.html
+      - text: Diagnostics and model selection
         href: articles/diagnostics-selection.html
-      - text: Export
+      - text: -------
+      - text: Output
+      - text: Visualise results
+        href: articles/visualise-results.html
+      - text: Merge and customise tables
+        href: articles/merge-tables.html
+      - text: Customise and export
         href: articles/customize-export.html
+      - text: -------
+      - text: App
+      - text: App manual
+        href: articles/gtregression-app.html
+      - text: -------
+      - text: All guides
+        href: articles/index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    news:
+      text: News
+      href: news/index.html
 
 articles:
-  - title: "Start Here"
-    navbar: "Start Here"
+  - title: "Get started"
+    desc: "A complete analysis from data to manuscript, and how to pick the right function."
     contents:
       - gtregression-intro
+      - choose-model
       - function-options
-      - gtregression-app
 
   - title: "Tables"
-    navbar: "Tables"
+    desc: "Descriptive summaries, regression tables, special study designs and absolute effects."
     contents:
       - descriptive-tables
       - regression-tables
-      - survival-analysis
-
-  - title: "Visualise"
-    navbar: "Visualise"
-    contents:
-      - visualise-results
-
-  - title: "Stratify"
-    navbar: "Stratify"
-    contents:
+      - special-models
+      - risk-difference
       - stratified-analysis
 
-  - title: "Diagnostics"
-    navbar: "Diagnostics"
+  - title: "Survival"
+    desc: "Kaplan-Meier curves, survival summaries, Cox and parametric models, and predictions."
     contents:
-      - diagnostics-selection
+      - survival-analysis
 
-  - title: "Confounding & Causal Analysis"
-    navbar: "Confounding & Causal Analysis"
+  - title: "Interpret"
+    desc: "Confounding, interaction, mediation, diagnostics and model selection."
     contents:
       - confounding-interaction
       - causal-mediation
+      - diagnostics-selection
 
-  - title: "Export"
-    navbar: "Export"
+  - title: "Output"
+    desc: "Plots, forest plots, merged tables and export to Word, HTML and images."
     contents:
+      - visualise-results
+      - merge-tables
       - customize-export
 
-reference:
-  - title: "Describe and Check Data"
-    desc: "Create baseline descriptive tables and inspect variable compatibility before modeling."
+  - title: "App"
+    desc: "The menu-driven interface for the same analyses."
     contents:
-      - descriptive_table
-      - dissect
+      - gtregression-app
 
-  - title: "Regression Tables"
-    desc: "Create publication-ready crude, adjusted, and multivariable regression tables."
+reference:
+  - title: "Prepare and describe data"
+    desc: "Import data, check variables before modelling, and build baseline tables."
+    contents:
+      - import_data
+      - dissect
+      - descriptive_table
+
+  - title: "Regression tables"
+    desc: "Crude and adjusted estimates for binary, count and continuous outcomes."
     contents:
       - uni_reg
       - multi_reg
-      - cox_reg
-      - surv_reg
 
-  - title: "Stratified Regression Tables"
-    desc: "Repeat univariable or adjusted models within levels of a stratifier."
+  - title: "Special study designs"
+    desc: "Matched case-control, clustered, ordered and unordered outcomes."
+    contents:
+      - conditional_logit_reg
+      - multilevel_reg
+      - ordinal_reg
+      - multinomial_reg
+
+  - title: "Absolute effects"
+    desc: "Absolute risks, risk difference and NNTB/NNTH for two-group comparisons."
+    contents:
+      - risk_difference
+
+  - title: "Stratified analysis"
+    desc: "The same model repeated within each level of a stratifier."
     contents:
       - stratified_uni_reg
       - stratified_multi_reg
 
-  - title: "Visualise Regression Results"
-    desc: "Turn regression and survival outputs into curves, forest plots, and publication-style forest tables."
+  - title: "Survival: describe and compare"
+    desc: "Kaplan-Meier and cumulative incidence curves, summaries and tests."
     contents:
       - km_plot
       - km_risk_table
-      - rmst_table
       - survival_summary
       - survival_quantiles
       - survival_prob
+      - rmst_table
       - logrank_test
+      - cuminc_plot
+
+  - title: "Survival: models"
+    desc: "Cox, parametric and competing-risk regression, with checks and predictions."
+    contents:
+      - cox_reg
+      - surv_reg
+      - competing_risk_reg
+      - check_ph
+      - plot.gtregression_ph
+      - plot_cox_survival
       - surv_model_compare
       - plot_surv_fit
       - surv_predict
+
+  - title: "Plots and forest plots"
+    desc: "Visualise estimates from one or two regression results."
+    contents:
       - plot_reg
       - plot_reg_combine
       - forest_df
       - forest_reg
 
-  - title: "Diagnostics and Model Selection"
-    desc: "Check convergence, collinearity, model fit, and candidate model paths."
+  - title: "Diagnostics and model choice"
+    desc: "Convergence, collinearity, fit, and comparison of candidate models."
     contents:
       - check_convergence
       - check_collinearity
-      - check_ph
       - plot_model_fit
       - compare_models
       - select_models
 
-  - title: "Confounding and Interaction"
-    desc: "Support interpretation with confounding, interaction, and mediation workflows."
+  - title: "Confounding, interaction and mediation"
+    desc: "Support causal interpretation of an exposure-outcome association."
     contents:
       - identify_confounder
       - interaction_models
       - mediation_analysis
       - plot_mediation
 
-  - title: "Modify, Merge, and Export"
-    desc: "Polish tables, combine outputs, launch the app, and save tables, plots, or Word reports."
+  - title: "Customise, merge and export"
+    desc: "Relabel tables, combine them, and save tables, plots and Word reports."
     contents:
       - modify_table
       - merge_tables
-      - gtregression_app
       - save_table
       - save_docx
       - save_plot
       - save_forest
 
-  - title: "Object Helpers"
-    desc: "Inspect and print objects returned by gtregression functions."
+  - title: "Graphical interface"
+    desc: "Run the same analyses from menus."
+    contents:
+      - gtregression_app
+      - gtregression_addin
+
+  - title: "Working with results"
+    desc: "Inspect and print the objects returned by gtregression functions."
     contents:
       - "$.gtregression"
       - print.gtregression
 
-  - title: "Example Datasets"
-    desc: "Built-in datasets for examples, teaching, and tests."
+  - title: "Example datasets"
+    desc: "Datasets used in the examples and guides."
     contents:
       - data_birthwt
       - data_SynthDiabetes
@@ -186,5 +250,6 @@ reference:
       - data_epilepsy
       - data_endometrial
       - data_diabetes_mediation
+      - data_competing_risk
       - data_infertility
       - data_lungcancer

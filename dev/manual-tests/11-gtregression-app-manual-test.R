@@ -1,5 +1,5 @@
 ## Manual real-time test: gtregression_app()
-## Package: gtregression 1.1
+## Package: gtregression 1.2
 ##
 ## Story:
 ## A beginner-friendly app should let users move from data to descriptive
@@ -124,13 +124,26 @@ mediation_covariates <- c(
   "age", "blood_pressure", "pregnancies", "diabetes_pedigree"
 )
 
+## Trials tab (risk difference). Same coding as
+## dev/manual-tests/18-risk-difference-api.R, so the app must reproduce the
+## numbers listed there. `bw_trial` is chosen from R Environment in the app.
+
+bw_trial <- data_birthwt |>
+  mutate(
+    smoke = factor(smoke, levels = c(0, 1), labels = c("Non-smoker", "Smoker")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW")),
+    race = factor(race, levels = c(1, 2, 3), labels = c("White", "Black", "Other")),
+    visit = factor(ftv > 0, levels = c(FALSE, TRUE), labels = c("No visit", "Visit"))
+  )
+
 
 ## 4. Launch the app ----------------------------------------------------------
 
-## This opens the app in the RStudio Viewer when available, otherwise in the
-## browser. Keep this R session running while you test the tabs.
+## This opens GT Regression in your web browser (Addins > GT Regression app
+## opens the same app in an RStudio dialog window). Keep this R session
+## running while you test the tabs.
 ##
-## Use the Close app button in the bottom-right corner to stop cleanly. This is
+## Use the Close button (power icon) at the top right to stop cleanly. This is
 ## less alarming for beginners than pressing the console stop button.
 
 gtregression_app()
@@ -269,6 +282,53 @@ gtregression_app()
 ##     Clear Store model statistics, fit a new model, and confirm statistics are
 ##     not retained for that newly fitted result.
 
+## Special Models tab:
+##   - Confirm the top menu offers Ordered outcome, Unordered outcome,
+##     Clustered data, and Matched case-control without crowding Regression.
+##   - For each mode, confirm only its design-specific controls are visible.
+##   - Confirm Select all and Clear all work for exposures and adjustment
+##     variables and do not select the outcome.
+##   - Select categorical predictors and confirm their observed reference
+##     categories appear; continuous predictors and the outcome must not appear.
+##   - Ordered outcome: use an ordered-factor outcome with at least three levels.
+##     Confirm the preflight note shows the level order, the table renders, and
+##     the assumption check appears when requested.
+##   - Change that outcome to an unordered factor and confirm the preflight note
+##     asks the user to set the order in Data Prep rather than fitting silently.
+##   - Unordered outcome: use an unordered outcome with at least three levels.
+##     Confirm the preflight note identifies the first outcome level as the
+##     reference and the table presents comparisons side by side.
+##   - Clustered data: select a grouping variable, then test continuous and
+##     binary outcomes. Confirm the generated call uses multilevel_reg().
+##   - Matched case-control: select a binary outcome and matched-set identifier.
+##     Confirm the generated call uses conditional_logit_reg().
+##   - For every mode, inspect Model Stats and copy the generated code. Confirm
+##     predictor releveling and all design variables are preserved.
+##   - Leave Single multivariable model off and run a model. Confirm its table
+##     remains under Exposure Models. Turn the option on, run the joint model,
+##     and confirm it appears under Multivariable Model without replacing the
+##     exposure-model table.
+##   - Confirm both retained results appear independently in Modify table and
+##     Merge tables, and that Session Code contains the exact code captured
+##     when each result was run.
+##   - Open Model Stats and Assumption Check after retaining both results.
+##     Switch Result to inspect and confirm each panel follows the selected
+##     result. Confirm a clear note replaces a blank table when statistics were
+##     not stored or the proportional-odds check does not apply.
+##   - Open Visualise & Export. Confirm multinomial comparisons are offered
+##     separately in Regression plot and Forest plot.
+##   - Retain compatible exposure and multivariable ordinal models. Confirm
+##     Special exposure + multivariable appears for Regression plot and Forest
+##     plot, and that both previews and generated code use the retained pair.
+##   - Repeat with multinomial models. Confirm one combined choice appears per
+##     shared outcome comparison and no choice combines different outcomes.
+##   - Create a descriptive table and confirm Descriptive + Special Models is
+##     available for the forest output without changing the selected pair.
+##   - Confirm Special Models are not listed under Model fit; its general
+##     diagnostic plots do not apply consistently across these model families.
+##   - Confirm retained Special Models are available under Modify table and
+##     that Session Code includes both completed special-model calls.
+
 ## Survival tab:
 ##   - Dataset: Lung cancer.
 ##   - Confirm the top menu offers Cox regression and Parametric survival.
@@ -311,6 +371,67 @@ gtregression_app()
 ##     includes break_time_by = 200.
 ##   - Try selecting the survival event variable as an adjustment variable and
 ##     confirm the app shows a clear role-conflict message.
+##   - Select Competing risks and confirm observed censoring/event codes appear
+##     only after an event-status variable has been selected.
+##   - Confirm Kaplan-Meier controls are hidden and cumulative-incidence
+##     controls are shown in competing-risk mode.
+##   - Use a dataset with censoring, the event of interest, and at least one
+##     competing event. Confirm the preflight note lists observed code counts.
+##   - Run Fine-Gray regression and confirm the table reports SHR (95% CI), the
+##     selected event, and model statistics when requested.
+##   - Draw cumulative incidence without and with a grouping variable. Confirm
+##     Gray's test appears for grouped curves when requested.
+##   - Download the Fine-Gray table as DOCX, RTF, and HTML, and the cumulative-
+##     incidence plot as PNG and PDF.
+##   - Confirm Code and Session Code preserve censoring code, event of interest,
+##     grouping variable, plot options, and model specification.
+##   - Confirm the Fine-Gray result is offered for modify/merge and selected
+##     plot/forest workflows, but not under the generic Model fit tool.
+
+## Trials tab (risk difference):
+##   - Load `bw_trial` from R Environment and open Trials (between Survival
+##     and More models). With no outcome chosen, the ready line says
+##     "Choose outcome." and the result area shows the same prompt.
+##   - Outcome: race. Confirm the Event field says "Needs two values" and the
+##     ready line explains that race has 3 values. Then choose Outcome: low.
+##   - Confirm Event defaults to Low BW and offers only Normal BW and Low BW.
+##   - Treatment group: race. Confirm "exactly two are compared" appears.
+##     Then choose Treatment group: smoke.
+##   - Confirm Reference group defaults to Non-smoker and the ready line reads
+##     "Ready · Risk difference · low = Low BW · Smoker − Non-smoker ·
+##     unadjusted · N=189".
+##   - Click Details and confirm it names the Miettinen-Nurminen method and
+##     "189 of 189 rows".
+##   - Click Risk difference. Expected table: Non-smoker 29 / 115, 25.2%, Ref.;
+##     Smoker 30 / 74, 40.5%, 15.3 (1.7 to 29.0), p = 0.027.
+##   - Set Number needed to treat to Event is harmful and run again. Expected:
+##     NNT column NNTH 7 (4 to 59) and the NNT caution in the footnote.
+##   - Add Adjust for: age, lwt, race (use the + picker). Run. Expected:
+##     Adjusted risk 23.4% and 44.3%; 21.0 (6.9 to 35.1); p = 0.004;
+##     NNTH 5 (3 to 15); footnote "Wald, influence-function standard error".
+##   - Change Reference group to Smoker and run. Confirm the sign reverses
+##     (Non-smoker -21.0) and the ready line reads Non-smoker − Smoker.
+##   - Clear Adjust for, Treatment group: visit, Reference group: No visit,
+##     Event is harmful, run. Expected: -10.2 (-23.0 to 3.1) and
+##     NNTB 10 (NNTB 5 to ∞ to NNTH 32).
+##   - Open Options, set Confidence level to 0.9. Confirm the Options badge
+##     shows 1 and the ready line says "options changed". Run again and
+##     confirm the header reads "(90% CI)".
+##   - Open Code. Confirm it starts from analysis_data and contains
+##     rd_result <- risk_difference(...) with outcome, exposure, reference,
+##     event, event_type and conf_level = 0.9 exactly as chosen. Copy it, run
+##     it in the console with `analysis_data <- bw_trial`, and confirm the same
+##     table.
+##   - Export the table as DOCX, RTF and HTML and open each file.
+##   - Open Session Code. Confirm "# 6b. Risk difference (Trials)" holds the
+##     call as it was last run (change a setting without running and confirm
+##     Session Code does not change).
+##   - Choose Adjust for: low (the outcome) and run. Confirm a clear error
+##     notification and that the previous table is cleared.
+##   - In Data > Prepare, rename smoke to smoking. Return to Trials and confirm
+##     Treatment group follows the rename and Reference group is kept.
+##   - Confirm Visualise & Export does not offer the risk-difference table for
+##     merging, plotting or forest plots.
 
 ## Visualise and Export tab:
 ##   - Confirm the top menu contains Merge tables, Regression plot, Forest plot,

@@ -48,6 +48,5 @@ tests/testthat/Rplots.pdf
 .httr-oauth
 rsconnect/
 
-# Local assistant/tool metadata
-.positai
-.claude
+# Local archives
+*.tgz

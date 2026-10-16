@@ -93,11 +93,21 @@
   inputs <- Filter(Negate(is.null), list(uni = uni, multi = multi, desc = desc))
 
   is_uni   <- function(x) inherits(x, "gtregression") &&
-    any(c("uni_reg", "gt_uni", "cox_reg", "gt_cox", "surv_reg", "gt_surv") %in% class(x)) &&
+    any(c("uni_reg", "gt_uni", "cox_reg", "gt_cox", "surv_reg", "gt_surv",
+          "conditional_logit_reg", "gt_conditional_logit",
+          "ft_conditional_logit", "competing_risk_reg",
+          "gt_competing_risk", "ft_competing_risk", "multilevel_reg",
+          "gt_multilevel", "ft_multilevel", "ordinal_reg",
+          "gt_ordinal", "ft_ordinal", "multinomial_outcome") %in% class(x)) &&
     !.is_adjusted_reg_output(x)
   is_multi <- function(x) inherits(x, "gtregression") &&
     (any(c("multi_reg", "gt_multi") %in% class(x)) ||
-       (any(c("cox_reg", "gt_cox", "surv_reg", "gt_surv") %in% class(x)) &&
+       (any(c("cox_reg", "gt_cox", "surv_reg", "gt_surv",
+                "conditional_logit_reg", "gt_conditional_logit",
+                "ft_conditional_logit", "competing_risk_reg",
+                "gt_competing_risk", "ft_competing_risk", "multilevel_reg",
+                "gt_multilevel", "ft_multilevel", "ordinal_reg",
+                "gt_ordinal", "ft_ordinal", "multinomial_outcome") %in% class(x)) &&
           .is_adjusted_reg_output(x)))
   is_desc  <- function(x) any(c("descriptive_table","gt_desc") %in% class(x)) ||
     (is.list(x) && !is.null(x$table_display) && !is.null(x$table_body)) ||
@@ -113,7 +123,18 @@
       next
     }
     if (is_multi(x)) {
-      if (!is.null(got_multi)) stop("Two multivariable objects supplied.", call. = FALSE)
+      if (!is.null(got_multi)) {
+        # Exposure-specific adjusted models next to the single multivariable
+        # model of the same family: the exposure-specific result is drawn
+        # first and the multivariable model second.
+        pair <- .forest_adjusted_pair(got_multi, x)
+        if (is.null(pair) || !is.null(got_uni)) {
+          stop("Two multivariable objects supplied.", call. = FALSE)
+        }
+        got_uni <- pair$first
+        got_multi <- pair$second
+        next
+      }
       got_multi <- x
       next
     }
@@ -126,6 +147,32 @@
   }
 
   list(uni = got_uni, multi = got_multi, desc = got_desc)
+}
+
+# A result fitted as one model containing every exposure.
+.forest_is_single_model <- function(x) {
+  isTRUE(x$multivariable) ||
+    (identical(x$source, "multi_reg") && !isTRUE(x$adjusted_mode))
+}
+
+# Two adjusted results that can be shown side by side: exposure-specific
+# adjusted models and the single multivariable model of the same family.
+.forest_adjusted_pair <- function(a, b) {
+  same_family <- !is.null(a$source) && identical(a$source, b$source)
+  if (!same_family) return(NULL)
+  single_a <- .forest_is_single_model(a)
+  single_b <- .forest_is_single_model(b)
+  if (single_a == single_b) return(NULL)
+  if (single_a) list(first = b, second = a) else list(first = a, second = b)
+}
+
+# The effect column header shown in a result's own table, for example
+# "Matched OR (95% CI)" or "Adjusted common OR (95% CI)".
+.forest_effect_header <- function(x) {
+  td <- tryCatch(x$table_display, error = function(e) NULL)
+  if (!is.data.frame(td)) return(NULL)
+  hits <- grep("\\(95% CI\\)$", names(td), value = TRUE)
+  if (length(hits) == 1L) hits else NULL
 }
 
 .is_stratified_forest_input <- function(x) {
@@ -271,12 +318,23 @@
 #' characteristic rows once and places strata side by side as separate effect
 #' columns for \code{forest_reg()}.
 #'
-#' @param uni A \code{gtregression} object from \code{uni_reg()}. If
-#'   \code{multi} is supplied without \code{uni}, the multivariable object is
-#'   plotted as a single effect column.
-#' @param multi Optional \code{gtregression} object from \code{multi_reg()}.
+#' @param uni A \code{gtregression} regression object, usually the crude
+#'   results (for example \code{uni_reg()}, \code{cox_reg()},
+#'   \code{conditional_logit_reg()} or \code{ordinal_reg()}). If \code{multi}
+#'   is supplied without \code{uni}, the adjusted object is plotted as a single
+#'   effect column.
+#' @param multi Optional adjusted object of the same model family, for example
+#'   \code{multi_reg()} or a model fitted with \code{multivariable = TRUE}.
+#'   Exposure-specific adjusted results (\code{adjust_for}) and the single
+#'   multivariable model can also be shown together; the second column is
+#'   then labelled "Mutually adjusted".
 #' @param desc Optional descriptive table object from \code{descriptive_table()}.
 #' @param digits Number of digits used when formatting confidence intervals.
+#'
+#' @details Effect columns use the same header as the source tables, for
+#'   example "Matched OR (95\% CI)" for \code{conditional_logit_reg()} and
+#'   "Common OR (95\% CI)" for \code{ordinal_reg()}, and the estimates and
+#'   intervals are taken unchanged from each result's \code{table_body}.
 #'
 #' @return A data frame with display columns, formatted effect-size columns,
 #'   standard-error columns, and plotting attributes used by \code{forest_reg()}
@@ -307,7 +365,18 @@
 #' forest_data <- forest_df(uni_or, multi_or)
 #' head(forest_data)
 #' @export
-forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
+forest_df <- function(uni = NULL, multi = NULL, desc = NULL, digits = 2) {
+  .rd_reject(list(uni, multi, desc), "forest_df")
+  if (is.null(uni) && is.null(multi) && is.null(desc)) {
+    stop("Supply at least one result to `uni`, `multi` or `desc`.", call. = FALSE)
+  }
+  if (inherits(uni, "multinomial_reg") || inherits(multi, "multinomial_reg")) {
+    stop(
+      "A multinomial model has multiple outcome comparisons. Pass one ",
+      "`$per_outcome` component to `forest_df()`.",
+      call. = FALSE
+    )
+  }
   if (!is.numeric(digits) || length(digits) != 1L || is.na(digits) || digits < 0) {
     stop("`digits` must be a single non-negative number.", call. = FALSE)
   }
@@ -329,21 +398,44 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
 
   `%||%`   <- function(a,b) if (!is.null(a)) a else b
   approach <- function(o) .normalize_approach(o$approach %||% "logit")
-  is_ratio <- function(a) .normalize_approach(a) %in% c("logit","firth","logbinomial","poisson","robpoisson","negbin",
-                                   "cox", "survreg", "margstd_boot","margstd_delta")
+  is_ratio <- function(a) .normalize_approach(a) %in% c(
+    "logit", "firth", "conditional_logit", "ordinal_logit",
+    "multinomial_logit",
+    "logbinomial", "poisson",
+    "robpoisson", "negbin",
+                                   "cox", "fine_gray", "survreg", "margstd_boot","margstd_delta")
   effname  <- function(a) {
     a <- .normalize_approach(a)
     if (a == "linear") return("Beta")
     if (a == "cox") return("HR")
+    if (a == "fine_gray") return("SHR")
     if (a == "survreg") return("Time Ratio")
     if (a %in% c("poisson","negbin")) return("IRR")
     if (a %in% c("logbinomial","robpoisson","margstd_boot","margstd_delta")) return("RR")
+    if (a == "conditional_logit") return("Matched OR")
+    if (a == "ordinal_logit") return("Common OR")
     "OR"
+  }
+  adjusted_effname <- function(a) {
+    e <- effname(a)
+    if (e %in% c("Matched OR", "Common OR")) e <- paste0(tolower(substr(e, 1, 1)), substring(e, 2))
+    paste("Adjusted", e)
   }
   fmt_ci <- function(e,l,h,d){
     out <- rep("", length(e))
-    ok <- is.finite(e) & is.finite(l) & is.finite(h)
-    out[ok] <- sprintf(paste0("%.",d,"f (%.",d,"f-%." ,d,"f)"), e[ok], l[ok], h[ok])
+    fmt_num <- function(x) {
+      ifelse(
+        is.na(x), "",
+        ifelse(
+          is.infinite(x), ifelse(x > 0, "\u221e", "-\u221e"),
+          sprintf(paste0("%.", d, "f"), x)
+        )
+      )
+    }
+    ok <- !is.na(e) & !is.na(l) & !is.na(h)
+    out[ok] <- paste0(
+      fmt_num(e[ok]), " (", fmt_num(l[ok]), "\u2013", fmt_num(h[ok]), ")"
+    )
     out
   }
   read_tb <- function(x){
@@ -357,12 +449,36 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
               conf.low  = as.numeric(conf.low),
               conf.high = as.numeric(conf.high))
   }
-  .se_from_ci <- function(est, lo, hi, ratio = TRUE) {
+  .se_from_ci <- function(est, lo, hi, ratio = TRUE, crit = stats::qnorm(0.975)) {
     se <- rep(NA_real_, length(est))
-    ok <- is.finite(est) & is.finite(lo) & is.finite(hi)
-    if (ratio) se[ok] <- (log(hi[ok]) - log(lo[ok])) / (2 * 1.96)
-    else       se[ok] <- (hi[ok] - lo[ok]) / (2 * 1.96)
+    crit <- rep_len(crit, length(est))
+    ok <- is.finite(est) & is.finite(lo) & is.finite(hi) & is.finite(crit)
+    if (ratio) se[ok] <- (log(hi[ok]) - log(lo[ok])) / (2 * crit[ok])
+    else       se[ok] <- (hi[ok] - lo[ok]) / (2 * crit[ok])
     se
+  }
+  # Critical value used for the 95% CI of each row. Linear models (`lm`)
+  # report t-based intervals, so the standard error must be recovered with
+  # the t quantile on the residual degrees of freedom of the model that
+  # produced the row; every other approach uses Wald (normal) intervals.
+  .ci_crit <- function(x, exposure) {
+    z <- stats::qnorm(0.975)
+    out <- rep(z, length(exposure))
+    models <- tryCatch(x$models, error = function(e) NULL)
+    if (!is.list(models) || !length(models)) return(out)
+    one <- function(fit) {
+      if (!inherits(fit, "lm") || inherits(fit, "glm")) return(z)
+      df_resid <- tryCatch(stats::df.residual(fit), error = function(e) NA_real_)
+      if (length(df_resid) == 1L && is.finite(df_resid) && df_resid > 0) {
+        return(stats::qt(0.975, df = df_resid))
+      }
+      z
+    }
+    crit <- vapply(models, one, numeric(1))
+    if (length(crit) == 1L) return(rep(unname(crit), length(exposure)))
+    pos <- match(as.character(exposure), names(models))
+    out[!is.na(pos)] <- unname(crit[pos[!is.na(pos)]])
+    out
   }
 
   picked <- .pick_inputs(uni, multi, desc)
@@ -380,7 +496,7 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
   has_multi <- !is.null(multi)
   u    <- read_tb(uni)
   app1 <- approach(uni)
-  eff1 <- if (isTRUE(multi_only)) paste("Adjusted", effname(app1)) else effname(app1)
+  eff1 <- if (isTRUE(multi_only)) adjusted_effname(app1) else effname(app1)
   if (has_multi) {
     m    <- read_tb(multi)
     app2 <- approach(multi); eff2 <- effname(app2)
@@ -388,22 +504,54 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
 
   ref_line <- if (is_ratio(app1)) 1 else 0
 
-  # Build layout from univariate
-  u$is_cont <- (u$exposure == u$level)
+  # Build the layout from the crude table; rows that exist only in the
+  # adjusted table (an extra level, interaction rows, extra variables) are
+  # placed inside their own variable block instead of being dropped.
+  u$..adj_only <- FALSE
+  exposures <- unique(as.character(u$exposure))
+  if (has_multi) exposures <- unique(c(exposures, as.character(m$exposure)))
   blocks <- list()
 
-  for (ex in unique(u$exposure)) {
+  for (ex in exposures) {
     df <- u[u$exposure == ex, , drop = FALSE]
+    is_factor <- any(df$ref %in% TRUE)
 
-    if (all(df$is_cont)) {
+    if (has_multi) {
+      mx <- m[m$exposure == ex, , drop = FALSE]
+      is_factor <- is_factor || any(mx$ref %in% TRUE)
+      for (i in seq_len(nrow(mx))) {
+        if (as.character(mx$level[i]) %in% as.character(df$level)) next
+        extra <- mx[i, , drop = FALSE]
+        extra$estimate <- extra$conf.low <- extra$conf.high <- extra$p.value <- NA_real_
+        extra$ref <- FALSE
+        extra$..adj_only <- TRUE
+        anchor <- if (i > 1L) match(as.character(mx$level[i - 1L]), as.character(df$level)) else 0L
+        if (is.na(anchor)) anchor <- nrow(df)
+        df <- rbind(
+          df[seq_len(anchor), , drop = FALSE],
+          extra[, names(df), drop = FALSE],
+          df[seq_len(nrow(df) - anchor) + anchor, , drop = FALSE]
+        )
+      }
+    }
+
+    is_main <- as.character(df$exposure) == as.character(df$level)
+    if (!is_factor && any(is_main)) {
+      # continuous / main-effect row first, extra (interaction) rows indented
+      df <- rbind(df[is_main, , drop = FALSE], df[!is_main, , drop = FALSE])
       df$..row_type <- "level"
-      df$..label <- df$exposure
+      df$..label <- ifelse(
+        as.character(df$exposure) == as.character(df$level),
+        as.character(df$exposure),
+        paste0("  ", df$level)
+      )
       blocks[[length(blocks) + 1L]] <- df
     } else {
       hdr <- df[1, , drop = FALSE]
       hdr$level <- ex
       hdr$estimate <- hdr$conf.low <- hdr$conf.high <- hdr$p.value <- NA_real_
       hdr$ref <- FALSE
+      hdr$..adj_only <- FALSE
       hdr$..row_type <- "header"
       hdr$..label <- ex
       df$..row_type <- "level"
@@ -426,23 +574,43 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
     key_m <- paste(m$exposure, m$level, sep="||")
     key_l <- paste(lay$exposure, lay$level, sep="||")
     pos   <- match(key_l, key_m)
+    pos[lay$..row_type == "header"] <- NA_integer_
     est2 <- lo2 <- hi2 <- rep(NA_real_, nrow(lay))
     hit <- which(!is.na(pos))
     has_adj_row <- !is.na(pos)
     est2[hit] <- m$estimate[pos[hit]]
     lo2 [hit] <- m$conf.low[pos[hit]]
     hi2 [hit] <- m$conf.high[pos[hit]]
-    adj_ref <- is_ref & has_adj_row
-    est2[adj_ref] <- ref_line
-    lo2 [adj_ref] <- ref_line
-    hi2 [adj_ref] <- ref_line
+    is_ref_adj <- rep(FALSE, nrow(lay))
+    is_ref_adj[hit] <- m$ref[pos[hit]] %in% TRUE
+    est2[is_ref_adj] <- ref_line
+    lo2 [is_ref_adj] <- ref_line
+    hi2 [is_ref_adj] <- ref_line
+  }
+
+  # Effect column headers follow each result's own table header, so a forest
+  # plot names the estimate exactly as the table does.
+  header1 <- .forest_effect_header(uni)
+  if (is.null(header1)) header1 <- paste0(eff1, " (95% CI)")
+  if (has_multi) {
+    header2 <- .forest_effect_header(multi)
+    if (is.null(header2)) header2 <- paste0(adjusted_effname(app2), " (95% CI)")
+    if (identical(header1, header2)) {
+      header2 <- if (grepl("^Adjusted ", header2)) {
+        sub("^Adjusted ", "Mutually adjusted ", header2)
+      } else {
+        paste("Mutually adjusted", header2)
+      }
+    }
   }
 
   # Left table + optional desc merge
   forest_blank <- paste(rep(" ", 20), collapse = " ")
   label_map <- uni$variable_labels
-  if ((is.null(label_map) || !length(label_map)) && has_multi) {
-    label_map <- multi$variable_labels
+  if (has_multi) {
+    extra_labels <- multi$variable_labels
+    extra_labels <- extra_labels[setdiff(names(extra_labels), names(label_map))]
+    if (length(extra_labels)) label_map <- c(label_map, extra_labels)
   }
   left <- data.frame(
     Characteristic   = lay$..label,
@@ -461,6 +629,28 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
     character(1),
     label_map = label_map
   )
+  # Level labels follow the labels shown in the source tables, so levels
+  # relabelled with modify_table(level_labels = ) keep their new text.
+  level_idx <- which(lay$..row_type == "level" & lay$exposure != lay$level)
+  if (length(level_idx)) {
+    shown_level <- function(obj, ex, level) {
+      if (is.null(obj) || is.null(obj$table_display)) return(NA_character_)
+      rows <- obj$table_body[obj$table_body$exposure == ex, , drop = FALSE]
+      if (!nrow(rows)) return(NA_character_)
+      labels <- tryCatch(.plot_display_labels(obj, ex, rows), error = function(e) NULL)
+      if (is.null(labels)) return(NA_character_)
+      unname(labels$levels[level])
+    }
+    for (i in level_idx) {
+      ex_i <- as.character(lay$exposure[i])
+      level_i <- as.character(lay$level[i])
+      shown <- shown_level(uni, ex_i, level_i)
+      if (is.na(shown) && has_multi) shown <- shown_level(multi, ex_i, level_i)
+      if (!is.na(shown) && nzchar(shown)) {
+        left$Characteristic[i] <- paste0("  ", shown)
+      }
+    }
+  }
   is_header <- lay$..row_type == "header"
   # CI text cols + BLANK anchor headers
   if (has_multi) {
@@ -468,19 +658,19 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
     ci1 <- fmt_ci(lay$estimate, lay$conf.low, lay$conf.high, digits)
     ci1[is_header | is_ref] <- ""              # <-- make headers & refs blank
     ci1[is_ref] <- "Ref."
-    left[[paste0(eff1, " (95% CI)")]] <- ci1
+    left[[header1]] <- ci1
 
     left[["  "]] <- forest_blank  # adj anchor
     ci2 <- fmt_ci(est2, lo2, hi2, digits)
-    ci2[is_header | is_ref] <- ""              # <-- same here
-    ci2[is_ref & has_adj_row] <- "Ref."
-    left[[paste0("Adjusted ", eff2, " (95% CI)")]] <- ci2
+    ci2[is_header | is_ref_adj] <- ""
+    ci2[is_ref_adj] <- "Ref."
+    left[[header2]] <- ci2
   } else {
     left[[" "]] <- forest_blank
     ci1 <- fmt_ci(lay$estimate, lay$conf.low, lay$conf.high, digits)
     ci1[is_header | is_ref] <- ""              # <-- and here
     ci1[is_ref] <- "Ref."
-    left[[paste0(eff1, " (95% CI)")]] <- ci1
+    left[[header1]] <- ci1
   }
 
 
@@ -489,13 +679,16 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
 
   # Standard errors (not for display)
   is_header <- lay$..row_type == "header"
-  se_uni <- .se_from_ci(lay$estimate, lay$conf.low, lay$conf.high, ratio = is_ratio(app1))
+  se_uni <- .se_from_ci(lay$estimate, lay$conf.low, lay$conf.high,
+                        ratio = is_ratio(app1),
+                        crit = .ci_crit(uni, lay$exposure))
   se_uni[is_header | is_ref] <- NA_real_
   left$se_uni <- se_uni
 
   if (has_multi) {
-    se_adj <- .se_from_ci(est2, lo2, hi2, ratio = is_ratio(app2))
-    se_adj[is_header | is_ref] <- NA_real_
+    se_adj <- .se_from_ci(est2, lo2, hi2, ratio = is_ratio(app2),
+                          crit = .ci_crit(multi, lay$exposure))
+    se_adj[is_header | is_ref_adj] <- NA_real_
     left$se_adj <- se_adj
   }
 
@@ -514,6 +707,19 @@ forest_df <- function(uni, multi = NULL, desc = NULL, digits = 2) {
     attr(left, "est2") <- est2
     attr(left, "lo2")  <- lo2
     attr(left, "hi2")  <- hi2
+  }
+
+  attr(left, "forest_estimates") <- if (has_multi) {
+    list(
+      est = list(lay$estimate, est2), lo = list(lay$conf.low, lo2),
+      hi = list(lay$conf.high, hi2), anchors = c(" ", "  "),
+      text_cols = c(header1, header2)
+    )
+  } else {
+    list(
+      est = list(lay$estimate), lo = list(lay$conf.low), hi = list(lay$conf.high),
+      anchors = " ", text_cols = header1
+    )
   }
 
   attr(left, "forest_meta") <- list(

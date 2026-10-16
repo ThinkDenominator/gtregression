@@ -154,6 +154,101 @@ test_that("plot_reg_combine supports survival multivariable counterparts", {
   )
 })
 
+test_that("plot_reg_combine supports crude and adjusted Fine-Gray models", {
+  skip_if_not_installed("cmprsk")
+
+  crude <- competing_risk_reg(
+    data_competing_risk,
+    time = follow_up_months,
+    event = outcome,
+    event_of_interest = Relapse,
+    censor_code = Censored,
+    exposures = c(treatment, stage)
+  )
+  adjusted <- competing_risk_reg(
+    data_competing_risk,
+    time = follow_up_months,
+    event = outcome,
+    event_of_interest = Relapse,
+    censor_code = Censored,
+    exposures = c(treatment, stage),
+    adjust_for = c(age, sex)
+  )
+
+  plot <- plot_reg_combine(crude, adjusted)
+
+  expect_s3_class(plot, "patchwork")
+  expect_equal(plot[[1]]$labels$x, "Subdistribution Hazard Ratio")
+  expect_equal(plot[[2]]$labels$x, "Adjusted Subdistribution Hazard Ratio")
+  expect_match(plot$patches$annotation$caption, "Adjusted for age and sex")
+})
+
+test_that("plot_reg_combine supports crude and adjusted ordinal models", {
+  skip_if_not_installed("ordinal")
+
+  set.seed(42)
+  df <- data.frame(
+    recovery = ordered(
+      sample(c("Poor", "Partial", "Complete"), 180, replace = TRUE),
+      levels = c("Poor", "Partial", "Complete")
+    ),
+    treatment = factor(rep(c("Standard", "Intervention"), each = 90)),
+    age = stats::rnorm(180, 60, 9)
+  )
+  crude <- ordinal_reg(df, recovery, treatment)
+  adjusted <- ordinal_reg(df, recovery, treatment, adjust_for = age)
+
+  plot <- plot_reg_combine(crude, adjusted)
+
+  expect_s3_class(plot, "patchwork")
+  expect_equal(plot[[1]]$labels$x, "Common Odds Ratio")
+  expect_equal(plot[[2]]$labels$x, "Adjusted Common Odds Ratio")
+})
+
+test_that("plot_reg_combine supports conditional logistic models", {
+  skip_if_not_installed("survival")
+
+  set.seed(84)
+  df <- data.frame(
+    matched_set = rep(seq_len(45), each = 3),
+    case = rep(c(1, 0, 0), 45),
+    exposed = factor(
+      stats::rbinom(135, 1, rep(c(0.65, 0.35, 0.35), 45)),
+      levels = c(0, 1), labels = c("No", "Yes")
+    ),
+    age = rep(seq(35, 79), each = 3) + rep(c(0, -2, 2), 45)
+  )
+  crude <- conditional_logit_reg(df, case, exposed, matched_set)
+  adjusted <- conditional_logit_reg(
+    df, case, exposed, matched_set, adjust_for = age
+  )
+
+  plot <- plot_reg_combine(crude, adjusted)
+
+  expect_s3_class(plot, "patchwork")
+  expect_equal(plot[[1]]$labels$x, "Matched Odds Ratio")
+  expect_equal(plot[[2]]$labels$x, "Adjusted Matched Odds Ratio")
+})
+
+test_that("plot_reg_combine supports individual multinomial comparisons", {
+  skip_if_not_installed("nnet")
+
+  df <- iris
+  crude <- multinomial_reg(df, Species, Sepal.Length)
+  adjusted <- multinomial_reg(
+    df, Species, Sepal.Length, adjust_for = Sepal.Width
+  )
+
+  plot <- plot_reg_combine(
+    crude$per_outcome$versicolor,
+    adjusted$per_outcome$versicolor
+  )
+
+  expect_s3_class(plot, "patchwork")
+  expect_equal(plot[[1]]$labels$x, "Odds Ratio")
+  expect_equal(plot[[2]]$labels$x, "Adjusted Odds Ratio")
+})
+
 test_that("plot_reg_combine supports mismatched exposures and linear models", {
   df <- birthwt_plot_combine_data()
 

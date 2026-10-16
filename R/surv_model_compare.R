@@ -79,8 +79,9 @@ surv_model_compare <- function(data,
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
-  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame(), data_names = names(data))
+  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE,
+                          data_names = names(data))
   distributions <- .surv_distribution_arg(
     substitute(distributions),
     env = parent.frame(),

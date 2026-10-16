@@ -16,9 +16,16 @@ cox_reg(
   multivariate = NULL,
   format = c("flextable", "gt"),
   theme = c("minimal"),
-  show_sample = "events",
+  show_sample = "both",
   model_stats = FALSE,
-  show_ref = TRUE
+  show_ref = TRUE,
+  baseline_strata = NULL,
+  time_start = NULL,
+  cluster = NULL,
+  weights = NULL,
+  robust = NULL,
+  ties = c("efron", "breslow", "exact"),
+  control = NULL
 )
 }
 \arguments{
@@ -63,10 +70,13 @@ accepted for convenience; \code{multivariable} is used internally.}
 
 \item{theme}{Table styling preset.}
 
-\item{show_sample}{For stratified Cox tables, controls which sample-size
-columns are shown in the publication table. One of \code{"events"}
-(default), \code{"n"}, \code{"both"}, or \code{"none"}. Model statistics,
-when requested, still retain both N and event counts.}
+\item{show_sample}{For stratified Cox tables (\code{stratifier} supplied),
+controls which sample-size columns are shown in the publication table. One
+of \code{"both"} (default; N and events), \code{"n"}, \code{"events"}, or
+\code{"none"}. Model statistics, when requested, still retain both N and
+event counts. This argument is ignored when \code{stratifier} is not
+supplied: non-stratified tables always show the model N column and report
+the number of events in a footnote.}
 
 \item{model_stats}{Logical; if \code{TRUE}, extract model-fit statistics
 including AIC, BIC, log-likelihood, concordance, number of events, and N.}
@@ -74,6 +84,33 @@ including AIC, BIC, log-likelihood, concordance, number of events, and N.}
 \item{show_ref}{Logical; if \code{TRUE} (default), display reference-category
 rows as \code{"Ref."}. If \code{FALSE}, hide reference rows; a message
 reminds users to use \code{show_ref = TRUE} when reference rows are needed.}
+
+\item{baseline_strata}{Optional character vector of categorical variables
+used to stratify the baseline hazard within one Cox model. Common hazard
+ratios are estimated while each stratum has a separate baseline hazard.
+No hazard ratio is estimated for these variables. This cannot be combined
+with \code{stratifier}, which fits separate models.}
+
+\item{time_start}{Optional numeric variable containing entry or interval-start
+times. When supplied, a counting-process response
+\code{Surv(time_start, time, event)} is fitted, enabling delayed entry and
+start-stop data.}
+
+\item{cluster}{Optional variable identifying correlated observations. Cox
+models use a clustered sandwich variance estimate for this variable.}
+
+\item{weights}{Optional numeric case-weight variable.}
+
+\item{robust}{Optional logical passed to \code{survival::coxph()}. The
+default \code{NULL} lets \code{coxph()} choose its standard behaviour;
+clustered models use robust variance automatically.}
+
+\item{ties}{Method for handling tied event times: \code{"efron"} (default),
+\code{"breslow"}, or \code{"exact"}.}
+
+\item{control}{Optional named list of arguments for
+\code{survival::coxph.control()}, or a completed control list returned by
+that function.}
 }
 \value{
 A list of class \code{c("gtregression","cox_reg", ...)} with elements:
@@ -88,7 +125,8 @@ A list of class \code{c("gtregression","cox_reg", ...)} with elements:
   \item{variable_labels}{Named character vector of display labels.}
   \item{footnotes}{Character vector used by the rendered table. Adjustment
   notes use the same display labels as the table.}
-  \item{time,event,approach,format,source,adjust_for,exposures,interaction}{Metadata fields.}
+  \item{time,event,approach,format,source,adjust_for,baseline_strata,
+  exposures,interaction}{Metadata fields.}
 }
 }
 \description{
@@ -113,15 +151,32 @@ Interaction terms specified via \code{interaction} are included using
 standard formula expansion (for example, \code{trt*prior}). Interaction
 effects are displayed as additional rows beneath the corresponding exposure.
 
+\code{baseline_strata} fits one Cox model with separate baseline hazards for
+the observed combinations of the selected categorical variables. It reports
+common hazard ratios for the predictors and no coefficient for the strata.
+This differs from \code{stratifier}, which fits separate models and reports
+stratum-specific results.
+
 The proportional hazards assumption should be assessed separately, for
 example with \code{check_ph()}.
 
-Stratified Cox tables show event counts by default. Use
-\code{show_sample = "n"}, \code{show_sample = "both"}, or
-\code{show_sample = "none"} to control the displayed sample columns. Crude
-stratified tables calculate these counts for each exposure-specific model;
-adjusted and multivariable stratified tables use the corresponding fitted
-model within each stratum.
+Stratified Cox tables show both N and event counts by default
+(\code{show_sample = "both"}). Use \code{show_sample = "n"},
+\code{show_sample = "events"}, or \code{show_sample = "none"} to control the
+displayed sample columns. All counts are taken from the fitted model within
+each stratum, so rows dropped for missing values in any model variable
+(including \code{time_start}, \code{cluster}, and \code{weights}) are not
+counted. When models within a stratum use different numbers of
+observations, the footnote reports the range. Rows with a missing
+\code{stratifier} value are excluded and counted in a footnote.
+\code{show_sample} has no effect without \code{stratifier}.
+
+Complete-case analysis is used: each model uses the rows that are complete
+for its own variables. Unused factor levels are dropped for each fitted
+model, so the reference category shown as \code{"Ref."} is the first level
+present in the data used by that model. Ordered factors are analysed with
+treatment (category-versus-reference) contrasts. Data in which every
+observation is an event are accepted.
 
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the
@@ -164,6 +219,16 @@ cox_reg(
   time = time,
   event = status,
   exposures = c(trt, celltype, prior, age, karno),
+  multivariable = TRUE
+)
+
+# One model with separate baseline hazards by cell type
+cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  baseline_strata = celltype,
   multivariable = TRUE
 )
 

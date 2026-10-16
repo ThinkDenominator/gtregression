@@ -70,17 +70,23 @@
   if (!requireNamespace("gt", quietly = TRUE))
     stop("Install 'gt' or use format='flextable'.", call. = FALSE)
 
-  out <- df[, c("Characteristic", effect_label, "p-value"), drop = FALSE]
+  columns <- c("Characteristic", if ("N" %in% names(df)) "N", effect_label,
+               "p-value")
+  out <- df[, columns, drop = FALSE]
+  numeric_columns <- setdiff(names(out), "Characteristic")
 
   tb <- gt::gt(out) |>
     gt::cols_align("left",   columns = "Characteristic") |>
-    gt::cols_align("center", columns = c(effect_label, "p-value")) |>
+    gt::cols_align("center", columns = numeric_columns) |>
     gt::tab_options(
       table.font.names         = "system-ui",
       data_row.padding         = gt::px(4),
       heading.background.color = "white",
       table.background.color   = "white"
     )
+  if ("N" %in% names(out)) {
+    tb <- gt::sub_missing(tb, columns = "N", missing_text = "")
+  }
 
   tb <- gt::tab_style(tb, gt::cell_text(weight = "bold"),
                       gt::cells_body(rows = df$is_header %in% TRUE, columns = "Characteristic"))

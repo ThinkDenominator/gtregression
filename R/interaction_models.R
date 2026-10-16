@@ -1,4 +1,4 @@
-#' Compare Models With and Without an Interaction Term
+#' Compare models with and without an interaction term
 #'
 #' Fits two models, one with and one without an interaction term between an
 #' exposure and a potential effect modifier. The models are compared using a
@@ -43,7 +43,9 @@
 #'   \code{approach = "survreg"}. One of \code{"weibull"},
 #'   \code{"exponential"}, \code{"lognormal"}, or \code{"loglogistic"}.
 #' @param test Statistical test for model comparison. One of \code{"LRT"} or
-#'   \code{"Wald"}.
+#'   \code{"Wald"}. For \code{approach = "robpoisson"} a likelihood-ratio test
+#'   is not valid, so the Wald test with the robust (sandwich HC0) variance is
+#'   always returned and reported as such in \code{$test}.
 #' @param alpha Significance threshold used to classify the interaction result.
 #' @param verbose Logical; if \code{TRUE}, prints a short interpretation.
 #' @param format Output format for the viewing table. One of
@@ -114,11 +116,13 @@ interaction_models <- function(data,
   outcome <- if (missing(outcome) || identical(substitute(outcome), quote(NULL))) {
     NULL
   } else {
-    .vars_arg(substitute(outcome), env = parent.frame())
+    .vars_arg(substitute(outcome), env = parent.frame(), data_names = names(data))
   }
-  exposure <- .vars_arg(substitute(exposure), env = parent.frame())
-  covariates <- .vars_arg(substitute(covariates), env = parent.frame(), allow_null = TRUE)
-  effect_modifier <- .vars_arg(substitute(effect_modifier), env = parent.frame())
+  exposure <- .vars_arg(substitute(exposure), env = parent.frame(), data_names = names(data))
+  covariates <- .vars_arg(substitute(covariates), env = parent.frame(), allow_null = TRUE,
+                          data_names = names(data))
+  effect_modifier <- .vars_arg(substitute(effect_modifier), env = parent.frame(),
+                               data_names = names(data))
   if (!is.character(exposure) || length(exposure) != 1L ||
       is.na(exposure) || !nzchar(exposure)) {
     stop("`exposure` must be a single character variable name.", call. = FALSE)
@@ -159,12 +163,12 @@ interaction_models <- function(data,
   time <- if (missing(time) || identical(substitute(time), quote(NULL))) {
     NULL
   } else {
-    .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
+    .single_var_arg(substitute(time), data = data, env = parent.frame())
   }
   event <- if (missing(event) || identical(substitute(event), quote(NULL))) {
     NULL
   } else {
-    .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
+    .single_var_arg(substitute(event), data = data, env = parent.frame())
   }
   distribution <- if (identical(approach, "survreg")) {
     .surv_distribution_arg(
@@ -204,6 +208,26 @@ interaction_models <- function(data,
   if (length(missing_vars)) {
     stop("Variables not found: ", paste(missing_vars, collapse = ", "),
          call. = FALSE)
+  }
+
+  outcome_roles <- if (is_survival) c(time, event) else outcome
+  role_clash <- intersect(c(exposure, effect_modifier, covariates), outcome_roles)
+  if (length(role_clash)) {
+    stop(
+      "The outcome variable cannot also be the exposure, effect modifier or a covariate: ",
+      paste(role_clash, collapse = ", "), ".",
+      call. = FALSE
+    )
+  }
+  if (identical(exposure, effect_modifier)) {
+    stop("`effect_modifier` must be a different variable from `exposure`.", call. = FALSE)
+  }
+  if (any(c(exposure, effect_modifier) %in% covariates)) {
+    stop(
+      "`covariates` must not include the exposure or the effect modifier: ",
+      paste(intersect(covariates, c(exposure, effect_modifier)), collapse = ", "), ".",
+      call. = FALSE
+    )
   }
 
   if (!is_survival) {
@@ -371,6 +395,13 @@ interaction_models <- function(data,
   }
   class(result) <- c("interaction_models_result", class(result))
 
+  if (approach == "robpoisson" && identical(test, "LRT")) {
+    message(
+      "interaction_models(): a likelihood-ratio test is not valid for robust ",
+      "Poisson regression; the robust (sandwich HC0) Wald test is reported."
+    )
+  }
+
   if (verbose) {
     message(interpretation)
   }
@@ -486,6 +517,17 @@ interaction_models <- function(data,
 }
 
 .interaction_compare_models <- function(model1, model2, test, approach) {
+  if (identical(approach, "robpoisson")) {
+    # A likelihood-ratio test (and a model-based Wald test) rely on the
+    # Poisson likelihood, which is misspecified for a binary outcome. Only the
+    # Wald test with the robust (sandwich) variance is valid.
+    robust <- .interaction_robust_wald(model1, model2)
+    return(list(
+      comparison = robust$comparison,
+      p_value = robust$p_value,
+      test_label = "Robust Wald Test (sandwich HC0)"
+    ))
+  }
   if (test == "LRT") {
     comp <- tryCatch(
       suppressWarnings(stats::anova(model1, model2, test = "LRT")),
@@ -517,6 +559,43 @@ interaction_models <- function(data,
     comparison = comp,
     p_value = p_value,
     test_label = "Wald Test"
+  )
+}
+
+#' Robust (sandwich HC0) Wald chi-square test of the terms added by `model2`
+#' @keywords internal
+#' @noRd
+.interaction_robust_wald <- function(model1, model2) {
+  failed <- list(comparison = NULL, p_value = NA_real_)
+  b <- tryCatch(stats::coef(model2), error = function(e) NULL)
+  b0 <- tryCatch(stats::coef(model1), error = function(e) NULL)
+  if (is.null(b) || is.null(b0)) return(failed)
+  added <- setdiff(names(b)[!is.na(b)], names(b0))
+  if (!length(added)) return(failed)
+  vc <- tryCatch(
+    sandwich::vcovHC(model2, type = "HC0"),
+    error = function(e) NULL
+  )
+  if (is.null(vc) || !all(added %in% colnames(vc))) return(failed)
+  v <- vc[added, added, drop = FALSE]
+  stat <- tryCatch(
+    as.numeric(crossprod(b[added], solve(v, b[added]))),
+    error = function(e) NA_real_
+  )
+  if (!is.finite(stat) || stat < 0) return(failed)
+  df <- length(added)
+  p_value <- stats::pchisq(stat, df = df, lower.tail = FALSE)
+  list(
+    comparison = data.frame(
+      test = "Robust Wald (sandwich HC0)",
+      terms = paste(added, collapse = ", "),
+      Df = df,
+      Chisq = stat,
+      `Pr(>Chisq)` = p_value,
+      check.names = FALSE,
+      stringsAsFactors = FALSE
+    ),
+    p_value = p_value
   )
 }
 

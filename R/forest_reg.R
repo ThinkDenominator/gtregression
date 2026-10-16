@@ -10,9 +10,10 @@
 #'   \code{uni}, \code{multi}, and \code{desc}.
 #' @param uni,multi,desc Optional \code{gtregression} objects to pass through to
 #'   \code{forest_df()}.
-#' @param theme Optional \code{forestploter::forest_theme()}. If \code{NULL},
-#'   \code{forestploter} defaults are used. You may pass colors and styling
-#'   either here or through \code{...}.
+#' @param theme Optional \code{forestploter::forest_style()} or
+#'   \code{forestploter::forest_theme()}. If \code{NULL}, \code{forestploter}
+#'   defaults are used. You may pass colors and styling either here or through
+#'   \code{...}.
 #' @param ci_col_width Numeric value, or one value per effect column,
 #'   controlling the blank spacer width used by \code{forestploter} for the
 #'   confidence-interval plot column(s). Values greater than 1 are interpreted
@@ -22,7 +23,9 @@
 #'   \code{"left"} = plot first then text; \code{"right"} = text first then plot.
 #'   The \code{Characteristic} column and descriptive columns remain on the left.
 #' @param quiet Logical. Suppress forestploter warnings. Default = `TRUE`.
-#' @param effects Optional effect labels passed to \code{forestploter::forest()}.
+#' @param effects Deprecated and ignored. This argument never affected the
+#'   rendered forest plot and is retained temporarily for backward
+#'   compatibility.
 #' @param ticks_at Optional numeric vector, or list of numeric vectors for
 #'   multiple effect
 #'   columns, specifying x-axis tick positions. If \code{NULL},
@@ -104,6 +107,7 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
                        strata_fill = "#EAF2F1",
                        ...) {
 
+  .rd_reject(list(df, uni, multi, desc), "forest_reg")
   side <- .choice_arg(substitute(side), env = parent.frame(), choices = c("right", "left"))
   side <- match.arg(side)
   if (!is.logical(quiet) || length(quiet) != 1L || is.na(quiet)) {
@@ -216,6 +220,57 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
   lo <- if (length(effect_sets$lo) == 1L) effect_sets$lo[[1]] else effect_sets$lo
   hi <- if (length(effect_sets$hi) == 1L) effect_sets$hi[[1]] else effect_sets$hi
 
+  # forestploter cannot draw infinite coordinates. Preserve the original
+  # values in `input_data` and clip drawing-only coordinates to finite limits.
+  est_sets <- effect_sets$est
+  lo_sets <- effect_sets$lo
+  hi_sets <- effect_sets$hi
+  has_infinite <- vapply(seq_along(est_sets), function(i) {
+    any(is.infinite(c(est_sets[[i]], lo_sets[[i]], hi_sets[[i]])))
+  }, logical(1))
+  requested_xlim <- xlim
+
+  as_xlim_list <- function(value, n) {
+    if (is.null(value)) return(rep(list(NULL), n))
+    if (is.list(value)) return(value)
+    rep(list(value), n)
+  }
+  infer_xlim <- function(est_i, lo_i, hi_i, x_trans, ref_line) {
+    values <- c(est_i, lo_i, hi_i, ref_line)
+    values <- values[is.finite(values)]
+    if (identical(x_trans, "log")) {
+      values <- values[values > 0]
+      if (!length(values)) return(c(0.5, 2))
+      limits <- range(log(values))
+      if (diff(limits) == 0) limits <- limits + c(-log(2), log(2))
+      padding <- max(diff(limits) * 0.08, log(1.05))
+      return(exp(limits + c(-padding, padding)))
+    }
+    if (!length(values)) return(c(-1, 1))
+    limits <- range(values)
+    if (diff(limits) == 0) limits <- limits + c(-1, 1)
+    padding <- max(diff(limits) * 0.08, .Machine$double.eps^0.5)
+    limits + c(-padding, padding)
+  }
+
+  plotting_xlim <- as_xlim_list(xlim, length(est_sets))
+  if (any(has_infinite)) {
+    for (i in seq_along(plotting_xlim)) {
+      if (is.null(plotting_xlim[[i]])) {
+        plotting_xlim[[i]] <- infer_xlim(
+          est_sets[[i]], lo_sets[[i]], hi_sets[[i]], meta$x_trans, meta$ref_line
+        )
+      }
+      est_sets[[i]] <- pmin(pmax(est_sets[[i]], plotting_xlim[[i]][1]), plotting_xlim[[i]][2])
+      lo_sets[[i]] <- pmin(pmax(lo_sets[[i]], plotting_xlim[[i]][1]), plotting_xlim[[i]][2])
+      hi_sets[[i]] <- pmin(pmax(hi_sets[[i]], plotting_xlim[[i]][1]), plotting_xlim[[i]][2])
+    }
+    xlim <- if (length(plotting_xlim) == 1L) plotting_xlim[[1]] else plotting_xlim
+    est <- if (length(est_sets) == 1L) est_sets[[1]] else est_sets
+    lo <- if (length(lo_sets) == 1L) lo_sets[[1]] else lo_sets
+    hi <- if (length(hi_sets) == 1L) hi_sets[[1]] else hi_sets
+  }
+
   df_plot <- df[, setdiff(names(df), c("se_uni","se_adj")), drop = FALSE]
 
   # --- position the plot columns per `side` and recompute ci_col ---
@@ -239,12 +294,28 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
       call. = FALSE
     )
   }
-  if (interactive() && is.null(ticks_at) && is.null(xlim)) {
-    message(
-      "forest_reg(): x-axis ticks use forestploter defaults. If labels overlap in your graphics device, ",
-      "set `xlim` and `ticks_at` (use one vector per effect column when applicable) ",
-      "or increase `ci_col_width`."
-    )
+  # Without user limits or ticks, choose a few evenly spaced, readable ticks
+  # for each effect column (forestploter's own ticks can overlap on log axes).
+  auto_axis <- NULL
+  if (is.null(ticks_at) && is.null(requested_xlim)) {
+    auto_axis <- lapply(seq_along(est_sets), function(i) {
+      .forest_auto_axis(
+        c(est_sets[[i]], lo_sets[[i]], hi_sets[[i]]),
+        x_trans = meta$x_trans, ref_line = meta$ref_line,
+        limits = if (is.list(xlim)) xlim[[i]] else xlim,
+        width = ci_col_width[min(i, length(ci_col_width))]
+      )
+    })
+  }
+  axis_xlim <- xlim
+  axis_ticks <- ticks_at
+  if (!is.null(auto_axis)) {
+    pick <- function(field) {
+      values <- lapply(auto_axis, `[[`, field)
+      if (length(values) == 1L) values[[1]] else values
+    }
+    axis_xlim <- pick("xlim")
+    axis_ticks <- pick("ticks")
   }
   for (i in seq_along(anchor_cols)) {
     df_plot[[anchor_cols[i]]] <- paste(rep(" ", ci_col_width[i]), collapse = "")
@@ -269,21 +340,64 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
   anchor_in_blocks <- blocks[blocks %in% anchor_cols]
   ci_col <- match(anchor_in_blocks, names(df_plot))
 
-  draw <- function() forestploter::forest(
-    data       = df_plot,
-    est        = est,
-    lower      = lo,
-    upper      = hi,
-    ci_column  = ci_col,
-    x_trans    = meta$x_trans,
-    ref_line   = meta$ref_line,
-    xlim       = xlim,
-    ticks_at   = ticks_at,
-    ticks_digits = ticks_digits,
-    theme      = theme,
-    effects    = effects,
-    ...
-  )
+  draw <- function() {
+    dots <- list(...)
+    common_args <- c(
+      list(
+        data = df_plot,
+        est = est,
+        lower = lo,
+        upper = hi,
+        ci_column = ci_col,
+        ref_line = meta$ref_line
+      ),
+      dots
+    )
+
+    if (utils::packageVersion("forestploter") >= "1.2.0") {
+      axis_dot_names <- intersect(names(dots), c("ticks_minor", "vert_line"))
+      axis_args <- dots[axis_dot_names]
+      dots[axis_dot_names] <- NULL
+      names(axis_args)[names(axis_args) == "vert_line"] <- "vline"
+
+      lab_dot_names <- intersect(
+        names(dots),
+        c("title", "xlab", "footnote", "arrow_lab")
+      )
+      lab_args <- dots[lab_dot_names]
+      dots[lab_dot_names] <- NULL
+      names(lab_args)[names(lab_args) == "arrow_lab"] <- "arrow"
+
+      common_args <- c(common_args[seq_len(6L)], dots)
+      common_args$style <- theme
+      plot <- do.call(forestploter::forest, common_args)
+      axis_args <- c(list(plot = plot, x_trans = meta$x_trans), axis_args)
+      if (!is.null(axis_xlim)) axis_args$xlim <- axis_xlim
+      if (!is.null(axis_ticks)) axis_args$ticks_at <- axis_ticks
+      if (!is.null(ticks_digits)) axis_args$ticks_digits <- ticks_digits
+      set_xaxis <- getExportedValue("forestploter", "set_xaxis")
+      plot <- do.call(set_xaxis, axis_args)
+      if (length(lab_args)) {
+        set_labs <- getExportedValue("forestploter", "set_labs")
+        plot <- do.call(set_labs, c(list(plot = plot), lab_args))
+      }
+      return(plot)
+    }
+
+    do.call(
+      forestploter::forest,
+      c(
+        common_args,
+        list(
+          x_trans = meta$x_trans,
+          xlim = axis_xlim,
+          ticks_at = axis_ticks,
+          ticks_digits = ticks_digits,
+          theme = theme
+        )
+      )
+    )
+  }
 
   plt <- if (quiet) suppressWarnings(draw()) else draw()
 
@@ -300,6 +414,8 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
   meta$ticks_at <- ticks_at
   meta$ticks_digits <- ticks_digits
   meta$xlim <- xlim
+  meta$requested_xlim <- requested_xlim
+  meta$infinite_intervals_clipped <- any(has_infinite)
   meta$ci_col_width <- ci_col_width
   meta$strata_rows <- strata_rows
   meta$style_strata <- style_strata
@@ -307,6 +423,63 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
 
   structure(list(plot = plt, data = df_plot, input_data = df, meta = meta),
             class = c("gtregression_forest", "list"))
+}
+
+# Readable default x-axis for one effect column: rounded tick values that
+# cover every estimate, interval and the reference line, with only as many
+# labels as fit in the column without overlapping.
+.forest_auto_axis <- function(values, x_trans = "none", ref_line = 0,
+                              limits = NULL, width = 20) {
+  values <- c(values, ref_line)
+  values <- values[is.finite(values)]
+  if (!is.null(limits)) values <- values[values >= min(limits) & values <= max(limits)]
+  label_of <- function(t) format(t, trim = TRUE, drop0trailing = TRUE, scientific = FALSE)
+  # Column width in digit widths (a space is about 0.7 of a digit wide).
+  room <- max(width, 8) * 0.7
+  thin <- function(candidates, position) {
+    keep <- numeric(0)
+    for (t in candidates) {
+      fits <- all(vapply(keep, function(k) {
+        abs(position(t) - position(k)) * room >=
+          (nchar(label_of(t)) + nchar(label_of(k))) / 2 + 1
+      }, logical(1)))
+      if (fits) keep <- c(keep, t)
+    }
+    sort(unique(keep))
+  }
+  if (identical(x_trans, "log")) {
+    values <- values[values > 0]
+    if (!length(values)) return(list(xlim = c(0.5, 2), ticks = c(0.5, 1, 2)))
+    bounds <- c(0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5,
+                1, 2, 5, 10, 20, 50, 100, 200, 500, 1000)
+    low <- min(values)
+    high <- max(values)
+    if (high / low <= 2.5) bounds <- sort(c(bounds, 0.75, 1.5))
+    lower <- if (any(bounds <= low)) max(bounds[bounds <= low]) else low
+    upper <- if (any(bounds >= high)) min(bounds[bounds >= high]) else high
+    if (isTRUE(all.equal(lower, upper))) {
+      lower <- lower / 2
+      upper <- upper * 2
+    }
+    position <- function(t) log(t / lower) / log(upper / lower)
+    inside <- bounds[bounds >= lower & bounds <= upper]
+    # Reference line first, then the ends, then the values in between,
+    # spreading them out as evenly as possible.
+    # Powers of ten first, then 5 and 2 multiples.
+    lead <- signif(inside / 10^floor(log10(inside)), 1)
+    middle <- inside[order(match(lead, c(1, 5, 2, 7.5, 1.5)))]
+    first <- if (ref_line > 0 && ref_line >= lower && ref_line <= upper) ref_line else numeric(0)
+    candidates <- unique(c(first, upper, lower, middle))
+    return(list(xlim = c(lower, upper), ticks = thin(candidates, position)))
+  }
+  if (!length(values)) return(list(xlim = c(-1, 1), ticks = c(-1, 0, 1)))
+  grid <- pretty(range(values), n = 6L)
+  lower <- min(grid)
+  upper <- max(grid)
+  position <- function(t) (t - lower) / (upper - lower)
+  first <- if (is.finite(ref_line) && ref_line >= lower && ref_line <= upper) ref_line else numeric(0)
+  candidates <- unique(c(first, upper, lower, grid[order(abs(grid - ref_line))]))
+  list(xlim = c(lower, upper), ticks = thin(candidates, position))
 }
 
 .forest_effect_sets <- function(df) {
@@ -320,7 +493,8 @@ forest_reg <- function(df = NULL, uni = NULL, multi = NULL, desc = NULL,
       text_cols = custom$text_cols
     )
     if (length(out$est) && length(out$lo) && length(out$hi) &&
-        length(out$anchors) && length(out$text_cols)) {
+        length(out$anchors) && length(out$text_cols) &&
+        all(c(out$anchors, out$text_cols) %in% names(df))) {
       return(out)
     }
   }

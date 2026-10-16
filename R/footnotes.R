@@ -7,8 +7,30 @@
 #' Describe the stratification variable once without repeating it in headings
 #' @keywords internal
 #' @noRd
-.stratified_by_note <- function(stratifier) {
-  paste0("Stratified by: ", stratifier, ".")
+.stratified_by_note <- function(stratifier, label = NULL) {
+  # `label`: display label of the stratifier (its "label" attribute), when
+  # available; otherwise the variable name is shown.
+  shown <- stratifier
+  if (is.character(label) && length(label) == 1L && !is.na(label) &&
+      nzchar(label)) {
+    shown <- unname(label)
+  }
+  paste0("Stratified by: ", shown, ".")
+}
+
+#' Display label of a stratifier variable (falls back to its name)
+#' @keywords internal
+#' @noRd
+.stratifier_label <- function(data, stratifier) {
+  out <- tryCatch(
+    unname(.var_label_map(data, stratifier)[[1L]]),
+    error = function(e) NULL
+  )
+  if (is.character(out) && length(out) == 1L && !is.na(out) && nzchar(out)) {
+    out
+  } else {
+    stratifier
+  }
 }
 
 #' Compose footnotes for multivariable strata (abbrev + per-stratum N)
@@ -41,20 +63,55 @@
   invisible(show_ref)
 }
 
+#' Determine whether a reference row remains visible
+#' @keywords internal
+#' @noRd
+.has_visible_reference <- function(table_body, show_ref) {
+  if (is.null(table_body) ||
+      !all(c("exposure", "ref") %in% names(table_body)) ||
+      !any(table_body$ref %in% TRUE, na.rm = TRUE)) {
+    return(FALSE)
+  }
+
+  if (isTRUE(show_ref)) {
+    return(TRUE)
+  }
+
+  groups <- split(table_body, table_body$exposure)
+  any(vapply(groups, function(x) {
+    levels <- unique(x$level[!is.na(x$level)])
+    any(x$ref %in% TRUE, na.rm = TRUE) && length(levels) > 2L
+  }, logical(1)))
+}
+
+#' Determine whether binary reference rows are compacted
+#' @keywords internal
+#' @noRd
+.has_hidden_binary_reference <- function(table_body, show_ref) {
+  if (isTRUE(show_ref) ||
+      is.null(table_body) ||
+      !all(c("exposure", "ref") %in% names(table_body))) {
+    return(FALSE)
+  }
+
+  groups <- split(table_body, table_body$exposure)
+  any(vapply(groups, function(x) {
+    levels <- unique(x$level[!is.na(x$level)])
+    length(levels) == 2L && any(x$ref %in% TRUE, na.rm = TRUE)
+  }, logical(1)))
+}
+
 #' @keywords internal
 #' @noRd
 .message_hidden_ref_rows <- function(function_name, table_body, show_ref) {
-  if (isTRUE(show_ref) || is.null(table_body) || !"ref" %in% names(table_body)) {
-    return(invisible(FALSE))
-  }
-
-  if (!any(table_body$ref %in% TRUE, na.rm = TRUE)) {
+  if (!.has_hidden_binary_reference(table_body, show_ref)) {
     return(invisible(FALSE))
   }
 
   message(
     function_name,
-    "(): reference rows are hidden for dichotomous/categorical variables. ",
+    "(): reference rows are hidden for binary variables. ",
+    "Reference rows are retained for categorical variables with more than two levels. ",
     "To display Ref., use `show_ref = TRUE`."
   )
 
@@ -106,11 +163,35 @@
     return("N reflects complete observations used in each stratum-specific model")
   }
 
-  parts <- paste0(
-    names(n_by_stratum),
-    ": N = ",
-    unlist(n_by_stratum, use.names = FALSE)
-  )
+  # Each element holds the N of every model fitted in the stratum. Values may
+  # arrive as numbers or as text (including an already formatted range such
+  # as "79-97"), so every integer found is used and nothing is coerced with
+  # a warning.
+  count_values <- function(x) {
+    if (is.list(x)) x <- unlist(x, use.names = FALSE)
+    if (is.factor(x)) x <- as.character(x)
+    if (is.numeric(x)) {
+      x <- x[is.finite(x)]
+      return(unique(round(x)))
+    }
+    x <- as.character(x)
+    x <- x[!is.na(x)]
+    found <- unlist(regmatches(x, gregexpr("[0-9][0-9,]*", x)), use.names = FALSE)
+    found <- gsub(",", "", found, fixed = TRUE)
+    found <- found[nzchar(found)]
+    unique(as.numeric(found))
+  }
+  show <- function(v) format(v, big.mark = "", scientific = FALSE, trim = TRUE)
+
+  parts <- vapply(names(n_by_stratum), function(stratum) {
+    values <- count_values(n_by_stratum[[stratum]])
+    if (!length(values)) return(paste0(stratum, ": N unavailable"))
+    if (length(values) == 1L) {
+      return(paste0(stratum, ": N = ", show(values)))
+    }
+    paste0(stratum, ": N = ", show(min(values)), "\u2013", show(max(values)),
+           " across models")
+  }, character(1))
 
   paste0(
     "Complete observations included by ",

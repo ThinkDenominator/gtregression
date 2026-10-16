@@ -2,7 +2,7 @@
 % Please edit documentation in R/interaction_models.R
 \name{interaction_models}
 \alias{interaction_models}
-\title{Compare Models With and Without an Interaction Term}
+\title{Compare models with and without an interaction term}
 \usage{
 interaction_models(
   data,
@@ -54,7 +54,9 @@ Quoted and bare names are accepted.}
 \code{"exponential"}, \code{"lognormal"}, or \code{"loglogistic"}.}
 
 \item{test}{Statistical test for model comparison. One of \code{"LRT"} or
-\code{"Wald"}.}
+\code{"Wald"}. For \code{approach = "robpoisson"} a likelihood-ratio test
+is not valid, so the Wald test with the robust (sandwich HC0) variance is
+always returned and reported as such in \code{$test}.}
 
 \item{alpha}{Significance threshold used to classify the interaction result.}
 

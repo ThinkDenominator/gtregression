@@ -106,7 +106,24 @@ exposure:potential_confounder}. It does not adjust for other covariates.
 Consequently, the reported interaction p-value is a candidate-only screening
 result, not a final adjusted interaction analysis. Use
 \code{interaction_models(covariates = ...)} when testing a planned,
-covariate-adjusted interaction.
+covariate-adjusted interaction. The interaction p-value is a
+likelihood-ratio test of the models with and without the interaction for
+every approach except \code{"robpoisson"}, where a robust (sandwich HC0)
+Wald test is used because a likelihood-ratio test is not valid.
+
+Percentage changes ("change-in-estimate") are computed on the displayed
+ratio scale (OR, RR, IRR, HR, time ratio) as
+\code{100 * |adjusted - crude| / crude}; for linear models the coefficients
+are compared directly.
+
+A numeric candidate coded as at most 10 distinct whole numbers is treated
+as categorical in every step (adjusted model, interaction model,
+stratum-specific estimates and Mantel-Haenszel). Other numeric candidates
+are adjusted for as continuous and have no stratum-specific screen. The
+estimate-spread screen only uses strata with at least 20 observations and a
+stable estimate (converged model, finite standard error); the
+\code{stable} column of \code{stratum_estimates} shows which strata were
+used.
 
 Use this function when you want to screen one or more candidate variables and
 organise crude, adjusted, Mantel-Haenszel, and effect-modification signals in

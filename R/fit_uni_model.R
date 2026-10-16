@@ -12,19 +12,21 @@
 #' @keywords internal
 .fit_uni_model <- function(data, outcome, exposures, approach) {
   approach <- .normalize_approach(approach)
-  formula <- as.formula(paste(outcome, "~", exposures))
+  data <- .prepare_regression_model_data(data, outcome, exposures, approach)
+  formula <- as.formula(paste(
+    .formula_name(outcome), "~", paste(.formula_name(exposures), collapse = " + ")
+  ))
 
   tryCatch({
-    # Fit model by approach
-    fit <- switch(approach,
+    # Fit model by approach (always with treatment contrasts: the tables show
+    # level-versus-reference rows)
+    fit <- .with_treatment_contrasts(switch(approach,
                   "logit" = glm(formula,
                                 data = data,
                                 family = binomial("logit")),
                   "firth" = logistf::logistf(formula = formula,
                                              data = data),
-                  "logbinomial" = glm(formula,
-                                       data = data,
-                                       family = binomial("log")),
+                  "logbinomial" = .fit_logbinomial(formula, data),
                   "poisson" = glm(formula,
                                   data = data,
                                   family = poisson("log")),
@@ -42,12 +44,15 @@
                            "robpoisson, linear, negbin."),
                     call. = FALSE
                   )
+    ))
+    attr(fit, "gtregression_model_frame") <- .with_treatment_contrasts(
+      stats::model.frame(formula, data = data)
     )
-    attr(fit, "gtregression_model_frame") <- stats::model.frame(formula, data = data)
     return(fit)
   }, error = function(e) {
     warning("Model failed for exposure(s) '", paste(exposures, collapse = ", "),
-            "' using '", approach, "': ", e$message, call. = FALSE)
+            "' using '", approach, "': ", sub("\\.+$", "", e$message), ".",
+            .fit_failure_hint(approach), call. = FALSE)
     return(NULL)
   })
 }

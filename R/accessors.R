@@ -15,6 +15,10 @@
 #' @param x A \code{gtregression} object.
 #' @param name Field name to access.
 #'
+#' @return The requested element of \code{x}, or \code{NULL} if \code{x} has
+#'   no element of that name. \code{engine} and \code{format} are treated as
+#'   aliases of each other.
+#'
 #' @export
 `$.gtregression` <- function(x, name) {
   # avoid recursive calls by using [[ ]] only

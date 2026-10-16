@@ -965,7 +965,28 @@ select_models(
 )
 
 
-## 21. Export outputs ----------------------------------------------------------
+## 21. Baseline-hazard stratification -----------------------------------------
+
+## This fits one Cox model with common predictor HRs and separate baseline
+## hazards by cell type. It does not report an HR for cell type. By contrast,
+## `stratifier` above fits separate models and reports stratum-specific HRs.
+cox_baseline_strata <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  baseline_strata = celltype,
+  multivariable = TRUE,
+  model_stats = TRUE
+)
+
+cox_baseline_strata
+cox_baseline_strata$model_stats
+plot_reg(cox_baseline_strata)
+forest_reg(forest_df(cox_baseline_strata))
+
+
+## 22. Export outputs ----------------------------------------------------------
 
 ## Files are written to a temporary folder by default when no full destination
 ## path is supplied. This keeps examples CRAN-safe and avoids accidental clutter.
@@ -990,7 +1011,7 @@ save_docx(
 )
 
 
-## 22. Final checklist ---------------------------------------------------------
+## 23. Final checklist ---------------------------------------------------------
 
 ## Things to confirm manually:
 ## - cox_reg() displays HR (95% CI) by default.
@@ -1002,6 +1023,8 @@ save_docx(
 ## - survival_prob() reports fixed-time Kaplan-Meier survival probabilities.
 ## - logrank_test() compares Kaplan-Meier curves and reports observed/expected events.
 ## - cox_reg(adjust_for = ...) displays Adjusted HR (95% CI).
+## - baseline_strata fits one model with separate baseline hazards and no HR for
+##   the strata variable; stratifier continues to fit separate models.
 ## - time and event work with both bare names and objects holding column names.
 ## - Factor reference categories display as Ref.
 ## - model_stats = TRUE stores concordance/C-index, events, N, AIC, and BIC.

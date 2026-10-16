@@ -1,4 +1,5 @@
 test_that("reference controls include only observed categorical predictors", {
+  skip_on_cran()
   data <- data.frame(
     outcome = factor(c("No", "Yes", "No")),
     group = factor(c("A", "B", "A"), levels = c("A", "B", "Unused")),
@@ -19,6 +20,7 @@ test_that("reference controls include only observed categorical predictors", {
 })
 
 test_that("selected reference categories are applied and reproducible", {
+  skip_on_cran()
   data <- data.frame(
     group = factor(c("A", "B", "A"), levels = c("A", "B")),
     age = c(20, 30, 40)
@@ -35,14 +37,16 @@ test_that("selected reference categories are applied and reproducible", {
 })
 
 test_that("the app exposes Data Prep before modelling and reference guidance", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_text <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
   expect_lt(regexpr('"Data Prep"', app_text, fixed = TRUE)[[1]],
             regexpr('"Regression"', app_text, fixed = TRUE)[[1]])
   module_text <- paste(deparse(body(mod_data_prep_server)), collapse = " ")
-  expect_match(module_text, "Original data is active for analysis", fixed = TRUE)
-  expect_match(module_text, "use the prepared data", ignore.case = TRUE)
+  # One current analysis dataset: original until a change is applied.
+  expect_match(module_text, "Analyses use the original data", fixed = TRUE)
+  expect_match(module_text, "analyses use prepared data", fixed = TRUE)
   expect_match(app_text, "The selected category is the baseline", fixed = TRUE)
   expect_match(app_text, "gtx_reference_code", fixed = TRUE)
 })

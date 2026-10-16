@@ -190,6 +190,8 @@ save_docx(tables = birthwt_final, filename = "birthwt-report")
 
 ## Where To Go Next
 
+- [**Which Function Should I Use?**](choose-model.html): match your outcome and
+  study design to the right function.
 - [**Descriptive Tables**](descriptive-tables.html): build baseline tables users
   can read.
 - [**Regression Tables**](regression-tables.html): create crude and adjusted
@@ -207,5 +209,9 @@ save_docx(tables = birthwt_final, filename = "birthwt-report")
   collinearity, and model selection.
 - [**Confounding & Interaction**](confounding-interaction.html): support
   interpretation and model decisions.
+- [**Risk Difference and NNT**](risk-difference.html): absolute risks, risk
+  differences and the number needed to treat for two-group comparisons.
+- [**Merge and Customise Tables**](merge-tables.html): combine three or more
+  tables and finish them with flextable.
 - [**Customize & Export**](customize-export.html): polish and save tables,
   plots, and reports.

@@ -6,6 +6,7 @@
 #' @importFrom tibble tibble
 #' @importFrom broom.helpers tidy_plus_plus tidy_add_reference_rows
 #' @importFrom utils head
+#' @importFrom rlang %||%
 
 # Prevent global variable warnings
 utils::globalVariables(c(
@@ -68,7 +69,90 @@ utils::globalVariables(c(
   out
 }
 
+#' Value passed through a wrapper function for a bare variable-name symbol
+#'
+#' Bare names resolve to data columns first. The one exception is a wrapper
+#' function that forwards its own argument or local variable, for example
+#' `wrap <- function(dat, by) descriptive_table(dat, "x", by = by)`: there the
+#' symbol `by` is bound, in the frame of a calling function, to the name of
+#' another column, and the caller clearly means that value.
+#'
+#' Returns the character value when all of the following hold, otherwise
+#' `NULL` (meaning "use the column called `name`"):
+#' * `name` is bound in the frame of a function that is currently being
+#'   evaluated (a formal argument or local variable of a calling function).
+#'   Objects in the global environment (the workspace), in package namespaces
+#'   or attached packages, and in environments used by `eval()`/`local()`
+#'   never count;
+#' * its value is a non-missing character vector (normally one string);
+#' * every element is itself a column name of `data` and the value differs
+#'   from `name`.
+#'
+#' @keywords internal
+#' @noRd
+.wrapper_passed_name <- function(name, env, data_names) {
+  if (is.null(data_names) || !is.environment(env)) {
+    return(NULL)
+  }
+
+  # First environment in the lexical chain that binds `name`.
+  holder <- NULL
+  current <- env
+  repeat {
+    if (identical(current, emptyenv()) || identical(current, globalenv()) ||
+        identical(current, baseenv()) || isNamespace(current)) {
+      break
+    }
+    env_name <- attr(current, "name", exact = TRUE)
+    if (is.character(env_name) &&
+        (startsWith(env_name, "package:") || startsWith(env_name, "imports:"))) {
+      break
+    }
+    if (exists(name, envir = current, inherits = FALSE)) {
+      holder <- current
+      break
+    }
+    current <- parent.env(current)
+  }
+  if (is.null(holder)) {
+    return(NULL)
+  }
+
+  # `holder` must be the evaluation frame of a calling function (a closure
+  # call), not an environment handed to eval()/local().
+  frames <- sys.frames()
+  is_function_frame <- FALSE
+  for (i in seq_along(frames)) {
+    if (!identical(frames[[i]], holder)) next
+    fun <- sys.function(i)
+    if (is.function(fun) && !is.primitive(fun) &&
+        identical(environment(fun), parent.env(holder))) {
+      is_function_frame <- TRUE
+      break
+    }
+  }
+  if (!is_function_frame) {
+    return(NULL)
+  }
+
+  value <- tryCatch(
+    get(name, envir = holder, inherits = FALSE),
+    error = function(e) NULL
+  )
+  if (is.character(value) && length(value) >= 1L && !anyNA(value) &&
+      !identical(value, name) && all(value %in% data_names)) {
+    return(value)
+  }
+  NULL
+}
+
 #' Normalize quoted or bare variable-name arguments
+#'
+#' Resolution rule for a bare symbol: if it is a column name in `data`
+#' (`data_names`), the column is used, even when an unrelated object of the
+#' same name exists in the workspace or in a package (for example `rank`,
+#' `class`, `by`, `time`, `df`, `sample`). The only exception is a value
+#' forwarded by a wrapper function; see `.wrapper_passed_name()`.
 #'
 #' @keywords internal
 #' @noRd
@@ -88,6 +172,10 @@ utils::globalVariables(c(
       # A data-column name takes precedence over an unrelated object such as
       # the built-in `pressure` dataset.
       if (!is.null(data_names) && name %in% data_names) {
+        passed <- .wrapper_passed_name(name, env, data_names)
+        if (!is.null(passed)) {
+          return(passed)
+        }
         return(name)
       }
     }
@@ -107,6 +195,22 @@ utils::globalVariables(c(
     return(NULL)
   }
   out
+}
+
+#' Single variable-name argument (time, event) with the wrapper rule
+#'
+#' Same rule as `.vars_arg()`: the data column wins unless a calling function
+#' forwards the name of another column through a same-named argument.
+#' @keywords internal
+#' @noRd
+.single_var_arg <- function(expr, data, env = parent.frame()) {
+  if (is.symbol(expr) && as.character(expr) %in% names(data)) {
+    passed <- .wrapper_passed_name(as.character(expr), env, names(data))
+    if (!is.null(passed) && length(passed) == 1L) {
+      return(passed)
+    }
+  }
+  .cox_single_var_arg(expr, data = data, env = env)
 }
 
 #' Normalize quoted or bare interaction arguments

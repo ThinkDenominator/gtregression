@@ -29,9 +29,10 @@ forest_reg(
 \item{uni, multi, desc}{Optional \code{gtregression} objects to pass through to
 \code{forest_df()}.}
 
-\item{theme}{Optional \code{forestploter::forest_theme()}. If \code{NULL},
-\code{forestploter} defaults are used. You may pass colors and styling
-either here or through \code{...}.}
+\item{theme}{Optional \code{forestploter::forest_style()} or
+\code{forestploter::forest_theme()}. If \code{NULL}, \code{forestploter}
+defaults are used. You may pass colors and styling either here or through
+\code{...}.}
 
 \item{ci_col_width}{Numeric value, or one value per effect column,
 controlling the blank spacer width used by \code{forestploter} for the
@@ -45,7 +46,9 @@ The \code{Characteristic} column and descriptive columns remain on the left.}
 
 \item{quiet}{Logical. Suppress forestploter warnings. Default = `TRUE`.}
 
-\item{effects}{Optional effect labels passed to \code{forestploter::forest()}.}
+\item{effects}{Deprecated and ignored. This argument never affected the
+rendered forest plot and is retained temporarily for backward
+compatibility.}
 
 \item{ticks_at}{Optional numeric vector, or list of numeric vectors for
 multiple effect

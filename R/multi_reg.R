@@ -6,6 +6,12 @@
 #' @param data A \code{data.frame} containing the variables of interest.
 #' @param outcome Character scalar; name of the outcome variable. Quoted and
 #'   bare names are accepted.
+#'   For binary-outcome approaches (\code{"logit"}, \code{"firth"},
+#'   \code{"logbinomial"}, \code{"robpoisson"}) the outcome may be numeric
+#'   0/1 or 1/2 (2 is the event; integer or double), logical (\code{TRUE} is
+#'   the event), or a two-level factor or character variable (the second
+#'   level is the event, which is reported in a message). The same factor,
+#'   character and logical coding is accepted by \code{"poisson"}.
 #' @param exposures Character vector; exposure variable(s) to report.
 #'   Quoted names are recommended in scripts, and bare names are also accepted.
 #'   If \code{adjust_for = NULL}, all exposures are included in a single
@@ -45,6 +51,14 @@
 #' \code{labelled::var_label()}, those labels are used automatically in the
 #' displayed table and plots. Internal matching still uses the original column
 #' names.
+#'
+#' Confidence intervals are Wald intervals; for \code{approach = "linear"}
+#' they use the t distribution with the residual degrees of freedom (as
+#' \code{confint()} for \code{lm}). Factor exposures are always fitted with
+#' treatment contrasts. Log-binomial models that fail with the default
+#' starting values are refitted from the intercept \code{log(mean(y))}; if the
+#' model still cannot be fitted the error names the approach and suggests
+#' \code{approach = "robpoisson"}.
 #'
 #' @return A list of class \code{c("gtregression","multi_reg", ...)} with elements:
 #' \describe{
@@ -123,7 +137,19 @@ multi_reg <- function(data,
   .validate_show_ref(show_ref)
 
   format <- match.arg(format, c("flextable","gt"))
+  .validate_theme_arg(theme)
   theme <- .resolve_theme(theme)
+  if (is.data.frame(data) && is.character(outcome) && is.character(exposures)) {
+    .validate_variable_roles(outcome, exposures, adjust_for)
+  }
+  # Binary outcomes are recoded to 0/1 once, on the full data (factor and
+  # character: second level = event; logical: TRUE = event; numeric 1/2: 2).
+  if (is.data.frame(data) && is.character(outcome) && length(outcome) == 1L &&
+      outcome %in% names(data)) {
+    .validate_outcome_by_approach(data[[outcome]], approach,
+                                  allow_binary_poisson = TRUE)
+    data <- .normalize_outcome_once(data, outcome, approach)
+  }
 
   fmt_class <- if (format == "gt") "gt_multi" else "ft_multi"
   effect_label_adj <- paste("Adjusted", .get_effect_label(approach))
@@ -140,14 +166,14 @@ multi_reg <- function(data,
     adjust_for = adjust_for,
     interaction = interaction
   )
-  core$table_body <- .format_interaction_levels(
-    core$table_body, core$data_clean, variable_labels
+  core$table_body <- .label_interaction_rows(
+    core$table_body, core$models, variable_labels, data = core$data_clean
   )
 
   footnotes <- if (!core$adjusted_mode) {
     c(
       .abbrev_note(approach),
-      if (isTRUE(show_ref) && any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
+      if (.has_visible_reference(core$table_body, show_ref)) .ref_note() else NULL,
       if (!is.null(interaction)) .interaction_note(interaction) else NULL,
       if (!is.na(core$n_used)) {
         paste0(
@@ -173,7 +199,7 @@ multi_reg <- function(data,
 
     c(
       .abbrev_note(approach),
-      if (isTRUE(show_ref) && any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
+      if (.has_visible_reference(core$table_body, show_ref)) .ref_note() else NULL,
       .display_adjustment_note(adjust_for, variable_labels),
       if (!is.null(interaction)) .interaction_note(interaction) else NULL,
       n_note
@@ -189,6 +215,7 @@ multi_reg <- function(data,
     variable_labels = variable_labels,
     show_ref = show_ref
   )
+  display_df <- .add_model_n_column(display_df, core$models)
   .must_be_display_df_multi(display_df)
 
   tbl <- if (format == "gt") {

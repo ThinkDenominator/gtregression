@@ -1,11 +1,16 @@
-#' Side-by-side forest plots: univariate vs multivariable
+#' Plot crude and adjusted estimates side by side
 #'
 #' Creates two aligned forest plots from compatible \code{gtregression}
 #' regression objects such as crude and adjusted outputs from \code{uni_reg()},
-#' \code{multi_reg()}, \code{cox_reg()}, or \code{surv_reg()}.
+#' \code{multi_reg()}, survival regression, or other supported model families.
 #'
-#' @param tbl_uni A univariate \code{gtregression} object.
-#' @param tbl_multi A multivariable \code{gtregression} object.
+#' @param tbl_uni The first \code{gtregression} object: crude results (for
+#'   example \code{uni_reg()}, or \code{cox_reg()} without adjustment), or
+#'   exposure-specific adjusted results (\code{adjust_for} without
+#'   \code{multivariable = TRUE}).
+#' @param tbl_multi The second \code{gtregression} object from the same model
+#'   family: the adjusted or single multivariable model. When both objects are
+#'   adjusted, the second panel is labelled "Mutually Adjusted".
 #' @param title_uni,title_multi Optional panel titles.
 #' @param caption Optional combined plot caption. If \code{NULL}, notes are
 #'   added automatically for adjusted \code{multi_reg()} objects and displayed
@@ -65,6 +70,7 @@ plot_reg_combine <- function(tbl_uni,
                              alpha = 0.05,
                              show_adjustment_note = TRUE) {
 
+  .rd_reject(list(tbl_uni, tbl_multi), "plot_reg_combine")
   if (!inherits(tbl_uni, "gtregression")) {
     stop("`tbl_uni` must be a gtregression object.", call. = FALSE)
   }
@@ -79,26 +85,54 @@ plot_reg_combine <- function(tbl_uni,
 
   valid_standard_pair <- identical(tbl_uni$source, "uni_reg") &&
     identical(tbl_multi$source, "multi_reg")
-  valid_survival_pair <- tbl_uni$source %in% c("cox_reg", "surv_reg") &&
+  paired_sources <- c(
+    "cox_reg", "surv_reg", "conditional_logit_reg",
+    "competing_risk_reg", "ordinal_reg", "multinomial_outcome"
+  )
+  valid_model_pair <- tbl_uni$source %in% paired_sources &&
     identical(tbl_uni$source, tbl_multi$source) &&
     !.is_adjusted_reg_output(tbl_uni) &&
     .is_adjusted_reg_output(tbl_multi)
+  # Exposure-specific adjusted models next to the single multivariable model
+  # of the same family (for example adjust_for = followed by
+  # multivariable = TRUE).
+  adjusted_pair <- tbl_uni$source %in% c("multi_reg", paired_sources) &&
+    identical(tbl_uni$source, tbl_multi$source) &&
+    .is_adjusted_reg_output(tbl_uni) &&
+    !.forest_is_single_model(tbl_uni) &&
+    .forest_is_single_model(tbl_multi)
+  if (adjusted_pair) valid_model_pair <- TRUE
 
-  if (!valid_standard_pair && !valid_survival_pair) {
+  if (!valid_standard_pair && !valid_model_pair) {
+    if (identical(tbl_uni$source, "multi_reg")) {
+      stop(
+        "`tbl_uni` must come from uni_reg() and `tbl_multi` from multi_reg().",
+        call. = FALSE
+      )
+    }
+    if (identical(tbl_multi$source, "uni_reg")) {
+      stop("`tbl_multi` must come from multi_reg().", call. = FALSE)
+    }
     if (!identical(tbl_uni$source, "uni_reg") &&
-        !tbl_uni$source %in% c("cox_reg", "surv_reg")) {
-      stop("`tbl_uni` must come from uni_reg() or a crude cox_reg()/surv_reg() object.", call. = FALSE)
+        !tbl_uni$source %in% paired_sources) {
+      stop(
+        "`tbl_uni` must be a supported crude regression object.",
+        call. = FALSE
+      )
     }
     if (!identical(tbl_multi$source, "multi_reg") &&
-        !tbl_multi$source %in% c("cox_reg", "surv_reg")) {
-      stop("`tbl_multi` must come from multi_reg() or an adjusted cox_reg()/surv_reg() object.", call. = FALSE)
+        !tbl_multi$source %in% paired_sources) {
+      stop(
+        "`tbl_multi` must be a supported adjusted regression object.",
+        call. = FALSE
+      )
     }
-    if (tbl_uni$source %in% c("cox_reg", "surv_reg") ||
-        tbl_multi$source %in% c("cox_reg", "surv_reg")) {
+    if (tbl_uni$source %in% paired_sources ||
+        tbl_multi$source %in% paired_sources) {
       stop(
         paste0(
-          "For survival objects, use a crude cox_reg()/surv_reg() object first and its adjusted ",
-          "counterpart second."
+          "Use crude and adjusted outputs from the same model family, with ",
+          "the crude object first and its adjusted counterpart second."
         ),
         call. = FALSE
       )
@@ -130,165 +164,23 @@ plot_reg_combine <- function(tbl_uni,
       approach %in% c("poisson", "negbin") ~ "Incidence Rate Ratio",
       approach == "robpoisson" ~ "Risk Ratio",
       approach == "cox" ~ "Hazard Ratio",
+      approach == "fine_gray" ~ "Subdistribution Hazard Ratio",
       approach == "survreg" ~ "Time Ratio",
+      approach == "conditional_logit" ~ "Matched Odds Ratio",
+      approach == "ordinal_logit" ~ "Common Odds Ratio",
+      approach == "multinomial_logit" ~ "Odds Ratio",
       approach == "linear" ~ "Beta Coefficient",
       TRUE ~ "Effect Size"
     )
     if (adjusted) paste("Adjusted", base) else base
   }
 
-  build_plot_df <- function(tbl, show_ref = TRUE, order_y = NULL) {
-    df_body <- tbl$table_body
-    df_disp <- tbl$table_display
-
-    df_body$estimate <- suppressWarnings(as.numeric(df_body$estimate))
-    df_body$conf.low <- suppressWarnings(as.numeric(df_body$conf.low))
-    df_body$conf.high <- suppressWarnings(as.numeric(df_body$conf.high))
-    df_body$p.value <- suppressWarnings(as.numeric(df_body$p.value))
-
-    exposure_order <- unique(df_body$exposure)
-
-    if (!is.null(order_y)) {
-      exposure_order <- c(
-        intersect(order_y, exposure_order),
-        setdiff(exposure_order, order_y)
-      )
-    }
-
-    plot_rows <- list()
-
-    for (ex in exposure_order) {
-      dfx <- df_body[df_body$exposure == ex, , drop = FALSE]
-      if (!nrow(dfx)) next
-
-      ex_label <- .label_var(ex, tbl$variable_labels)
-      is_factor_exp <- any(dfx$ref)
-      is_binary_exp <- is_factor_exp && nrow(dfx) == 2L && sum(dfx$ref %in% TRUE) == 1L
-
-      disp_idx <- which(df_disp$is_header & trimws(df_disp$Characteristic) == ex_label)
-      if (!length(disp_idx)) next
-
-      start_i <- disp_idx[1]
-      end_i <- if (start_i < nrow(df_disp)) {
-        next_headers <- which(df_disp$is_header & seq_len(nrow(df_disp)) > start_i)
-        if (length(next_headers)) min(next_headers) - 1 else nrow(df_disp)
-      } else {
-        nrow(df_disp)
-      }
-
-      disp_block <- df_disp[start_i:end_i, , drop = FALSE]
-
-      main_row <- dfx[!dfx$ref & dfx$level == ex, , drop = FALSE]
-
-      header_plot <- data.frame(
-        exposure = ex,
-        label = ex_label,
-        estimate = NA_real_,
-        conf.low = NA_real_,
-        conf.high = NA_real_,
-        p.value = NA_real_,
-        ref = FALSE,
-        is_header = TRUE,
-        is_data = FALSE,
-        stringsAsFactors = FALSE
-      )
-
-      if (!is_factor_exp && nrow(main_row)) {
-        header_plot$estimate <- main_row$estimate[1]
-        header_plot$conf.low <- main_row$conf.low[1]
-        header_plot$conf.high <- main_row$conf.high[1]
-        header_plot$p.value <- main_row$p.value[1]
-        header_plot$is_data <- TRUE
-      }
-
-      compact_binary <- is_binary_exp && !isTRUE(show_ref)
-      if (compact_binary) {
-        binary_row <- dfx[!dfx$ref, , drop = FALSE]
-        if (nrow(binary_row)) {
-          header_plot$label <- .plot_binary_label(ex_label, binary_row$level[1])
-          header_plot$estimate <- binary_row$estimate[1]
-          header_plot$conf.low <- binary_row$conf.low[1]
-          header_plot$conf.high <- binary_row$conf.high[1]
-          header_plot$p.value <- binary_row$p.value[1]
-          header_plot$is_header <- TRUE
-          header_plot$is_data <- TRUE
-          plot_rows[[length(plot_rows) + 1]] <- header_plot
-          next
-        }
-      }
-
-      plot_rows[[length(plot_rows) + 1]] <- header_plot
-
-      if (nrow(disp_block) > 1) {
-        sub_block <- disp_block[-1, , drop = FALSE]
-
-        for (i in seq_len(nrow(sub_block))) {
-          char_i <- sub_block$Characteristic[i]
-          lab_i <- trimws(char_i)
-
-          row_match <- dfx[dfx$level == lab_i, , drop = FALSE]
-          if (!nrow(row_match)) next
-
-          if (isTRUE(row_match$ref[1]) && !show_ref) next
-
-          plot_rows[[length(plot_rows) + 1]] <- data.frame(
-            exposure = ex,
-            label = lab_i,
-            estimate = row_match$estimate[1],
-            conf.low = row_match$conf.low[1],
-            conf.high = row_match$conf.high[1],
-            p.value = row_match$p.value[1],
-            ref = isTRUE(row_match$ref[1]),
-            is_header = FALSE,
-            is_data = !isTRUE(row_match$ref[1]),
-            stringsAsFactors = FALSE
-          )
-        }
-      } else {
-        extra_rows <- dfx[!dfx$ref & dfx$level != ex, , drop = FALSE]
-        if (nrow(extra_rows)) {
-          for (i in seq_len(nrow(extra_rows))) {
-            plot_rows[[length(plot_rows) + 1]] <- data.frame(
-              exposure = ex,
-              label = extra_rows$level[i],
-              estimate = extra_rows$estimate[i],
-              conf.low = extra_rows$conf.low[i],
-              conf.high = extra_rows$conf.high[i],
-              p.value = extra_rows$p.value[i],
-              ref = FALSE,
-              is_header = FALSE,
-              is_data = TRUE,
-              stringsAsFactors = FALSE
-            )
-          }
-        }
-      }
-    }
-
-    out <- do.call(rbind, plot_rows)
-
-    indent_html <- "<span style='color:white;'>..</span>"
-
-    out$label_clean <- dplyr::case_when(
-      out$is_header ~ paste0("<b>", out$label, "</b>"),
-      out$ref & show_ref ~ paste0(
-        indent_html,
-        out$label,
-        " <span style='color:gray;'>(Ref.)</span>"
-      ),
-      !out$is_header ~ paste0(indent_html, out$label),
-      TRUE ~ NA_character_
-    )
-
-    out$row_key <- paste0(out$exposure, "::", out$label)
-    out
-  }
-
   approach_uni <- tbl_uni$approach
   approach_multi <- tbl_multi$approach
 
-  xlab_uni <- get_axis_label(approach_uni, adjusted = FALSE)
+  xlab_uni <- get_axis_label(approach_uni, adjusted = adjusted_pair)
   xlab_multi <- get_axis_label(approach_multi, adjusted = TRUE)
+  if (adjusted_pair) xlab_multi <- sub("^Adjusted ", "Mutually Adjusted ", xlab_multi)
 
   log_x_uni <- .plot_resolve_log_x(log_x, .normalize_approach(approach_uni))
   log_x_multi <- .plot_resolve_log_x(log_x, .normalize_approach(approach_multi))
@@ -308,35 +200,75 @@ plot_reg_combine <- function(tbl_uni,
     ref_line
   }
 
-  df_uni <- build_plot_df(tbl_uni, show_ref = show_ref, order_y = order_y)
-  df_multi <- build_plot_df(tbl_multi, show_ref = show_ref, order_y = order_y)
+  df_uni <- .plot_rows_from_table(tbl_uni, show_ref = show_ref, order_y = order_y)
+  df_multi <- .plot_rows_from_table(tbl_multi, show_ref = show_ref, order_y = order_y)
 
-  row_keys <- unique(c(df_uni$row_key, df_multi$row_key))
+  # One axis for both panels: rows are keyed on (exposure, level) from
+  # `table_body`. A level, interaction row or variable present only in the
+  # adjusted table is placed inside its own variable block, not at the bottom.
+  header_key <- function(ex) paste0(ex, "::__header__")
+  variables <- unique(c(df_uni$exposure, df_multi$exposure))
+  row_keys <- unlist(lapply(variables, function(ex) {
+    keys <- df_uni$row_key[df_uni$exposure == ex]
+    extra <- df_multi$row_key[df_multi$exposure == ex]
+    for (i in seq_along(extra)) {
+      if (extra[i] %in% keys) next
+      anchor <- if (i > 1L) match(extra[i - 1L], keys) else NA_integer_
+      if (is.na(anchor)) {
+        anchor <- if (identical(extra[i], header_key(ex))) {
+          0L
+        } else {
+          max(0L, match(header_key(ex), keys), na.rm = TRUE)
+        }
+      }
+      keys <- append(keys, extra[i], after = anchor)
+    }
+    hdr <- keys[keys == header_key(ex)]
+    c(hdr, setdiff(keys, hdr))
+  }), use.names = FALSE)
 
   skeleton <- data.frame(
     row_key = row_keys,
     stringsAsFactors = FALSE
   )
 
-  label_from_key <- function(x) sub("^[^:]+::", "", x)
-  skeleton$label <- label_from_key(skeleton$row_key)
+  # Labels and row formatting come from the crude table when it has the row,
+  # otherwise from the adjusted table.
+  from_uni <- match(row_keys, df_uni$row_key)
+  from_multi <- match(row_keys, df_multi$row_key)
+  pick <- function(column) {
+    ifelse(is.na(from_uni), df_multi[[column]][from_multi], df_uni[[column]][from_uni])
+  }
+  skeleton$exposure <- pick("exposure")
+  skeleton$level <- pick("level")
+  skeleton$label <- pick("label")
+  skeleton$label_clean <- pick("label_clean")
+  skeleton$axis_header <- pick("is_header")
 
-  df_uni <- merge(skeleton, df_uni, by = c("row_key", "label"), all.x = TRUE, sort = FALSE)
-  df_multi <- merge(skeleton, df_multi, by = c("row_key", "label"), all.x = TRUE, sort = FALSE)
+  align_to_skeleton <- function(df) {
+    idx <- match(skeleton$row_key, df$row_key)
+    out <- df[idx, , drop = FALSE]
+    out$row_key <- skeleton$row_key
+    out$exposure <- skeleton$exposure
+    out$level <- skeleton$level
+    out$label <- skeleton$label
+    rownames(out) <- NULL
+    out
+  }
+  df_uni <- align_to_skeleton(df_uni)
+  df_multi <- align_to_skeleton(df_multi)
 
-  df_uni$is_header[is.na(df_uni$is_header)] <- FALSE
+  df_uni$is_header <- skeleton$axis_header %in% TRUE
+  df_multi$is_header <- skeleton$axis_header %in% TRUE
   df_uni$is_data[is.na(df_uni$is_data)] <- FALSE
-  df_multi$is_header[is.na(df_multi$is_header)] <- FALSE
   df_multi$is_data[is.na(df_multi$is_data)] <- FALSE
   df_uni$ref[is.na(df_uni$ref)] <- FALSE
   df_multi$ref[is.na(df_multi$ref)] <- FALSE
 
-  # preserve label markdown from uni panel
-  label_map_raw <- df_uni$label_clean
-  label_map_raw[is.na(label_map_raw)] <- paste0(
-    "<span style='color:white;'>..</span>",
-    df_uni$label[is.na(label_map_raw)]
-  )
+  # label markup (plain text when ggtext is not installed)
+  label_map_raw <- .plot_axis_labels(skeleton$label_clean)
+  df_uni$label_clean <- label_map_raw
+  df_multi$label_clean <- label_map_raw
 
   compute_is_sig <- function(df, approach, alpha, ref_line_val) {
     if (identical(approach, "linear")) {
@@ -420,11 +352,15 @@ plot_reg_combine <- function(tbl_uni,
       ggplot2::labs(title = panel_title, x = x_label, y = NULL) +
       .plot_reg_theme(base_size = base_size) +
       ggplot2::theme(
-        axis.text.y = if (show_y) ggtext::element_markdown(hjust = 0,
-                                                           colour = "#1F2937")
+        axis.text.y = if (show_y && .plot_has_ggtext()) {
+          ggtext::element_markdown(hjust = 0, colour = "#1F2937")
+        }
+        else if (show_y) ggplot2::element_text(hjust = 0, colour = "#1F2937")
         else ggplot2::element_blank(),
-        axis.text.y.left = if (show_y) ggtext::element_markdown(hjust = 0,
-                                                                colour = "#1F2937")
+        axis.text.y.left = if (show_y && .plot_has_ggtext()) {
+          ggtext::element_markdown(hjust = 0, colour = "#1F2937")
+        }
+        else if (show_y) ggplot2::element_text(hjust = 0, colour = "#1F2937")
         else ggplot2::element_blank(),
         axis.title.y = ggplot2::element_blank()
       )

@@ -11,6 +11,9 @@
 #' @keywords internal
 #' @noRd
 .resolve_theme <- function(theme) {
+  # Table themes only (presets or primitives). Plot functions such as
+  # km_plot() / cuminc_plot() use their own `theme` vocabulary and resolver.
+  .validate_theme_arg(theme)
   if (length(theme) == 1 && !is.na(theme) && theme %in% names(.theme_presets))
     return(.theme_presets[[theme]])
   unique(tolower(theme))

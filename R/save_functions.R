@@ -41,6 +41,11 @@
   }
 
   if (!grepl(paste0("\\.", ext, "$"), filename, ignore.case = TRUE)) {
+    # A filename that already carries another output extension (for example
+    # "table.html" saved with format = "docx") gets the requested extension
+    # instead of a doubled one ("table.html.docx").
+    known <- "\\.(docx|rtf|pdf|html|png|jpg|jpeg|tiff)$"
+    filename <- sub(known, "", filename, ignore.case = TRUE)
     filename <- paste0(filename, ".", ext)
   }
 
@@ -134,6 +139,19 @@
       flextable::width(out, j = col_keys[[i]], width = scaled[[i]]),
       error = function(e) out
     )
+  }
+
+  # flextable versions differ in whether width() propagates the requested
+  # values to every table part. Keep the shared column geometry explicit so
+  # DOCX sizing and flextable_dim() agree across platforms.
+  for (part in c("header", "body", "footer")) {
+    if (!is.null(out[[part]]) &&
+        length(out[[part]]$colwidths) == length(scaled)) {
+      out[[part]]$colwidths <- stats::setNames(
+        as.numeric(scaled),
+        col_keys
+      )
+    }
   }
   out
 }
@@ -286,7 +304,8 @@
   }
 
   tmp <- tempfile(fileext = ".pdf")
-  grDevices::pdf(file = tmp, width = 20, height = 20)
+  .open_forest_pdf(tmp, width = 20, height = 20,
+                   labels = .forest_text_labels(plot), onefile = TRUE)
   on.exit({
     grDevices::dev.off()
     unlink(tmp)
@@ -359,6 +378,50 @@
   }
 
   list(width = width * scale, height = height * scale)
+}
+
+#' Text labels drawn by a grid object
+#'
+#' Collects the character labels of every text grob in a (nested) grid object,
+#' so the PDF device can be chosen to suit the characters that will be drawn.
+#' @keywords internal
+#' @noRd
+.forest_text_labels <- function(x) {
+  out <- character(0)
+  if (is.null(x) || !is.list(x)) return(out)
+  label <- x[["label"]]
+  if (is.character(label)) out <- c(out, label)
+  for (part in c("grobs", "children")) {
+    kids <- x[[part]]
+    if (is.list(kids)) {
+      for (kid in kids) out <- c(out, .forest_text_labels(kid))
+    }
+  }
+  unique(out[!is.na(out)])
+}
+
+#' Open a PDF device that keeps publication characters
+#'
+#' The default \code{grDevices::pdf()} encoding cannot represent the en dash
+#' used in confidence intervals: the device warns and substitutes another
+#' character. The Windows Latin-1 ("WinAnsi") encoding of the same standard
+#' fonts includes it, so ASCII text is drawn exactly as before and the en dash
+#' is kept. Labels outside that encoding (for example Greek letters or
+#' comparison signs) use the Cairo PDF device when it is available.
+#' @keywords internal
+#' @noRd
+.open_forest_pdf <- function(filename, width, height, labels = character(0),
+                             onefile = FALSE) {
+  labels <- enc2utf8(labels[!is.na(labels)])
+  in_winansi <- !anyNA(suppressWarnings(iconv(labels, "UTF-8", "CP1252")))
+  if (!in_winansi && isTRUE(capabilities("cairo"))) {
+    grDevices::cairo_pdf(filename, width = width, height = height,
+                         onefile = onefile)
+  } else {
+    grDevices::pdf(filename, width = width, height = height,
+                   onefile = onefile, encoding = "WinAnsi.enc")
+  }
+  invisible(NULL)
 }
 
 #' Draw a forest plot on the active graphics device
@@ -489,7 +552,9 @@ save_table <- function(tbl,
       flextable::save_as_html(obj, path = filename)
     } else {
       stop(
-        "Saving flextable objects as PDF is not directly supported. Save as DOCX, RTF, or HTML instead.",
+        "Saving flextable objects as PDF is not directly supported. ",
+        "Use `format = \"docx\"`, `\"rtf\"` or `\"html\"`, or create the ",
+        "table with `format = \"gt\"` to save it as PDF.",
         call. = FALSE
       )
     }
@@ -669,7 +734,8 @@ save_forest <- function(forest,
 
   device_open <- FALSE
   if (identical(format, "pdf")) {
-    grDevices::pdf(filename, width = width, height = height, onefile = FALSE)
+    .open_forest_pdf(filename, width = width, height = height,
+                     labels = .forest_text_labels(plot))
   } else if (identical(format, "png")) {
     grDevices::png(filename, width = width, height = height, units = "in", res = dpi)
   } else if (identical(format, "jpg")) {

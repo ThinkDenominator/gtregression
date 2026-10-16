@@ -1,4 +1,5 @@
 test_that("gtregression app is bundled with the package", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
 
   expect_true(nzchar(app_file))
@@ -7,6 +8,7 @@ test_that("gtregression app is bundled with the package", {
 })
 
 test_that("app organises visualisation tools and available combinations", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -21,6 +23,7 @@ test_that("app organises visualisation tools and available combinations", {
 })
 
 test_that("app treats stratified plots and forests as single sources", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -32,9 +35,16 @@ test_that("app treats stratified plots and forests as single sources", {
   expect_match(app_code, "combined_ready <- pair_can_combine(rv$uni, rv$multi)", fixed = TRUE)
   expect_match(app_code, "cox_combined_ready <- pair_can_combine(rv$cox_exposure, rv$cox_multi)", fixed = TRUE)
   expect_match(app_code, "survreg_combined_ready <- pair_can_combine(rv$survreg_exposure, rv$survreg_multi)", fixed = TRUE)
+  expect_match(app_code, "special_combined_choices <- reactive", fixed = TRUE)
+  expect_match(app_code, '"Special exposure + multivariable" = "special_combined"', fixed = TRUE)
+  expect_match(app_code, 'paste0("special_combined::", categories)', fixed = TRUE)
+  expect_match(app_code, "special_combined_pair(input$plot_layout)", fixed = TRUE)
+  expect_match(app_code, "special_combined_code_names(plot_layout)", fixed = TRUE)
+  expect_match(app_code, 'sub("^special_all", "special_combined"', fixed = TRUE)
 })
 
 test_that("app exposes broad imports and essential forest controls", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -42,8 +52,10 @@ test_that("app exposes broad imports and essential forest controls", {
   expect_match(app_code, '".dta"', fixed = TRUE)
   expect_match(app_code, '".sav"', fixed = TRUE)
   expect_match(app_code, '".sas7bdat"', fixed = TRUE)
-  expect_match(app_code, 'readRDS(path)', fixed = TRUE)
-  expect_match(app_code, 'requireNamespace("haven"', fixed = TRUE)
+  expect_match(app_code, 'gtregression::import_data(', fixed = TRUE)
+  expect_match(app_code, 'format = ext', fixed = TRUE)
+  expect_match(app_code, '".tsv"', fixed = TRUE)
+  expect_match(app_code, '".txt"', fixed = TRUE)
   expect_match(app_code, 'numericInput("forest_ci_width"', fixed = TRUE)
   expect_match(app_code, 'textInput("forest_xlim"', fixed = TRUE)
   expect_match(app_code, 'textInput("forest_ticks"', fixed = TRUE)
@@ -51,6 +63,7 @@ test_that("app exposes broad imports and essential forest controls", {
 })
 
 test_that("survival workspace separates Cox and parametric workflows", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -73,7 +86,29 @@ test_that("survival workspace separates Cox and parametric workflows", {
   expect_match(app_code, 'identical(input$surv_mode, "survreg")', fixed = TRUE)
 })
 
+test_that("survival workspace provides a competing-risk workflow", {
+  skip_on_cran()
+  app_file <- system.file("shiny", "app.R", package = "gtregression")
+  app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
+
+  expect_match(app_code, '"Competing risks" = "competing"', fixed = TRUE)
+  expect_match(app_code, 'uiOutput("competing_event_codes")', fixed = TRUE)
+  expect_match(app_code, '"competing_censor_code", "Censoring code"', fixed = TRUE)
+  expect_match(app_code, '"competing_event_of_interest", "Event of interest"', fixed = TRUE)
+  expect_match(app_code, 'actionButton("run_competing", "Run Fine-Gray regression"', fixed = TRUE)
+  expect_match(app_code, 'actionButton("run_cuminc", "Draw cumulative incidence"', fixed = TRUE)
+  expect_match(app_code, '"competing_risk_reg"', fixed = TRUE)
+  expect_match(app_code, '"cuminc_plot"', fixed = TRUE)
+  expect_match(app_code, '"Show Gray\'s test p-value"', fixed = TRUE)
+  expect_match(app_code, 'gtx_table_downloads(output, "competing"', fixed = TRUE)
+  expect_match(app_code, 'gtx_plot_downloads(output, "cuminc"', fixed = TRUE)
+  expect_match(app_code, 'competing = "Fine-Gray competing-risk model"', fixed = TRUE)
+  expect_match(app_code, 'competing = "competing_result"', fixed = TRUE)
+  expect_match(app_code, '"# 6a. Competing-risk analysis"', fixed = TRUE)
+})
+
 test_that("survival results are retained by model role", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -95,7 +130,40 @@ test_that("survival results are retained by model role", {
   expect_match(app_code, "forest_data <- forest_df(survreg_exposure_result, survreg_multi_result", fixed = TRUE)
 })
 
+test_that("special-model tables are retained and available to merge", {
+  skip_on_cran()
+  app_file <- system.file("shiny", "app.R", package = "gtregression")
+  app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
+
+  expect_match(
+    app_code,
+    '"Special exposure models" = rv$special_exposure',
+    fixed = TRUE
+  )
+  expect_match(
+    app_code,
+    'out[[tables_label]] <- list(result = result$per_outcome[[category]]',
+    fixed = TRUE
+  )
+  expect_match(
+    app_code,
+    'available_merge_code_names <- reactive({',
+    fixed = TRUE
+  )
+  expect_match(
+    app_code,
+    'code = paste0(name, "$per_outcome[[", shQuote(category), "]]")',
+    fixed = TRUE
+  )
+  expect_match(
+    app_code,
+    "merge_objects <- available_merge_code_names()[merge_labels]",
+    fixed = TRUE
+  )
+})
+
 test_that("advanced tools use a guided contextual workflow", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -128,6 +196,7 @@ test_that("advanced tools use a guided contextual workflow", {
 })
 
 test_that("app errors are contained without pausing the Shiny session", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -144,6 +213,7 @@ test_that("app errors are contained without pausing the Shiny session", {
 })
 
 test_that("the complete app workflow can be downloaded as an R script", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -159,6 +229,7 @@ test_that("the complete app workflow can be downloaded as an R script", {
 })
 
 test_that("app keeps table modification and display-label controls discoverable", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -171,6 +242,7 @@ test_that("app keeps table modification and display-label controls discoverable"
 })
 
 test_that("app defaults regression plots to a linear axis and supports advanced screening roles", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -183,6 +255,7 @@ test_that("app defaults regression plots to a linear axis and supports advanced 
 })
 
 test_that("app exposes the complete plot_model_fit API and records it in session code", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -196,6 +269,7 @@ test_that("app exposes the complete plot_model_fit API and records it in session
 })
 
 test_that("app keeps data preview compact and descriptive statistics visible", {
+  skip_on_cran()
   app_file <- system.file("shiny", "app.R", package = "gtregression")
   app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
 
@@ -203,4 +277,143 @@ test_that("app keeps data preview compact and descriptive statistics visible", {
   expect_match(app_code, "First 10 rows only.", fixed = TRUE)
   expect_match(app_code, 'textInput("desc_statistic", "Numeric statistic override"', fixed = TRUE)
   expect_match(app_code, "If x-axis labels overlap, enter fewer ticks", fixed = TRUE)
+})
+
+test_that("app provides guided special-model workflows", {
+  skip_on_cran()
+  app_file <- system.file("shiny", "app.R", package = "gtregression")
+  app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
+
+  expect_match(app_code, 'tabPanel(\n    "Special Models"', fixed = TRUE)
+  expect_match(app_code, '"Ordered outcome" = "ordinal"', fixed = TRUE)
+  expect_match(app_code, '"Unordered outcome" = "multinomial"', fixed = TRUE)
+  expect_match(app_code, '"Clustered data" = "multilevel"', fixed = TRUE)
+  expect_match(app_code, '"Matched case-control" = "matched"', fixed = TRUE)
+  expect_match(app_code, 'ordinal = "ordinal_reg"', fixed = TRUE)
+  expect_match(app_code, 'multinomial = "multinomial_reg"', fixed = TRUE)
+  expect_match(app_code, 'multilevel = "multilevel_reg"', fixed = TRUE)
+  expect_match(app_code, 'matched = "conditional_logit_reg"', fixed = TRUE)
+  expect_match(app_code, 'actionButton("run_special", "Run selected model"', fixed = TRUE)
+  expect_match(app_code, 'gtx_table_downloads(output, "special_exposure"', fixed = TRUE)
+  expect_match(app_code, 'gtx_table_downloads(output, "special_multi"', fixed = TRUE)
+  expect_match(app_code, '"Exposure Models"', fixed = TRUE)
+  expect_match(app_code, '"Multivariable Model"', fixed = TRUE)
+})
+
+test_that("special models retain reference, code, and visualisation guidance", {
+  skip_on_cran()
+  app_file <- system.file("shiny", "app.R", package = "gtregression")
+  app_code <- paste(readLines(app_file, warn = FALSE), collapse = "\n")
+
+  expect_match(app_code, 'uiOutput("special_reference_inputs")', fixed = TRUE)
+  expect_match(app_code, 'Outcome reference:', fixed = TRUE)
+  expect_match(app_code, 'Set its level order in Data Prep', fixed = TRUE)
+  expect_match(app_code, 'gtx_code_assign(result_name, special_function()', fixed = TRUE)
+  expect_match(app_code, 'special_exposure_result', fixed = TRUE)
+  expect_match(app_code, 'special_multi_result', fixed = TRUE)
+  expect_match(app_code, 'keep <- !grepl("^(special_(exposure|multi)(?:::|$)|competing$)"', fixed = TRUE)
+  expect_match(app_code, 'Model-fit plots are available for standard regression', fixed = TRUE)
+  expect_match(app_code, 'rv$special_exposure_code <- code_snapshot', fixed = TRUE)
+  expect_match(app_code, 'rv$special_multi_code <- code_snapshot', fixed = TRUE)
+  expect_match(app_code, '"special_stats_result"', fixed = TRUE)
+  expect_match(app_code, '"special_assumptions_result"', fixed = TRUE)
+  expect_match(app_code, '"Result to inspect"', fixed = TRUE)
+  expect_match(app_code, 'Model statistics were not stored for this result', fixed = TRUE)
+  expect_match(app_code, 'No proportional-odds assumption result is available', fixed = TRUE)
+})
+
+test_that("special-model retained results drive diagnostics and combinations", {
+  skip_on_cran()
+  skip_if_not_installed("shiny")
+  app_file <- system.file("shiny", "app.R", package = "gtregression")
+  app_env <- new.env(parent = globalenv())
+  sys.source(app_file, envir = app_env)
+
+  shiny::testServer(app_env$server, {
+    exposure <- structure(
+      list(
+        outcome = "recovery",
+        model_stats = data.frame(model = "exposure"),
+        assumption_tests = data.frame(term = "treatment")
+      ),
+      class = "ordinal_reg"
+    )
+    multi <- structure(
+      list(
+        outcome = "recovery",
+        model_stats = data.frame(model = "multivariable"),
+        assumption_tests = data.frame(term = "overall")
+      ),
+      class = "ordinal_reg"
+    )
+    rv$special_exposure <- exposure
+    rv$special_multi <- multi
+    session$flushReact()
+
+    expect_equal(
+      special_diagnostic_choices(),
+      c("Exposure Models" = "exposure", "Multivariable Model" = "multi")
+    )
+    session$setInputs(special_stats_result = "multi")
+    session$flushReact()
+    expect_equal(
+      special_diagnostic_result("special_stats_result")$model_stats$model,
+      "multivariable"
+    )
+    expect_equal(
+      special_combined_choices(),
+      c("Special exposure + multivariable" = "special_combined")
+    )
+
+    rv$special_multi <- structure(
+      list(outcome = "case"),
+      class = "conditional_logit_reg"
+    )
+    session$flushReact()
+    expect_length(special_combined_choices(), 0L)
+
+    multinomial_exposure <- structure(
+      list(
+        outcome = "destination",
+        outcome_reference = "Home",
+        per_outcome = list(Clinic = list(id = "exposure-clinic"),
+                           Hospital = list(id = "exposure-hospital"))
+      ),
+      class = "multinomial_reg"
+    )
+    multinomial_multi <- structure(
+      list(
+        outcome = "destination",
+        outcome_reference = "Home",
+        per_outcome = list(Hospital = list(id = "multi-hospital"),
+                           Other = list(id = "multi-other"))
+      ),
+      class = "multinomial_reg"
+    )
+    rv$special_exposure <- multinomial_exposure
+    rv$special_multi <- multinomial_multi
+    session$flushReact()
+
+    expect_equal(
+      special_combined_choices(),
+      c(
+        "Multinomial exposure + multivariable: Hospital vs Home" =
+          "special_combined::Hospital"
+      )
+    )
+    expect_equal(
+      vapply(
+        special_combined_pair("special_combined::Hospital"),
+        `[[`, character(1), "id"
+      ),
+      c("exposure-hospital", "multi-hospital")
+    )
+    expect_equal(
+      special_combined_code_names("special_combined::Hospital"),
+      c(
+        "special_exposure_result$per_outcome[['Hospital']]",
+        "special_multi_result$per_outcome[['Hospital']]"
+      )
+    )
+  })
 })

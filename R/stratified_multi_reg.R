@@ -11,6 +11,13 @@
 #' @param data A data frame containing the variables.
 #' @param outcome Character scalar; name of the outcome variable. Quoted and
 #'   bare names are accepted.
+#'   For binary-outcome approaches (\code{"logit"}, \code{"firth"},
+#'   \code{"logbinomial"}, \code{"robpoisson"}) the outcome may be numeric
+#'   0/1 or 1/2 (2 is the event; integer or double), logical (\code{TRUE} is
+#'   the event), or a two-level factor or character variable (the second
+#'   level is the event, which is reported in a message). The same factor,
+#'   character and logical coding is accepted by \code{"poisson"}.
+#'   The coding is decided once on the full data, before stratification.
 #' @param exposures Character vector of exposure variables to report. Quoted
 #'   names are recommended in scripts, and bare names are also accepted.
 #' @param stratifier Character scalar; name of the stratifying variable. Quoted
@@ -92,10 +99,14 @@ stratified_multi_reg <- function(data,
                                  theme = c("minimal"),
                                  show_ref = TRUE) {
 
-  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
-  stratifier <- .vars_arg(substitute(stratifier), env = parent.frame())
-  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame(),
+                       data_names = names(data))
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame(),
+                         data_names = names(data))
+  stratifier <- .vars_arg(substitute(stratifier), env = parent.frame(),
+                          data_names = names(data))
+  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(),
+                          allow_null = TRUE, data_names = names(data))
   interaction <- .interaction_arg(substitute(interaction), env = parent.frame(), allow_null = TRUE)
   approach <- .choice_arg(
     substitute(approach),
@@ -108,6 +119,7 @@ stratified_multi_reg <- function(data,
   .validate_show_ref(show_ref)
 
   format <- match.arg(format, c("flextable","gt"))
+  .validate_theme_arg(theme)
   theme <- .resolve_theme(theme)
   variable_labels <- .var_label_map(
     data,
@@ -118,7 +130,20 @@ stratified_multi_reg <- function(data,
     stop("Stratifier not found in dataset.", call. = FALSE)
   }
 
-  data <- data[!is.na(data[[stratifier]]), , drop = FALSE]
+  if (!is.character(outcome) || length(outcome) != 1L ||
+      !outcome %in% names(data)) {
+    stop("Outcome variable not found in the dataset.", call. = FALSE)
+  }
+  .validate_variable_roles(outcome, exposures, adjust_for, stratifier)
+  stratifier_label <- .stratifier_label(data, stratifier)
+  .validate_approach(approach, context = "multi_reg")
+  .validate_outcome_by_approach(data[[outcome]], approach,
+                                  allow_binary_poisson = TRUE)
+  # Recode the outcome once on the full data so that every stratum is fitted
+  # on the same coding.
+  data <- .normalize_outcome_once(data, outcome, approach)
+
+  data <- .strata_prepare_data(data, stratifier)
   levs <- .strata_levels(data, stratifier)
 
   message("Running stratified multivariable regression by: ", stratifier)
@@ -155,8 +180,8 @@ stratified_multi_reg <- function(data,
       next
     }
 
-    res_i$table_body <- .format_interaction_levels(
-      res_i$table_body, dlev, variable_labels
+    res_i$table_body <- .label_interaction_rows(
+      res_i$table_body, res_i$models, variable_labels, data = dlev
     )
 
     tds[[key]] <- res_i$table_body
@@ -188,16 +213,15 @@ stratified_multi_reg <- function(data,
     show_ref = show_ref
   )
   wide <- built$wide
+  wide <- .strata_add_model_n(wide, models)
+  wide <- .strata_order_columns(wide, built$spanners)
   spanners <- built$spanners
   eff_lab <- paste("Adjusted", .get_effect_label(approach))
 
   footnotes <- c(
-    .stratified_by_note(stratifier),
+    .stratified_by_note(stratifier, stratifier_label),
     .abbrev_note(approach),
-    if (
-      isTRUE(show_ref) &&
-        any(unlist(lapply(tds, function(x) x$ref %in% TRUE), use.names = FALSE))
-    ) .ref_note() else NULL,
+    if (.has_visible_reference(do.call(rbind, tds), show_ref)) .ref_note() else NULL,
     if (!is.null(adjust_for) && length(adjust_for) > 0) .adjustment_note(adjust_for) else NULL,
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
     .n_note_multi_strata(stratifier, n_by_stratum)
@@ -224,6 +248,7 @@ stratified_multi_reg <- function(data,
     models = models,
     model_summaries = sums,
     variable_labels = variable_labels,
+    footnotes = footnotes,
     reg_check = .as_reg_check_result(diags, format = format),
     by = stratifier,
     levels = levs,

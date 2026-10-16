@@ -18,6 +18,26 @@
 #'   or multivariable workflow requested by the other arguments. The
 #'   stratifier cannot also be used as the time, event, exposure, adjustment,
 #'   or interaction variable.
+#' @param baseline_strata Optional character vector of categorical variables
+#'   used to stratify the baseline hazard within one Cox model. Common hazard
+#'   ratios are estimated while each stratum has a separate baseline hazard.
+#'   No hazard ratio is estimated for these variables. This cannot be combined
+#'   with \code{stratifier}, which fits separate models.
+#' @param time_start Optional numeric variable containing entry or interval-start
+#'   times. When supplied, a counting-process response
+#'   \code{Surv(time_start, time, event)} is fitted, enabling delayed entry and
+#'   start-stop data.
+#' @param cluster Optional variable identifying correlated observations. Cox
+#'   models use a clustered sandwich variance estimate for this variable.
+#' @param weights Optional numeric case-weight variable.
+#' @param robust Optional logical passed to \code{survival::coxph()}. The
+#'   default \code{NULL} lets \code{coxph()} choose its standard behaviour;
+#'   clustered models use robust variance automatically.
+#' @param ties Method for handling tied event times: \code{"efron"} (default),
+#'   \code{"breslow"}, or \code{"exact"}.
+#' @param control Optional named list of arguments for
+#'   \code{survival::coxph.control()}, or a completed control list returned by
+#'   that function.
 #' @param interaction Optional character scalar specifying one interaction term
 #'   using standard formula syntax, e.g. \code{"trt*prior"}. Quoted and bare
 #'   interaction syntax are accepted. In exposure-by-exposure mode, supply a
@@ -32,10 +52,13 @@
 #' @param format Output table format; one of \code{"flextable"} (default) or
 #'   \code{"gt"}.
 #' @param theme Table styling preset.
-#' @param show_sample For stratified Cox tables, controls which sample-size
-#'   columns are shown in the publication table. One of \code{"events"}
-#'   (default), \code{"n"}, \code{"both"}, or \code{"none"}. Model statistics,
-#'   when requested, still retain both N and event counts.
+#' @param show_sample For stratified Cox tables (\code{stratifier} supplied),
+#'   controls which sample-size columns are shown in the publication table. One
+#'   of \code{"both"} (default; N and events), \code{"n"}, \code{"events"}, or
+#'   \code{"none"}. Model statistics, when requested, still retain both N and
+#'   event counts. This argument is ignored when \code{stratifier} is not
+#'   supplied: non-stratified tables always show the model N column and report
+#'   the number of events in a footnote.
 #' @param model_stats Logical; if \code{TRUE}, extract model-fit statistics
 #'   including AIC, BIC, log-likelihood, concordance, number of events, and N.
 #' @param show_ref Logical; if \code{TRUE} (default), display reference-category
@@ -61,15 +84,32 @@
 #' standard formula expansion (for example, \code{trt*prior}). Interaction
 #' effects are displayed as additional rows beneath the corresponding exposure.
 #'
+#' \code{baseline_strata} fits one Cox model with separate baseline hazards for
+#' the observed combinations of the selected categorical variables. It reports
+#' common hazard ratios for the predictors and no coefficient for the strata.
+#' This differs from \code{stratifier}, which fits separate models and reports
+#' stratum-specific results.
+#'
 #' The proportional hazards assumption should be assessed separately, for
 #' example with \code{check_ph()}.
 #'
-#' Stratified Cox tables show event counts by default. Use
-#' \code{show_sample = "n"}, \code{show_sample = "both"}, or
-#' \code{show_sample = "none"} to control the displayed sample columns. Crude
-#' stratified tables calculate these counts for each exposure-specific model;
-#' adjusted and multivariable stratified tables use the corresponding fitted
-#' model within each stratum.
+#' Stratified Cox tables show both N and event counts by default
+#' (\code{show_sample = "both"}). Use \code{show_sample = "n"},
+#' \code{show_sample = "events"}, or \code{show_sample = "none"} to control the
+#' displayed sample columns. All counts are taken from the fitted model within
+#' each stratum, so rows dropped for missing values in any model variable
+#' (including \code{time_start}, \code{cluster}, and \code{weights}) are not
+#' counted. When models within a stratum use different numbers of
+#' observations, the footnote reports the range. Rows with a missing
+#' \code{stratifier} value are excluded and counted in a footnote.
+#' \code{show_sample} has no effect without \code{stratifier}.
+#'
+#' Complete-case analysis is used: each model uses the rows that are complete
+#' for its own variables. Unused factor levels are dropped for each fitted
+#' model, so the reference category shown as \code{"Ref."} is the first level
+#' present in the data used by that model. Ordered factors are analysed with
+#' treatment (category-versus-reference) contrasts. Data in which every
+#' observation is an event are accepted.
 #'
 #' If exposure variables have a \code{"label"} attribute, for example from
 #' \code{labelled::var_label()}, those labels are used automatically in the
@@ -87,7 +127,8 @@
 #'   \item{variable_labels}{Named character vector of display labels.}
 #'   \item{footnotes}{Character vector used by the rendered table. Adjustment
 #'   notes use the same display labels as the table.}
-#'   \item{time,event,approach,format,source,adjust_for,exposures,interaction}{Metadata fields.}
+#'   \item{time,event,approach,format,source,adjust_for,baseline_strata,
+#'   exposures,interaction}{Metadata fields.}
 #' }
 #'
 #' @examples
@@ -130,6 +171,16 @@
 #'   multivariable = TRUE
 #' )
 #'
+#' # One model with separate baseline hazards by cell type
+#' cox_reg(
+#'   data = lung_data,
+#'   time = time,
+#'   event = status,
+#'   exposures = c(trt, age, karno),
+#'   baseline_strata = celltype,
+#'   multivariable = TRUE
+#' )
+#'
 #' # multivariate is accepted as an alias
 #' cox_reg(
 #'   data = lung_data,
@@ -139,7 +190,7 @@
 #'   multivariate = TRUE
 #' )
 #'
-#' @importFrom survival Surv coxph
+#' @importFrom survival Surv coxph strata
 #' @export
 cox_reg <- function(data,
                     time,
@@ -152,18 +203,40 @@ cox_reg <- function(data,
                     multivariate = NULL,
                     format = c("flextable", "gt"),
                     theme = c("minimal"),
-                    show_sample = "events",
+                    show_sample = "both",
                     model_stats = FALSE,
-                    show_ref = TRUE) {
+                    show_ref = TRUE,
+                    baseline_strata = NULL,
+                    time_start = NULL,
+                    cluster = NULL,
+                    weights = NULL,
+                    robust = NULL,
+                    ties = c("efron", "breslow", "exact"),
+                    control = NULL) {
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
-  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame(),
+                         data_names = names(data))
+  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(),
+                          allow_null = TRUE, data_names = names(data))
   stratifier <- .survival_optional_single_var_arg(
     substitute(stratifier),
     data = data,
     env = parent.frame()
+  )
+  baseline_strata <- .vars_arg(
+    substitute(baseline_strata), env = parent.frame(), allow_null = TRUE,
+    data_names = names(data)
+  )
+  time_start <- .survival_optional_single_var_arg(
+    substitute(time_start), data = data, env = parent.frame()
+  )
+  cluster <- .survival_optional_single_var_arg(
+    substitute(cluster), data = data, env = parent.frame()
+  )
+  weights <- .survival_optional_single_var_arg(
+    substitute(weights), data = data, env = parent.frame()
   )
   interaction <- .interaction_arg(substitute(interaction), env = parent.frame(), allow_null = TRUE)
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
@@ -172,6 +245,10 @@ cox_reg <- function(data,
     substitute(show_sample),
     env = parent.frame(),
     choices = c("events", "n", "both", "none")
+  )
+  ties <- .choice_arg(
+    substitute(ties), env = parent.frame(),
+    choices = c("efron", "breslow", "exact")
   )
 
   if (!is.logical(model_stats) || length(model_stats) != 1L || is.na(model_stats)) {
@@ -203,11 +280,44 @@ cox_reg <- function(data,
     stop("`show_sample` must be one of 'events', 'n', 'both', or 'none'.", call. = FALSE)
   }
   show_sample <- match.arg(show_sample, show_sample_choices)
+  ties <- match.arg(ties, c("efron", "breslow", "exact"))
+  if (is.character(exposures)) exposures <- unique(exposures)
+  if (identical(ties, "exact") && !is.null(time_start)) {
+    stop(
+      "`ties = \"exact\"` cannot be combined with `time_start`; ",
+      "use \"efron\" or \"breslow\" for counting-process data.",
+      call. = FALSE
+    )
+  }
+  if (!is.null(robust) &&
+      (!is.logical(robust) || length(robust) != 1L || is.na(robust))) {
+    stop("`robust` must be TRUE, FALSE, or NULL.", call. = FALSE)
+  }
+  if (!is.null(cluster) && identical(robust, FALSE)) {
+    stop(
+      "`robust = FALSE` cannot be combined with `cluster`; clustered Cox models require robust variance.",
+      call. = FALSE
+    )
+  }
+  control <- .cox_control_arg(control)
   theme <- .resolve_theme(theme)
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
   fmt_class <- if (format == "gt") "gt_cox" else "ft_cox"
 
+  if (!is.null(stratifier) && length(baseline_strata)) {
+    stop(
+      "Use either `stratifier` for separate models or `baseline_strata` for one Cox model, not both.",
+      call. = FALSE
+    )
+  }
+
   if (!is.null(stratifier)) {
+    if (stratifier %in% c(time_start, cluster, weights)) {
+      stop(
+        "`stratifier` cannot also be used as `time_start`, `cluster`, or `weights`.",
+        call. = FALSE
+      )
+    }
     .validate_survival_stratifier(
       data = data,
       time = time,
@@ -232,7 +342,14 @@ cox_reg <- function(data,
       show_sample = show_sample,
       model_stats = model_stats,
       show_ref = show_ref,
-      fmt_class = fmt_class
+      fmt_class = fmt_class,
+      event_note = .survival_event_level_note(data, event),
+      time_start = time_start,
+      cluster = cluster,
+      weights = weights,
+      robust = robust,
+      ties = ties,
+      control = control
     ))
   }
 
@@ -242,14 +359,24 @@ cox_reg <- function(data,
     event = event,
     exposures = exposures,
     adjust_for = adjust_for,
+    baseline_strata = baseline_strata,
     interaction = interaction,
-    multivariable = multivariable
+    multivariable = multivariable,
+    time_start = time_start,
+    cluster = cluster,
+    weights = weights,
+    robust = robust,
+    ties = ties,
+    control = control
   )
 
   effect_label <- if (adjusted_mode || isTRUE(multivariable)) "Adjusted HR (95% CI)" else "HR (95% CI)"
   variable_labels <- .var_label_map(
     data,
-    unique(c(exposures, adjust_for, .interaction_vars(interaction)))
+    unique(c(
+      exposures, adjust_for, baseline_strata, time_start, cluster, weights,
+      .interaction_vars(interaction)
+    ))
   )
   core$table_body <- .format_interaction_levels(
     core$table_body, core$data_clean, variable_labels
@@ -278,14 +405,20 @@ cox_reg <- function(data,
     )
     .must_be_display_df_multi(display_df)
   }
+  display_df <- .add_model_n_column(display_df, core$models)
 
   footnotes <- c(
     .abbrev_note("cox"),
-    if (isTRUE(show_ref) && any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
+    if (.has_visible_reference(core$table_body, show_ref)) .ref_note() else NULL,
     if (adjusted_mode) .display_adjustment_note(adjust_for, variable_labels) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
+    .cox_baseline_strata_note(baseline_strata, variable_labels),
+    .cox_analysis_note(time_start, cluster, weights, robust, ties, variable_labels),
+    .cox_weights_robust_note(core$models, cluster, weights, robust),
+    .survival_event_level_note(data, event),
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
-    NULL
+    .model_n_footnote(core$models),
+    .survival_events_note(.survival_model_events(core$models))
   )
 
   .message_hidden_ref_rows("cox_reg", core$table_body, show_ref)
@@ -315,12 +448,19 @@ cox_reg <- function(data,
     footnotes = footnotes,
     time = time,
     event = event,
+    time_start = time_start,
     approach = "cox",
     format = format,
     source = "cox_reg",
     adjusted_mode = adjusted_mode,
     multivariable = isTRUE(multivariable),
     adjust_for = if (adjusted_mode) unique(adjust_for) else NULL,
+    baseline_strata = baseline_strata,
+    cluster = cluster,
+    weights = weights,
+    robust = robust,
+    ties = ties,
+    control = control,
     exposures = unique(exposures),
     interaction = interaction,
     show_ref = isTRUE(show_ref)
@@ -337,24 +477,45 @@ cox_reg <- function(data,
                           event,
                           exposures,
                           adjust_for = NULL,
+                          baseline_strata = NULL,
                           interaction = NULL,
-                          multivariable = FALSE) {
+                          multivariable = FALSE,
+                          time_start = NULL,
+                          cluster = NULL,
+                          weights = NULL,
+                          robust = NULL,
+                          ties = "efron",
+                          control = NULL) {
   data_valid <- .validate_cox_inputs(
     data,
     time,
     event,
     exposures,
     adjust_for,
+    baseline_strata = baseline_strata,
     interaction = interaction,
-    multivariable = multivariable
+    multivariable = multivariable,
+    time_start = time_start,
+    cluster = cluster,
+    weights = weights
   )
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
   interaction_vars <- .interaction_vars(interaction)
 
   if (isTRUE(multivariable)) {
     predictors <- unique(c(exposures, interaction_vars))
-    data_model <- .cox_model_data(data_valid, time, event, predictors)
-    fit <- .fit_cox_model(data_model, time, event, predictors, interaction = interaction)
+    data_model <- .cox_model_data(
+      data_valid, time, event, predictors, baseline_strata = baseline_strata,
+      time_start = time_start, cluster = cluster, weights = weights
+    )
+    .warn_cox_baseline_strata(data_model, event, baseline_strata)
+    fit <- .fit_cox_model(
+      data_model, time, event, predictors,
+      interaction = interaction,
+      baseline_strata = baseline_strata, time_start = time_start,
+      cluster = cluster, weights = weights, robust = robust,
+      ties = ties, control = control
+    )
 
     if (is.null(fit)) {
       stop("Cox model fitting failed for the multivariable model.", call. = FALSE)
@@ -383,8 +544,18 @@ cox_reg <- function(data,
   for (i in seq_along(exposures)) {
     exposure <- exposures[i]
     predictors <- unique(c(if (adjusted_mode) c(exposure, adjust_for) else exposure, interaction_vars))
-    data_model <- .cox_model_data(data_valid, time, event, predictors)
-    fit <- .fit_cox_model(data_model, time, event, predictors, interaction = interaction)
+    data_model <- .cox_model_data(
+      data_valid, time, event, predictors, baseline_strata = baseline_strata,
+      time_start = time_start, cluster = cluster, weights = weights
+    )
+    .warn_cox_baseline_strata(data_model, event, baseline_strata, exposure)
+    fit <- .fit_cox_model(
+      data_model, time, event, predictors,
+      interaction = interaction,
+      baseline_strata = baseline_strata, time_start = time_start,
+      cluster = cluster, weights = weights, robust = robust,
+      ties = ties, control = control
+    )
 
     if (is.null(fit)) {
       stop("Cox model fitting failed for exposure '", exposure, "'.", call. = FALSE)
@@ -413,6 +584,12 @@ cox_reg <- function(data,
   if (is.symbol(expr)) {
     nm <- as.character(expr)
     if (nm %in% names(data)) {
+      # Data column wins, unless a calling (wrapper) function forwards the
+      # name of another column through a same-named argument.
+      passed <- .wrapper_passed_name(nm, env, names(data))
+      if (!is.null(passed) && length(passed) == 1L) {
+        return(passed)
+      }
       return(nm)
     }
     if (exists(nm, envir = env, inherits = TRUE)) {
@@ -438,8 +615,12 @@ cox_reg <- function(data,
                                  event,
                                  exposures,
                                  adjust_for = NULL,
+                                 baseline_strata = NULL,
                                  interaction = NULL,
-                                 multivariable = FALSE) {
+                                 multivariable = FALSE,
+                                 time_start = NULL,
+                                 cluster = NULL,
+                                 weights = NULL) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
   }
@@ -450,6 +631,20 @@ cox_reg <- function(data,
 
   if (!is.character(event) || length(event) != 1L || !event %in% names(data)) {
     stop("`event` must be a single event indicator variable in `data`.", call. = FALSE)
+  }
+
+  optional_vars <- c(time_start, cluster, weights)
+  if (length(optional_vars) && any(!optional_vars %in% names(data))) {
+    stop(
+      "One or more `time_start`, `cluster`, or `weights` variables were not found in the dataset.",
+      call. = FALSE
+    )
+  }
+  if (anyDuplicated(c(time, event, optional_vars))) {
+    stop(
+      "`time`, `event`, `time_start`, `cluster`, and `weights` must refer to distinct variables.",
+      call. = FALSE
+    )
   }
 
   exposures <- unique(exposures)
@@ -474,6 +669,15 @@ cox_reg <- function(data,
     adjust_for <- NULL
   }
 
+  role_clash <- intersect(c(exposures, adjust_for), c(time, event, time_start))
+  if (length(role_clash)) {
+    stop(
+      "The time and event variables cannot also be exposures or adjustment variables: ",
+      paste(role_clash, collapse = ", "), ".",
+      call. = FALSE
+    )
+  }
+
   interaction_vars <- .validate_interaction_term(
     data = data,
     exposures = exposures,
@@ -481,6 +685,61 @@ cox_reg <- function(data,
     adjusted_mode = adjusted_mode,
     exposure_by_exposure = !isTRUE(multivariable)
   )
+
+  role_overlap <- intersect(
+    c(time_start, cluster, weights),
+    unique(c(exposures, adjust_for, interaction_vars))
+  )
+  if (length(role_overlap)) {
+    stop(
+      "`time_start`, `cluster`, and `weights` must not also be model predictors: ",
+      paste(role_overlap, collapse = ", "), ".",
+      call. = FALSE
+    )
+  }
+
+  baseline_strata <- unique(baseline_strata)
+  if (length(baseline_strata)) {
+    if (!is.character(baseline_strata) ||
+        !all(baseline_strata %in% names(data))) {
+      stop(
+        "One or more `baseline_strata` variables were not found in the dataset.",
+        call. = FALSE
+      )
+    }
+    reserved <- unique(c(
+      time, event, time_start, cluster, weights,
+      exposures, adjust_for, interaction_vars
+    ))
+    if (any(baseline_strata %in% reserved)) {
+      stop(
+        "`baseline_strata` must not overlap with time, event, exposures, adjustment, or interaction variables.",
+        call. = FALSE
+      )
+    }
+    valid_type <- vapply(
+      data[baseline_strata],
+      function(x) is.factor(x) || is.character(x) || is.logical(x),
+      logical(1)
+    )
+    if (!all(valid_type)) {
+      stop(
+        "`baseline_strata` variables must be categorical (factor, character, or logical).",
+        call. = FALSE
+      )
+    }
+    observed_levels <- vapply(
+      data[baseline_strata],
+      function(x) length(unique(stats::na.omit(x))),
+      integer(1)
+    )
+    if (any(observed_levels < 2L)) {
+      stop(
+        "Each `baseline_strata` variable must have at least two observed levels.",
+        call. = FALSE
+      )
+    }
+  }
 
   if (!is.numeric(data[[time]])) {
     stop("`time` must be numeric.", call. = FALSE)
@@ -490,14 +749,42 @@ cox_reg <- function(data,
     stop("`time` must contain non-negative follow-up times.", call. = FALSE)
   }
 
+  if (!is.null(time_start)) {
+    if (!is.numeric(data[[time_start]])) {
+      stop("`time_start` must be numeric.", call. = FALSE)
+    }
+    if (any(data[[time_start]] < 0, na.rm = TRUE)) {
+      stop("`time_start` must contain non-negative entry times.", call. = FALSE)
+    }
+    complete_time <- stats::complete.cases(data[, c(time_start, time), drop = FALSE])
+    if (any(data[[time_start]][complete_time] >= data[[time]][complete_time])) {
+      stop("Every complete `time_start` value must be less than `time`.", call. = FALSE)
+    }
+  }
+
+  if (!is.null(cluster) &&
+      length(unique(stats::na.omit(data[[cluster]]))) < 2L) {
+    stop("`cluster` must contain at least two observed groups.", call. = FALSE)
+  }
+
+  if (!is.null(weights)) {
+    weight_values <- data[[weights]]
+    if (!is.numeric(weight_values) ||
+        any(!is.finite(weight_values[!is.na(weight_values)])) ||
+        any(weight_values <= 0, na.rm = TRUE)) {
+      stop(
+        "`weights` must be numeric, finite, and greater than zero ",
+        "(remove rows with zero weight before fitting).",
+        call. = FALSE
+      )
+    }
+  }
+
   data_valid <- data
 
   data_valid[[event]] <- .cox_event01(data_valid[[event]])
   if (sum(data_valid[[event]] == 1, na.rm = TRUE) == 0) {
     stop("`event` must include at least one event.", call. = FALSE)
-  }
-  if (sum(data_valid[[event]] == 0, na.rm = TRUE) == 0) {
-    stop("`event` must include at least one censored observation.", call. = FALSE)
   }
 
   .validate_exposures(data_valid, unique(c(exposures, adjust_for, interaction_vars)))
@@ -506,8 +793,17 @@ cox_reg <- function(data,
 
 #' @keywords internal
 #' @noRd
-.cox_model_data <- function(data, time, event, predictors) {
-  vars_needed <- unique(c(time, event, predictors))
+.cox_model_data <- function(data,
+                            time,
+                            event,
+                            predictors,
+                            baseline_strata = NULL,
+                            time_start = NULL,
+                            cluster = NULL,
+                            weights = NULL) {
+  vars_needed <- unique(c(
+    time_start, time, event, predictors, baseline_strata, cluster, weights
+  ))
   cc_idx <- stats::complete.cases(data[, vars_needed, drop = FALSE])
   data_model <- data[cc_idx, , drop = FALSE]
 
@@ -518,12 +814,101 @@ cox_reg <- function(data,
   if (sum(data_model[[event]] == 1, na.rm = TRUE) == 0) {
     stop("`event` must include at least one event for this Cox model.", call. = FALSE)
   }
-  if (sum(data_model[[event]] == 0, na.rm = TRUE) == 0) {
-    stop("`event` must include at least one censored observation for this Cox model.", call. = FALSE)
-  }
 
   .validate_exposures(data_model, predictors)
-  data_model
+  .survival_prepare_predictors(data_model, predictors)
+}
+
+#' Prepare categorical predictors for one fitted survival model
+#'
+#' Ordered factors otherwise receive polynomial contrasts (`.L`, `.Q`, ...),
+#' which are not the category-versus-reference effects shown in the tables, and
+#' unused factor levels would make the first declared level look like the
+#' reference although the model used the first level present in the data.
+#' Applied to the complete-case data of each model, so the reference row always
+#' matches the fitted contrasts.
+#'
+#' @keywords internal
+#' @noRd
+.survival_prepare_predictors <- function(data, predictors) {
+  for (variable in intersect(unique(predictors), names(data))) {
+    x <- data[[variable]]
+    if (!is.factor(x)) next
+    label <- attr(x, "label", exact = TRUE)
+    if (is.ordered(x)) {
+      x <- factor(x, levels = levels(x), ordered = FALSE)
+    }
+    x <- droplevels(x)
+    if (!is.null(label)) attr(x, "label") <- label
+    data[[variable]] <- x
+  }
+  data
+}
+
+#' Event counts used by fitted survival models
+#' @keywords internal
+#' @noRd
+.survival_model_events <- function(models) {
+  vapply(models, function(fit) {
+    value <- suppressWarnings(as.integer(.strata_survival_event_count(fit)))
+    if (!length(value)) NA_integer_ else value
+  }, integer(1))
+}
+
+#' Format one count or a range of counts across models
+#' @keywords internal
+#' @noRd
+.survival_count_range <- function(values) {
+  values <- suppressWarnings(as.integer(values))
+  values <- values[!is.na(values)]
+  if (!length(values)) return(NA_character_)
+  if (length(unique(values)) == 1L) return(as.character(values[1L]))
+  paste0(min(values), "\u2013", max(values))
+}
+
+#' Footnote reporting the events behind the model N values
+#'
+#' Shared by `cox_reg()`, `surv_reg()`, and `competing_risk_reg()` so that the
+#' sentence is identical in the three functions.
+#'
+#' @keywords internal
+#' @noRd
+.survival_events_note <- function(events) {
+  txt <- .survival_count_range(events)
+  if (is.na(txt)) return(NULL)
+  events <- unique(stats::na.omit(suppressWarnings(as.integer(events))))
+  if (length(events) > 1L) {
+    return(paste0("Number of events: ", txt, " across models."))
+  }
+  paste0("Number of events: ", txt, ".")
+}
+
+#' Footnote naming the level treated as the event for text-coded events
+#' @keywords internal
+#' @noRd
+.survival_event_level_note <- function(data, event) {
+  if (!is.data.frame(data) || !is.character(event) || length(event) != 1L ||
+      !event %in% names(data)) {
+    return(NULL)
+  }
+  x <- data[[event]]
+  if (!is.factor(x) && !is.character(x)) return(NULL)
+  levs <- levels(factor(x))
+  if (length(levs) != 2L) return(NULL)
+  paste0("Event: ", levs[2L], " (", levs[1L], " treated as censored).")
+}
+
+#' Footnote for the robust variance that coxph() selects for case weights
+#' @keywords internal
+#' @noRd
+.cox_weights_robust_note <- function(models, cluster, weights, robust) {
+  if (is.null(weights) || !is.null(cluster) || isTRUE(robust)) {
+    return(NULL)
+  }
+  used <- any(vapply(models, function(fit) {
+    inherits(fit, "coxph") && !is.null(fit$naive.var)
+  }, logical(1)))
+  if (used) "Robust sandwich variance used with case weights." else NULL
 }
 
 #' @keywords internal
@@ -556,17 +941,156 @@ cox_reg <- function(data,
 
 #' @keywords internal
 #' @noRd
-.fit_cox_model <- function(data, time, event, predictors, interaction = NULL) {
+.fit_cox_model <- function(data,
+                           time,
+                           event,
+                           predictors,
+                           interaction = NULL,
+                           baseline_strata = NULL,
+                           time_start = NULL,
+                           cluster = NULL,
+                           weights = NULL,
+                           robust = NULL,
+                           ties = "efron",
+                           control = NULL) {
   bt <- .surv_bt
   rhs <- .survival_rhs(predictors, interaction)
-  fml <- stats::as.formula(paste0("survival::Surv(", bt(time), ", ", bt(event), ") ~ ", rhs))
+  if (length(baseline_strata)) {
+    strata_term <- paste0(
+      "strata(",
+      paste(bt(baseline_strata), collapse = ", "),
+      ")"
+    )
+    rhs <- paste(rhs, strata_term, sep = " + ")
+  }
+  response <- if (is.null(time_start)) {
+    paste0("survival::Surv(", bt(time), ", ", bt(event), ")")
+  } else {
+    paste0(
+      "survival::Surv(", bt(time_start), ", ", bt(time), ", ", bt(event), ")"
+    )
+  }
+  fml <- stats::as.formula(paste0(response, " ~ ", rhs))
+
+  args <- list(
+    formula = fml,
+    data = data,
+    model = TRUE,
+    x = TRUE,
+    y = TRUE,
+    ties = ties
+  )
+  if (!is.null(cluster)) args$cluster <- data[[cluster]]
+  if (!is.null(weights)) args$weights <- data[[weights]]
+  if (!is.null(robust)) args$robust <- robust
+  if (!is.null(control)) args$control <- control
 
   tryCatch(
-    survival::coxph(fml, data = data, model = TRUE),
+    do.call(survival::coxph, args),
     error = function(e) {
       warning("Cox model failed: ", e$message, call. = FALSE)
       NULL
     }
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.cox_control_arg <- function(control) {
+  if (is.null(control)) {
+    return(NULL)
+  }
+  if (!is.list(control) || is.null(names(control)) || any(!nzchar(names(control)))) {
+    stop("`control` must be a named list of coxph.control() arguments.", call. = FALSE)
+  }
+  tryCatch(
+    do.call(survival::coxph.control, control),
+    error = function(e) {
+      stop("Invalid `control`: ", conditionMessage(e), call. = FALSE)
+    }
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.cox_analysis_note <- function(time_start,
+                               cluster,
+                               weights,
+                               robust,
+                               ties,
+                               variable_labels) {
+  label <- function(x) {
+    value <- unname(variable_labels[x])
+    if (!length(value) || is.na(value)) x else value
+  }
+  c(
+    if (!is.null(time_start)) {
+      paste0("Counting-process Cox model with entry time: ", label(time_start), ".")
+    } else NULL,
+    if (!is.null(cluster)) {
+      paste0("Cluster-robust variance by ", label(cluster), ".")
+    } else if (isTRUE(robust)) {
+      "Robust sandwich variance used."
+    } else NULL,
+    if (!is.null(weights)) paste0("Case weights: ", label(weights), ".") else NULL,
+    if (!identical(ties, "efron")) paste0("Ties method: ", ties, ".") else NULL
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.warn_cox_baseline_strata <- function(data,
+                                      event,
+                                      baseline_strata,
+                                      model_name = NULL) {
+  if (!length(baseline_strata)) {
+    return(invisible(NULL))
+  }
+
+  strata <- interaction(data[baseline_strata], drop = TRUE, lex.order = TRUE)
+  n_by_stratum <- table(strata)
+  events_by_stratum <- tapply(data[[event]], strata, sum, na.rm = TRUE)
+  sparse <- names(n_by_stratum)[n_by_stratum < 10L]
+  no_events <- names(events_by_stratum)[events_by_stratum == 0]
+  context <- if (is.null(model_name)) "" else {
+    paste0(" for model '", model_name, "'")
+  }
+
+  details <- character(0)
+  if (length(sparse)) {
+    details <- c(
+      details,
+      paste0("fewer than 10 observations: ", paste(sparse, collapse = ", "))
+    )
+  }
+  if (length(no_events)) {
+    details <- c(
+      details,
+      paste0("no observed events: ", paste(no_events, collapse = ", "))
+    )
+  }
+  if (length(details)) {
+    warning(
+      "Sparse baseline-hazard strata", context, " (",
+      paste(details, collapse = "; "), "). Estimates may be unstable.",
+      call. = FALSE
+    )
+  }
+  invisible(NULL)
+}
+
+#' @keywords internal
+#' @noRd
+.cox_baseline_strata_note <- function(baseline_strata, variable_labels) {
+  if (!length(baseline_strata)) {
+    return(NULL)
+  }
+  labels <- unname(variable_labels[baseline_strata])
+  labels[is.na(labels)] <- baseline_strata[is.na(labels)]
+  paste0(
+    "Baseline hazard stratified by ", paste(labels, collapse = ", "),
+    ". No hazard ratio is estimated for ",
+    if (length(labels) == 1L) "this variable." else "these variables."
   )
 }
 
@@ -580,35 +1104,9 @@ cox_reg <- function(data,
   }
 
   rn <- rownames(coefs)
-
-  is_exposure_term <- function(term, exposure) {
-    term_clean <- gsub("`", "", term, fixed = TRUE)
-    exp_clean <- gsub("`", "", exposure, fixed = TRUE)
-    if (identical(term_clean, exp_clean) ||
-        (startsWith(term_clean, exp_clean) && !grepl(":", term_clean, fixed = TRUE))) {
-      return(TRUE)
-    }
-    if (grepl(":", term_clean, fixed = TRUE) && !is.null(interaction)) {
-      parts <- strsplit(term_clean, ":", fixed = TRUE)[[1]]
-      return(any(startsWith(parts, exp_clean) | parts == exp_clean))
-    }
-    FALSE
-  }
-
-  clean_level <- function(term, exposure) {
-    term_clean <- gsub("`", "", term, fixed = TRUE)
-    exp_clean <- gsub("`", "", exposure, fixed = TRUE)
-    if (identical(term_clean, exp_clean)) {
-      return(exp_clean)
-    }
-    if (grepl(":", term_clean, fixed = TRUE)) {
-      return(paste(strsplit(term_clean, ":", fixed = TRUE)[[1]], collapse = " x "))
-    }
-    lvl <- sub(paste0("^", exp_clean), "", term_clean)
-    if (identical(lvl, "")) exp_clean else lvl
-  }
-
-  idx <- which(vapply(rn, is_exposure_term, logical(1), exposure = exposure))
+  term_map <- .coefficient_term_map(fit, rn)
+  idx <- which(vapply(term_map, .term_contains_variable, logical(1),
+                      variable = exposure))
   df_nonref <- NULL
 
   if (length(idx)) {
@@ -621,7 +1119,13 @@ cox_reg <- function(data,
 
     df_nonref <- data.frame(
       exposure = exposure,
-      level = vapply(rn[idx], clean_level, character(1), exposure = exposure),
+      level = mapply(
+        .survival_coefficient_display_level,
+        coefficient = rn[idx],
+        term = term_map[idx],
+        MoreArgs = list(exposure = exposure, fit = fit),
+        USE.NAMES = FALSE
+      ),
       estimate = exp(est_log),
       conf.low = exp(est_log - z * se),
       conf.high = exp(est_log + z * se),
@@ -660,6 +1164,42 @@ cox_reg <- function(data,
     return(rbind(ref_row, df_nonref))
   }
   if (!is.null(ref_row)) ref_row else df_nonref
+}
+
+#' Display label for a survival-model coefficient
+#'
+#' Main effects are delegated to the shared helper. Interaction coefficients
+#' are split with the fitted factor levels instead of on every colon, so a
+#' level such as `c:d` stays intact (`grpc:d x trtTest`).
+#'
+#' @keywords internal
+#' @noRd
+.survival_coefficient_display_level <- function(coefficient, term, exposure,
+                                                fit = NULL) {
+  fallback <- .coefficient_display_level(coefficient, term, exposure)
+  if (is.null(fit) || is.na(term) || !grepl(":", coefficient, fixed = TRUE)) {
+    return(fallback)
+  }
+  term_vars <- tryCatch(
+    all.vars(stats::as.formula(paste("~", term))),
+    error = function(e) character()
+  )
+  if (length(term_vars) < 2L) {
+    return(fallback)
+  }
+
+  pieces <- lapply(term_vars, function(variable) {
+    x <- .model_data_col(fit, variable)
+    if (is.factor(x)) paste0(variable, levels(x)) else variable
+  })
+  target <- gsub("`", "", coefficient, fixed = TRUE)
+  combos <- expand.grid(pieces, stringsAsFactors = FALSE, KEEP.OUT.ATTRS = FALSE)
+  joined <- do.call(paste, c(unname(as.list(combos)), sep = ":"))
+  hit <- which(joined == target)
+  if (length(hit) != 1L) {
+    return(fallback)
+  }
+  paste(unlist(combos[hit, , drop = TRUE], use.names = FALSE), collapse = " x ")
 }
 
 #' @keywords internal

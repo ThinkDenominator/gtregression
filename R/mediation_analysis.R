@@ -25,7 +25,8 @@
 #' @param conf_level Confidence level for intervals.
 #' @param seed Optional random seed for reproducible bootstrap intervals.
 #' @param format One of \code{"flextable"} (default) or \code{"gt"}.
-#' @param theme Table theme.
+#' @param theme Table theme: a preset (\code{"minimal"}, \code{"clinical"},
+#'   \code{"striped"}, \code{"shaded"}, \code{"jama"}) or theme primitives.
 #'
 #' @details
 #' This function is for planned mediation questions, not automatic causal
@@ -37,7 +38,16 @@
 #'
 #' For \code{outcome_approach = "linear"}, effects are mean differences. For
 #' \code{outcome_approach = "logit"}, effects are predicted probability
-#' differences, not odds ratios.
+#' differences, not odds ratios. With a logit outcome the effects are evaluated
+#' with the mediator set to its predicted mean under each exposure value (the
+#' mean is plugged into the outcome model). Because the logistic function is
+#' non-linear this is an approximation to the effects obtained by averaging
+#' over the mediator distribution; the table footnote states this.
+#'
+#' Bootstrap replicates in which a model cannot be fitted are excluded from
+#' the percentile intervals and p-values; a warning and the table footnote
+#' report how many failed (also stored as \code{boot_failed}). The interval
+#' column is labelled with \code{conf_level}.
 #'
 #' @return A list of class \code{c("gtregression", "mediation_analysis", ...)}
 #' with elements:
@@ -95,10 +105,11 @@ mediation_analysis <- function(data,
                                seed = NULL,
                                format = c("flextable", "gt"),
                                theme = c("minimal")) {
-  exposure <- .vars_arg(substitute(exposure), env = parent.frame())
-  mediator <- .vars_arg(substitute(mediator), env = parent.frame())
-  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
-  covariates <- .vars_arg(substitute(covariates), env = parent.frame(), allow_null = TRUE)
+  exposure <- .vars_arg(substitute(exposure), env = parent.frame(), data_names = names(data))
+  mediator <- .vars_arg(substitute(mediator), env = parent.frame(), data_names = names(data))
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame(), data_names = names(data))
+  covariates <- .vars_arg(substitute(covariates), env = parent.frame(), allow_null = TRUE,
+                          data_names = names(data))
 
   mediator_approach <- .choice_arg(
     substitute(mediator_approach),
@@ -111,7 +122,13 @@ mediation_analysis <- function(data,
     choices = c("linear", "logit")
   )
   format <- .choice_arg(substitute(format), env = parent.frame(), choices = c("flextable", "gt"))
+  if (!is.character(format) || !length(format) || anyNA(format) ||
+      !all(format %in% c("flextable", "gt"))) {
+    stop("`format` must be one of: flextable, gt.", call. = FALSE)
+  }
+  format <- match.arg(format, c("flextable", "gt"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
+  .validate_theme_arg(theme)
   theme <- .resolve_theme(theme)
 
   .validate_mediation_inputs(
@@ -182,8 +199,20 @@ mediation_analysis <- function(data,
     sims = as.integer(sims)
   )
 
+  boot_failed <- sum(!stats::complete.cases(
+    boot[, c("total", "direct", "indirect"), drop = FALSE]
+  ) | !is.finite(rowSums(boot[, c("total", "direct", "indirect"), drop = FALSE])))
+  if (boot_failed > 0L) {
+    warning(
+      boot_failed, " of ", as.integer(sims),
+      " bootstrap replicates failed (model could not be fitted in the ",
+      "resample) and were excluded from the confidence intervals and p-values.",
+      call. = FALSE
+    )
+  }
+
   table_body <- .mediation_table_body(point, boot, conf_level)
-  table_display <- .mediation_table_display(table_body)
+  table_display <- .mediation_table_display(table_body, conf_level)
   variable_labels <- .var_label_map(data, vars)
   attr(table_display, "variable_labels") <- variable_labels
 
@@ -194,7 +223,8 @@ mediation_analysis <- function(data,
     outcome = .label_var(outcome, variable_labels),
     covariates = .mediation_covariate_labels(covariates, variable_labels),
     values = values,
-    sims = sims
+    sims = as.integer(sims),
+    boot_failed = boot_failed
   )
 
   tbl <- if (identical(format, "gt")) {
@@ -209,6 +239,8 @@ mediation_analysis <- function(data,
     table_display = table_display,
     models = list(mediator = model_m, outcome = model_y),
     boot = boot,
+    boot_failed = boot_failed,
+    conf_level = conf_level,
     values = values,
     complete_data = df,
     variable_labels = variable_labels,
@@ -251,6 +283,14 @@ mediation_analysis <- function(data,
   if (length(unique(c(exposure, mediator, outcome))) != 3L) {
     stop("`exposure`, `mediator`, and `outcome` must be different variables.", call. = FALSE)
   }
+  covariate_clash <- intersect(covariates, c(exposure, mediator, outcome))
+  if (length(covariate_clash)) {
+    stop(
+      "`covariates` must not include the exposure, mediator or outcome: ",
+      paste(covariate_clash, collapse = ", "), ".",
+      call. = FALSE
+    )
+  }
   if (!identical(mediator_approach, "linear")) {
     stop("`mediator_approach` currently supports only `linear`.", call. = FALSE)
   }
@@ -269,6 +309,9 @@ mediation_analysis <- function(data,
   if (!is.numeric(sims) || length(sims) != 1L || is.na(sims) || sims < 20) {
     stop("`sims` must be a single number greater than or equal to 20.", call. = FALSE)
   }
+  if (sims != floor(sims)) {
+    stop("`sims` must be a whole number.", call. = FALSE)
+  }
   if (!is.numeric(conf_level) || length(conf_level) != 1L ||
       is.na(conf_level) || conf_level <= 0 || conf_level >= 1) {
     stop("`conf_level` must be a single number between 0 and 1.", call. = FALSE)
@@ -279,19 +322,61 @@ mediation_analysis <- function(data,
 .mediation_values <- function(x, exposure_value = NULL, reference_value = NULL) {
   `%||%` <- function(a, b) if (!is.null(a)) a else b
   observed <- stats::na.omit(x)
+
+  check_scalar <- function(value, arg) {
+    if (!is.null(value) && (length(value) != 1L || is.na(value))) {
+      stop("`", arg, "` must be a single non-missing value.", call. = FALSE)
+    }
+  }
+  check_scalar(exposure_value, "exposure_value")
+  check_scalar(reference_value, "reference_value")
+  check_member <- function(value, arg, allowed) {
+    if (!is.null(value) && !as.character(value) %in% as.character(allowed)) {
+      stop(
+        "`", arg, "` = ", format(value), " is not a value of the exposure. ",
+        "Choose one of: ", paste(utils::head(allowed, 20), collapse = ", "),
+        if (length(allowed) > 20L) ", ..." else "", ".",
+        call. = FALSE
+      )
+    }
+  }
+  check_distinct <- function(ref, exp) {
+    if (identical(as.character(ref), as.character(exp))) {
+      stop(
+        "`exposure_value` and `reference_value` must differ (both are ",
+        format(exp), ").",
+        call. = FALSE
+      )
+    }
+  }
+
   if (is.factor(observed)) {
-    lev <- levels(observed)
+    lev <- levels(droplevels(observed))
     if (length(lev) < 2L) {
       stop("`exposure` must have at least two observed levels.", call. = FALSE)
     }
+    check_member(exposure_value, "exposure_value", lev)
+    check_member(reference_value, "reference_value", lev)
     ref <- reference_value %||% lev[1]
-    exp <- exposure_value %||% lev[2]
+    exp <- exposure_value %||% setdiff(lev, as.character(ref))[1]
+    check_distinct(ref, exp)
     return(list(reference_value = ref, exposure_value = exp))
   }
 
   ux <- sort(unique(observed))
   if (length(ux) < 2L) {
     stop("`exposure` must contain at least two observed values.", call. = FALSE)
+  }
+
+  if (is.numeric(observed)) {
+    check_numeric <- function(value, arg) {
+      if (!is.null(value) && (!is.numeric(value) || !is.finite(value))) {
+        stop("`", arg, "` must be a finite number because the exposure is ",
+             "numeric.", call. = FALSE)
+      }
+    }
+    check_numeric(exposure_value, "exposure_value")
+    check_numeric(reference_value, "reference_value")
   }
 
   if (is.numeric(observed) && all(ux %in% c(0, 1))) {
@@ -301,9 +386,12 @@ mediation_analysis <- function(data,
     ref <- reference_value %||% unname(stats::quantile(observed, 0.25, na.rm = TRUE, names = FALSE))
     exp <- exposure_value %||% unname(stats::quantile(observed, 0.75, na.rm = TRUE, names = FALSE))
   } else {
+    check_member(exposure_value, "exposure_value", ux)
+    check_member(reference_value, "reference_value", ux)
     ref <- reference_value %||% ux[1]
     exp <- exposure_value %||% ux[2]
   }
+  check_distinct(ref, exp)
 
   list(reference_value = ref, exposure_value = exp)
 }
@@ -467,7 +555,12 @@ mediation_analysis <- function(data,
   )
 }
 
-.mediation_table_display <- function(table_body) {
+.mediation_ci_label <- function(conf_level = 0.95) {
+  paste0(format(round(100 * conf_level, 2), trim = TRUE, drop0trailing = TRUE),
+         "% CI")
+}
+
+.mediation_table_display <- function(table_body, conf_level = 0.95) {
   fmt_num <- function(x, digits = 3) {
     ifelse(is.na(x), "", formatC(x, digits = digits, format = "f"))
   }
@@ -475,12 +568,14 @@ mediation_analysis <- function(data,
   out <- data.frame(
     Effect = table_body$Effect,
     Estimate = fmt_num(table_body$estimate),
-    `95% CI` = paste0(fmt_num(table_body$conf.low), " to ", fmt_num(table_body$conf.high)),
+    CI = paste0(fmt_num(table_body$conf.low), " to ", fmt_num(table_body$conf.high)),
     `p-value` = fmt_p(table_body$p.value),
     Interpretation = table_body$Interpretation,
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
+  # The interval is labelled with the confidence level actually used.
+  names(out)[names(out) == "CI"] <- .mediation_ci_label(conf_level)
   out
 }
 
@@ -497,9 +592,15 @@ mediation_analysis <- function(data,
                                  outcome,
                                  covariates,
                                  values,
-                                 sims) {
+                                 sims,
+                                 boot_failed = 0L) {
   scale_note <- if (identical(outcome_approach, "logit")) {
-    "Effects are predicted probability differences from logistic outcome models."
+    paste(
+      "Effects are predicted probability differences from logistic outcome models,",
+      "evaluated with the mediator set to its predicted mean under each exposure",
+      "value (an approximation: the outcome model is not averaged over the",
+      "mediator distribution)."
+    )
   } else {
     "Effects are mean differences from linear outcome models."
   }
@@ -523,7 +624,15 @@ mediation_analysis <- function(data,
   }
   c(
     scale_note,
-    paste0(value_note, " Bootstrap replicates = ", sims, "."),
+    paste0(
+      value_note, " Bootstrap replicates = ", sims,
+      if (boot_failed > 0L) {
+        paste0(" (", boot_failed, " failed and were excluded)")
+      } else {
+        ""
+      },
+      "."
+    ),
     adj_note,
     "Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions."
   )
@@ -556,7 +665,10 @@ mediation_analysis <- function(data,
   }
   tb <- gt::gt(df) |>
     gt::cols_align("left", columns = c("Effect", "Interpretation")) |>
-    gt::cols_align("center", columns = c("Estimate", "95% CI", "p-value")) |>
+    gt::cols_align(
+      "center",
+      columns = dplyr::all_of(setdiff(names(df), c("Effect", "Interpretation")))
+    ) |>
     gt::tab_options(
       table.font.names = "system-ui",
       data_row.padding = gt::px(4),

@@ -45,6 +45,11 @@ models using Schoenfeld residuals.
 suggests possible evidence against the proportional hazards assumption for a
 term or for the global model test. This should be interpreted with plots,
 clinical knowledge, follow-up patterns, and modelling purpose.
+
+The returned table retains the underlying \code{cox.zph} diagnostics. Use
+\code{plot()} to draw scaled Schoenfeld residual plots. When several models
+were checked, select one by name or position with the \code{model} argument;
+use \code{term} to draw a single model term.
 }
 \examples{
 lung_data <- data_lungcancer
@@ -60,5 +65,7 @@ cox_fit <- cox_reg(
 
 check_ph(cox_fit)
 check_ph(cox_fit, format = tibble)
+ph <- check_ph(cox_fit)
+plot(ph, model = "trt")
 
 }

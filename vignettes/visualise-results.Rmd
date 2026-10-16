@@ -8,7 +8,7 @@ vignette: >
 ---
 
 Regression tables are the evidence. Plots are the quick read. Use
-`km_plot()`, `km_risk_table()`, `rmst_table()`, `survival_summary()`,
+`km_plot()`, `cuminc_plot()`, `km_risk_table()`, `rmst_table()`, `survival_summary()`,
 `survival_quantiles()`, `survival_prob()`, `logrank_test()`,
 `surv_model_compare()`, `plot_surv_fit()`, `surv_predict()`, `plot_reg()`,
 `plot_reg_combine()`, `forest_df()`, and `forest_reg()` to visualise survival
@@ -404,7 +404,10 @@ plot_reg(
 
 `plot_reg_combine()` places crude and adjusted model results side by side. This
 is useful when a manuscript needs to show how adjustment changes the estimate.
-Axis limits and tick marks can be controlled separately for each side.
+Axis limits and tick marks can be controlled separately for each side. In
+addition to standard and survival regression, compatible crude and adjusted
+Fine-Gray, conditional logistic, ordinal, and individual multinomial outcome
+models can be combined.
 
 ```{r combined-plot, fig.width=12, fig.height=7, message=FALSE, warning=FALSE}
 plot_reg_combine(
@@ -418,6 +421,15 @@ plot_reg_combine(
   breaks_multi = c(0.5, 1, 2, 4, 8),
   title_uni = "Crude Effects",
   title_multi = "Adjusted Effects"
+)
+```
+
+For multinomial regression, select the same outcome comparison from each model:
+
+```r
+plot_reg_combine(
+  crude_multinomial$per_outcome$versicolor,
+  adjusted_multinomial$per_outcome$versicolor
 )
 ```
 

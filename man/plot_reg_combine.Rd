@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_reg_combine.R
 \name{plot_reg_combine}
 \alias{plot_reg_combine}
-\title{Side-by-side forest plots: univariate vs multivariable}
+\title{Plot crude and adjusted estimates side by side}
 \usage{
 plot_reg_combine(
   tbl_uni,
@@ -31,9 +31,14 @@ plot_reg_combine(
 )
 }
 \arguments{
-\item{tbl_uni}{A univariate \code{gtregression} object.}
+\item{tbl_uni}{The first \code{gtregression} object: crude results (for
+example \code{uni_reg()}, or \code{cox_reg()} without adjustment), or
+exposure-specific adjusted results (\code{adjust_for} without
+\code{multivariable = TRUE}).}
 
-\item{tbl_multi}{A multivariable \code{gtregression} object.}
+\item{tbl_multi}{The second \code{gtregression} object from the same model
+family: the adjusted or single multivariable model. When both objects are
+adjusted, the second panel is labelled "Mutually Adjusted".}
 
 \item{title_uni, title_multi}{Optional panel titles.}
 
@@ -87,5 +92,5 @@ A \code{patchwork} object with two \code{ggplot2} panels.
 \description{
 Creates two aligned forest plots from compatible \code{gtregression}
 regression objects such as crude and adjusted outputs from \code{uni_reg()},
-\code{multi_reg()}, \code{cox_reg()}, or \code{surv_reg()}.
+\code{multi_reg()}, survival regression, or other supported model families.
 }

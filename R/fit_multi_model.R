@@ -11,7 +11,8 @@
 #' @param interaction Optional character scalar specifying an interaction term,
 #'   e.g. "bmi*sex".
 #'
-#' @return A fitted model object or `NULL` if fitting fails.
+#' @return A fitted model object. Stops with an informative error naming the
+#'   approach when the model cannot be fitted.
 #' @keywords internal
 #' @noRd
 .fit_multi_model <- function(data,
@@ -22,18 +23,27 @@
                              interaction = NULL) {
   approach <- .normalize_approach(approach)
 
-  rhs_terms <- unique(c(exposures, adjust_for))
+  predictor_vars <- unique(c(
+    exposures, adjust_for, .interaction_vars(interaction)
+  ))
+  data <- .prepare_regression_model_data(
+    data, outcome, predictor_vars, approach
+  )
+
+  rhs_terms <- .formula_name(unique(c(exposures, adjust_for)))
 
   if (!is.null(interaction) && length(interaction) > 0) {
-    rhs_terms <- unique(c(rhs_terms, interaction))
+    rhs_terms <- unique(c(rhs_terms, .formula_interaction(interaction)))
   }
 
-  formula_str <- paste(outcome, "~", paste(rhs_terms, collapse = " + "))
+  formula_str <- paste(
+    .formula_name(outcome), "~", paste(rhs_terms, collapse = " + ")
+  )
   formula <- stats::as.formula(formula_str)
 
   tryCatch(
     {
-      fit <- switch(
+      fit <- .with_treatment_contrasts(switch(
         approach,
         "logit" = stats::glm(
           formula = formula,
@@ -44,11 +54,7 @@
           formula = formula,
           data = data
         ),
-        "logbinomial" = stats::glm(
-          formula = formula,
-          data = data,
-          family = stats::binomial("log")
-        ),
+        "logbinomial" = .fit_logbinomial(formula, data),
         "poisson" = stats::glm(
           formula = formula,
           data = data,
@@ -76,21 +82,25 @@
           ),
           call. = FALSE
         )
+      ))
+      attr(fit, "gtregression_model_frame") <- .with_treatment_contrasts(
+        stats::model.frame(formula, data = data)
       )
-      attr(fit, "gtregression_model_frame") <- stats::model.frame(formula, data = data)
       fit
     },
     error = function(e) {
-      warning(
+      # An informative error (the caller would otherwise only report
+      # "Model fitting failed.").
+      stop(
         paste0(
           "Model fitting failed for exposure(s) ",
           paste(exposures, collapse = ", "),
           " using approach '", approach, "': ",
-          e$message
+          sub("\\.+$", "", e$message), ".",
+          .fit_failure_hint(approach)
         ),
         call. = FALSE
       )
-      NULL
     }
   )
 }

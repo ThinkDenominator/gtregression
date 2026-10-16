@@ -69,6 +69,9 @@ logrank_test <- function(data,
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
+  if (missing(by)) {
+    stop("`by` must be a single grouping variable in `data`.", call. = FALSE)
+  }
   by <- .cox_single_var_arg(substitute(by), data = data, env = parent.frame())
   format <- .choice_arg(
     substitute(format),
@@ -138,6 +141,9 @@ logrank_test <- function(data,
   if (!is.character(by) || length(by) != 1L || !by %in% names(data)) {
     stop("`by` must be a single grouping variable in `data`.", call. = FALSE)
   }
+  if (by %in% c(time, event)) {
+    stop("`by` must be a separate grouping variable, not the time or event variable.", call. = FALSE)
+  }
   if (!is.numeric(data[[time]])) {
     stop("`time` must be numeric.", call. = FALSE)
   }
@@ -183,7 +189,7 @@ logrank_test <- function(data,
 #' @noRd
 .logrank_table_body <- function(fit, test) {
   data.frame(
-    Group = sub("^.*=", "", names(fit$n)),
+    Group = sub("^[^=]*=", "", names(fit$n)),
     N = as.numeric(fit$n),
     Observed = as.numeric(fit$obs),
     Expected = as.numeric(fit$exp),

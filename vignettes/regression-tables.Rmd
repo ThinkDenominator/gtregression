@@ -64,7 +64,7 @@ birthwt_uni <- uni_reg(
   theme = clinical
 )
 
-birthwt_uni
+birthwt_uni$table
 ```
 
 ## Multivariable Models
@@ -82,7 +82,7 @@ birthwt_full <- multi_reg(
   theme = clinical
 )
 
-birthwt_full
+birthwt_full$table
 ```
 
 ## Exposure-Specific Adjusted Models
@@ -101,7 +101,7 @@ birthwt_multi <- multi_reg(
   theme = striped
 )
 
-birthwt_multi
+birthwt_multi$table
 ```
 
 The adjustment variables are recorded in a compact table footnote, so the result
@@ -144,17 +144,136 @@ birthwt_multi_stats <- multi_reg(
 birthwt_multi_stats$model_stats
 ```
 
+## Clustered Data and Multilevel Models
+
+Use `multilevel_reg()` when observations are grouped and responses from the
+same group may be correlated. For example, patients may be clustered within
+clinics. The function fits one random intercept for the grouping variable and
+reports publication-ready fixed effects. The grouping variable defines the
+correlation structure; it does not receive its own effect estimate.
+
+```{r multilevel-example, eval=FALSE}
+set.seed(71)
+clinic_data <- data.frame(
+  clinic = factor(rep(seq_len(20), each = 12)),
+  treatment = factor(rep(c("Control", "Intervention"), 120)),
+  age = rnorm(240, 58, 9)
+)
+clinic_effect <- rnorm(20, 0, 3)
+clinic_data$score <- 50 +
+  2 * (clinic_data$treatment == "Intervention") +
+  0.2 * clinic_data$age +
+  clinic_effect[clinic_data$clinic] +
+  rnorm(240)
+
+clustered_model <- multilevel_reg(
+  clinic_data,
+  outcome = score,
+  exposures = c(treatment, age),
+  group = clinic,
+  approach = linear,
+  model_stats = TRUE
+)
+
+clustered_model
+clustered_model$model_stats
+```
+
+For a continuous outcome, the table reports adjusted beta coefficients and the
+ICC is calculated on the observed scale. With `approach = "logit"`, the table
+reports adjusted odds ratios and the ICC uses the usual latent logistic scale.
+The fixed-effect p-values use a Wald normal approximation. A singular-fit
+warning indicates that the estimated between-group variance is near zero; it
+is a prompt to reconsider whether the random intercept is supported by the
+data, not a result to hide.
+
+The focused API deliberately supports one random intercept. More complex
+random slopes, crossed effects, or nested structures require explicit model
+specification and specialist interpretation outside this workflow.
+
+## Ordered Outcomes
+
+Use `ordinal_reg()` when the outcome has at least three categories with a
+meaningful order. Create the outcome as an ordered factor and place its levels
+from lower to higher. The package deliberately does not infer this order from
+alphabetical labels.
+
+```{r ordinal-example, eval=FALSE}
+recovery_data$recovery <- ordered(
+  recovery_data$recovery,
+  levels = c("Poor", "Fair", "Good", "Excellent")
+)
+
+recovery_model <- ordinal_reg(
+  recovery_data,
+  outcome = recovery,
+  exposures = c(treatment, age),
+  adjust_for = sex,
+  model_stats = TRUE,
+  assumption_test = TRUE
+)
+
+recovery_model
+recovery_model$model_stats
+recovery_model$assumption_tests
+```
+
+The table reports common odds ratios. An odds ratio above one indicates greater
+odds of being in a higher outcome category, assuming proportional odds. The
+outcome order is repeated in the table footnote so the direction remains clear
+after export. `$assumption_tests` provides a term-level check: a small p-value
+suggests that a single common odds ratio may not adequately describe that
+predictor across every outcome threshold.
+
+## Unordered Outcomes
+
+Use `multinomial_reg()` when an outcome has at least three categories without a
+natural order. The first factor level is the outcome reference category. Set it
+deliberately with `factor()` or change it reproducibly with `relevel()`.
+
+```{r multinomial-example, eval=FALSE}
+discharge_data$destination <- factor(
+  discharge_data$destination,
+  levels = c("Home", "Rehabilitation", "Hospital")
+)
+
+destination_model <- multinomial_reg(
+  discharge_data,
+  outcome = destination,
+  exposures = c(treatment, age),
+  adjust_for = sex,
+  model_stats = TRUE
+)
+
+destination_model
+destination_model$model_stats
+names(destination_model$per_outcome)
+```
+
+The main publication table presents each comparison separately, such as
+Rehabilitation versus Home and Hospital versus Home. Odds ratios from different
+outcome comparisons should not be collapsed into one estimate. For that reason,
+plots use one named comparison at a time:
+
+```{r multinomial-plot-example, eval=FALSE}
+rehabilitation_model <- destination_model$per_outcome[["Rehabilitation"]]
+plot_reg(rehabilitation_model)
+forest_reg(forest_df(rehabilitation_model))
+```
+
 ## Other Effect Measures
 
 Switch the `approach` to change the estimand.
 
 ```{r reg-risk-ratio, message=FALSE, warning=FALSE}
-uni_reg(
+birthwt_rr <- uni_reg(
   data = birthwt_data,
   outcome = low,
   exposures = c("smoke", "ht", "ui", "ptl_cat"),
   approach = logbinomial
 )
+
+birthwt_rr$table
 ```
 
 Use `approach = firth` when a binary-outcome logistic model has sparse cells,
@@ -175,12 +294,14 @@ endometrial_data <- data_endometrial |>
     NV = factor(NV, levels = c(0, 1), labels = c("Absent", "Present"))
   )
 
-multi_reg(
+endometrial_firth <- multi_reg(
   data = endometrial_data,
   outcome = HG,
   exposures = c(NV, PI, EH),
   approach = firth
 )
+
+endometrial_firth$table
 ```
 
 ## Cox Survival Models
@@ -215,7 +336,7 @@ lung_hr <- cox_reg(
   theme = clinical
 )
 
-lung_hr
+lung_hr$table
 ```
 
 ```{r cox-adjusted, message=FALSE, warning=FALSE}
@@ -229,8 +350,26 @@ lung_adj_hr <- cox_reg(
   theme = striped
 )
 
-lung_adj_hr
+lung_adj_hr$table
 lung_adj_hr$model_stats
+```
+
+Use `baseline_strata` when a categorical variable should have a separate
+baseline hazard but should not receive its own hazard ratio. This fits one Cox
+model with common predictor effects. It is different from `stratifier`, which
+fits separate models and produces stratum-specific estimates.
+
+```{r cox-baseline-strata, message=FALSE, warning=FALSE}
+lung_baseline_strata <- cox_reg(
+  data = lung_data,
+  time = time,
+  event = status,
+  exposures = c(trt, age, karno),
+  baseline_strata = celltype,
+  multivariable = TRUE
+)
+
+lung_baseline_strata$table
 ```
 
 Use `interaction = exposure*modifier` for planned effect modification. In the
@@ -246,7 +385,7 @@ cox_interaction <- cox_reg(
   interaction = trt*prior
 )
 
-cox_interaction
+cox_interaction$table
 ```
 
 ## Parametric Survival Models
@@ -267,7 +406,7 @@ lung_time_ratio <- surv_reg(
   theme = clinical
 )
 
-lung_time_ratio
+lung_time_ratio$table
 ```
 
 ```{r surv-adjusted, message=FALSE, warning=FALSE}
@@ -282,7 +421,7 @@ lung_adj_time_ratio <- surv_reg(
   theme = striped
 )
 
-lung_adj_time_ratio
+lung_adj_time_ratio$table
 lung_adj_time_ratio$model_stats
 ```
 
@@ -297,7 +436,7 @@ surv_interaction <- surv_reg(
   distribution = weibull
 )
 
-surv_interaction
+surv_interaction$table
 ```
 
 ## Continuous Outcomes
@@ -313,7 +452,7 @@ birthwt_linear <- multi_reg(
   approach = linear
 )
 
-birthwt_linear
+birthwt_linear$table
 ```
 
 ## What To Inspect

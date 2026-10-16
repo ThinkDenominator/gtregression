@@ -12,7 +12,9 @@ birthwt_merge_data <- function() {
 }
 
 flextable_header_text <- function(x) {
-  vapply(x$header$content$data, function(part) part$txt[1], character(1))
+  # version-independent reader (the header storage differs between
+  # flextable releases)
+  as.vector(.flex_part_text(x, "header"))
 }
 
 test_that("merge_tables combines native gtregression objects", {
@@ -56,8 +58,65 @@ test_that("merge_tables combines native gtregression objects", {
 
   gt_labels <- as.character(merged$table$`_boxhead`$column_label)
   expect_false(any(grepl("_p[0-9]+$", gt_labels)))
-  expect_true(all(c("Normal BW", "Low BW", "Overall", "N", "OR (95% CI)", "p-value") %in%
-                    gt_labels))
+  expect_true(all(c("N", "OR (95% CI)", "p-value") %in% gt_labels))
+  expect_true(any(grepl("^Normal BW, N=", gt_labels)))
+  expect_true(any(grepl("^Low BW, N=", gt_labels)))
+  expect_true(any(grepl("^Overall, N=", gt_labels)))
+})
+
+test_that("merge_tables preserves descriptive sample sizes in headers", {
+  df <- birthwt_merge_data()
+  desc_tbl <- descriptive_table(
+    data = df,
+    exposures = c("age", "race"),
+    by = "low",
+    format = flextable
+  )
+  uni_tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "race"),
+    approach = logit,
+    format = flextable
+  )
+
+  merged <- merge_tables(
+    desc_tbl,
+    uni_tbl,
+    spanners = c("Descriptive", "Univariable")
+  )
+
+  descriptive_labels <- unname(merged$column_labels[[1]])
+  regression_labels <- unname(merged$column_labels[[2]])
+
+  expect_equal(descriptive_labels, unname(desc_tbl$header_labels))
+  expect_true(all(grepl(", N=[0-9]+$", descriptive_labels)))
+  expect_false(any(grepl(", N=", regression_labels, fixed = TRUE)))
+
+  header_text <- flextable_header_text(merged$table)
+  expect_true(any(grepl("^Normal BW, N=", header_text)))
+  expect_true(any(grepl("^Low BW, N=", header_text)))
+})
+
+test_that("merge_tables preserves the overall N header", {
+  df <- birthwt_merge_data()
+  desc_tbl <- descriptive_table(
+    data = df,
+    exposures = c("age", "race"),
+    format = flextable
+  )
+  uni_tbl <- uni_reg(
+    data = df,
+    outcome = "low",
+    exposures = c("age", "race"),
+    approach = logit,
+    format = flextable
+  )
+
+  merged <- merge_tables(desc_tbl, uni_tbl)
+  header_text <- flextable_header_text(merged$table)
+
+  expect_true(any(grepl("^Overall, N=[0-9]+$", header_text)))
 })
 
 test_that("merge_tables defaults to flextable independently of input format", {
@@ -152,6 +211,164 @@ test_that("merge_tables supports three-table merges and default spanners", {
   expect_equal(merged$spanners, c("Table 1", "Table 2", "Table 3"))
   expect_equal(merged$part_sources, c("descriptive_table", "uni_reg", "multi_reg"))
   expect_true(ncol(merged$table_display) > ncol(desc_tbl$table_display))
+})
+
+test_that("merged flextables do not draw a rule after the first exposure", {
+  skip_if_not_installed("flextable")
+
+  df <- birthwt_merge_data()
+  attr(df$age, "label") <- "Maternal age"
+  attr(df$lwt, "label") <- "Maternal weight"
+  attr(df$race, "label") <- "Maternal race"
+
+  desc_tbl <- descriptive_table(
+    df,
+    exposures = c("age", "lwt", "race"),
+    by = "low"
+  )
+  uni_tbl <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("age", "lwt", "race"),
+    approach = logit
+  )
+  multi_tbl <- multi_reg(
+    df,
+    outcome = "low",
+    exposures = c("lwt", "race"),
+    adjust_for = "age",
+    approach = logit
+  )
+
+  merged <- merge_tables(desc_tbl, uni_tbl, multi_tbl)
+  borders <- merged$table$body$styles$cells
+  bottom <- borders$border.width.bottom$data
+  header <- merged$table$header$styles$cells
+  header_top <- header$border.width.top$data
+  header_bottom <- header$border.width.bottom$data
+
+  expect_true(all(bottom[1, ] == 0))
+  expect_true(all(bottom[nrow(bottom), ] > 0))
+  expect_true(all(header_top[1, ] > 0))
+  expect_true(all(header_bottom[nrow(header_bottom), ] > 0))
+})
+
+test_that("merged tables align reference and comparison levels", {
+  df <- birthwt_merge_data()
+  attr(df$smoke, "label") <- "Death"
+
+  desc_tbl <- suppressMessages(
+    descriptive_table(
+      df,
+      exposures = c("smoke", "race"),
+      by = "low",
+      show_dichotomous = "all_levels"
+    )
+  )
+  uni_tbl <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("smoke", "race"),
+    approach = logit,
+    show_ref = TRUE
+  )
+  multi_tbl <- multi_reg(
+    df,
+    outcome = "low",
+    exposures = c("smoke", "race"),
+    approach = logit,
+    show_ref = TRUE
+  )
+
+  merged <- merge_tables(desc_tbl, uni_tbl, multi_tbl)
+  level_labels <- merged$table_display$Characteristic[
+    !merged$table_display$is_header
+  ]
+
+  expect_true(all(grepl("^  ", level_labels)))
+  expect_true(all(c("No", "Yes") %in% trimws(level_labels)))
+})
+
+test_that("merge_tables supports multiple adjusted sensitivity models", {
+  df <- birthwt_merge_data()
+  primary <- multi_reg(
+    df,
+    outcome = "low",
+    exposures = c("smoke", "ht", "ui"),
+    adjust_for = c("age", "lwt"),
+    approach = logit
+  )
+
+  sensitivity_data <- df
+  sensitivity_data$low[c(3, 8, 12)] <- NA
+  sensitivity_data$low <- factor(
+    ifelse(
+      is.na(sensitivity_data$low),
+      "Low BW",
+      as.character(sensitivity_data$low)
+    ),
+    levels = levels(df$low)
+  )
+  sensitivity <- multi_reg(
+    sensitivity_data,
+    outcome = "low",
+    exposures = c("smoke", "ht"),
+    adjust_for = c("age", "lwt"),
+    approach = logit
+  )
+
+  merged <- merge_tables(
+    primary,
+    sensitivity,
+    spanners = c("Primary analysis", "Worst-case sensitivity")
+  )
+
+  expect_equal(
+    merged$spanners,
+    c("Primary analysis", "Worst-case sensitivity")
+  )
+  expect_equal(merged$part_sources, c("multi_reg", "multi_reg"))
+  expect_equal(
+    trimws(merged$table_display$Characteristic[merged$table_display$is_header]),
+    c("smoke", "ht", "ui")
+  )
+  ui_row <- which(
+    trimws(merged$table_display$Characteristic) == "ui" &
+      merged$table_display$is_header
+  )
+  second_model_cols <- grep("_p2$", names(merged$table_display), value = TRUE)
+  expect_true(all(merged$table_display[ui_row, second_model_cols] == ""))
+  expect_equal(
+    sum(grepl("^Adjusted for age and lwt", merged$footnotes)),
+    1L
+  )
+})
+
+test_that("merge_tables supports multiple univariable scenario tables", {
+  df <- birthwt_merge_data()
+  scenario_a <- uni_reg(
+    df, outcome = "low", exposures = c("age", "smoke"), approach = logit
+  )
+  scenario_b <- uni_reg(
+    df, outcome = "low", exposures = c("smoke", "ht"), approach = logit
+  )
+  scenario_c <- uni_reg(
+    df, outcome = "low", exposures = c("age", "ui"), approach = logit
+  )
+
+  merged <- merge_tables(
+    scenario_a,
+    scenario_b,
+    scenario_c,
+    spanners = c("Observed", "Best case", "Worst case")
+  )
+
+  expect_equal(merged$part_sources, rep("uni_reg", 3))
+  expect_equal(
+    trimws(merged$table_display$Characteristic[merged$table_display$is_header]),
+    c("age", "smoke", "ht", "ui")
+  )
+  expect_equal(merged$spanners, c("Observed", "Best case", "Worst case"))
 })
 
 test_that("merge_tables warns for mixed binary rows in descriptive-regression merges", {
@@ -357,6 +574,14 @@ test_that("merge_tables validates inputs", {
   expect_error(merge_tables(uni_gt), "at least two tables")
   expect_error(merge_tables(data.frame(x = 1), multi_gt), "All inputs must be outputs")
   expect_error(merge_tables(uni_gt, multi_gt, spanners = "Only one"), "Length of `spanners`")
+  expect_error(
+    merge_tables(uni_gt, multi_gt, spanners = c("Primary", "")),
+    "non-empty character label"
+  )
+  expect_error(
+    merge_tables(uni_gt, multi_gt, spanners = c("Primary", NA_character_)),
+    "non-empty character label"
+  )
 
   skip_if_not_installed("flextable")
   uni_ft <- uni_reg(

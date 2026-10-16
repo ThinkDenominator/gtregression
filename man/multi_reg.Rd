@@ -21,7 +21,13 @@ multi_reg(
 \item{data}{A \code{data.frame} containing the variables of interest.}
 
 \item{outcome}{Character scalar; name of the outcome variable. Quoted and
-bare names are accepted.}
+bare names are accepted.
+For binary-outcome approaches (\code{"logit"}, \code{"firth"},
+\code{"logbinomial"}, \code{"robpoisson"}) the outcome may be numeric
+0/1 or 1/2 (2 is the event; integer or double), logical (\code{TRUE} is
+the event), or a two-level factor or character variable (the second
+level is the event, which is reported in a message). The same factor,
+character and logical coding is accepted by \code{"poisson"}.}
 
 \item{exposures}{Character vector; exposure variable(s) to report.
 Quoted names are recommended in scripts, and bare names are also accepted.
@@ -100,6 +106,14 @@ If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the
 displayed table and plots. Internal matching still uses the original column
 names.
+
+Confidence intervals are Wald intervals; for \code{approach = "linear"}
+they use the t distribution with the residual degrees of freedom (as
+\code{confint()} for \code{lm}). Factor exposures are always fitted with
+treatment contrasts. Log-binomial models that fail with the default
+starting values are refitted from the intercept \code{log(mean(y))}; if the
+model still cannot be fitted the error names the approach and suggests
+\code{approach = "robpoisson"}.
 
 In default mode (\code{adjust_for = NULL}), all exposures are included in a
 single multivariable model. In adjusted mode, one model is fitted per exposure,

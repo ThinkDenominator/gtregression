@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.R
 \name{print.gtregression}
 \alias{print.gtregression}
-\title{Print gtregression objects (unified)}
+\title{Print gtregression objects}
 \usage{
 \method{print}{gtregression}(x, ...)
 }
@@ -10,6 +10,10 @@
 \item{x}{An object with class \code{"gtregression"}.}
 
 \item{...}{Ignored. Present for compatibility with the generic.}
+}
+\value{
+\code{x}, invisibly. Called for its side effect of printing the
+  rendered table.
 }
 \description{
 Prints the rendered table for any object produced by this package

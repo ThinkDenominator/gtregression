@@ -2,7 +2,7 @@
 % Please edit documentation in R/modify_table.R
 \name{modify_table}
 \alias{modify_table}
-\title{Modify Regression/Descriptive Tables (labels, headers, caption, notes)}
+\title{Modify table labels, headers, captions and notes}
 \usage{
 modify_table(
   gt_table,
@@ -49,10 +49,14 @@ to \code{TRUE} to preserve the package table hierarchy.}
 \item{remove_N}{Logical; if \code{TRUE}, drops displayed \code{N} columns
 from univariable and stratified package tables. For stratified survival
 outputs, event columns are retained unless the original table was created
-with \code{show_sample = "none"}.}
+with \code{show_sample = "none"}.
+Footnotes that only explain the removed column are dropped as well; the
+complete-observation footnote (\code{N = ... complete observations
+included in the model.}) is kept. Use \code{remove_N_obs} to remove it.}
 
-\item{remove_N_obs}{Logical; if \code{TRUE}, suppresses multivariable
-complete-case footnote.}
+\item{remove_N_obs}{Logical; if \code{TRUE}, suppresses the
+complete-observation (complete-case) footnote, in every wording used by
+the package tables.}
 
 \item{remove_abbreviations}{Logical; if \code{TRUE}, removes the
 Abbreviations footnote line.}
@@ -72,6 +76,13 @@ Works with objects created by this package (class \code{"gtregression"}):
 stratified regression outputs, \code{descriptive_table()}, and
 \code{merge_tables()}.
 No \pkg{gtsummary} dependency or fallback.
+}
+\details{
+For \code{risk_difference()} tables only the generic operations are
+available: \code{caption}, \code{caveat}, \code{variable_labels} (outcome,
+exposure and adjustment variables), \code{level_labels} (the two groups and
+the event), \code{header_labels} and \code{remove_abbreviations}. The
+other arguments are refused with an error and nothing is changed.
 }
 \examples{
 birthwt_data <- data_birthwt |>

@@ -131,6 +131,13 @@ surv_predict <- function(model,
   }
 
   if (inherits(model, "surv_reg")) {
+    if (isTRUE(model$stratified)) {
+      stop(
+        "`model` is a stratified surv_reg() object. Pass one fitted model, ",
+        "for example `model$models[[\"<stratum>\"]][[\"<model>\"]]`.",
+        call. = FALSE
+      )
+    }
     if (is.null(model$models) || length(model$models) != 1L) {
       stop(
         "`model` is a surv_reg() object with multiple fitted models. ",

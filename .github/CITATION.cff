@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this package, please cite it using the metadata below."
 title: "gtregression: Tools for Creating Publication-Ready Regression Tables"
-version: "1.1.0"
-date-released: 2026-08-20
+version: "1.2.0"
+date-released: 2026-09-28
 authors:
   - family-names: Polani
     given-names: Rubeshkumar

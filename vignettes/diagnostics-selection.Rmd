@@ -188,6 +188,15 @@ Use `format = tibble` when you want to inspect or filter the diagnostic results.
 check_ph(cox_fit, transform = rank, format = tibble)
 ```
 
+The returned table retains the underlying `cox.zph` diagnostics, so the normal
+base plotting workflow is available. Select a model because this example fits
+one adjusted Cox model for each exposure.
+
+```{r diag-ph-plot, message=FALSE, warning=FALSE, fig.width=7, fig.height=5}
+ph_check <- check_ph(cox_fit)
+plot(ph_check, model = "trt")
+```
+
 ## Stepwise Model Selection
 
 `compare_models()` is for prespecified candidate models that have already been
@@ -253,8 +262,8 @@ epidemiological reasoning to judge robustness.
 
 ### Build Candidates in the App
 
-The function API intentionally accepts fitted gtregression objects. In the
-gtregression app, **Advanced > Compare models** provides a guided layer before
+The function API intentionally accepts fitted gtregression objects. In GT
+Regression, **Advanced > Compare models** provides a guided layer before
 that API: choose the shared outcome and approach, name two to six candidates,
 and select each candidate's exposures, adjustment variables, and optional
 interaction. The app fits `multi_reg()`, `cox_reg()`, or `surv_reg()` objects and
@@ -270,7 +279,7 @@ Candidate order is deliberate. Put the simplest or primary model first because
 percentage change is calculated from that model and likelihood-ratio statistics
 compare sequential pairs. If the fitted samples differ, or a sequential pair is
 not nested, the rendered table displays only the warning relevant to that
-comparison. See the **gtregression App** article for the complete ordinary,
+comparison. See the **GT Regression App** article for the complete ordinary,
 Cox, and parametric survival walkthrough.
 
 For Cox and parametric survival models, fit the candidate models with `cox_reg()`
@@ -327,7 +336,7 @@ selected <- select_models(
   direction = forward
 )
 
-selected
+selected$table
 ```
 
 The selected direction is recorded in the formatted table footer. Backward and

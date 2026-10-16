@@ -53,6 +53,14 @@
     stop("No complete cases available for analysis.", call. = FALSE)
   }
 
+  # A numeric candidate coded as a few whole numbers is a set of categories.
+  # It is then handled as categorical everywhere (adjusted model, interaction
+  # model, stratum-specific estimates and Mantel-Haenszel), so that all screens
+  # describe the same adjustment.
+  if (.confounder_numeric_categories(dat[[candidate]])) {
+    dat[[candidate]] <- factor(dat[[candidate]])
+  }
+
   get_model <- function(data, formula, approach) {
     if (approach == "robpoisson") {
       response <- all.vars(formula)[[1]]
@@ -164,17 +172,27 @@
     method,
     "change" = is_confounder_model,
     "mh" = is_confounder_mh,
+    # Use whichever screens could be calculated: a candidate that cannot be
+    # assessed by Mantel-Haenszel (for example a continuous one) is still
+    # classified by the model-based change, and vice versa.
     "both" = if (isTRUE(is_confounder_model) || isTRUE(is_confounder_mh)) {
       TRUE
-    } else if (isFALSE(is_confounder_model) && isFALSE(is_confounder_mh)) {
+    } else if (isFALSE(is_confounder_model) || isFALSE(is_confounder_mh)) {
       FALSE
     } else {
       NA
     }
   )
 
-  # stratified estimates
-  strata_levels <- unique(stats::na.omit(dat[[candidate]]))
+  # Estimate-spread and MH screens require meaningful categorical strata.
+  candidate_values <- stats::na.omit(dat[[candidate]])
+  categorical_candidate <- is.factor(dat[[candidate]]) ||
+    is.character(dat[[candidate]]) || is.logical(dat[[candidate]])
+  strata_levels <- if (categorical_candidate) {
+    unique(candidate_values)
+  } else {
+    candidate_values[FALSE]
+  }
 
   stratum_estimates <- lapply(strata_levels, function(lev) {
     dsub <- dat[dat[[candidate]] == lev, , drop = FALSE]
@@ -186,11 +204,20 @@
       stratum = as.character(lev),
       n = nrow(dsub),
       estimate = est,
+      stable = .confounder_stratum_stable(mod, est, nrow(dsub), exposure,
+                                          approach),
       stringsAsFactors = FALSE
     )
   })
 
-  stratum_estimates <- do.call(rbind, stratum_estimates)
+  stratum_estimates <- if (length(stratum_estimates)) {
+    do.call(rbind, stratum_estimates)
+  } else {
+    data.frame(
+      candidate = character(), stratum = character(), n = integer(),
+      estimate = numeric(), stable = logical(), stringsAsFactors = FALSE
+    )
+  }
 
   n_strata_total <- length(strata_levels)
   n_strata_estimable <- sum(!is.na(stratum_estimates$estimate))
@@ -200,8 +227,12 @@
     NA_integer_
   }
 
-  # estimate-based EMM screen
-  valid_strata <- stats::na.omit(stratum_estimates$estimate)
+  # estimate-based EMM screen: only strata with a stable estimate take part,
+  # so that a sparse or separated stratum (estimate near 0 or Inf) cannot
+  # produce a spurious "effect modification" signal.
+  valid_strata <- stratum_estimates$estimate[
+    !is.na(stratum_estimates$estimate) & stratum_estimates$stable %in% TRUE
+  ]
 
   emm_statistic <- NA_real_
   emm_by_estimate <- NA
@@ -214,7 +245,9 @@
     }
   }
 
-  # interaction-based EMM screen
+  # interaction-based EMM screen: likelihood-ratio test between the models
+  # with and without the exposure-by-candidate interaction (robust Wald test
+  # for robust Poisson, where a likelihood-ratio test is not valid).
   interaction_p <- NA_real_
   emm_by_interaction <- NA
 
@@ -224,18 +257,29 @@
 
   int_model <- safe_fit(int_formula, dat, approach)
 
-  if (!is.null(adj_model) &&
-      !is.null(int_model) &&
-      inherits(adj_model, c("glm", "lm", "coxph", "survreg")) &&
-      inherits(int_model, c("glm", "lm", "coxph", "survreg"))) {
-    lr <- tryCatch(
-      suppressWarnings(stats::anova(adj_model, int_model, test = "LRT")),
-      error = function(e) NULL
-    )
-
-    if (!is.null(lr) && nrow(lr) >= 2 && "Pr(>Chi)" %in% names(lr)) {
-      interaction_p <- suppressWarnings(lr$`Pr(>Chi)`[2])
-      emm_by_interaction <- !is.na(interaction_p) && interaction_p < interaction_alpha
+  if (identical(approach, "robpoisson")) {
+    # Robust Wald test on plain Poisson fits of the same two formulas (the
+    # sandwich variance is computed by the test itself).
+    robust_data <- .recode_binary_outcome(dat, outcome, "robpoisson")$data
+    poisson_fit <- function(formula) {
+      tryCatch(
+        suppressWarnings(stats::glm(formula, data = robust_data,
+                                    family = stats::poisson("log"))),
+        error = function(e) NULL
+      )
+    }
+    robust_adj <- poisson_fit(adj_formula)
+    robust_int <- poisson_fit(int_formula)
+    if (!is.null(robust_adj) && !is.null(robust_int)) {
+      interaction_p <- .interaction_robust_wald(robust_adj, robust_int)$p_value
+      if (!is.na(interaction_p)) {
+        emm_by_interaction <- interaction_p < interaction_alpha
+      }
+    }
+  } else if (!is.null(adj_model) && !is.null(int_model)) {
+    interaction_p <- .confounder_interaction_p(adj_model, int_model, approach)
+    if (!is.na(interaction_p)) {
+      emm_by_interaction <- interaction_p < interaction_alpha
     }
   }
 
@@ -326,12 +370,23 @@
       mh_status = mh$status
     )
 
-    recommendation <- paste0(
-      "No clear statistical evidence to include ", candidate,
-      " as a confounder."
-    )
+    recommendation <- if (identical(decision, "not_estimable")) {
+      paste0(
+        "Confounding by ", candidate,
+        " could not be assessed with the selected method; no recommendation."
+      )
+    } else {
+      paste0(
+        "No clear statistical evidence to include ", candidate,
+        " as a confounder."
+      )
+    }
 
-    model_build_recommendation <- "exclude"
+    model_build_recommendation <- if (identical(decision, "not_estimable")) {
+      "not_estimable"
+    } else {
+      "exclude"
+    }
   }
 
   list(
@@ -388,6 +443,16 @@
       estimate = NA_real_,
       method = NA_character_,
       status = "MH is available only for binary outcome models."
+    ))
+  }
+
+  numeric_categories <- .confounder_numeric_categories(data[[candidate]])
+  if (!(is.factor(data[[candidate]]) || is.character(data[[candidate]]) ||
+        is.logical(data[[candidate]]) || numeric_categories)) {
+    return(list(
+      estimate = NA_real_,
+      method = NA_character_,
+      status = "MH requires categorical strata; the candidate is continuous."
     ))
   }
 
@@ -499,9 +564,82 @@
   }
   paste0(
     "No strong effect modification and no important change by the selected methods",
-    if (!identical(mh_status, "calculated")) paste0("; MH status: ", mh_status) else "",
+    if (!identical(mh_status, "calculated")) {
+      paste0("; MH status: ", sub("\\.+$", "", mh_status))
+    } else {
+      ""
+    },
     "."
   )
+}
+
+#' Is a numeric candidate a small set of whole-number codes?
+#' @keywords internal
+#' @noRd
+.confounder_numeric_categories <- function(x) {
+  x <- x[!is.na(x)]
+  is.numeric(x) && length(x) > 0L && all(x == floor(x)) &&
+    length(unique(x)) <= 10L
+}
+
+#' Is a stratum-specific estimate stable enough for the estimate-spread screen?
+#'
+#' A stratum is excluded when it has fewer than 20 observations, when the
+#' model did not converge, or when the exposure coefficient has a non-finite
+#' or very large standard error (separation / empty cells).
+#' @keywords internal
+#' @noRd
+.confounder_stratum_stable <- function(model, estimate, n, exposure, approach,
+                                       min_n = 20L, max_log_se = 5) {
+  if (is.null(model) || is.na(estimate) || !is.finite(estimate) || n < min_n) {
+    return(FALSE)
+  }
+  if (!is.null(model$converged) && !isTRUE(model$converged)) {
+    return(FALSE)
+  }
+  if (identical(approach, "linear")) {
+    return(TRUE)
+  }
+  if (estimate <= 0) {
+    return(FALSE)
+  }
+  vc <- tryCatch(stats::vcov(model), error = function(e) NULL)
+  if (is.null(vc) || is.null(colnames(vc))) {
+    return(TRUE)
+  }
+  idx <- grep(paste0("^", exposure), colnames(vc))
+  if (!length(idx)) {
+    return(TRUE)
+  }
+  se <- suppressWarnings(sqrt(diag(vc))[idx[1]])
+  is.finite(se) && se <= max_log_se
+}
+
+#' Interaction p-value for the confounder screen
+#'
+#' Likelihood-ratio test between the adjusted model and the model that adds
+#' the exposure-by-candidate interaction, for every likelihood-based approach
+#' (`anova()` where it reports a p-value, otherwise 2 x the log-likelihood
+#' difference: Cox, parametric survival and negative binomial models). Robust
+#' Poisson models are handled by the caller with a robust (sandwich) Wald
+#' test.
+#' @keywords internal
+#' @noRd
+.confounder_interaction_p <- function(adj_model, int_model, approach) {
+  p_value <- NA_real_
+  if (inherits(adj_model, c("glm", "lm")) &&
+      inherits(int_model, c("glm", "lm")) &&
+      !inherits(int_model, "negbin")) {
+    lr <- tryCatch(
+      suppressWarnings(stats::anova(adj_model, int_model, test = "LRT")),
+      error = function(e) NULL
+    )
+    p_value <- .interaction_extract_lrt_p(lr)
+  }
+  if (is.na(p_value)) {
+    p_value <- .interaction_lrt_from_loglik(adj_model, int_model)
+  }
+  p_value
 }
 
 #' Identify confounders and effect modifiers
@@ -526,7 +664,24 @@
 #' Consequently, the reported interaction p-value is a candidate-only screening
 #' result, not a final adjusted interaction analysis. Use
 #' \code{interaction_models(covariates = ...)} when testing a planned,
-#' covariate-adjusted interaction.
+#' covariate-adjusted interaction. The interaction p-value is a
+#' likelihood-ratio test of the models with and without the interaction for
+#' every approach except \code{"robpoisson"}, where a robust (sandwich HC0)
+#' Wald test is used because a likelihood-ratio test is not valid.
+#'
+#' Percentage changes ("change-in-estimate") are computed on the displayed
+#' ratio scale (OR, RR, IRR, HR, time ratio) as
+#' \code{100 * |adjusted - crude| / crude}; for linear models the coefficients
+#' are compared directly.
+#'
+#' A numeric candidate coded as at most 10 distinct whole numbers is treated
+#' as categorical in every step (adjusted model, interaction model,
+#' stratum-specific estimates and Mantel-Haenszel). Other numeric candidates
+#' are adjusted for as continuous and have no stratum-specific screen. The
+#' estimate-spread screen only uses strata with at least 20 observations and a
+#' stable estimate (converged model, finite standard error); the
+#' \code{stable} column of \code{stratum_estimates} shows which strata were
+#' used.
 #'
 #' Use this function when you want to screen one or more candidate variables and
 #' organise crude, adjusted, Mantel-Haenszel, and effect-modification signals in
@@ -637,10 +792,11 @@ identify_confounder <- function(data,
   outcome <- if (missing(outcome) || identical(substitute(outcome), quote(NULL))) {
     NULL
   } else {
-    .vars_arg(substitute(outcome), env = parent.frame())
+    .vars_arg(substitute(outcome), env = parent.frame(), data_names = names(data))
   }
-  exposure <- .vars_arg(substitute(exposure), env = parent.frame())
-  potential_confounder <- .vars_arg(substitute(potential_confounder), env = parent.frame())
+  exposure <- .vars_arg(substitute(exposure), env = parent.frame(), data_names = names(data))
+  potential_confounder <- .vars_arg(substitute(potential_confounder), env = parent.frame(),
+                                    data_names = names(data))
   approach <- .choice_arg(
     substitute(approach),
     env = parent.frame(),
@@ -653,12 +809,12 @@ identify_confounder <- function(data,
   time <- if (missing(time) || identical(substitute(time), quote(NULL))) {
     NULL
   } else {
-    .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
+    .single_var_arg(substitute(time), data = data, env = parent.frame())
   }
   event <- if (missing(event) || identical(substitute(event), quote(NULL))) {
     NULL
   } else {
-    .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
+    .single_var_arg(substitute(event), data = data, env = parent.frame())
   }
   distribution <- if (identical(approach, "survreg")) {
     .surv_distribution_arg(
@@ -714,6 +870,16 @@ identify_confounder <- function(data,
   if (!all(potential_confounder %in% names(data))) {
     stop(
       "One or more potential confounder variables were not found in the dataset.",
+      call. = FALSE
+    )
+  }
+
+  outcome_roles <- if (is_survival) c(time, event) else outcome
+  role_clash <- intersect(c(exposure, potential_confounder), outcome_roles)
+  if (length(role_clash)) {
+    stop(
+      "The outcome variable cannot also be an exposure or a potential confounder: ",
+      paste(role_clash, collapse = ", "), ".",
       call. = FALSE
     )
   }
