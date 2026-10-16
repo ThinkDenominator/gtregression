@@ -41,9 +41,20 @@ gtx_reference_code <- function(references, candidates, data_name = "analysis_dat
     levels <- candidates[[variable]]
     sprintf(
       '%s[[%s]] <- stats::relevel(factor(as.character(%s[[%s]]), levels = %s), ref = %s)',
-      data_name, shQuote(variable), data_name, shQuote(variable),
-      paste0("c(", paste(shQuote(levels), collapse = ", "), ")"),
-      shQuote(as.character(references[[variable]]))
+      data_name, gtx_r_quote(variable), data_name, gtx_r_quote(variable),
+      paste0("c(", paste(gtx_r_quote(levels), collapse = ", "), ")"),
+      gtx_r_quote(as.character(references[[variable]]))
     )
   }, character(1))
+}
+
+# Quote values as R string literals with single quotes. shQuote() is meant for
+# shells and quotes differently on Windows, so generated R code would differ
+# between operating systems.
+gtx_r_quote <- function(x) {
+  x <- as.character(x)
+  if (!length(x)) return(character(0))
+  x <- gsub("\\", "\\\\", x, fixed = TRUE)
+  x <- gsub("'", "\\'", x, fixed = TRUE)
+  paste0("'", x, "'")
 }

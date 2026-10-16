@@ -14,7 +14,10 @@ test_that("%||% is provided by the package namespace, not by base R", {
 test_that("every package source file that uses %||% has it in scope without base R", {
   pkg_root <- testthat::test_path("..", "..")
   r_dir <- file.path(pkg_root, "R")
-  skip_if_not(dir.exists(r_dir), "package sources are not available")
+  skip_if_not(
+    dir.exists(r_dir) && length(list.files(r_dir, pattern = "[.]R$")) > 0,
+    "package sources are not available"
+  )
   namespace_file <- file.path(pkg_root, "NAMESPACE")
   imported <- any(grepl('importFrom(rlang,"%||%")', readLines(namespace_file, warn = FALSE), fixed = TRUE))
   expect_true(imported)

@@ -419,7 +419,12 @@
     stats::glm(formula, data = data, family = stats::binomial("log")),
     error = function(e) e
   )
-  if (!inherits(first, "error")) return(first)
+  # Accept the default fit only when it converged inside the parameter space.
+  # Depending on the R version, a fit that ends on the boundary (fitted risks
+  # of 1) can be returned without an error; it is refitted below instead.
+  if (!inherits(first, "error") && isTRUE(first$converged) && !isTRUE(first$boundary)) {
+    return(first)
+  }
   start <- .logbinomial_start(formula, data)
   second <- tryCatch(
     suppressWarnings(
@@ -434,7 +439,7 @@
   # A refit that stops on the boundary of the parameter space (fitted risks
   # of 1) without converging is not a usable estimate: report it as a failure
   # instead of printing its coefficients as a normal result.
-  if (!isTRUE(second$converged)) {
+  if (!isTRUE(second$converged) || isTRUE(second$boundary)) {
     stop(
       "the log-binomial model did not converge",
       if (isTRUE(second$boundary)) " (fitted risks reached 1)" else "",

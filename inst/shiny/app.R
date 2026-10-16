@@ -47,6 +47,9 @@ gtx_reference_code <- get("gtx_reference_code", envir = gtx_ns)
 gtx_discover_data_frames <- get("gtx_discover_data_frames", envir = gtx_ns)
 gtx_get_data_frame <- get("gtx_get_data_frame", envir = gtx_ns)
 gtx_object_reference <- get("gtx_object_reference", envir = gtx_ns)
+gtx_r_quote <- get("gtx_r_quote", envir = gtx_ns)
+# Generated code quotes values the same way on every operating system.
+shQuote <- function(string, type = NULL) gtx_r_quote(string)
 
 # Error safety: every observer handler runs inside gtx_guard(), so an error is
 # shown as a plain notification and never ends the session or opens the

@@ -57,6 +57,9 @@ test_that("a task dialog never scrolls as a whole; only variable-length regions 
 })
 
 test_that("the new variable's name is outside the scrolling group-rule region", {
+  # Coverage tools rewrite function bodies, so the deparsed order is not
+  # meaningful while coverage is being measured.
+  skip_if(identical(Sys.getenv("R_COVR"), "true"), "function bodies are instrumented by covr")
   ui <- paste(deparse(body(get("mod_data_prep_server", envir = asNamespace("gtregression")))), collapse = "\n")
   rules <- regexpr("uiOutput\\(ns\\(\"group_rules\"\\)\\)", ui)
   name <- regexpr("textInput\\(ns\\(\"transform_new\"\\), \"Name for the new grouped variable\"", ui)
