@@ -50,7 +50,7 @@ check_convergence(
 | age + lwt + race + smoke + ht + ui + ptl_cat | logit | Yes | 0.880 |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-08e32198 quarto-disable-processing="true"}
+Convergence check {.table .cl-d8bad469 quarto-disable-processing="true"}
 
 For risk-ratio workflows, this same check helps users decide whether a
 log-binomial model fitted cleanly or whether a robust Poisson approach
@@ -72,7 +72,7 @@ check_convergence(
 | smoke + ht + ui + ptl_cat | logbinomial | No |  |
 | Screening aid only; inspect non-convergence, impossible fitted values, and model specification before interpreting estimates. |  |  |  |
 
-Convergence check {.table .cl-0914493a quarto-disable-processing="true"}
+Convergence check {.table .cl-d8bad469 quarto-disable-processing="true"}
 
 ## Collinearity Screening
 
@@ -311,6 +311,18 @@ check_ph(cox_fit, transform = rank, format = tibble)
     ## 11 prior    karno    Term       14.0       1 0.000187  Possible PH violation    
     ## 12 prior    GLOBAL   Global     23.0       3 0.0000401 Possible PH violation
 
+The returned table retains the underlying `cox.zph` diagnostics, so the
+normal base plotting workflow is available. Select a model because this
+example fits one adjusted Cox model for each exposure.
+
+``` r
+
+ph_check <- check_ph(cox_fit)
+plot(ph_check, model = "trt")
+```
+
+![](diagnostics-selection_files/figure-html/diag-ph-plot-1.png)![](diagnostics-selection_files/figure-html/diag-ph-plot-2.png)![](diagnostics-selection_files/figure-html/diag-ph-plot-3.png)
+
 ## Stepwise Model Selection
 
 [`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md)
@@ -388,10 +400,10 @@ robustness.
 ### Build Candidates in the App
 
 The function API intentionally accepts fitted gtregression objects. In
-the gtregression app, **Advanced \> Compare models** provides a guided
-layer before that API: choose the shared outcome and approach, name two
-to six candidates, and select each candidate’s exposures, adjustment
-variables, and optional interaction. The app fits
+GT Regression, **Advanced \> Compare models** provides a guided layer
+before that API: choose the shared outcome and approach, name two to six
+candidates, and select each candidate’s exposures, adjustment variables,
+and optional interaction. The app fits
 [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
 [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
 or
@@ -411,9 +423,9 @@ Candidate order is deliberate. Put the simplest or primary model first
 because percentage change is calculated from that model and
 likelihood-ratio statistics compare sequential pairs. If the fitted
 samples differ, or a sequential pair is not nested, the rendered table
-displays only the warning relevant to that comparison. See the
-**gtregression App** article for the complete ordinary, Cox, and
-parametric survival walkthrough.
+displays only the warning relevant to that comparison. See the **GT
+Regression App** article for the complete ordinary, Cox, and parametric
+survival walkthrough.
 
 For Cox and parametric survival models, fit the candidate models with
 [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
@@ -478,111 +490,22 @@ selected <- select_models(
   direction = forward
 )
 
-selected
+selected$table
 ```
 
-    ## $results_table
-    ## # A tibble: 6 × 9
-    ##   model_id formula          model_terms n_predictors   AIC   BIC logLik deviance
-    ##      <int> <chr>            <chr>              <int> <dbl> <dbl>  <dbl>    <dbl>
-    ## 1        1 low ~ 1          Intercept …            0  237.  240.  -117.     235.
-    ## 2        2 low ~ ptl_cat    ptl_cat                1  226.  232.  -111.     222.
-    ## 3        3 low ~ ptl_cat +… ptl_cat + …            2  223.  233.  -109.     217.
-    ## 4        4 low ~ ptl_cat +… ptl_cat + …            3  221.  234.  -107.     213.
-    ## 5        5 low ~ ptl_cat +… ptl_cat + …            4  217.  234.  -104.     207.
-    ## 6        6 low ~ ptl_cat +… ptl_cat + …            5  217.  237.  -103.     205.
-    ## # ℹ 1 more variable: selected_vars <chr>
-    ## 
-    ## $best_model
-    ## 
-    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
-    ## 
-    ## Coefficients:
-    ## (Intercept)   ptl_catYes          age        htYes          lwt        uiYes  
-    ##     1.74560      1.42123     -0.05331      1.90580     -0.01437      0.69193  
-    ## 
-    ## Degrees of Freedom: 188 Total (i.e. Null);  183 Residual
-    ## Null Deviance:       234.7 
-    ## Residual Deviance: 205.2     AIC: 217.2
-    ## 
-    ## $all_models
-    ## $all_models$model_1
-    ## 
-    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
-    ## 
-    ## Coefficients:
-    ## (Intercept)  
-    ##       -0.79  
-    ## 
-    ## Degrees of Freedom: 188 Total (i.e. Null);  188 Residual
-    ## Null Deviance:       234.7 
-    ## Residual Deviance: 234.7     AIC: 236.7
-    ## 
-    ## $all_models$model_2
-    ## 
-    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
-    ## 
-    ## Coefficients:
-    ## (Intercept)   ptl_catYes  
-    ##      -1.057        1.463  
-    ## 
-    ## Degrees of Freedom: 188 Total (i.e. Null);  187 Residual
-    ## Null Deviance:       234.7 
-    ## Residual Deviance: 221.9     AIC: 225.9
-    ## 
-    ## $all_models$model_3
-    ## 
-    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
-    ## 
-    ## Coefficients:
-    ## (Intercept)   ptl_catYes          age  
-    ##     0.53225      1.60766     -0.07054  
-    ## 
-    ## Degrees of Freedom: 188 Total (i.e. Null);  186 Residual
-    ## Null Deviance:       234.7 
-    ## Residual Deviance: 217.3     AIC: 223.3
-    ## 
-    ## $all_models$model_4
-    ## 
-    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
-    ## 
-    ## Coefficients:
-    ## (Intercept)   ptl_catYes          age        htYes  
-    ##     0.44082      1.63465     -0.07091      1.28704  
-    ## 
-    ## Degrees of Freedom: 188 Total (i.e. Null);  185 Residual
-    ## Null Deviance:       234.7 
-    ## Residual Deviance: 213.1     AIC: 221.1
-    ## 
-    ## $all_models$model_5
-    ## 
-    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
-    ## 
-    ## Coefficients:
-    ## (Intercept)   ptl_catYes          age        htYes          lwt  
-    ##     2.04619      1.52899     -0.05648      1.82544     -0.01536  
-    ## 
-    ## Degrees of Freedom: 188 Total (i.e. Null);  184 Residual
-    ## Null Deviance:       234.7 
-    ## Residual Deviance: 207.4     AIC: 217.4
-    ## 
-    ## $all_models$model_6
-    ## 
-    ## Call:  stats::glm(formula = fmla, family = family, data = model_data)
-    ## 
-    ## Coefficients:
-    ## (Intercept)   ptl_catYes          age        htYes          lwt        uiYes  
-    ##     1.74560      1.42123     -0.05331      1.90580     -0.01437      0.69193  
-    ## 
-    ## Degrees of Freedom: 188 Total (i.e. Null);  183 Residual
-    ## Null Deviance:       234.7 
-    ## Residual Deviance: 205.2     AIC: 217.2
-    ## 
-    ## 
-    ## $direction
-    ## [1] "forward"
-    ## 
-    ## $table
+| model_id | model_terms | n_predictors | AIC | BIC | logLik | deviance | best |
+|----|----|----|----|----|----|----|----|
+| 1 | Intercept only | 0 | 236.67 | 239.91 | -117.34 | 234.67 | No |
+| 2 | ptl_cat | 1 | 225.90 | 232.38 | -110.95 | 221.90 | No |
+| 3 | ptl_cat + age | 2 | 223.30 | 233.02 | -108.65 | 217.30 | No |
+| 4 | ptl_cat + age + ht | 3 | 221.12 | 234.09 | -106.56 | 213.12 | No |
+| 5 | ptl_cat + age + ht + lwt | 4 | 217.43 | 233.64 | -103.72 | 207.43 | No |
+| 6 | ptl_cat + age + ht + lwt + ui | 5 | 217.15 | 236.60 | -102.58 | 205.15 | Yes |
+| Selection direction: forward. All models fitted to the same N = 189 complete cases. |  |  |  |  |  |  |  |
+| Screening aid only; compare candidate models with study design, clinical or subject-matter judgement, and model diagnostics. |  |  |  |  |  |  |  |
+
+Stepwise model selection {.table .cl-d8bad469
+quarto-disable-processing="true"}
 
 The selected direction is recorded in the formatted table footer.
 Backward and both-direction searches are available using the same

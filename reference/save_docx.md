@@ -75,7 +75,8 @@ tbl <- uni_reg(
   approach = "logit",
   format = "flextable"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 
 save_docx(tables = tbl, filename = tempfile("report"))
-#> Word document saved at: /tmp/Rtmp1BGEzA/report1a7ebf88ea4.docx
+#> Word document saved at: /tmp/RtmpqAx0KF/report1aeb59794955.docx
 ```

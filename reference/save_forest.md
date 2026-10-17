@@ -89,10 +89,11 @@ uni_or <- uni_reg(
   exposures = c("age", "smoke", "ht"),
   approach = "logit"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 
 forest <- forest_reg(uni = uni_or)
 save_forest(forest, filename = tempfile("forest"), format = "pdf")
-#> Forest plot saved at: /tmp/Rtmp1BGEzA/forest1a7e41bd19b.pdf
+#> Forest plot saved at: /tmp/RtmpqAx0KF/forest1aeb4d0cf45a.pdf
 
 # For large forest plots, increase width, height, scale, or padding.
 save_forest(
@@ -103,5 +104,5 @@ save_forest(
   padding = 0.35,
   dpi = 300
 )
-#> Forest plot saved at: /tmp/Rtmp1BGEzA/forest-wide1a7e9929f44.png
+#> Forest plot saved at: /tmp/RtmpqAx0KF/forest-wide1aeb48dc7d75.png
 ```

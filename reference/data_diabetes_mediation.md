@@ -50,8 +50,7 @@ A data frame with variables:
 ## Source
 
 Derived from `data_SynthDiabetes`, which is based on
-[`mlbench::SynthDiabetes2`](https://rdrr.io/pkg/mlbench/man/SynthDiabetes.html)
-(mlbench version 2.1-11 or later).
+`mlbench::SynthDiabetes2` (mlbench version 2.1-11 or later).
 
 ## Details
 

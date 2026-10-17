@@ -5,15 +5,18 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Using the gtregression App • gtregression</title>
+<title>Using the GT Regression App • gtregression</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="Using the gtregression App">
-<meta name="description" content="A beginner-friendly manual for the menu-driven gtregression Shiny app.">
-<meta property="og:description" content="A beginner-friendly manual for the menu-driven gtregression Shiny app.">
+<meta property="og:title" content="Using the GT Regression App">
+<meta name="description" content="A beginner-friendly manual for GT Regression, the menu-driven app for gtregression.">
+<meta property="og:description" content="A beginner-friendly manual for GT Regression, the menu-driven app for gtregression.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
 <link rel="stylesheet" href="https://thinkdenominator.com/analytics-consent.css">
 <script>window.TD_GA_MEASUREMENT_ID = "G-3DE4ZZV06B";</script><script defer src="https://thinkdenominator.com/analytics-consent.js"></script>
 </head>
@@ -21,11 +24,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">gtregression</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,26 +37,47 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/gtregression-intro.html">Get started</a></li>
 <li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-workflows">
-<li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
-    <li><a class="dropdown-item" href="../articles/function-options.html">Function Options</a></li>
-    <li><a class="dropdown-item" href="../articles/gtregression-app.html">App Manual</a></li>
-    <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
-    <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
-    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
-    <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
-    <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
-    <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
+<li><h6 class="dropdown-header" data-toc-skip>Choose</h6></li>
+    <li><a class="dropdown-item" href="../articles/choose-model.html">Which function should I use?</a></li>
+    <li><a class="dropdown-item" href="../articles/function-options.html">Function options</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Tables</h6></li>
+    <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Descriptive tables</a></li>
+    <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/special-models.html">Special study designs</a></li>
+    <li><a class="dropdown-item" href="../articles/risk-difference.html">Risk difference and NNT</a></li>
+    <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratified analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Survival</h6></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Interpret</h6></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding and interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics and model selection</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Output</h6></li>
+    <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise results</a></li>
+    <li><a class="dropdown-item" href="../articles/merge-tables.html">Merge and customise tables</a></li>
+    <li><a class="dropdown-item" href="../articles/customize-export.html">Customise and export</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>App</h6></li>
+    <li><a class="dropdown-item" href="../articles/gtregression-app.html">App manual</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">All guides</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
@@ -68,7 +92,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Using the gtregression App</h1>
+      <h1>Using the GT Regression App</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/ThinkDenominator/gtregression/blob/main/vignettes/gtregression-app.Rmd" class="external-link"><code>vignettes/gtregression-app.Rmd</code></a></small>
@@ -78,12 +102,13 @@
     
     
 <div class="section level2">
-<h2 id="gtregression-app-manual">gtregression App Manual<a class="anchor" aria-label="anchor" href="#gtregression-app-manual"></a>
+<h2 id="gt-regression-app-manual">GT Regression App Manual<a class="anchor" aria-label="anchor" href="#gt-regression-app-manual"></a>
 </h2>
-<p>The <code>gtregression</code> app is a menu-driven companion to the R
-package. It is designed for users who want to explore data, create
-publication-ready tables, visualise model results, and export outputs
-without remembering every function argument.</p>
+<p>GT Regression is the menu-driven app for the
+<code>gtregression</code> R package. It is designed for users who want
+to explore data, create publication-ready tables, visualise model
+results, and export outputs without remembering every function
+argument.</p>
 <p>The app is not a replacement for a reproducible R script. Its best
 use is:</p>
 <ol style="list-style-type: decimal">
@@ -115,9 +140,11 @@ uploaded.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gtregression.thinkdenominator.com/">gtregression</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/gtregression_app.html">gtregression_app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>When the app is launched from RStudio, it opens in the RStudio Viewer
-when available. Outside RStudio, it opens in a browser during an
-interactive session.</p>
+<p><code><a href="../reference/gtregression_app.html">gtregression_app()</a></code> opens GT Regression in your web
+browser. In RStudio you can also choose <strong>Addins &gt; GT
+Regression app</strong>, which opens the same app in an RStudio dialog
+window. Both are the same app: only the window differs, and data frames
+in your R environment are available in either.</p>
 <p>You can pass arguments to <code><a href="https://rdrr.io/pkg/shiny/man/runApp.html" class="external-link">shiny::runApp()</a></code> through
 <code><a href="../reference/gtregression_app.html">gtregression_app()</a></code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -131,7 +158,7 @@ interactive session.</p>
 </h3>
 <p>The app keeps the R session busy while it is running. This is normal
 for Shiny.</p>
-<p>Use the <strong>Close app</strong> button in the bottom-right corner
+<p>Use the <strong>Close</strong> button (power icon) at the top right
 of the app to stop the session cleanly. This avoids the confusing
 console behaviour that can happen when users stop the app manually from
 RStudio.</p>
@@ -179,7 +206,7 @@ command-line functions.</p>
 <code>readxl</code>, <code>DT</code> where available</td>
 </tr>
 <tr class="even">
-<td>RStudio Viewer support</td>
+<td>RStudio Addin (dialog window)</td>
 <td>
 <code>rstudioapi</code> where available</td>
 </tr>
@@ -208,6 +235,10 @@ baseline table.</li>
 <li>
 <strong>Regression</strong>: reselect the clinically important
 variables and run the multivariable model.</li>
+<li>
+<strong>Special Models</strong>: use the dedicated workspace when
+the outcome is ordered or multinomial, observations are clustered, or
+the study is matched.</li>
 <li>
 <strong>Visualise &amp; Export</strong>: merge descriptive, crude,
 and adjusted outputs.</li>
@@ -307,12 +338,12 @@ the loaded dataset, whether modelling uses the original or prepared
 data, the current sample size, and the selected regression outcome and
 approach. This helps prevent an analysis being run on the wrong version
 of the data.</p>
-<p>The Regression and Survival tabs also show a short preflight summary
-immediately above their run buttons. Review it before fitting a model.
-It confirms the outcome or survival variables, the number of exposures
-and adjustment variables, the modelling mode, and any selected
-categorical reference levels. If a required choice is missing, the
-summary states what must be selected next.</p>
+<p>The Regression, Special Models, and Survival tabs also show a short
+preflight summary immediately above their run buttons. Review it before
+fitting a model. It confirms the outcome or survival variables, the
+number of exposures and adjustment variables, the modelling mode, and
+any selected categorical reference levels. If a required choice is
+missing, the summary states what must be selected next.</p>
 </div>
 <div class="section level3">
 <h3 id="select-and-clear-variable-buttons">Select and Clear Variable Buttons<a class="anchor" aria-label="anchor" href="#select-and-clear-variable-buttons"></a>
@@ -323,6 +354,7 @@ where users commonly need to choose multiple variables, including:</p>
 <ul>
 <li>descriptive table variables;</li>
 <li>regression exposures and adjustment variables;</li>
+<li>special-model exposures and adjustment variables;</li>
 <li>survival exposures and adjustment variables;</li>
 <li>advanced model-building variables;</li>
 <li>mediation covariates.</li>
@@ -341,7 +373,7 @@ selection fast for larger uploaded datasets.</p>
 <p>Users can:</p>
 <ul>
 <li>load a built-in <code>gtregression</code> teaching dataset;</li>
-<li>upload a CSV or Excel file;</li>
+<li>upload a CSV, TSV, TXT, or Excel file;</li>
 <li>import an RDS file containing a data frame or tibble;</li>
 <li>import Stata (<code>.dta</code>), SPSS (<code>.sav</code>,
 <code>.zsav</code>, <code>.por</code>), or SAS (<code>.sas7bdat</code>,
@@ -350,18 +382,19 @@ selection fast for larger uploaded datasets.</p>
 <li>inspect a quick data summary;</li>
 <li>copy reusable data-loading code.</li>
 </ul>
-<p>For uploaded CSV files, check:</p>
+<p>For uploaded delimited files, check:</p>
 <ul>
 <li>whether the file has a header;</li>
 <li>the separator: comma, semicolon, or tab.</li>
 </ul>
 <p>For Excel files, optionally provide the sheet name or sheet
 number.</p>
-<p>CSV controls are ignored for other formats, and the Excel sheet field
-is ignored unless an Excel file is selected. An RDS file must contain a
-data frame or tibble. Generated code records the appropriate
-<code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code>, <code><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">readxl::read_excel()</a></code>, or
-<code>haven::read_*()</code> call.</p>
+<p>Delimited controls are ignored for other formats, and the Excel sheet
+field is ignored unless an Excel file is selected. An RDS file must
+contain a data frame or tibble. Generated code uses
+<code><a href="../reference/import_data.html">import_data()</a></code> so the app and exported script share the same
+validation and format handling. The app passes the original extension
+explicitly because browser-upload temporary paths may not retain it.</p>
 <p>After loading data, check the preview before moving to the next tab.
 This helps catch common issues such as numeric variables imported as
 character, missing factor labels, or incorrect event coding.</p>
@@ -369,8 +402,8 @@ character, missing factor labels, or incorrect event coding.</p>
 <div class="section level3">
 <h3 id="data-prep-tab">Data Prep Tab<a class="anchor" aria-label="anchor" href="#data-prep-tab"></a>
 </h3>
-<p>The <strong>Data Prep</strong> tab is an internal part of the
-gtregression app. It does not load or depend on the <code>gtstats</code>
+<p>The <strong>Data Prep</strong> tab is an internal part of GT
+Regression. It does not load or depend on the <code>gtstats</code>
 package. It provides a safe, visible sequence of common preparation
 steps while retaining the original imported dataset.</p>
 <p>Users can rename and retain variables, set variable types and factor
@@ -605,11 +638,98 @@ publication forest outputs, use <code><a href="../reference/forest_df.html">fore
 readable.</p>
 </div>
 <div class="section level3">
+<h3 id="special-models-tab">Special Models Tab<a class="anchor" aria-label="anchor" href="#special-models-tab"></a>
+</h3>
+<p>Use <strong>Special Models</strong> when the study design does not
+fit the ordinary Regression workspace. The top menu keeps four
+less-common workflows together without adding controls to the standard
+regression screen.</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Choice</th>
+<th>Function</th>
+<th>Use when</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Ordered outcome</td>
+<td><code><a href="../reference/ordinal_reg.html">ordinal_reg()</a></code></td>
+<td>Outcome categories have a meaningful order</td>
+</tr>
+<tr class="even">
+<td>Unordered outcome</td>
+<td><code><a href="../reference/multinomial_reg.html">multinomial_reg()</a></code></td>
+<td>Outcome has three or more categories without a natural order</td>
+</tr>
+<tr class="odd">
+<td>Clustered data</td>
+<td><code><a href="../reference/multilevel_reg.html">multilevel_reg()</a></code></td>
+<td>Observations are grouped within clinics, schools, centres, or
+another cluster</td>
+</tr>
+<tr class="even">
+<td>Matched case-control</td>
+<td><code><a href="../reference/conditional_logit_reg.html">conditional_logit_reg()</a></code></td>
+<td>Cases and controls share a matched-set identifier</td>
+</tr>
+</tbody>
+</table>
+<p>The workspace follows the same sequence for each design: choose the
+outcome, reported exposures, optional adjustment variables, and any
+design-specific variable; review the preflight note; then run the model.
+Predictor reference categories are shown only for categorical predictors
+and are written into the generated code.</p>
+<p>The app retains two Special Models results. Leave <strong>Single
+multivariable model</strong> off to place separate exposure models in
+<strong>Exposure Models</strong>. Turn it on to place the joint model in
+<strong>Multivariable Model</strong>. Running the second form does not
+replace the first, so both can be reviewed, modified, merged, plotted
+where supported, and reproduced in Session Code. Clustered models are
+joint models and therefore appear under <strong>Multivariable
+Model</strong>.</p>
+<p>When both results are retained, <strong>Model Stats</strong> and
+<strong>Assumption Check</strong> show a <strong>Result to
+inspect</strong> control. Choose Exposure Models or Multivariable Model
+before interpreting the diagnostics. The app identifies when model
+statistics were not stored and when the proportional-odds check does not
+apply, rather than leaving an unexplained blank panel.</p>
+<p>For an ordinal model, create an <strong>ordered factor</strong> in
+Data Prep and verify the displayed order before fitting. For a
+multinomial model, create an unordered factor; its first level is the
+outcome reference. These outcome choices are deliberately made in Data
+Prep so the dataset and exported script record the same analysis
+definition.</p>
+<p>Clustered models require a grouping variable and offer continuous or
+binary outcome models. Matched case-control models require the
+matched-set identifier. Do not use an ordinary logistic model when
+matching must be retained in the analysis.</p>
+<p>Multinomial output contains one comparison for each non-reference
+outcome. Those comparisons are offered separately under
+<strong>Regression plot</strong> and <strong>Forest plot</strong>, with
+the retained exposure or multivariable role stated in the menu. Each
+comparison is also available separately in <strong>Merge
+tables</strong>. Ordinal, multilevel, and matched case-control results
+are also available in the merge and modify-table menus after they have
+been fitted. Special models are not offered under <strong>Model
+fit</strong>, because the general <code><a href="../reference/plot_model_fit.html">plot_model_fit()</a></code>
+diagnostics do not apply consistently across these four model families.
+Use the model statistics and assumption output in the Special Models
+workspace instead.</p>
+</div>
+<div class="section level3">
 <h3 id="survival-tab">Survival Tab<a class="anchor" aria-label="anchor" href="#survival-tab"></a>
 </h3>
 <p>Use the <strong>Survival</strong> tab for:</p>
 <ul>
 <li>Cox regression with <code><a href="../reference/cox_reg.html">cox_reg()</a></code>;</li>
+<li>competing-risk regression with
+<code><a href="../reference/competing_risk_reg.html">competing_risk_reg()</a></code>;</li>
+<li>cumulative-incidence curves with <code><a href="../reference/cuminc_plot.html">cuminc_plot()</a></code>;</li>
 </ul>
 <p>Choose Cox regression for hazard ratios when no baseline-hazard
 distribution is specified. Choose parametric survival regression when a
@@ -618,17 +738,41 @@ Kaplan-Meier plots describe the observed curves and should not be used
 as a substitute for either fitted model. - parametric survival
 regression with <code><a href="../reference/surv_reg.html">surv_reg()</a></code>; - Kaplan-Meier curves with
 <code><a href="../reference/km_plot.html">km_plot()</a></code>; - log-rank tests and survival summaries.</p>
-<p>At the top of the workspace, choose <strong>Cox regression</strong>
-or <strong>Parametric survival</strong>. The app shows one model
-workflow at a time: Cox mode hides the distribution control, while
-Parametric survival mode asks for the Weibull, exponential, log-normal,
-or log-logistic distribution. The active mode also controls the run
-button, model result, and reusable code. Each method retains two
-independent result slots: <strong>Exposure models</strong> and
-<strong>Multivariable model</strong>. Running one does not replace the
-other. Both completed tables remain available as separate choices in
-<strong>Visualise &amp; Export</strong>, including the merge-table menu,
-and in compatible <strong>Advanced</strong> tools.</p>
+<p>At the top of the workspace, choose <strong>Cox regression</strong>,
+<strong>Parametric survival</strong>, or <strong>Competing
+risks</strong>. The app shows one model workflow at a time: Cox mode
+hides the distribution control, while Parametric survival mode asks for
+the Weibull, exponential, log-normal, or log-logistic distribution. The
+active mode also controls the run button, model result, and reusable
+code. Each method retains two independent result slots: <strong>Exposure
+models</strong> and <strong>Multivariable model</strong>. Running one
+does not replace the other. Both completed tables remain available as
+separate choices in <strong>Visualise &amp; Export</strong>, including
+the merge-table menu, and in compatible <strong>Advanced</strong>
+tools.</p>
+<p>Choose <strong>Competing risks</strong> when another event can
+prevent the event of interest from occurring. Select the observed
+censoring code and event-of-interest code explicitly; the preflight note
+displays the observed event counts. At least one additional observed
+code must represent a competing event.</p>
+<p>The Fine-Gray table reports subdistribution hazard ratios. An SHR
+above 1 indicates higher cumulative incidence of the selected event over
+follow-up, accounting for competing events. It is not a cause-specific
+Cox hazard ratio. The cumulative-incidence plot shows absolute event
+probability. With a grouping variable, Gray’s test compares the curves;
+it is an unadjusted comparison, not an adjusted effect estimate.</p>
+<p>Kaplan-Meier controls are hidden in competing-risk mode because
+treating a competing event as ordinary censoring can overestimate event
+probability. Use the <strong>Cumulative Incidence</strong> output
+instead. The table and plot can be downloaded independently, and both
+calls are included in Session Code.</p>
+<p>The package dataset <code>data_competing_risk</code> provides a
+ready-to-use practice example. Select <code>follow_up_months</code> as
+time, <code>outcome</code> as event status, <code>Censored</code> as the
+censoring code, and <code>Relapse</code> as the event of interest. Use
+<code>treatment</code> to compare cumulative-incidence curves, then fit
+a Fine-Gray model with <code>treatment</code> as the exposure and
+<code>age</code> plus <code>stage</code> as covariates.</p>
 <p>For a complete GUI workflow, first leave <strong>Single multivariable
 model</strong> clear and run the exposure models. Then select the
 predictors for the joint model, check <strong>Single multivariable
@@ -925,11 +1069,14 @@ usually gives the cleanest merged output.</p>
 <strong>Selected result</strong> to preview the object named in
 <strong>Result</strong> with <code><a href="../reference/plot_reg.html">plot_reg()</a></code>. When a matching
 pair has been fitted, the app also offers <strong>Regression crude +
-adjusted</strong>, <strong>Cox exposure + multivariable</strong>, or
-<strong>Parametric exposure + multivariable</strong>. These choices call
-<code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code> with the two corresponding stored
-results; an option appears only after both members of that pair
-exist.</p>
+adjusted</strong>, <strong>Cox exposure + multivariable</strong>,
+<strong>Parametric exposure + multivariable</strong>, or a compatible
+Special Models pair. These choices call <code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code>
+with the two corresponding stored results; an option appears only after
+both members of that pair exist. Ordinal and matched case-control
+results combine only with the same model family and outcome. Multinomial
+results provide one combined choice for each outcome comparison shared
+by both retained models.</p>
 <p>Use <code><a href="../reference/plot_reg.html">plot_reg()</a></code> for quick presentation-style plots:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reg_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_reg.html">plot_reg</a></span><span class="op">(</span></span>
@@ -980,8 +1127,9 @@ must match the current level exactly. For example, use
 <code>smoke: Yes = Smoker</code>, not
 <code>Smoking during pregnancy: Yes = Smoker</code> after changing the
 variable’s display label.</p>
-<p><code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code> is intended for standard univariable
-and multivariable outputs. Stratified outputs are better handled
+<p><code><a href="../reference/plot_reg_combine.html">plot_reg_combine()</a></code> supports compatible standard,
+survival, ordinal, matched case-control, Fine-Gray, and individual
+multinomial-comparison outputs. Stratified outputs are better handled
 carefully with separate <code><a href="../reference/plot_reg.html">plot_reg()</a></code> calls or forest tables,
 depending on the publication need.</p>
 </div>
@@ -1002,6 +1150,11 @@ the corresponding <strong>Descriptive + …</strong> option to place those
 columns beside the survival effect estimates. This prevents an older
 regression result from being combined with the currently selected
 survival analysis by accident.</p>
+<p>Compatible retained Special Models follow the same pattern.
+Multinomial forest combinations are offered separately for each shared
+non-reference outcome. When a descriptive table is available, the
+corresponding <strong>Descriptive + …</strong> choice adds it without
+changing the selected outcome comparison.</p>
 <p>Use forest plots for manuscript-style effect summaries.</p>
 <p>For one regression object:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
@@ -1534,7 +1687,7 @@ testing, and CRAN-safe documentation.</p>
 <h4 id="the-browser-preview-looks-cramped">The Browser Preview Looks Cramped<a class="anchor" aria-label="anchor" href="#the-browser-preview-looks-cramped"></a>
 </h4>
 <p>Browser preview size depends on the device, browser, zoom level, and
-RStudio Viewer size. A cramped preview does not always mean the exported
+RStudio dialog size. A cramped preview does not always mean the exported
 figure will be cramped.</p>
 <p>For final outputs, copy the code and export with a wider canvas:</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
@@ -1609,9 +1762,10 @@ instead:</p>
 <div class="section level4">
 <h4 id="chrome-or-browser-crashes">Chrome or Browser Crashes<a class="anchor" aria-label="anchor" href="#chrome-or-browser-crashes"></a>
 </h4>
-<p>Use the RStudio Viewer where available by running:</p>
+<p>In RStudio, open the app in an RStudio dialog window instead: choose
+<strong>Addins &gt; GT Regression app</strong>, or run:</p>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/gtregression_app.html">gtregression_app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/gtregression_addin.html">gtregression_addin</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>If the browser keeps causing problems, run:</p>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gtregression_app.html">gtregression_app</a></span><span class="op">(</span>launch.browser <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>

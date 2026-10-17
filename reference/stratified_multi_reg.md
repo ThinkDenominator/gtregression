@@ -31,7 +31,13 @@ stratified_multi_reg(
 - outcome:
 
   Character scalar; name of the outcome variable. Quoted and bare names
-  are accepted.
+  are accepted. For binary-outcome approaches (`"logit"`, `"firth"`,
+  `"logbinomial"`, `"robpoisson"`) the outcome may be numeric 0/1 or 1/2
+  (2 is the event; integer or double), logical (`TRUE` is the event), or
+  a two-level factor or character variable (the second level is the
+  event, which is reported in a message). The same factor, character and
+  logical coding is accepted by `"poisson"`. The coding is decided once
+  on the full data, before stratification.
 
 - exposures:
 
@@ -144,6 +150,7 @@ stratified_multi <- stratified_multi_reg(
   approach = "logit",
   format = "gt"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 #> Running stratified multivariable regression by: race
 #>   > Stratum: race = White
 #>   > Stratum: race = Black
@@ -158,6 +165,7 @@ stratified_adjusted <- stratified_multi_reg(
   approach = "logit",
   format = "gt"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 #> Running stratified multivariable regression by: race
 #>   > Stratum: race = White
 #>   > Stratum: race = Black

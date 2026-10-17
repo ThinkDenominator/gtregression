@@ -1,4 +1,4 @@
-# Compare Models With and Without an Interaction Term
+# Compare models with and without an interaction term
 
 Fits two models, one with and one without an interaction term between an
 exposure and a potential effect modifier. The models are compared using
@@ -74,7 +74,10 @@ interaction_models(
 
 - test:
 
-  Statistical test for model comparison. One of `"LRT"` or `"Wald"`.
+  Statistical test for model comparison. One of `"LRT"` or `"Wald"`. For
+  `approach = "robpoisson"` a likelihood-ratio test is not valid, so the
+  Wald test with the robust (sandwich HC0) variance is always returned
+  and reported as such in `$test`.
 
 - alpha:
 
@@ -180,11 +183,11 @@ interaction_models(
 #> 
 #> $formula_no_interaction
 #> low ~ smoke + race + age + lwt
-#> <environment: 0x5631ba2cc840>
+#> <environment: 0x5555cd60d608>
 #> 
 #> $formula_with_interaction
 #> low ~ smoke + race + age + lwt + smoke:race
-#> <environment: 0x5631ba2cc840>
+#> <environment: 0x5555cd60d608>
 #> 
 #> $interaction_terms
 #> [1] "smokeYes:raceBlack" "smokeYes:raceOther"
@@ -289,12 +292,12 @@ interaction_models(
 #> 
 #> $formula_no_interaction
 #> survival::Surv(time, status) ~ trt + prior + age + karno
-#> <environment: 0x5631ba8749a8>
+#> <environment: 0x5555c9996908>
 #> 
 #> $formula_with_interaction
 #> survival::Surv(time, status) ~ trt + prior + age + karno + trt * 
 #>     prior
-#> <environment: 0x5631ba8749a8>
+#> <environment: 0x5555c9996908>
 #> 
 #> $interaction_terms
 #> [1] "trtTest treatment:priorYes"

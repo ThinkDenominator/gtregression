@@ -1,4 +1,4 @@
-# Compare Prespecified Regression Models
+# Compare prespecified regression models
 
 Compare gtregression candidate models side by side using model-fit
 statistics. This is intended for transparent model comparison after you
@@ -50,8 +50,15 @@ compare_models(
 - primary_exposure:
 
   Optional exposure or exact coefficient name to track across models.
-  For Cox models this can be used to show the hazard ratio and
-  percentage change in the log-effect estimate across candidate models.
+  Quoted and bare names are accepted; a bare name resolves to a model
+  variable first, not to a workspace object of the same name. For Cox
+  models this can be used to show the hazard ratio and its percentage
+  change across candidate models. "Change from first" is
+  `100 * (estimate - first) / |first|` computed on the displayed scale:
+  the ratio (OR, RR, IRR, HR, time ratio) for exponentiated models and
+  the coefficient for linear models. This is the same scale as the
+  change-in-estimate reported by
+  [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md).
 
 - exponentiate:
 

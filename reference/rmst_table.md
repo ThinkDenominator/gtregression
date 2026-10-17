@@ -45,7 +45,10 @@ rmst_table(
 - tau:
 
   Restriction time for RMST. For example, `tau = 365` reports mean
-  survival time restricted to the first 365 days of follow-up.
+  survival time restricted to the first 365 days of follow-up. If `tau`
+  is beyond the last follow-up time of a group, the estimate
+  extrapolates the survival curve; a warning is raised and a footnote is
+  added to the table.
 
 - digits:
 
@@ -53,7 +56,8 @@ rmst_table(
 
 - conf.level:
 
-  Confidence level for RMST confidence intervals.
+  Confidence level for RMST confidence intervals. The column headers
+  show the level used, for example `"RMST (90% CI)"`.
 
 - format:
 

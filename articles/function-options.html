@@ -14,6 +14,9 @@
 <meta property="og:title" content="Function Options">
 <meta name="description" content="A quick reference for gtregression arguments, defaults, available choices, and what each option does.">
 <meta property="og:description" content="A quick reference for gtregression arguments, defaults, available choices, and what each option does.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
 <link rel="stylesheet" href="https://thinkdenominator.com/analytics-consent.css">
 <script>window.TD_GA_MEASUREMENT_ID = "G-3DE4ZZV06B";</script><script defer src="https://thinkdenominator.com/analytics-consent.js"></script>
 </head>
@@ -21,11 +24,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">gtregression</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,26 +37,47 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/gtregression-intro.html">Get started</a></li>
 <li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-workflows">
-<li><a class="dropdown-item" href="../articles/gtregression-intro.html">Start Here</a></li>
-    <li><a class="dropdown-item" href="../articles/function-options.html">Function Options</a></li>
-    <li><a class="dropdown-item" href="../articles/gtregression-app.html">App Manual</a></li>
-    <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Tables</a></li>
-    <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression</a></li>
-    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal Mediation</a></li>
-    <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise</a></li>
-    <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratify</a></li>
-    <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/customize-export.html">Export</a></li>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
+<li><h6 class="dropdown-header" data-toc-skip>Choose</h6></li>
+    <li><a class="dropdown-item" href="../articles/choose-model.html">Which function should I use?</a></li>
+    <li><a class="dropdown-item" href="../articles/function-options.html">Function options</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Tables</h6></li>
+    <li><a class="dropdown-item" href="../articles/descriptive-tables.html">Descriptive tables</a></li>
+    <li><a class="dropdown-item" href="../articles/regression-tables.html">Regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/special-models.html">Special study designs</a></li>
+    <li><a class="dropdown-item" href="../articles/risk-difference.html">Risk difference and NNT</a></li>
+    <li><a class="dropdown-item" href="../articles/stratified-analysis.html">Stratified analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Survival</h6></li>
+    <li><a class="dropdown-item" href="../articles/survival-analysis.html">Survival analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Interpret</h6></li>
+    <li><a class="dropdown-item" href="../articles/confounding-interaction.html">Confounding and interaction</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-mediation.html">Causal mediation</a></li>
+    <li><a class="dropdown-item" href="../articles/diagnostics-selection.html">Diagnostics and model selection</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Output</h6></li>
+    <li><a class="dropdown-item" href="../articles/visualise-results.html">Visualise results</a></li>
+    <li><a class="dropdown-item" href="../articles/merge-tables.html">Merge and customise tables</a></li>
+    <li><a class="dropdown-item" href="../articles/customize-export.html">Customise and export</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>App</h6></li>
+    <li><a class="dropdown-item" href="../articles/gtregression-app.html">App manual</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">All guides</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
@@ -176,6 +200,96 @@ N, both, or neither.</td>
 <h3 id="describe-and-inspect-data">Describe and Inspect Data<a class="anchor" aria-label="anchor" href="#describe-and-inspect-data"></a>
 </h3>
 <div class="section level4">
+<h4 id="import_data">
+<code>import_data()</code><a class="anchor" aria-label="anchor" href="#import_data"></a>
+</h4>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="23%">
+<col width="30%">
+<col width="23%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th>Argument</th>
+<th align="right">Default</th>
+<th>Available options or input</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>file</code></td>
+<td align="right">required</td>
+<td>existing file path</td>
+<td>Dataset to import.</td>
+</tr>
+<tr class="even">
+<td><code>format</code></td>
+<td align="right"><code>NULL</code></td>
+<td>supported extension such as <code>"csv"</code>, <code>"xlsx"</code>,
+or <code>"dta"</code>
+</td>
+<td>Overrides extension detection, including for extensionless Shiny
+upload paths.</td>
+</tr>
+<tr class="odd">
+<td><code>sheet</code></td>
+<td align="right"><code>NULL</code></td>
+<td>Excel sheet name or number</td>
+<td>Selects an Excel worksheet; the first sheet is used by default.</td>
+</tr>
+<tr class="even">
+<td><code>header</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Indicates whether a delimited file contains column names.</td>
+</tr>
+<tr class="odd">
+<td><code>sep</code></td>
+<td align="right"><code>NULL</code></td>
+<td>delimiter such as <code>","</code>, <code>";"</code>, or
+<code>"\t"</code>
+</td>
+<td>Overrides the format-aware delimiter for CSV, TSV, or TXT.</td>
+</tr>
+<tr class="even">
+<td><code>na</code></td>
+<td align="right"><code>c("", "NA")</code></td>
+<td>character vector</td>
+<td>Values interpreted as missing.</td>
+</tr>
+<tr class="odd">
+<td><code>encoding</code></td>
+<td align="right"><code>"UTF-8"</code></td>
+<td>valid text encoding</td>
+<td>Encoding for delimited text files.</td>
+</tr>
+<tr class="even">
+<td><code>name_repair</code></td>
+<td align="right"><code>"check_unique"</code></td>
+<td>
+<code>"check_unique"</code>, <code>"unique"</code>,
+<code>"minimal"</code>
+</td>
+<td>Preserves and checks names, repairs them reproducibly, or preserves
+them without validation.</td>
+</tr>
+<tr class="odd">
+<td><code>...</code></td>
+<td align="right">none</td>
+<td>reader-specific arguments</td>
+<td>Passes additional options to the selected reader.</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">analysis_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/import_data.html">import_data</a></span><span class="op">(</span><span class="st">"data/analysis.csv"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">stata_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/import_data.html">import_data</a></span><span class="op">(</span><span class="st">"data/analysis.dta"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
 <h4 id="descriptive_table">
 <code>descriptive_table()</code><a class="anchor" aria-label="anchor" href="#descriptive_table"></a>
 </h4>
@@ -283,7 +397,7 @@ display as categorical.</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/descriptive_table.html">descriptive_table</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
 <span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">lwt</span>, <span class="va">smoke</span>, <span class="va">race</span><span class="op">)</span>,</span>
@@ -517,6 +631,437 @@ and N.</td>
 </table>
 </div>
 <div class="section level4">
+<h4 id="conditional_logit_reg">
+<code>conditional_logit_reg()</code><a class="anchor" aria-label="anchor" href="#conditional_logit_reg"></a>
+</h4>
+<p>Use conditional logistic regression when cases and controls are
+linked through matched sets. This is different from adding the matching
+variables to an ordinary logistic regression model.</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="23%">
+<col width="30%">
+<col width="23%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th>Argument</th>
+<th align="right">Default</th>
+<th>Available options or input</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>data</code></td>
+<td align="right">required</td>
+<td>data frame</td>
+<td>Matched case-control dataset.</td>
+</tr>
+<tr class="even">
+<td><code>outcome</code></td>
+<td align="right">required</td>
+<td>binary column</td>
+<td>Identifies cases and controls.</td>
+</tr>
+<tr class="odd">
+<td><code>exposures</code></td>
+<td align="right">required</td>
+<td>column names</td>
+<td>Variables for which matched odds ratios are reported.</td>
+</tr>
+<tr class="even">
+<td><code>matched_set</code></td>
+<td align="right">required</td>
+<td>one column name</td>
+<td>Links every case to its matched control or controls.</td>
+</tr>
+<tr class="odd">
+<td><code>adjust_for</code></td>
+<td align="right"><code>NULL</code></td>
+<td>column names or <code>NULL</code>
+</td>
+<td>Adds covariates to each exposure model.</td>
+</tr>
+<tr class="even">
+<td><code>multivariable</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Fits all exposures in one conditional logistic model.</td>
+</tr>
+<tr class="odd">
+<td><code>multivariate</code></td>
+<td align="right"><code>NULL</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>, <code>NULL</code>
+</td>
+<td>Convenience alias for <code>multivariable</code>.</td>
+</tr>
+<tr class="even">
+<td><code>model_stats</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Returns matched-set, case, control, N, AIC, and log-likelihood
+summaries.</td>
+</tr>
+<tr class="odd">
+<td><code>format</code></td>
+<td align="right"><code>"flextable"</code></td>
+<td>
+<code>"flextable"</code>, <code>"gt"</code>
+</td>
+<td>Output table engine.</td>
+</tr>
+<tr class="even">
+<td><code>theme</code></td>
+<td align="right"><code>"minimal"</code></td>
+<td>table theme preset</td>
+<td>Table styling.</td>
+</tr>
+<tr class="odd">
+<td><code>show_ref</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Controls categorical reference rows. Multilevel references remain
+visible.</td>
+</tr>
+</tbody>
+</table>
+<p>The matched-set identifier is used to condition the model and
+therefore does not receive an odds ratio. Sets without both a case and a
+control are reported and excluded because they provide no information to
+the conditional analysis.</p>
+</div>
+<div class="section level4">
+<h4 id="multilevel_reg">
+<code>multilevel_reg()</code><a class="anchor" aria-label="anchor" href="#multilevel_reg"></a>
+</h4>
+<p>Use this focused workflow when observations are clustered, such as
+patients within clinics or pupils within schools, and a random-intercept
+model is appropriate.</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="23%">
+<col width="30%">
+<col width="23%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th>Argument</th>
+<th align="right">Default</th>
+<th>Available options or input</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>data</code></td>
+<td align="right">required</td>
+<td>data frame</td>
+<td>Clustered analysis dataset.</td>
+</tr>
+<tr class="even">
+<td><code>outcome</code></td>
+<td align="right">required</td>
+<td>one column name</td>
+<td>Continuous outcome for <code>linear</code> or binary outcome for
+<code>logit</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>exposures</code></td>
+<td align="right">required</td>
+<td>column names</td>
+<td>Fixed-effect predictors reported in the table.</td>
+</tr>
+<tr class="even">
+<td><code>group</code></td>
+<td align="right">required</td>
+<td>one grouping column</td>
+<td>Defines clusters and receives a random intercept; it is not reported
+as a coefficient.</td>
+</tr>
+<tr class="odd">
+<td><code>adjust_for</code></td>
+<td align="right"><code>NULL</code></td>
+<td>column names or <code>NULL</code>
+</td>
+<td>Adds fixed-effect covariates without displaying them as table
+rows.</td>
+</tr>
+<tr class="even">
+<td><code>approach</code></td>
+<td align="right"><code>"linear"</code></td>
+<td>
+<code>"linear"</code>, <code>"logit"</code>
+</td>
+<td>Fits a linear or binary logistic mixed-effects model.</td>
+</tr>
+<tr class="odd">
+<td><code>format</code></td>
+<td align="right"><code>"flextable"</code></td>
+<td>
+<code>"flextable"</code>, <code>"gt"</code>
+</td>
+<td>Selects the publication-table engine.</td>
+</tr>
+<tr class="even">
+<td><code>theme</code></td>
+<td align="right"><code>"minimal"</code></td>
+<td>table theme preset</td>
+<td>Styles the output table.</td>
+</tr>
+<tr class="odd">
+<td><code>model_stats</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Returns model fit, N, clusters, variance components, ICC, and
+singular-fit status.</td>
+</tr>
+<tr class="even">
+<td><code>show_ref</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Controls categorical reference rows. Multilevel references remain
+visible.</td>
+</tr>
+</tbody>
+</table>
+<p>Linear models report beta coefficients and an observed-scale ICC.
+Logistic models report odds ratios and a latent-scale ICC calculated
+with residual variance pi-squared over three. Fixed-effect p-values use
+a Wald normal approximation. A singular-fit warning means the estimated
+random-intercept variance is close to zero and the need for a multilevel
+model should be reconsidered. This function intentionally supports one
+random intercept; random slopes, crossed effects, and nested
+random-effects formulas should be fitted using specialist workflows.</p>
+</div>
+<div class="section level4">
+<h4 id="ordinal_reg">
+<code>ordinal_reg()</code><a class="anchor" aria-label="anchor" href="#ordinal_reg"></a>
+</h4>
+<p>Use ordinal logistic regression when an outcome has three or more
+naturally ordered categories, such as poor, fair, good, and excellent.
+The outcome must be an ordered factor so the direction of the common
+odds ratio is explicit.</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="23%">
+<col width="30%">
+<col width="23%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th>Argument</th>
+<th align="right">Default</th>
+<th>Available options or input</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>data</code></td>
+<td align="right">required</td>
+<td>data frame</td>
+<td>Ordinal-outcome analysis dataset.</td>
+</tr>
+<tr class="even">
+<td><code>outcome</code></td>
+<td align="right">required</td>
+<td>one ordered-factor column</td>
+<td>Defines categories from lower to higher through its factor-level
+order.</td>
+</tr>
+<tr class="odd">
+<td><code>exposures</code></td>
+<td align="right">required</td>
+<td>column names</td>
+<td>Predictors reported as common odds ratios.</td>
+</tr>
+<tr class="even">
+<td><code>adjust_for</code></td>
+<td align="right"><code>NULL</code></td>
+<td>column names or <code>NULL</code>
+</td>
+<td>Adds covariates to each exposure model without reporting them.</td>
+</tr>
+<tr class="odd">
+<td><code>multivariable</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Fits and reports all exposures in one joint model.</td>
+</tr>
+<tr class="even">
+<td><code>multivariate</code></td>
+<td align="right"><code>NULL</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>, <code>NULL</code>
+</td>
+<td>Convenience alias for <code>multivariable</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>assumption_test</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Returns term-level likelihood-ratio checks of proportional
+odds.</td>
+</tr>
+<tr class="even">
+<td><code>model_stats</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Returns AIC, BIC, log-likelihood, N, outcome-level count, and
+convergence.</td>
+</tr>
+<tr class="odd">
+<td><code>format</code></td>
+<td align="right"><code>"flextable"</code></td>
+<td>
+<code>"flextable"</code>, <code>"gt"</code>
+</td>
+<td>Selects the publication-table engine.</td>
+</tr>
+<tr class="even">
+<td><code>theme</code></td>
+<td align="right"><code>"minimal"</code></td>
+<td>table theme preset</td>
+<td>Styles the output table.</td>
+</tr>
+<tr class="odd">
+<td><code>show_ref</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Controls categorical reference rows. Multilevel references remain
+visible.</td>
+</tr>
+</tbody>
+</table>
+<p>An odds ratio above one means greater odds of being in a higher
+outcome category, assuming proportional odds. Inspect
+<code>$assumption_tests</code> before interpreting the common odds
+ratio. A small p-value indicates that the effect may differ across
+outcome thresholds; it does not mean that the predictor has no
+association with the outcome.</p>
+</div>
+<div class="section level4">
+<h4 id="multinomial_reg">
+<code>multinomial_reg()</code><a class="anchor" aria-label="anchor" href="#multinomial_reg"></a>
+</h4>
+<p>Use multinomial logistic regression when an outcome has three or more
+categories without a natural order, such as discharge destination. The
+first factor level is the reference outcome category.</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="23%">
+<col width="30%">
+<col width="23%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th>Argument</th>
+<th align="right">Default</th>
+<th>Available options or input</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>data</code></td>
+<td align="right">required</td>
+<td>data frame</td>
+<td>Nominal-outcome analysis dataset.</td>
+</tr>
+<tr class="even">
+<td><code>outcome</code></td>
+<td align="right">required</td>
+<td>one unordered-factor column</td>
+<td>Defines the outcome; its first level is the reference category.</td>
+</tr>
+<tr class="odd">
+<td><code>exposures</code></td>
+<td align="right">required</td>
+<td>column names</td>
+<td>Predictors reported in every outcome comparison.</td>
+</tr>
+<tr class="even">
+<td><code>adjust_for</code></td>
+<td align="right"><code>NULL</code></td>
+<td>column names or <code>NULL</code>
+</td>
+<td>Adds covariates to each exposure model without reporting them.</td>
+</tr>
+<tr class="odd">
+<td><code>multivariable</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Fits and reports all exposures in one joint model.</td>
+</tr>
+<tr class="even">
+<td><code>multivariate</code></td>
+<td align="right"><code>NULL</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>, <code>NULL</code>
+</td>
+<td>Convenience alias for <code>multivariable</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>model_stats</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Returns AIC, BIC, log-likelihood, N, outcome-level count, and
+convergence.</td>
+</tr>
+<tr class="even">
+<td><code>format</code></td>
+<td align="right"><code>"flextable"</code></td>
+<td>
+<code>"flextable"</code>, <code>"gt"</code>
+</td>
+<td>Selects the publication-table engine.</td>
+</tr>
+<tr class="odd">
+<td><code>theme</code></td>
+<td align="right"><code>"minimal"</code></td>
+<td>table theme preset</td>
+<td>Styles the output table.</td>
+</tr>
+<tr class="even">
+<td><code>show_ref</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Controls predictor reference rows. Multilevel references remain
+visible.</td>
+</tr>
+</tbody>
+</table>
+<p>The main table displays one column for each non-reference outcome
+compared with the reference outcome. Use <code><a href="https://rdrr.io/r/stats/relevel.html" class="external-link">relevel()</a></code> before
+fitting to change that reference. For a focused graph, select a
+comparison from <code>$per_outcome</code>, for example
+<code>plot_reg(result$per_outcome[["Rehabilitation"]])</code>. The same
+component can be passed to <code><a href="../reference/forest_df.html">forest_df()</a></code> and
+<code><a href="../reference/forest_reg.html">forest_reg()</a></code>.</p>
+</div>
+<div class="section level4">
 <h4 id="stratified_uni_reg">
 <code>stratified_uni_reg()</code><a class="anchor" aria-label="anchor" href="#stratified_uni_reg"></a>
 </h4>
@@ -739,13 +1284,70 @@ not.</td>
 <td>Repeats Cox analyses within strata.</td>
 </tr>
 <tr class="odd">
+<td><code>baseline_strata</code></td>
+<td align="right"><code>NULL</code></td>
+<td>categorical column names or <code>NULL</code>
+</td>
+<td>Fits one Cox model with separate baseline hazards across strata and
+common HRs for the reported predictors. No HR is estimated for the
+strata variables.</td>
+</tr>
+<tr class="even">
+<td><code>time_start</code></td>
+<td align="right"><code>NULL</code></td>
+<td>numeric column name or <code>NULL</code>
+</td>
+<td>Uses <code>Surv(time_start, time, event)</code> for delayed entry or
+start-stop observations.</td>
+</tr>
+<tr class="odd">
+<td><code>cluster</code></td>
+<td align="right"><code>NULL</code></td>
+<td>column name or <code>NULL</code>
+</td>
+<td>Calculates cluster-robust sandwich standard errors for correlated
+observations.</td>
+</tr>
+<tr class="even">
+<td><code>weights</code></td>
+<td align="right"><code>NULL</code></td>
+<td>non-negative numeric column name or <code>NULL</code>
+</td>
+<td>Applies case weights.</td>
+</tr>
+<tr class="odd">
+<td><code>robust</code></td>
+<td align="right"><code>NULL</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>, <code>NULL</code>
+</td>
+<td>Controls robust sandwich variance; clustering implies robust
+variance.</td>
+</tr>
+<tr class="even">
+<td><code>ties</code></td>
+<td align="right"><code>"efron"</code></td>
+<td>
+<code>"efron"</code>, <code>"breslow"</code>,
+<code>"exact"</code>
+</td>
+<td>Selects the tied-event method.</td>
+</tr>
+<tr class="odd">
+<td><code>control</code></td>
+<td align="right"><code>NULL</code></td>
+<td>named list or <code>NULL</code>
+</td>
+<td>Supplies selected <code>coxph.control()</code> settings.</td>
+</tr>
+<tr class="even">
 <td><code>interaction</code></td>
 <td align="right"><code>NULL</code></td>
 <td>interaction specification or <code>NULL</code>
 </td>
 <td>Fits interaction terms.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>multivariable</code></td>
 <td align="right"><code>FALSE</code></td>
 <td>
@@ -754,7 +1356,7 @@ not.</td>
 <td>If <code>TRUE</code>, fits one Cox model using all variables in
 <code>exposures</code>.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>multivariate</code></td>
 <td align="right"><code>NULL</code></td>
 <td>
@@ -762,7 +1364,7 @@ not.</td>
 </td>
 <td>Backward-compatible alias for <code>multivariable</code>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>format</code></td>
 <td align="right"><code>"flextable"</code></td>
 <td>
@@ -770,22 +1372,22 @@ not.</td>
 </td>
 <td>Output table engine.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>theme</code></td>
 <td align="right"><code>"minimal"</code></td>
 <td>table theme preset</td>
 <td>Table styling.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>show_sample</code></td>
-<td align="right"><code>"events"</code></td>
+<td align="right"><code>"both"</code></td>
 <td>
 <code>"events"</code>, <code>"n"</code>, <code>"both"</code>,
 <code>"none"</code>
 </td>
 <td>Controls displayed sample columns in stratified Cox tables.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>model_stats</code></td>
 <td align="right"><code>FALSE</code></td>
 <td>
@@ -793,7 +1395,7 @@ not.</td>
 </td>
 <td>Attaches AIC, BIC, log-likelihood, concordance, N, and events.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>show_ref</code></td>
 <td align="right"><code>TRUE</code></td>
 <td>
@@ -911,7 +1513,7 @@ not.</td>
 </tr>
 <tr class="odd">
 <td><code>show_sample</code></td>
-<td align="right"><code>"events"</code></td>
+<td align="right"><code>"both"</code></td>
 <td>
 <code>"events"</code>, <code>"n"</code>, <code>"both"</code>,
 <code>"none"</code>
@@ -1151,6 +1753,317 @@ tables.</td>
 </tr>
 </tbody>
 </table>
+</div>
+<div class="section level4">
+<h4 id="cuminc_plot">
+<code>cuminc_plot()</code><a class="anchor" aria-label="anchor" href="#cuminc_plot"></a>
+</h4>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="23%">
+<col width="30%">
+<col width="23%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th>Argument</th>
+<th align="right">Default</th>
+<th>Available options or input</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>data</code></td>
+<td align="right">required</td>
+<td>data frame</td>
+<td>Competing-risk dataset.</td>
+</tr>
+<tr class="even">
+<td><code>time</code></td>
+<td align="right">required</td>
+<td>one numeric column</td>
+<td>Follow-up time.</td>
+</tr>
+<tr class="odd">
+<td><code>event</code></td>
+<td align="right">required</td>
+<td>one column with distinct event codes</td>
+<td>Identifies censoring, the event of interest, and competing
+events.</td>
+</tr>
+<tr class="even">
+<td><code>event_of_interest</code></td>
+<td align="right">required</td>
+<td>one observed event code or label</td>
+<td>Selects the cumulative-incidence function to plot.</td>
+</tr>
+<tr class="odd">
+<td><code>censor_code</code></td>
+<td align="right"><code>0</code></td>
+<td>one observed code or label</td>
+<td>Explicitly identifies censored observations.</td>
+</tr>
+<tr class="even">
+<td><code>by</code></td>
+<td align="right"><code>NULL</code></td>
+<td>one grouping column or <code>NULL</code>
+</td>
+<td>Draws grouped curves and enables Gray’s test.</td>
+</tr>
+<tr class="odd">
+<td><code>conf.int</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Shows pointwise 95% confidence intervals.</td>
+</tr>
+<tr class="even">
+<td><code>p_value</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Displays Gray’s test p-value for grouped curves.</td>
+</tr>
+<tr class="odd">
+<td><code>p_value_position</code></td>
+<td align="right"><code>NULL</code></td>
+<td>numeric <code>c(x, y)</code> or <code>NULL</code>
+</td>
+<td>Positions the Gray’s test annotation.</td>
+</tr>
+<tr class="even">
+<td><code>break_time_by</code></td>
+<td align="right"><code>NULL</code></td>
+<td>positive number or <code>NULL</code>
+</td>
+<td>Controls x-axis intervals.</td>
+</tr>
+<tr class="odd">
+<td>
+<code>xlim</code>, <code>ylim</code>
+</td>
+<td align="right"><code>NULL</code></td>
+<td>numeric ranges or <code>NULL</code>
+</td>
+<td>Controls visible plot limits.</td>
+</tr>
+<tr class="even">
+<td>
+<code>xlab</code>, <code>ylab</code>
+</td>
+<td align="right">
+<code>"Time"</code>,
+<code>"Cumulative incidence"</code>
+</td>
+<td>character</td>
+<td>Changes axis labels.</td>
+</tr>
+<tr class="odd">
+<td>
+<code>title</code>, <code>subtitle</code>, <code>caption</code>
+</td>
+<td align="right"><code>NULL</code></td>
+<td>character or <code>NULL</code>
+</td>
+<td>Adds publication figure text.</td>
+</tr>
+<tr class="even">
+<td><code>legend_title</code></td>
+<td align="right"><code>NULL</code></td>
+<td>character or <code>NULL</code>
+</td>
+<td>Changes the group legend heading.</td>
+</tr>
+<tr class="odd">
+<td><code>legend_position</code></td>
+<td align="right"><code>NULL</code></td>
+<td>
+<code>"bottom"</code>, <code>"top"</code>, <code>"right"</code>,
+<code>"left"</code>, <code>"none"</code>
+</td>
+<td>Controls the legend location.</td>
+</tr>
+<tr class="even">
+<td><code>palette</code></td>
+<td align="right"><code>NULL</code></td>
+<td>colour vector or <code>NULL</code>
+</td>
+<td>Changes curve and confidence-band colours.</td>
+</tr>
+<tr class="odd">
+<td><code>y_percent</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Displays cumulative incidence as percentages or proportions.</td>
+</tr>
+<tr class="even">
+<td><code>theme</code></td>
+<td align="right"><code>"classic"</code></td>
+<td>
+<code>"classic"</code>, <code>"minimal"</code>, <code>"bw"</code>,
+<code>"light"</code>
+</td>
+<td>Selects the plot theme.</td>
+</tr>
+<tr class="odd">
+<td><code>grid</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Shows or hides major grid lines.</td>
+</tr>
+<tr class="even">
+<td><code>base_size</code></td>
+<td align="right"><code>13</code></td>
+<td>positive number</td>
+<td>Controls the base font size.</td>
+</tr>
+</tbody>
+</table>
+<p><code><a href="../reference/cuminc_plot.html">cuminc_plot()</a></code> requires at least one competing event in
+addition to the event of interest. A Kaplan-Meier failure curve is not a
+substitute because treating competing events as ordinary censoring
+generally overestimates event risk.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cuminc_plot.html">cuminc_plot</a></span><span class="op">(</span></span>
+<span>  <span class="va">data_competing_risk</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">follow_up_months</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">outcome</span>,</span>
+<span>  event_of_interest <span class="op">=</span> <span class="va">Relapse</span>,</span>
+<span>  censor_code <span class="op">=</span> <span class="va">Censored</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">treatment</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="competing_risk_reg">
+<code>competing_risk_reg()</code><a class="anchor" aria-label="anchor" href="#competing_risk_reg"></a>
+</h4>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="23%">
+<col width="30%">
+<col width="23%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th>Argument</th>
+<th align="right">Default</th>
+<th>Available options or input</th>
+<th>What it does</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>data</code></td>
+<td align="right">required</td>
+<td>data frame</td>
+<td>Competing-risk dataset.</td>
+</tr>
+<tr class="even">
+<td><code>time</code></td>
+<td align="right">required</td>
+<td>one numeric column</td>
+<td>Follow-up time.</td>
+</tr>
+<tr class="odd">
+<td><code>event</code></td>
+<td align="right">required</td>
+<td>one column with distinct event codes</td>
+<td>Identifies censoring and every event type.</td>
+</tr>
+<tr class="even">
+<td><code>event_of_interest</code></td>
+<td align="right">required</td>
+<td>one observed code or label</td>
+<td>Selects the event modelled by Fine-Gray regression.</td>
+</tr>
+<tr class="odd">
+<td><code>exposures</code></td>
+<td align="right">required</td>
+<td>column names</td>
+<td>Variables reported in the table.</td>
+</tr>
+<tr class="even">
+<td><code>censor_code</code></td>
+<td align="right"><code>0</code></td>
+<td>one observed code or label</td>
+<td>Explicitly identifies censoring.</td>
+</tr>
+<tr class="odd">
+<td><code>adjust_for</code></td>
+<td align="right"><code>NULL</code></td>
+<td>column names or <code>NULL</code>
+</td>
+<td>Fits one adjusted model per exposure and reports the exposure
+SHR.</td>
+</tr>
+<tr class="even">
+<td><code>multivariable</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Fits one model containing and reporting all exposures.</td>
+</tr>
+<tr class="odd">
+<td><code>multivariate</code></td>
+<td align="right"><code>NULL</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>, <code>NULL</code>
+</td>
+<td>Alias for <code>multivariable</code>.</td>
+</tr>
+<tr class="even">
+<td><code>format</code></td>
+<td align="right"><code>"flextable"</code></td>
+<td>
+<code>"flextable"</code>, <code>"gt"</code>
+</td>
+<td>Selects the publication-table engine.</td>
+</tr>
+<tr class="odd">
+<td><code>theme</code></td>
+<td align="right"><code>"minimal"</code></td>
+<td>table theme preset</td>
+<td>Styles the output table.</td>
+</tr>
+<tr class="even">
+<td><code>model_stats</code></td>
+<td align="right"><code>FALSE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Returns N, event counts, pseudo-log-likelihood, and
+convergence.</td>
+</tr>
+<tr class="odd">
+<td><code>show_ref</code></td>
+<td align="right"><code>TRUE</code></td>
+<td>
+<code>TRUE</code>, <code>FALSE</code>
+</td>
+<td>Controls categorical reference rows.</td>
+</tr>
+</tbody>
+</table>
+<p>The reported SHR is a subdistribution hazard ratio for cumulative
+incidence. It is not a cause-specific Cox hazard ratio. The output
+footnote names the event of interest and confirms that competing events
+were retained.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">relapse_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/competing_risk_reg.html">competing_risk_reg</a></span><span class="op">(</span></span>
+<span>  <span class="va">data_competing_risk</span>,</span>
+<span>  time <span class="op">=</span> <span class="va">follow_up_months</span>,</span>
+<span>  event <span class="op">=</span> <span class="va">outcome</span>,</span>
+<span>  event_of_interest <span class="op">=</span> <span class="va">Relapse</span>,</span>
+<span>  censor_code <span class="op">=</span> <span class="va">Censored</span>,</span>
+<span>  exposures <span class="op">=</span> <span class="va">treatment</span>,</span>
+<span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">stage</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="survival_summary">
@@ -1569,6 +2482,27 @@ tables.</td>
 </td>
 <td>Output format.</td>
 </tr>
+<tr class="even">
+<td><code>plot(check_ph(...))</code></td>
+<td>
+<code>model</code>, <code>term</code>
+</td>
+<td align="right"><code>NULL</code></td>
+<td>model/term name or position</td>
+<td>Draws scaled Schoenfeld residual diagnostics. Select
+<code>model</code> when several Cox models were checked.</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/plot_cox_survival.html">plot_cox_survival()</a></code></td>
+<td>
+<code>model</code>, <code>newdata</code>, <code>by</code>
+</td>
+<td align="right">required, <code>NULL</code>, <code>NULL</code>
+</td>
+<td>Cox model/result, profile data, categorical model variable</td>
+<td>Draws adjusted Cox survival curves at supplied or representative
+covariate profiles.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1730,8 +2664,10 @@ confidence-interval thickness.</td>
 <code>tbl_uni</code>, <code>tbl_multi</code>
 </td>
 <td align="right">required</td>
-<td>two compatible regression objects</td>
-<td>Plots crude and adjusted estimates side by side.</td>
+<td>two compatible regression objects from the same model family</td>
+<td>Plots crude and adjusted estimates side by side. Supports standard,
+Cox, parametric survival, Fine-Gray, conditional logistic, ordinal, and
+individual multinomial outcome objects.</td>
 </tr>
 <tr class="even">
 <td>
@@ -1809,11 +2745,13 @@ confidence-interval thickness.</td>
 <code>alpha</code>
 </td>
 <td align="right">
-<code>12</code>, <code>TRUE</code>,
+<code>12</code>, <code>NULL</code>,
 <code>0.05</code>
 </td>
-<td>number, logical, number</td>
-<td>Controls readability, reference rows, and highlighting.</td>
+<td>number, <code>TRUE</code>, <code>FALSE</code>, <code>NULL</code>,
+number</td>
+<td>Controls readability, reference rows, and highlighting.
+<code>NULL</code> inherits the source-table reference setting.</td>
 </tr>
 <tr class="even">
 <td><code>show_adjustment_note</code></td>
@@ -2046,7 +2984,7 @@ overlap.</td>
 <td align="right">passed on</td>
 <td>forestploter options</td>
 <td>Extra arguments forwarded to
-<code><a href="https://rdrr.io/pkg/forestploter/man/forest.html" class="external-link">forestploter::forest()</a></code>.</td>
+<code><a href="https://adayim.github.io/forestploter/reference/forest.html" class="external-link">forestploter::forest()</a></code>.</td>
 </tr>
 </tbody>
 </table>
@@ -2397,7 +3335,7 @@ appropriate.</td>
 </tbody>
 </table>
 <div class="section level5">
-<h5 id="compare-models-in-the-gtregression-app">Compare Models in the gtregression App<a class="anchor" aria-label="anchor" href="#compare-models-in-the-gtregression-app"></a>
+<h5 id="compare-models-in-the-gt-regression-app">Compare Models in the GT Regression App<a class="anchor" aria-label="anchor" href="#compare-models-in-the-gt-regression-app"></a>
 </h5>
 <p>The R function above compares already fitted gtregression objects.
 The app adds a candidate-model builder in <strong>Advanced &gt; Compare
@@ -2924,6 +3862,20 @@ formats.</td>
 </tr>
 </tbody>
 </table>
+<p>The inputs do not need to be different table types. Two or more
+univariable or multivariable tables can be combined for complete-case,
+best-case, worst-case, or other sensitivity analyses. Use a clear
+<code>spanners</code> label for every model:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/merge_tables.html">merge_tables</a></span><span class="op">(</span></span>
+<span>  <span class="va">primary_model</span>,</span>
+<span>  <span class="va">best_case_model</span>,</span>
+<span>  <span class="va">worst_case_model</span>,</span>
+<span>  spanners <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Primary"</span>, <span class="st">"Best case"</span>, <span class="st">"Worst case"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Rows are matched using the underlying variable and category rather
+than their position. A predictor absent from one scenario remains in the
+merged table with blank cells for that scenario.</p>
 <p>For descriptive + crude + adjusted tables, keep binary-variable rows
 consistent. The recommended publication layout is
 <code>show_dichotomous = "all_levels"</code> in

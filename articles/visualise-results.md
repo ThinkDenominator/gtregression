@@ -2,6 +2,7 @@
 
 Regression tables are the evidence. Plots are the quick read. Use
 [`km_plot()`](https://gtregression.thinkdenominator.com/reference/km_plot.md),
+[`cuminc_plot()`](https://gtregression.thinkdenominator.com/reference/cuminc_plot.md),
 [`km_risk_table()`](https://gtregression.thinkdenominator.com/reference/km_risk_table.md),
 [`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md),
 [`survival_summary()`](https://gtregression.thinkdenominator.com/reference/survival_summary.md),
@@ -471,6 +472,9 @@ plot_reg(
 places crude and adjusted model results side by side. This is useful
 when a manuscript needs to show how adjustment changes the estimate.
 Axis limits and tick marks can be controlled separately for each side.
+In addition to standard and survival regression, compatible crude and
+adjusted Fine-Gray, conditional logistic, ordinal, and individual
+multinomial outcome models can be combined.
 
 ``` r
 
@@ -489,6 +493,17 @@ plot_reg_combine(
 ```
 
 ![](visualise-results_files/figure-html/combined-plot-1.png)
+
+For multinomial regression, select the same outcome comparison from each
+model:
+
+``` r
+
+plot_reg_combine(
+  crude_multinomial$per_outcome$versicolor,
+  adjusted_multinomial$per_outcome$versicolor
+)
+```
 
 ## Publication-Style Forest Table
 

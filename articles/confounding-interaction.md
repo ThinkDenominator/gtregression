@@ -241,7 +241,7 @@ survival_confounder$table
 
 | Exposure | Potential confounder | Crude estimate | Adjusted estimate | MH estimate | % change model | % change MH | Confounder? | Interaction p | Effect modifier? | Decision | Recommendation |
 |----|----|----|----|----|----|----|----|----|----|----|----|
-| trt | prior | 1.018 | 1.026 |  | 0.84 |  | No |  | No | No evidence | No clear statistical evidence to include prior as a confounder. |
+| trt | prior | 1.018 | 1.026 |  | 0.84 |  | No | 0.087 | No | No evidence | No clear statistical evidence to include prior as a confounder. |
 | Outcome: Surv(time, status). For each exposure E and potential confounder C, models tested: Surv(time, status) ~ E; Surv(time, status) ~ E + C; and interaction screen: Surv(time, status) ~ E + C + E:C (HR (95% CI) scale). |  |  |  |  |  |  |  |  |  |  |  |
 | Screening aid only; use DAGs, subject-matter knowledge, and study design to decide confounding and effect modification. |  |  |  |  |  |  |  |  |  |  |  |
 
@@ -312,8 +312,19 @@ diabetes_med <- mediation_analysis(
   seed = 123
 )
 
-diabetes_med
+diabetes_med$table
 ```
+
+| Effect | Estimate | 95% CI | p-value | Interpretation |
+|----|----|----|----|----|
+| Total effect | 0.226 | 0.163 to 0.291 | \<0.001 | Overall exposure-outcome association |
+| Direct effect | 0.176 | 0.114 to 0.235 | \<0.001 | Association not through the mediator |
+| Indirect effect | 0.051 | 0.019 to 0.087 | \<0.001 | Association through the mediator |
+| Proportion mediated | 0.224 | 0.087 to 0.382 | \<0.001 | Share of total effect through the mediator |
+| Effects are predicted probability differences from logistic outcome models, evaluated with the mediator set to its predicted mean under each exposure value (an approximation: the outcome model is not averaged over the mediator distribution). |  |  |  |  |
+| Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100. |  |  |  |  |
+| Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
+| Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |
 
 The underlying values remain available for audit, reporting, or custom
 formatting.
@@ -360,7 +371,7 @@ med_gt$table
 | Direct effect | 0.176 | 0.114 to 0.235 | \<0.001 | Association not through the mediator |
 | Indirect effect | 0.051 | 0.019 to 0.087 | \<0.001 | Association through the mediator |
 | Proportion mediated | 0.224 | 0.087 to 0.382 | \<0.001 | Share of total effect through the mediator |
-| Effects are predicted probability differences from logistic outcome models. |  |  |  |  |
+| Effects are predicted probability differences from logistic outcome models, evaluated with the mediator set to its predicted mean under each exposure value (an approximation: the outcome model is not averaged over the mediator distribution). |  |  |  |  |
 | Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100. |  |  |  |  |
 | Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
 | Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |

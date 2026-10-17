@@ -1,115 +1,149 @@
 # Package index
 
-## Describe and Check Data
+## Prepare and describe data
 
-Create baseline descriptive tables and inspect variable compatibility
-before modeling.
-
-- [`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md)
-  : Descriptive Summary Table (no gtsummary) using gt/flextable
-- [`dissect()`](https://gtregression.thinkdenominator.com/reference/dissect.md)
-  : Dissect a dataset before regression
-
-## Regression Tables
-
-Create publication-ready crude, adjusted, and multivariable regression
+Import data, check variables before modelling, and build baseline
 tables.
 
+- [`import_data()`](https://gtregression.thinkdenominator.com/reference/import_data.md)
+  : Import an analysis dataset
+- [`dissect()`](https://gtregression.thinkdenominator.com/reference/dissect.md)
+  : Dissect a dataset before regression
+- [`descriptive_table()`](https://gtregression.thinkdenominator.com/reference/descriptive_table.md)
+  : Descriptive summary table
+
+## Regression tables
+
+Crude and adjusted estimates for binary, count and continuous outcomes.
+
 - [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md)
-  : Univariate regression
+  : Univariable regression
 - [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md)
   : Multivariable regression
-- [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
-  : Cox proportional hazards regression
-- [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
-  : Parametric survival regression
 
-## Stratified Regression Tables
+## Special study designs
 
-Repeat univariable or adjusted models within levels of a stratifier.
+Matched case-control, clustered, ordered and unordered outcomes.
+
+- [`conditional_logit_reg()`](https://gtregression.thinkdenominator.com/reference/conditional_logit_reg.md)
+  : Conditional logistic regression for matched case-control studies
+- [`multilevel_reg()`](https://gtregression.thinkdenominator.com/reference/multilevel_reg.md)
+  : Random-intercept multilevel regression
+- [`ordinal_reg()`](https://gtregression.thinkdenominator.com/reference/ordinal_reg.md)
+  : Proportional-odds ordinal logistic regression
+- [`multinomial_reg()`](https://gtregression.thinkdenominator.com/reference/multinomial_reg.md)
+  : Multinomial logistic regression
+
+## Absolute effects
+
+Absolute risks, risk difference and NNTB/NNTH for two-group comparisons.
+
+- [`risk_difference()`](https://gtregression.thinkdenominator.com/reference/risk_difference.md)
+  : Risk difference between two groups
+
+## Stratified analysis
+
+The same model repeated within each level of a stratifier.
 
 - [`stratified_uni_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_uni_reg.md)
   : Stratified univariable regression
 - [`stratified_multi_reg()`](https://gtregression.thinkdenominator.com/reference/stratified_multi_reg.md)
   : Stratified multivariable regression
 
-## Visualise Regression Results
+## Survival: describe and compare
 
-Turn regression and survival outputs into curves, forest plots, and
-publication-style forest tables.
+Kaplan-Meier and cumulative incidence curves, summaries and tests.
 
 - [`km_plot()`](https://gtregression.thinkdenominator.com/reference/km_plot.md)
   : Kaplan-Meier survival plot
 - [`km_risk_table()`](https://gtregression.thinkdenominator.com/reference/km_risk_table.md)
   : Kaplan-Meier risk table
-- [`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md)
-  : Restricted mean survival time table
 - [`survival_summary()`](https://gtregression.thinkdenominator.com/reference/survival_summary.md)
   : Kaplan-Meier survival summary table
 - [`survival_quantiles()`](https://gtregression.thinkdenominator.com/reference/survival_quantiles.md)
   : Kaplan-Meier survival quantile table
 - [`survival_prob()`](https://gtregression.thinkdenominator.com/reference/survival_prob.md)
   : Kaplan-Meier survival probability table
+- [`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md)
+  : Restricted mean survival time table
 - [`logrank_test()`](https://gtregression.thinkdenominator.com/reference/logrank_test.md)
   : Log-rank test for Kaplan-Meier survival curves
+- [`cuminc_plot()`](https://gtregression.thinkdenominator.com/reference/cuminc_plot.md)
+  : Cumulative incidence plot for competing risks
+
+## Survival: models
+
+Cox, parametric and competing-risk regression, with checks and
+predictions.
+
+- [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
+  : Cox proportional hazards regression
+- [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
+  : Parametric survival regression
+- [`competing_risk_reg()`](https://gtregression.thinkdenominator.com/reference/competing_risk_reg.md)
+  : Fine-Gray competing-risk regression
+- [`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md)
+  : Check proportional hazards assumption for Cox models
+- [`plot(`*`<gtregression_ph>`*`)`](https://gtregression.thinkdenominator.com/reference/plot.gtregression_ph.md)
+  : Plot proportional hazards diagnostics
+- [`plot_cox_survival()`](https://gtregression.thinkdenominator.com/reference/plot_cox_survival.md)
+  : Plot adjusted survival curves from a Cox model
 - [`surv_model_compare()`](https://gtregression.thinkdenominator.com/reference/surv_model_compare.md)
   : Compare parametric survival model distributions
 - [`plot_surv_fit()`](https://gtregression.thinkdenominator.com/reference/plot_surv_fit.md)
   : Plot observed and fitted parametric survival curves
 - [`surv_predict()`](https://gtregression.thinkdenominator.com/reference/surv_predict.md)
   : Predict survival probabilities from a parametric survival model
+
+## Plots and forest plots
+
+Visualise estimates from one or two regression results.
+
 - [`plot_reg()`](https://gtregression.thinkdenominator.com/reference/plot_reg.md)
   : Plot regression estimates
 - [`plot_reg_combine()`](https://gtregression.thinkdenominator.com/reference/plot_reg_combine.md)
-  : Side-by-side forest plots: univariate vs multivariable
+  : Plot crude and adjusted estimates side by side
 - [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
   : Build a compatible data frame for forest plots
 - [`forest_reg()`](https://gtregression.thinkdenominator.com/reference/forest_reg.md)
   : Draw a forest table from regression outputs
 
-## Diagnostics and Model Selection
+## Diagnostics and model choice
 
-Check convergence, collinearity, model fit, and candidate model paths.
+Convergence, collinearity, fit, and comparison of candidate models.
 
 - [`check_convergence()`](https://gtregression.thinkdenominator.com/reference/check_convergence.md)
   : Check regression model convergence
 - [`check_collinearity()`](https://gtregression.thinkdenominator.com/reference/check_collinearity.md)
   : Check collinearity using VIF for fitted models
-- [`check_ph()`](https://gtregression.thinkdenominator.com/reference/check_ph.md)
-  : Check proportional hazards assumption for Cox models
 - [`plot_model_fit()`](https://gtregression.thinkdenominator.com/reference/plot_model_fit.md)
   : Plot model-fit diagnostics
 - [`compare_models()`](https://gtregression.thinkdenominator.com/reference/compare_models.md)
-  : Compare Prespecified Regression Models
+  : Compare prespecified regression models
 - [`select_models()`](https://gtregression.thinkdenominator.com/reference/select_models.md)
   : Stepwise model selection with fit metrics
 
-## Confounding and Interaction
+## Confounding, interaction and mediation
 
-Support interpretation with confounding, interaction, and mediation
-workflows.
+Support causal interpretation of an exposure-outcome association.
 
 - [`identify_confounder()`](https://gtregression.thinkdenominator.com/reference/identify_confounder.md)
   : Identify confounders and effect modifiers
 - [`interaction_models()`](https://gtregression.thinkdenominator.com/reference/interaction_models.md)
-  : Compare Models With and Without an Interaction Term
+  : Compare models with and without an interaction term
 - [`mediation_analysis()`](https://gtregression.thinkdenominator.com/reference/mediation_analysis.md)
   : Causal mediation analysis
 - [`plot_mediation()`](https://gtregression.thinkdenominator.com/reference/plot_mediation.md)
   : Plot mediation paths
 
-## Modify, Merge, and Export
+## Customise, merge and export
 
-Polish tables, combine outputs, launch the app, and save tables, plots,
-or Word reports.
+Relabel tables, combine them, and save tables, plots and Word reports.
 
 - [`modify_table()`](https://gtregression.thinkdenominator.com/reference/modify_table.md)
-  : Modify Regression/Descriptive Tables (labels, headers, caption,
-  notes)
+  : Modify table labels, headers, captions and notes
 - [`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md)
-  : Merge gtregression tables and preserve structure and notes
-- [`gtregression_app()`](https://gtregression.thinkdenominator.com/reference/gtregression_app.md)
-  : Launch the gtregression app
+  : Merge two or more tables side by side
 - [`save_table()`](https://gtregression.thinkdenominator.com/reference/save_table.md)
   : Save a single regression or summary table
 - [`save_docx()`](https://gtregression.thinkdenominator.com/reference/save_docx.md)
@@ -119,18 +153,27 @@ or Word reports.
 - [`save_forest()`](https://gtregression.thinkdenominator.com/reference/save_forest.md)
   : Save a forest_reg() output
 
-## Object Helpers
+## Graphical interface
 
-Inspect and print objects returned by gtregression functions.
+Run the same analyses from menus.
+
+- [`gtregression_app()`](https://gtregression.thinkdenominator.com/reference/gtregression_app.md)
+  : Launch the gtregression app
+- [`gtregression_addin()`](https://gtregression.thinkdenominator.com/reference/gtregression_addin.md)
+  : Launch the gtregression app from the RStudio Addins menu
+
+## Working with results
+
+Inspect and print the objects returned by gtregression functions.
 
 - [`` `$`( ``*`<gtregression>`*`)`](https://gtregression.thinkdenominator.com/reference/cash-.gtregression.md)
   : Access fields on gtregression objects with \`\$\`
 - [`print(`*`<gtregression>`*`)`](https://gtregression.thinkdenominator.com/reference/print.gtregression.md)
-  : Print gtregression objects (unified)
+  : Print gtregression objects
 
-## Example Datasets
+## Example datasets
 
-Built-in datasets for examples, teaching, and tests.
+Datasets used in the examples and guides.
 
 - [`data_birthwt`](https://gtregression.thinkdenominator.com/reference/data_birthwt.md)
   : Birth Weight Data
@@ -144,6 +187,8 @@ Built-in datasets for examples, teaching, and tests.
   : Endometrial Cancer Histology Grade Data
 - [`data_diabetes_mediation`](https://gtregression.thinkdenominator.com/reference/data_diabetes_mediation.md)
   : Diabetes Mediation Teaching Dataset
+- [`data_competing_risk`](https://gtregression.thinkdenominator.com/reference/data_competing_risk.md)
+  : Synthetic Competing-Risk Oncology Dataset
 - [`data_infertility`](https://gtregression.thinkdenominator.com/reference/data_infertility.md)
   : Infertility Matched Case-Control Study
 - [`data_lungcancer`](https://gtregression.thinkdenominator.com/reference/data_lungcancer.md)

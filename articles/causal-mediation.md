@@ -45,7 +45,7 @@ dissect(data_diabetes_mediation)
 | diabetes_pedigree | numeric | 0% | 352 | - | compatible | Numeric variable can be used as continuous. |
 | Screening aid only; review coding, missingness, sparse levels, and study context before modeling. |  |  |  |  |  |  |
 
-Dataset dissection before regression {.table .cl-f8160268
+Dataset dissection before regression {.table .cl-d8bad469
 quarto-disable-processing="true"}
 
 ## Logistic Outcome
@@ -71,8 +71,19 @@ diabetes_med <- mediation_analysis(
   seed = 123
 )
 
-diabetes_med
+diabetes_med$table
 ```
+
+| Effect | Estimate | 95% CI | p-value | Interpretation |
+|----|----|----|----|----|
+| Total effect | 0.226 | 0.163 to 0.291 | \<0.001 | Overall exposure-outcome association |
+| Direct effect | 0.176 | 0.114 to 0.235 | \<0.001 | Association not through the mediator |
+| Indirect effect | 0.051 | 0.019 to 0.087 | \<0.001 | Association through the mediator |
+| Proportion mediated | 0.224 | 0.087 to 0.382 | \<0.001 | Share of total effect through the mediator |
+| Effects are predicted probability differences from logistic outcome models, evaluated with the mediator set to its predicted mean under each exposure value (an approximation: the outcome model is not averaged over the mediator distribution). |  |  |  |  |
+| Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100. |  |  |  |  |
+| Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
+| Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |
 
 The returned object keeps the table body, fitted models, bootstrap
 draws, and exposure comparison values available for checking.
@@ -199,8 +210,19 @@ med_quoted <- mediation_analysis(
   seed = 456
 )
 
-med_quoted
+med_quoted$table
 ```
+
+| Effect | Estimate | 95% CI | p-value | Interpretation |
+|----|----|----|----|----|
+| Total effect | 0.226 | 0.155 to 0.305 | \<0.001 | Overall exposure-outcome association |
+| Direct effect | 0.176 | 0.107 to 0.241 | \<0.001 | Association not through the mediator |
+| Indirect effect | 0.051 | 0.019 to 0.094 | \<0.001 | Association through the mediator |
+| Proportion mediated | 0.224 | 0.108 to 0.376 | \<0.001 | Share of total effect through the mediator |
+| Effects are predicted probability differences from logistic outcome models, evaluated with the mediator set to its predicted mean under each exposure value (an approximation: the outcome model is not averaged over the mediator distribution). |  |  |  |  |
+| Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Diabetes. Bootstrap replicates = 100. |  |  |  |  |
+| Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
+| Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |
 
 ## Linear Outcome
 
@@ -221,8 +243,19 @@ med_linear <- mediation_analysis(
   seed = 789
 )
 
-med_linear
+med_linear$table
 ```
+
+| Effect | Estimate | 95% CI | p-value | Interpretation |
+|----|----|----|----|----|
+| Total effect | 10.642 | 10.107 to 11.197 | \<0.001 | Overall exposure-outcome association |
+| Direct effect | 10.487 | 9.943 to 11.078 | \<0.001 | Association not through the mediator |
+| Indirect effect | 0.155 | 0.046 to 0.300 | \<0.001 | Association through the mediator |
+| Proportion mediated | 0.015 | 0.004 to 0.028 | \<0.001 | Share of total effect through the mediator |
+| Effects are mean differences from linear outcome models. |  |  |  |  |
+| Comparison: Obesity = Yes vs No; mediator = Plasma glucose; outcome = Body mass index. Bootstrap replicates = 100. |  |  |  |  |
+| Adjusted for Age, Diastolic blood pressure, Number of pregnancies, Diabetes pedigree function. |  |  |  |  |
+| Causal interpretation requires DAG-supported no-unmeasured-confounding and correct temporal-order assumptions. |  |  |  |  |
 
 ``` r
 

@@ -167,28 +167,28 @@ birthwt_multi <- multi_reg(
 birthwt_multi$table
 ```
 
-| Characteristic | Adjusted OR (95% CI) | p-value |
-|----|----|----|
-| Smoking during pregnancy |  |  |
-| No | Ref. |  |
-|  Yes | 2.87 (1.36–6.04) | 0.006 |
-| Hypertension |  |  |
-| No | Ref. |  |
-|  Yes | 5.99 (1.51–23.79) | 0.011 |
-| Uterine irritability |  |  |
-| No | Ref. |  |
-|  Yes | 2.27 (0.98–5.24) | 0.055 |
-| Previous preterm labour |  |  |
-| No | Ref. |  |
-|  Yes | 4.49 (1.90–10.58) | \<0.001 |
-| First trimester visits |  |  |
-| None | Ref. |  |
-|  One | 0.60 (0.26–1.38) | 0.230 |
-|  Two or more | 0.86 (0.38–1.96) | 0.717 |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |
-| N = 189 complete observations included in each adjusted model. |  |  |
+| Characteristic | N | Adjusted OR (95% CI) | p-value |
+|----|----|----|----|
+| Smoking during pregnancy | 189 |  |  |
+|  No |  | Ref. |  |
+|  Yes |  | 2.87 (1.36–6.04) | 0.006 |
+| Hypertension | 189 |  |  |
+|  No |  | Ref. |  |
+|  Yes |  | 5.99 (1.51–23.79) | 0.011 |
+| Uterine irritability | 189 |  |  |
+|  No |  | Ref. |  |
+|  Yes |  | 2.27 (0.98–5.24) | 0.055 |
+| Previous preterm labour | 189 |  |  |
+|  No |  | Ref. |  |
+|  Yes |  | 4.49 (1.90–10.58) | \<0.001 |
+| First trimester visits | 189 |  |  |
+|  None |  | Ref. |  |
+|  One |  | 0.60 (0.26–1.38) | 0.230 |
+|  Two or more |  | 0.86 (0.38–1.96) | 0.717 |
+| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |
+| Ref. = reference category. |  |  |  |
+| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |
+| N = 189 complete observations included in each adjusted model. |  |  |  |
 
 #### Visualise
 
@@ -229,41 +229,41 @@ birthwt_final <- modify_table(
 birthwt_final$table
 ```
 
-|  | Clinical profile |  |  | Crude OR |  |  | Adjusted OR |  |
-|----|----|----|----|----|----|----|----|----|
-| Characteristic | Normal BW | Low BW | Overall | N | OR (95% CI) | p-value | Adjusted OR (95% CI) | p-value |
-| Maternal age | 23.0 (19.0-28.0) | 22.0 (19.5-25.0) | 23.0 (19.0-26.0) | 189 | 0.95 (0.89-1.01) | 0.105 |  |  |
-| Maternal weight | 123.5 (113.0-147.0) | 120.0 (104.0-130.0) | 121.0 (110.0-140.0) | 189 | 0.99 (0.97-1.00) | 0.023 |  |  |
-| Maternal race |  |  |  | 189 |  |  |  |  |
-|  White | 73 (56.2%) | 23 (39.0%) | 96 (50.8%) |  | Ref. |  |  |  |
-|  Black | 15 (11.5%) | 11 (18.6%) | 26 (13.8%) |  | 2.33 (0.94-5.77) | 0.068 |  |  |
-|  Other | 42 (32.3%) | 25 (42.4%) | 67 (35.4%) |  | 1.89 (0.96-3.74) | 0.067 |  |  |
-| Smoking during pregnancy |  |  |  | 189 |  |  |  |  |
-|  No | 86 (66.2%) | 29 (49.2%) | 115 (60.8%) |  | Ref. |  | Ref. |  |
-|  Yes | 44 (33.8%) | 30 (50.8%) | 74 (39.2%) |  | 2.02 (1.08-3.78) | 0.028 | 2.87 (1.36–6.04) | 0.006 |
-| Hypertension |  |  |  | 189 |  |  |  |  |
-|  No | 125 (96.2%) | 52 (88.1%) | 177 (93.7%) |  | Ref. |  | Ref. |  |
-|  Yes | 5 (3.8%) | 7 (11.9%) | 12 (6.3%) |  | 3.37 (1.02-11.09) | 0.046 | 5.99 (1.51–23.79) | 0.011 |
-| Uterine irritability |  |  |  | 189 |  |  |  |  |
-|  No | 116 (89.2%) | 45 (76.3%) | 161 (85.2%) |  | Ref. |  | Ref. |  |
-|  Yes | 14 (10.8%) | 14 (23.7%) | 28 (14.8%) |  | 2.58 (1.14-5.83) | 0.023 | 2.27 (0.98–5.24) | 0.055 |
-| Previous preterm labour |  |  |  | 189 |  |  |  |  |
-|  No | 118 (90.8%) | 41 (69.5%) | 159 (84.1%) |  | Ref. |  | Ref. |  |
-|  Yes | 12 (9.2%) | 18 (30.5%) | 30 (15.9%) |  | 4.32 (1.92-9.73) | \<0.001 | 4.49 (1.90–10.58) | \<0.001 |
-| First trimester visits |  |  |  | 189 |  |  |  |  |
-|  None | 64 (49.2%) | 36 (61.0%) | 100 (52.9%) |  | Ref. |  | Ref. |  |
-|  One | 36 (27.7%) | 11 (18.6%) | 47 (24.9%) |  | 0.54 (0.25-1.20) | 0.130 | 0.60 (0.26–1.38) | 0.230 |
-|  Two or more | 30 (23.1%) | 12 (20.3%) | 42 (22.2%) |  | 0.71 (0.32-1.56) | 0.394 | 0.86 (0.38–1.96) | 0.717 |
-| Categorical variables shown as n (%); percentages are by column. |  |  |  |  |  |  |  |  |
-| Continuous variables shown as Median (IQR). |  |  |  |  |  |  |  |  |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |  |
-| Ref. = reference category. |  |  |  |  |  |  |  |  |
-| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |  |  |  |  |  |
-| N = 189 complete observations included in each adjusted model. |  |  |  |  |  |  |  |  |
-| Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |  |
+|  | Clinical profile |  |  | Crude OR |  |  | Adjusted OR |  |  |
+|----|----|----|----|----|----|----|----|----|----|
+| Characteristic | Normal BW, N=130 | Low BW, N=59 | Overall, N=189 | N | OR (95% CI) | p-value | N | Adjusted OR (95% CI) | p-value |
+| Maternal age | 23.0 (19.0-28.0) | 22.0 (19.5-25.0) | 23.0 (19.0-26.0) | 189 | 0.95 (0.89–1.01) | 0.105 |  |  |  |
+| Maternal weight | 123.5 (113.0-147.0) | 120.0 (104.0-130.0) | 121.0 (110.0-140.0) | 189 | 0.99 (0.97–1.00) | 0.023 |  |  |  |
+| Maternal race |  |  |  | 189 |  |  |  |  |  |
+|  White | 73 (56.2%) | 23 (39.0%) | 96 (50.8%) |  | Ref. |  |  |  |  |
+|  Black | 15 (11.5%) | 11 (18.6%) | 26 (13.8%) |  | 2.33 (0.94–5.77) | 0.068 |  |  |  |
+|  Other | 42 (32.3%) | 25 (42.4%) | 67 (35.4%) |  | 1.89 (0.96–3.74) | 0.067 |  |  |  |
+| Smoking during pregnancy |  |  |  | 189 |  |  | 189 |  |  |
+|  No | 86 (66.2%) | 29 (49.2%) | 115 (60.8%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 44 (33.8%) | 30 (50.8%) | 74 (39.2%) |  | 2.02 (1.08–3.78) | 0.028 |  | 2.87 (1.36–6.04) | 0.006 |
+| Hypertension |  |  |  | 189 |  |  | 189 |  |  |
+|  No | 125 (96.2%) | 52 (88.1%) | 177 (93.7%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 5 (3.8%) | 7 (11.9%) | 12 (6.3%) |  | 3.37 (1.02–11.09) | 0.046 |  | 5.99 (1.51–23.79) | 0.011 |
+| Uterine irritability |  |  |  | 189 |  |  | 189 |  |  |
+|  No | 116 (89.2%) | 45 (76.3%) | 161 (85.2%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 14 (10.8%) | 14 (23.7%) | 28 (14.8%) |  | 2.58 (1.14–5.83) | 0.023 |  | 2.27 (0.98–5.24) | 0.055 |
+| Previous preterm labour |  |  |  | 189 |  |  | 189 |  |  |
+|  No | 118 (90.8%) | 41 (69.5%) | 159 (84.1%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 12 (9.2%) | 18 (30.5%) | 30 (15.9%) |  | 4.32 (1.92–9.73) | \<0.001 |  | 4.49 (1.90–10.58) | \<0.001 |
+| First trimester visits |  |  |  | 189 |  |  | 189 |  |  |
+|  None | 64 (49.2%) | 36 (61.0%) | 100 (52.9%) |  | Ref. |  |  | Ref. |  |
+|  One | 36 (27.7%) | 11 (18.6%) | 47 (24.9%) |  | 0.54 (0.25–1.20) | 0.130 |  | 0.60 (0.26–1.38) | 0.230 |
+|  Two or more | 30 (23.1%) | 12 (20.3%) | 42 (22.2%) |  | 0.71 (0.32–1.56) | 0.394 |  | 0.86 (0.38–1.96) | 0.717 |
+| Categorical variables shown as n (%); percentages are by column. |  |  |  |  |  |  |  |  |  |
+| Continuous variables shown as Median (IQR). |  |  |  |  |  |  |  |  |  |
+| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |  |  |
+| Ref. = reference category. |  |  |  |  |  |  |  |  |  |
+| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |  |  |  |  |  |  |
+| N = 189 complete observations included in each adjusted model. |  |  |  |  |  |  |  |  |  |
+| Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-141d2266 quarto-disable-processing="true"}
+.cl-d8bad469 quarto-disable-processing="true"}
 
 Save helpers return file paths and use
 [`tempdir()`](https://rdrr.io/r/base/tempfile.html) when no directory is
@@ -277,6 +277,9 @@ save_docx(tables = birthwt_final, filename = "birthwt-report")
 
 ### Where To Go Next
 
+- [**Which Function Should I
+  Use?**](https://gtregression.thinkdenominator.com/articles/choose-model.md):
+  match your outcome and study design to the right function.
 - [**Descriptive
   Tables**](https://gtregression.thinkdenominator.com/articles/descriptive-tables.md):
   build baseline tables users can read.
@@ -302,6 +305,13 @@ save_docx(tables = birthwt_final, filename = "birthwt-report")
 - [**Confounding &
   Interaction**](https://gtregression.thinkdenominator.com/articles/confounding-interaction.md):
   support interpretation and model decisions.
+- [**Risk Difference and
+  NNT**](https://gtregression.thinkdenominator.com/articles/risk-difference.md):
+  absolute risks, risk differences and the number needed to treat for
+  two-group comparisons.
+- [**Merge and Customise
+  Tables**](https://gtregression.thinkdenominator.com/articles/merge-tables.md):
+  combine three or more tables and finish them with flextable.
 - [**Customize &
   Export**](https://gtregression.thinkdenominator.com/articles/customize-export.md):
   polish and save tables, plots, and reports.

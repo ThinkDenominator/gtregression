@@ -1,6 +1,6 @@
-# Merge gtregression tables and preserve structure and notes
+# Merge two or more tables side by side
 
-Merge gtregression tables and preserve structure and notes
+Merge two or more tables side by side
 
 ## Usage
 
@@ -52,6 +52,11 @@ issues a warning with the compatible settings.
 Footnotes created by each input table are retained unchanged. Exact
 duplicate notes are shown once in the merged table.
 
+Tables of the same type can be merged directly. This is useful for
+sensitivity analyses such as complete-case, best-case, and worst-case
+models. Supply one table per scenario and use `spanners` to identify
+each analysis; rows are aligned by their underlying variable and level.
+
 ## Examples
 
 ``` r
@@ -70,6 +75,7 @@ uni_tbl <- uni_reg(
   exposures = c("age", "lwt", "smoke", "ht"),
   approach = "logit"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 
 multi_tbl <- multi_reg(
   data = birthwt_data,
@@ -78,10 +84,17 @@ multi_tbl <- multi_reg(
   adjust_for = c("age", "lwt"),
   approach = "logit"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 
 merge_tables(
   uni_tbl,
   multi_tbl,
   spanners = c("Univariable", "Adjusted")
+)
+
+merge_tables(
+  multi_tbl,
+  multi_tbl,
+  spanners = c("Primary analysis", "Sensitivity analysis")
 )
 ```

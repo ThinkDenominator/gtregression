@@ -75,9 +75,10 @@ tbl <- uni_reg(
   exposures = c("age", "smoke"),
   approach = "logit"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 
 save_table(tbl, filename = tempfile("table"), format = "html")
-#> Table saved at: /tmp/Rtmp1BGEzA/table1a7e1618019c.html
+#> Table saved at: /tmp/RtmpqAx0KF/table1aeb21f6f4b2.html
 
 # Wide Word tables can be saved in landscape orientation.
 # \donttest{
@@ -90,6 +91,6 @@ save_table(
   font_size = 9,
   min_font_size = 8
 )
-#> Table saved at: /tmp/Rtmp1BGEzA/table-wide1a7e32162b7c.docx
+#> Table saved at: /tmp/RtmpqAx0KF/table-wide1aeb9e263b1.docx
 # }
 ```

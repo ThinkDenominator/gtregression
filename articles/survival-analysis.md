@@ -163,7 +163,7 @@ survival_summary(
 | Test treatment | 68 | 64 | 4 | 52.5 (44.0-95.0) |
 | Median survival is estimated using Kaplan-Meier methods. Not reached means survival did not fall to 50% during observed follow-up. |  |  |  |  |
 
-Kaplan-Meier survival summary {.table .cl-2094eab0
+Kaplan-Meier survival summary {.table .cl-d8bad469
 quarto-disable-processing="true"}
 
 ``` r
@@ -187,7 +187,7 @@ survival_prob(
 | Test treatment | 365.0 | 6 | 7 | 1 | 11.0% (5.3%-22.7%) |
 | Survival probabilities are estimated using Kaplan-Meier methods. Events and censored counts are interval counts up to each requested time point. |  |  |  |  |  |
 
-Kaplan-Meier survival probabilities {.table .cl-20b7ef4c
+Kaplan-Meier survival probabilities {.table .cl-d8bad469
 quarto-disable-processing="true"}
 
 [`rmst_table()`](https://gtregression.thinkdenominator.com/reference/rmst_table.md)
@@ -213,7 +213,7 @@ rmst_table(
 | Difference (Test treatment - Standard treatment) | 365.0 |  |  |  | -6.6 (-45.3-32.2) | 0.740 |
 | RMST is restricted mean survival time up to tau. For two groups, the difference is the second group minus the first group. |  |  |  |  |  |  |
 
-Restricted mean survival time {.table .cl-20e47f80
+Restricted mean survival time {.table .cl-d8bad469
 quarto-disable-processing="true"}
 
 ## 3. Compare Survival Curves
@@ -238,7 +238,7 @@ logrank_test(
 | Test treatment | 68 | 64 | 63.50 |
 | Log-rank test: chi-square = 0.01, df = 1, p-value = 0.928. This compares survival curves; use cox_reg() when a hazard ratio is needed. |  |  |  |
 
-Log-rank test {.table .cl-210ba510 quarto-disable-processing="true"}
+Log-rank test {.table .cl-d8bad469 quarto-disable-processing="true"}
 
 ## 4. Fit Cox Regression
 
@@ -267,22 +267,24 @@ cox_adjusted <- cox_reg(
 cox_adjusted$table
 ```
 
-| Characteristic | Adjusted HR (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 1.21 (0.84–1.74) | 0.307 |
-| Cancer cell type |  |  |
-| Squamous | Ref. |  |
-|  Small cell | 2.06 (1.26–3.39) | 0.004 |
-|  Adenocarcinoma | 3.23 (1.82–5.74) | \<0.001 |
-|  Large cell | 1.38 (0.80–2.37) | 0.244 |
-| Prior therapy |  |  |
-| No | Ref. |  |
-|  Yes | 0.96 (0.64–1.42) | 0.820 |
-| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for Age and Karnofsky performance score |  |  |
+| Characteristic | N | Adjusted HR (95% CI) | p-value |
+|----|----|----|----|
+| Treatment group | 137 |  |  |
+|  Standard treatment |  | Ref. |  |
+|  Test treatment |  | 1.21 (0.84–1.74) | 0.307 |
+| Cancer cell type | 137 |  |  |
+|  Squamous |  | Ref. |  |
+|  Small cell |  | 2.06 (1.26–3.39) | 0.004 |
+|  Adenocarcinoma |  | 3.23 (1.82–5.74) | \<0.001 |
+|  Large cell |  | 1.38 (0.80–2.37) | 0.244 |
+| Prior therapy | 137 |  |  |
+|  No |  | Ref. |  |
+|  Yes |  | 0.96 (0.64–1.42) | 0.820 |
+| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |  |
+| Ref. = reference category. |  |  |  |
+| Adjusted for Age and Karnofsky performance score |  |  |  |
+| N is the number of complete observations used in each model. |  |  |  |
+| Number of events: 128. |  |  |  |
 
 Planned interactions use the same `interaction = exposure*modifier`
 grammar as
@@ -304,26 +306,86 @@ cox_interaction <- cox_reg(
 cox_interaction$table
 ```
 
-| Characteristic | Adjusted HR (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 1.52 (0.98–2.36) | 0.061 |
-|  Treatment group: Test treatment x Prior therapy: Yes | 0.47 (0.21–1.06) | 0.070 |
-| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for Age and Karnofsky performance score |  |  |
-| Model includes interaction term: trt\*prior |  |  |
+| Characteristic | N | Adjusted HR (95% CI) | p-value |
+|----|----|----|----|
+| Treatment group | 137 |  |  |
+|  Standard treatment |  | Ref. |  |
+|  Test treatment |  | 1.52 (0.98–2.36) | 0.061 |
+|  Treatment group: Test treatment x Prior therapy: Yes |  | 0.47 (0.21–1.06) | 0.070 |
+| Abbreviations: HR = Hazard Ratio; CI = Confidence Interval. |  |  |  |
+| Ref. = reference category. |  |  |  |
+| Adjusted for Age and Karnofsky performance score |  |  |  |
+| Model includes interaction term: trt\*prior |  |  |  |
+| N is the number of complete observations used in each model. |  |  |  |
+| Number of events: 128. |  |  |  |
 
 Check the proportional hazards assumption before treating Cox hazard
 ratios as final.
 
 ``` r
 
-check_ph(cox_adjusted)$table
+ph_check <- check_ph(cox_adjusted)
+ph_check
 ```
 
-    ## NULL
+| Model | Term | Test | Chi-square | df | p-value | Interpretation |
+|----|----|----|----|----|----|----|
+| trt | trt | Term | 0.28 | 1 | 0.594 | No evidence of PH violation |
+| trt | age | Term | 2.10 | 1 | 0.147 | No evidence of PH violation |
+| trt | karno | Term | 12.00 | 1 | \<0.001 | Possible PH violation |
+| trt | GLOBAL | Global | 19.10 | 3 | \<0.001 | Possible PH violation |
+| celltype | celltype | Term | 14.15 | 3 | 0.003 | Possible PH violation |
+| celltype | age | Term | 1.99 | 1 | 0.158 | No evidence of PH violation |
+| celltype | karno | Term | 14.77 | 1 | \<0.001 | Possible PH violation |
+| celltype | GLOBAL | Global | 30.18 | 5 | \<0.001 | Possible PH violation |
+| prior | prior | Term | 1.87 | 1 | 0.171 | No evidence of PH violation |
+| prior | age | Term | 2.18 | 1 | 0.140 | No evidence of PH violation |
+| prior | karno | Term | 13.31 | 1 | \<0.001 | Possible PH violation |
+| prior | GLOBAL | Global | 22.29 | 3 | \<0.001 | Possible PH violation |
+| Screening aid only. Small p-values suggest possible non-proportional hazards; interpret with Schoenfeld residual plots, follow-up pattern, clinical context, and model purpose. alpha = 0.05; transform = km. |  |  |  |  |  |  |
+
+Proportional hazards check {.table .cl-d8bad469
+quarto-disable-processing="true"}
+
+``` r
+
+plot(ph_check, model = "trt")
+```
+
+![](survival-analysis_files/figure-html/surv-check-ph-1.png)![](survival-analysis_files/figure-html/surv-check-ph-2.png)![](survival-analysis_files/figure-html/surv-check-ph-3.png)
+
+Adjusted survival curves complement the hazard-ratio table. Here, the
+model for treatment holds age and Karnofsky score at representative
+values while drawing one curve for each treatment level.
+
+``` r
+
+plot_cox_survival(cox_adjusted, model_name = "trt", by = trt)
+```
+
+![](survival-analysis_files/figure-html/surv-cox-adjusted-curves-1.png)
+
+For delayed entry or time-varying records expressed in start-stop form,
+supply `time_start`. Use `cluster` for correlated observations and
+`weights` for case weights. These roles are different from
+`baseline_strata`: clustering changes the variance estimate, whereas
+baseline strata allow separate baseline hazards without estimating a
+hazard ratio for the strata variable.
+
+``` r
+
+cox_reg(
+  data = repeated_followup,
+  time_start = entry,
+  time = exit,
+  event = status,
+  exposures = c(treatment, age),
+  multivariable = TRUE,
+  cluster = patient_id,
+  weights = analysis_weight,
+  ties = efron
+)
+```
 
 ## 5. Fit Parametric Survival Regression
 
@@ -358,7 +420,7 @@ surv_model_compare(
 | weibull | 1,449.11 | 1,475.39 | -715.55 | 0.93 | 137 | 128 | No | No |
 | Lower AIC or BIC indicates better relative fit among the compared distributions. Use model fit statistics with clinical judgment and visual checks. |  |  |  |  |  |  |  |  |
 
-Parametric survival model comparison {.table .cl-21db5922
+Parametric survival model comparison {.table .cl-d8bad469
 quarto-disable-processing="true"}
 
 ``` r
@@ -402,23 +464,25 @@ surv_adjusted <- surv_reg(
 surv_adjusted$table
 ```
 
-| Characteristic | Adjusted Time Ratio (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 0.95 (0.66–1.37) | 0.771 |
-| Cancer cell type |  |  |
-| Squamous | Ref. |  |
-|  Small cell | 0.51 (0.31–0.81) | 0.005 |
-|  Adenocarcinoma | 0.48 (0.28–0.80) | 0.005 |
-|  Large cell | 1.01 (0.60–1.71) | 0.968 |
-| Prior therapy |  |  |
-| No | Ref. |  |
-|  Yes | 1.07 (0.71–1.62) | 0.740 |
-| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |
-| Distribution: loglogistic. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for Age and Karnofsky performance score |  |  |
+| Characteristic | N | Adjusted Time Ratio (95% CI) | p-value |
+|----|----|----|----|
+| Treatment group | 137 |  |  |
+|  Standard treatment |  | Ref. |  |
+|  Test treatment |  | 0.95 (0.66–1.37) | 0.771 |
+| Cancer cell type | 137 |  |  |
+|  Squamous |  | Ref. |  |
+|  Small cell |  | 0.51 (0.31–0.81) | 0.005 |
+|  Adenocarcinoma |  | 0.48 (0.28–0.80) | 0.005 |
+|  Large cell |  | 1.01 (0.60–1.71) | 0.968 |
+| Prior therapy | 137 |  |  |
+|  No |  | Ref. |  |
+|  Yes |  | 1.07 (0.71–1.62) | 0.740 |
+| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |  |
+| Distribution: loglogistic. |  |  |  |
+| Ref. = reference category. |  |  |  |
+| Adjusted for Age and Karnofsky performance score |  |  |  |
+| N is the number of complete observations used in each model. |  |  |  |
+| Number of events: 128. |  |  |  |
 
 ``` r
 
@@ -449,17 +513,19 @@ surv_interaction <- surv_reg(
 surv_interaction$table
 ```
 
-| Characteristic | Adjusted Time Ratio (95% CI) | p-value |
-|----|----|----|
-| Treatment group |  |  |
-| Standard treatment | Ref. |  |
-|  Test treatment | 0.84 (0.55–1.30) | 0.444 |
-|  Treatment group: Test treatment x Prior therapy: Yes | 1.52 (0.66–3.47) | 0.323 |
-| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |
-| Distribution: loglogistic. |  |  |
-| Ref. = reference category. |  |  |
-| Adjusted for Age and Karnofsky performance score |  |  |
-| Model includes interaction term: trt\*prior |  |  |
+| Characteristic | N | Adjusted Time Ratio (95% CI) | p-value |
+|----|----|----|----|
+| Treatment group | 137 |  |  |
+|  Standard treatment |  | Ref. |  |
+|  Test treatment |  | 0.84 (0.55–1.30) | 0.444 |
+|  Treatment group: Test treatment x Prior therapy: Yes |  | 1.52 (0.66–3.47) | 0.323 |
+| Abbreviations: Time Ratio = exponentiated accelerated failure time coefficient; CI = Confidence Interval. |  |  |  |
+| Distribution: loglogistic. |  |  |  |
+| Ref. = reference category. |  |  |  |
+| Adjusted for Age and Karnofsky performance score |  |  |  |
+| Model includes interaction term: trt\*prior |  |  |  |
+| N is the number of complete observations used in each model. |  |  |  |
+| Number of events: 128. |  |  |  |
 
 ## 6. Predict Survival Probabilities
 
@@ -487,7 +553,7 @@ surv_predict(
 | 1 | Test treatment | 60 | 70 | 365.0 | 11.1% | loglogistic |
 | Model-based predictions from a parametric survival regression model. Distribution: loglogistic. Predictions depend on the supplied profile and model specification. |  |  |  |  |  |  |
 
-Predicted survival probabilities {.table .cl-22b5030c
+Predicted survival probabilities {.table .cl-d8bad469
 quarto-disable-processing="true"}
 
 ## 7. Visualise And Export Model Results

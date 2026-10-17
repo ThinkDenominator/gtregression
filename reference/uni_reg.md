@@ -1,4 +1,4 @@
-# Univariate regression
+# Univariable regression
 
 Fit one model per exposure and return a clean regression table in
 flextable or gt format.
@@ -27,7 +27,12 @@ uni_reg(
 - outcome:
 
   Character scalar; outcome column name. Quoted and bare names are
-  accepted.
+  accepted. For binary-outcome approaches (`"logit"`, `"firth"`,
+  `"logbinomial"`, `"robpoisson"`) the outcome may be numeric 0/1 or 1/2
+  (2 is the event; integer or double), logical (`TRUE` is the event), or
+  a two-level factor or character variable (the second level is the
+  event, which is reported in a message). The same factor, character and
+  logical coding is accepted by `"poisson"`.
 
 - exposures:
 
@@ -118,6 +123,15 @@ If exposure variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
 those labels are used automatically in the displayed table and plots.
 Internal matching still uses the original column names.
+
+Confidence intervals are Wald intervals; for `approach = "linear"` they
+use the t distribution with the residual degrees of freedom (as
+[`confint()`](https://rdrr.io/r/stats/confint.html) for `lm`),
+consistent with the t-based p-values. Factor exposures are always fitted
+with treatment contrasts (each level versus the reference), whatever
+`options(contrasts = )` or a `contrasts` attribute says. An exposure
+whose model cannot be fitted is kept in the table with a dash and named
+in a footnote and in `failed_exposures`.
 
 ## Examples
 

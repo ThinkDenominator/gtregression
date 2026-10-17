@@ -18,7 +18,7 @@ surv_reg(
   distribution = "weibull",
   format = c("flextable", "gt"),
   theme = c("minimal"),
-  show_sample = "events",
+  show_sample = "both",
   model_stats = FALSE,
   show_ref = TRUE
 )
@@ -97,10 +97,13 @@ surv_reg(
 
 - show_sample:
 
-  For stratified parametric survival tables, controls which sample-size
-  columns are shown in the publication table. One of `"events"`
-  (default), `"n"`, `"both"`, or `"none"`. Model statistics, when
-  requested, still retain both N and event counts.
+  For stratified parametric survival tables (`stratifier` supplied),
+  controls which sample-size columns are shown in the publication table.
+  One of `"both"` (default; N and events), `"n"`, `"events"`, or
+  `"none"`. Model statistics, when requested, still retain both N and
+  event counts. This argument is ignored when `stratifier` is not
+  supplied: non-stratified tables always show the model N column and
+  report the number of events in a footnote.
 
 - model_stats:
 
@@ -180,12 +183,22 @@ standard formula expansion (for example, `trt*prior`). Interaction
 effects are displayed as additional rows beneath the corresponding
 exposure.
 
-Stratified parametric survival tables show event counts by default. Use
-`show_sample = "n"`, `show_sample = "both"`, or `show_sample = "none"`
-to control the displayed sample columns. Crude stratified tables
-calculate these counts for each exposure-specific model; adjusted and
-multivariable stratified tables use the corresponding fitted model
-within each stratum.
+Stratified parametric survival tables show both N and event counts by
+default (`show_sample = "both"`). Use `show_sample = "n"`,
+`show_sample = "events"`, or `show_sample = "none"` to control the
+displayed sample columns. All counts are taken from the fitted model
+within each stratum. When models within a stratum use different numbers
+of observations, the footnote reports the range. Rows with a missing
+`stratifier` value are excluded and counted in a footnote. `show_sample`
+has no effect without `stratifier`.
+
+Complete-case analysis is used: each model uses the rows that are
+complete for its own variables. Unused factor levels are dropped for
+each fitted model, so the reference category shown as `"Ref."` is the
+first level present in the data used by that model. Ordered factors are
+analysed with treatment (category-versus-reference) contrasts. Data in
+which every observation is an event are accepted; follow-up times must
+be greater than zero.
 
 If exposure variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),

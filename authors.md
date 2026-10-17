@@ -26,13 +26,13 @@ Source:
 
 Polani R, Eliyas S, Sakthivel M, Kaviprawin M, Krishnamoorthy Y, Majella
 M (2026). *gtregression: Tools for Creating Publication-Ready Regression
-Tables*. R package version 1.1.0,
+Tables*. R package version 1.2.0,
 <https://gtregression.thinkdenominator.com/>.
 
     @Manual{,
       title = {gtregression: Tools for Creating Publication-Ready Regression Tables},
       author = {Rubeshkumar Polani and Salin K Eliyas and Manikandanesan Sakthivel and Mogan Kaviprawin and Yuvaraj Krishnamoorthy and Marie Gilbert Majella},
       year = {2026},
-      note = {R package version 1.1.0},
+      note = {R package version 1.2.0},
       url = {https://gtregression.thinkdenominator.com/},
     }

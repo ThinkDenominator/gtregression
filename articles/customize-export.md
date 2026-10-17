@@ -63,12 +63,6 @@ Footnotes and caveats are styled compactly by default across flextable
 and gt outputs, which keeps abbreviation notes and adjustment notes
 readable without making final tables unnecessarily tall.
 
-> **Figure placeholder: anatomy of a gtregression table.** Add the slide
-> image here to identify the caption, headers, characteristic labels,
-> category levels, sample-size columns, abbreviations, automatic
-> adjustment note, and custom caveat. The intended asset path is
-> `vignettes/figures/modify-table-anatomy.png`.
-
 ### Customisation Options At A Glance
 
 | Table part | Argument | Default | What it changes | Example |
@@ -111,10 +105,34 @@ birthwt_custom <- modify_table(
   caveat = "Adjusted for maternal age, maternal weight, and maternal race."
 )
 
-birthwt_custom
+birthwt_custom$table
 ```
 
+| Characteristic | N | Adjusted OR | P |
+|----|----|----|----|
+| Smoked during pregnancy | 189 |  |  |
+|  No |  | Ref. |  |
+|  Smoker |  | 2.87 (1.36–6.04) | 0.006 |
+| History of hypertension | 189 |  |  |
+|  No |  | Ref. |  |
+|  Hypertensive |  | 5.99 (1.51–23.79) | 0.011 |
+| Uterine irritability | 189 |  |  |
+|  No |  | Ref. |  |
+|  Yes |  | 2.27 (0.98–5.24) | 0.055 |
+| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |
+| Ref. = reference category. |  |  |  |
+| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |
+| N = 189 complete observations included in each adjusted model. |  |  |  |
+| Adjusted for maternal age, maternal weight, and maternal race. |  |  |  |
+
+Adjusted regression for low birth weight {.table .cl-d8bad469
+quarto-disable-processing="true"}
+
 ## Merge Tables
+
+For a full guide to merging three or more tables, sensitivity analyses,
+themes and flextable styling, see [Merge and Customise
+Tables](https://gtregression.thinkdenominator.com/articles/merge-tables.md).
 
 [`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md)
 combines descriptive, crude, and adjusted results. Matching is based on
@@ -172,6 +190,27 @@ and
 [`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md)
 tables.
 
+### Sensitivity Analyses
+
+Tables of the same type can be merged. This is useful when primary,
+complete-case, best-case, and worst-case models need to be presented
+together:
+
+``` r
+
+sensitivity_table <- merge_tables(
+  primary_model,
+  best_case_model,
+  worst_case_model,
+  spanners = c("Primary", "Best case", "Worst case")
+)
+```
+
+[`merge_tables()`](https://gtregression.thinkdenominator.com/reference/merge_tables.md)
+aligns rows by the original variable and category. Predictors that are
+not included in every model are retained and shown as blank in the
+scenarios where they were not fitted.
+
 Use `modify_table(remove_adjustment_note = TRUE, caveat = "...")` when a
 custom manuscript note is preferred.
 
@@ -187,30 +226,30 @@ birthwt_merged <- merge_tables(
 birthwt_merged$table
 ```
 
-|  | Descriptive |  | Crude |  |  | Adjusted |  |
-|----|----|----|----|----|----|----|----|
-| Characteristic | Normal BW | Low BW | N | OR (95% CI) | p-value | Adjusted OR (95% CI) | p-value |
-| Maternal age | 23.0 (19.0-28.0) | 22.0 (19.5-25.0) | 189 | 0.95 (0.89-1.01) | 0.105 |  |  |
-| Maternal weight | 123.5 (113.0-147.0) | 120.0 (104.0-130.0) | 189 | 0.99 (0.97-1.00) | 0.023 |  |  |
-| Maternal race |  |  | 189 |  |  |  |  |
-|  White | 73 (56.2%) | 23 (39.0%) |  | Ref. |  |  |  |
-|  Black | 15 (11.5%) | 11 (18.6%) |  | 2.33 (0.94-5.77) | 0.068 |  |  |
-|  Other | 42 (32.3%) | 25 (42.4%) |  | 1.89 (0.96-3.74) | 0.067 |  |  |
-| Smoking during pregnancy |  |  | 189 |  |  |  |  |
-|  No | 86 (66.2%) | 29 (49.2%) |  | Ref. |  | Ref. |  |
-|  Yes | 44 (33.8%) | 30 (50.8%) |  | 2.02 (1.08-3.78) | 0.028 | 2.87 (1.36–6.04) | 0.006 |
-| Hypertension |  |  | 189 |  |  |  |  |
-|  No | 125 (96.2%) | 52 (88.1%) |  | Ref. |  | Ref. |  |
-|  Yes | 5 (3.8%) | 7 (11.9%) |  | 3.37 (1.02-11.09) | 0.046 | 5.99 (1.51–23.79) | 0.011 |
-| Uterine irritability |  |  | 189 |  |  |  |  |
-|  No | 116 (89.2%) | 45 (76.3%) |  | Ref. |  | Ref. |  |
-|  Yes | 14 (10.8%) | 14 (23.7%) |  | 2.58 (1.14-5.83) | 0.023 | 2.27 (0.98–5.24) | 0.055 |
-| Categorical variables shown as n (%); percentages are by column. |  |  |  |  |  |  |  |
-| Continuous variables shown as Median (IQR). |  |  |  |  |  |  |  |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |
-| Ref. = reference category. |  |  |  |  |  |  |  |
-| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |  |  |  |  |
-| N = 189 complete observations included in each adjusted model. |  |  |  |  |  |  |  |
+|  | Descriptive |  | Crude |  |  | Adjusted |  |  |
+|----|----|----|----|----|----|----|----|----|
+| Characteristic | Normal BW, N=130 | Low BW, N=59 | N | OR (95% CI) | p-value | N | Adjusted OR (95% CI) | p-value |
+| Maternal age | 23.0 (19.0-28.0) | 22.0 (19.5-25.0) | 189 | 0.95 (0.89–1.01) | 0.105 |  |  |  |
+| Maternal weight | 123.5 (113.0-147.0) | 120.0 (104.0-130.0) | 189 | 0.99 (0.97–1.00) | 0.023 |  |  |  |
+| Maternal race |  |  | 189 |  |  |  |  |  |
+|  White | 73 (56.2%) | 23 (39.0%) |  | Ref. |  |  |  |  |
+|  Black | 15 (11.5%) | 11 (18.6%) |  | 2.33 (0.94–5.77) | 0.068 |  |  |  |
+|  Other | 42 (32.3%) | 25 (42.4%) |  | 1.89 (0.96–3.74) | 0.067 |  |  |  |
+| Smoking during pregnancy |  |  | 189 |  |  | 189 |  |  |
+|  No | 86 (66.2%) | 29 (49.2%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 44 (33.8%) | 30 (50.8%) |  | 2.02 (1.08–3.78) | 0.028 |  | 2.87 (1.36–6.04) | 0.006 |
+| Hypertension |  |  | 189 |  |  | 189 |  |  |
+|  No | 125 (96.2%) | 52 (88.1%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 5 (3.8%) | 7 (11.9%) |  | 3.37 (1.02–11.09) | 0.046 |  | 5.99 (1.51–23.79) | 0.011 |
+| Uterine irritability |  |  | 189 |  |  | 189 |  |  |
+|  No | 116 (89.2%) | 45 (76.3%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 14 (10.8%) | 14 (23.7%) |  | 2.58 (1.14–5.83) | 0.023 |  | 2.27 (0.98–5.24) | 0.055 |
+| Categorical variables shown as n (%); percentages are by column. |  |  |  |  |  |  |  |  |
+| Continuous variables shown as Median (IQR). |  |  |  |  |  |  |  |  |
+| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |  |
+| Ref. = reference category. |  |  |  |  |  |  |  |  |
+| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |  |  |  |  |  |
+| N = 189 complete observations included in each adjusted model. |  |  |  |  |  |  |  |  |
 
 The merged table can be polished after merging too.
 
@@ -233,34 +272,34 @@ birthwt_merged_paper <- modify_table(
 birthwt_merged_paper$table
 ```
 
-|  | Descriptive |  | Crude |  |  | Adjusted |  |
-|----|----|----|----|----|----|----|----|
-| Characteristic | Normal BW | Low BW | N | OR (95% CI) | p-value | Adjusted OR (95% CI) | p-value |
-| Maternal age | 23.0 (19.0-28.0) | 22.0 (19.5-25.0) | 189 | 0.95 (0.89-1.01) | 0.105 |  |  |
-| Maternal weight | 123.5 (113.0-147.0) | 120.0 (104.0-130.0) | 189 | 0.99 (0.97-1.00) | 0.023 |  |  |
-| Maternal race |  |  | 189 |  |  |  |  |
-|  White | 73 (56.2%) | 23 (39.0%) |  | Ref. |  |  |  |
-|  Black | 15 (11.5%) | 11 (18.6%) |  | 2.33 (0.94-5.77) | 0.068 |  |  |
-|  Other | 42 (32.3%) | 25 (42.4%) |  | 1.89 (0.96-3.74) | 0.067 |  |  |
-| Smoking during pregnancy |  |  | 189 |  |  |  |  |
-|  No | 86 (66.2%) | 29 (49.2%) |  | Ref. |  | Ref. |  |
-|  Yes | 44 (33.8%) | 30 (50.8%) |  | 2.02 (1.08-3.78) | 0.028 | 2.87 (1.36–6.04) | 0.006 |
-| Hypertension |  |  | 189 |  |  |  |  |
-|  No | 125 (96.2%) | 52 (88.1%) |  | Ref. |  | Ref. |  |
-|  Yes | 5 (3.8%) | 7 (11.9%) |  | 3.37 (1.02-11.09) | 0.046 | 5.99 (1.51–23.79) | 0.011 |
-| Uterine irritability |  |  | 189 |  |  |  |  |
-|  No | 116 (89.2%) | 45 (76.3%) |  | Ref. |  | Ref. |  |
-|  Yes | 14 (10.8%) | 14 (23.7%) |  | 2.58 (1.14-5.83) | 0.023 | 2.27 (0.98–5.24) | 0.055 |
-| Categorical variables shown as n (%); percentages are by column. |  |  |  |  |  |  |  |
-| Continuous variables shown as Median (IQR). |  |  |  |  |  |  |  |
-| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |
-| Ref. = reference category. |  |  |  |  |  |  |  |
-| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |  |  |  |  |
-| N = 189 complete observations included in each adjusted model. |  |  |  |  |  |  |  |
-| Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |
+|  | Descriptive |  | Crude |  |  | Adjusted |  |  |
+|----|----|----|----|----|----|----|----|----|
+| Characteristic | Normal BW, N=130 | Low BW, N=59 | N | OR (95% CI) | p-value | N | Adjusted OR (95% CI) | p-value |
+| Maternal age | 23.0 (19.0-28.0) | 22.0 (19.5-25.0) | 189 | 0.95 (0.89–1.01) | 0.105 |  |  |  |
+| Maternal weight | 123.5 (113.0-147.0) | 120.0 (104.0-130.0) | 189 | 0.99 (0.97–1.00) | 0.023 |  |  |  |
+| Maternal race |  |  | 189 |  |  |  |  |  |
+|  White | 73 (56.2%) | 23 (39.0%) |  | Ref. |  |  |  |  |
+|  Black | 15 (11.5%) | 11 (18.6%) |  | 2.33 (0.94–5.77) | 0.068 |  |  |  |
+|  Other | 42 (32.3%) | 25 (42.4%) |  | 1.89 (0.96–3.74) | 0.067 |  |  |  |
+| Smoking during pregnancy |  |  | 189 |  |  | 189 |  |  |
+|  No | 86 (66.2%) | 29 (49.2%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 44 (33.8%) | 30 (50.8%) |  | 2.02 (1.08–3.78) | 0.028 |  | 2.87 (1.36–6.04) | 0.006 |
+| Hypertension |  |  | 189 |  |  | 189 |  |  |
+|  No | 125 (96.2%) | 52 (88.1%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 5 (3.8%) | 7 (11.9%) |  | 3.37 (1.02–11.09) | 0.046 |  | 5.99 (1.51–23.79) | 0.011 |
+| Uterine irritability |  |  | 189 |  |  | 189 |  |  |
+|  No | 116 (89.2%) | 45 (76.3%) |  | Ref. |  |  | Ref. |  |
+|  Yes | 14 (10.8%) | 14 (23.7%) |  | 2.58 (1.14–5.83) | 0.023 |  | 2.27 (0.98–5.24) | 0.055 |
+| Categorical variables shown as n (%); percentages are by column. |  |  |  |  |  |  |  |  |
+| Continuous variables shown as Median (IQR). |  |  |  |  |  |  |  |  |
+| Abbreviations: OR = Odds Ratio; CI = Confidence Interval. |  |  |  |  |  |  |  |  |
+| Ref. = reference category. |  |  |  |  |  |  |  |  |
+| Adjusted for Maternal age, Maternal weight, and Maternal race |  |  |  |  |  |  |  |  |
+| N = 189 complete observations included in each adjusted model. |  |  |  |  |  |  |  |  |
+| Adjusted estimates are adjusted for maternal age, maternal weight, and maternal race. |  |  |  |  |  |  |  |  |
 
 Clinical profile and regression estimates for low birth weight {.table
-.cl-036383ca quarto-disable-processing="true"}
+.cl-d8bad469 quarto-disable-processing="true"}
 
 ## Save Outputs
 

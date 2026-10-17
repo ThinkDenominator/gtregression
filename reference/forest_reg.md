@@ -1,7 +1,7 @@
 # Draw a forest table from regression outputs
 
 Wrapper around
-[`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html)
+[`forestploter::forest()`](https://adayim.github.io/forestploter/reference/forest.html)
 that works directly with
 [`forest_df()`](https://gtregression.thinkdenominator.com/reference/forest_df.md)
 output or with `gtregression` regression objects. It can show
@@ -47,7 +47,9 @@ forest_reg(
 - theme:
 
   Optional
-  [`forestploter::forest_theme()`](https://rdrr.io/pkg/forestploter/man/forest_theme.html).
+  [`forestploter::forest_style()`](https://adayim.github.io/forestploter/reference/forest_style.html)
+  or
+  [`forestploter::forest_theme()`](https://adayim.github.io/forestploter/reference/forest_theme.html).
   If `NULL`, `forestploter` defaults are used. You may pass colors and
   styling either here or through `...`.
 
@@ -72,14 +74,14 @@ forest_reg(
 
 - effects:
 
-  Optional effect labels passed to
-  [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html).
+  Deprecated and ignored. This argument never affected the rendered
+  forest plot and is retained temporarily for backward compatibility.
 
 - ticks_at:
 
   Optional numeric vector, or list of numeric vectors for multiple
   effect columns, specifying x-axis tick positions. If `NULL`,
-  [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html)
+  [`forestploter::forest()`](https://adayim.github.io/forestploter/reference/forest.html)
   chooses the default ticks.
 
 - ticks_digits:
@@ -91,7 +93,7 @@ forest_reg(
   Optional numeric vector of length 2, or list of length-2 numeric
   vectors for multiple effect columns, specifying x-axis limits. If
   `NULL`,
-  [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html)
+  [`forestploter::forest()`](https://adayim.github.io/forestploter/reference/forest.html)
   chooses the default limits.
 
 - style_strata:
@@ -109,7 +111,7 @@ forest_reg(
 - ...:
 
   Passed to
-  [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html).
+  [`forestploter::forest()`](https://adayim.github.io/forestploter/reference/forest.html).
   Common options include `title` and `footnote`.
 
 ## Value
@@ -123,7 +125,7 @@ A `gtregression_forest` object with elements:
 - `data`:
 
   The plotting data sent to
-  [`forestploter::forest()`](https://rdrr.io/pkg/forestploter/man/forest.html).
+  [`forestploter::forest()`](https://adayim.github.io/forestploter/reference/forest.html).
 
 - `input_data`:
 
@@ -152,6 +154,7 @@ uni_or <- uni_reg(
   exposures = c("age", "lwt", "smoke", "ht"),
   approach = "logit"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 multi_or <- multi_reg(
   birthwt_data,
   outcome = "low",
@@ -159,6 +162,7 @@ multi_or <- multi_reg(
   adjust_for = c("age", "lwt"),
   approach = "logit"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 
 forest_reg(uni = uni_or, multi = multi_or)
 

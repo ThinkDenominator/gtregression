@@ -1,4 +1,4 @@
-# Modify Regression/Descriptive Tables (labels, headers, caption, notes)
+# Modify table labels, headers, captions and notes
 
 Works with objects created by this package (class `"gtregression"`):
 [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md),
@@ -79,11 +79,15 @@ modify_table(
   Logical; if `TRUE`, drops displayed `N` columns from univariable and
   stratified package tables. For stratified survival outputs, event
   columns are retained unless the original table was created with
-  `show_sample = "none"`.
+  `show_sample = "none"`. Footnotes that only explain the removed column
+  are dropped as well; the complete-observation footnote
+  (`N = ... complete observations included in the model.`) is kept. Use
+  `remove_N_obs` to remove it.
 
 - remove_N_obs:
 
-  Logical; if `TRUE`, suppresses multivariable complete-case footnote.
+  Logical; if `TRUE`, suppresses the complete-observation
+  (complete-case) footnote, in every wording used by the package tables.
 
 - remove_abbreviations:
 
@@ -102,6 +106,16 @@ modify_table(
 
 The modified table object (same class as input).
 
+## Details
+
+For
+[`risk_difference()`](https://gtregression.thinkdenominator.com/reference/risk_difference.md)
+tables only the generic operations are available: `caption`, `caveat`,
+`variable_labels` (outcome, exposure and adjustment variables),
+`level_labels` (the two groups and the event), `header_labels` and
+`remove_abbreviations`. The other arguments are refused with an error
+and nothing is changed.
+
 ## Examples
 
 ``` r
@@ -119,6 +133,7 @@ tbl <- uni_reg(
   approach = "logit",
   format = "gt"
 )
+#> Outcome `low`: modelling the event 'Low BW' (second level); reference level is 'Normal BW'.
 
 modify_table(
   tbl,

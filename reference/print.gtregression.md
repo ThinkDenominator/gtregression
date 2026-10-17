@@ -1,4 +1,4 @@
-# Print gtregression objects (unified)
+# Print gtregression objects
 
 Prints the rendered table for any object produced by this package
 (objects that include class `"gtregression"`), regardless of subtype
@@ -22,3 +22,8 @@ print(x, ...)
 - ...:
 
   Ignored. Present for compatibility with the generic.
+
+## Value
+
+`x`, invisibly. Called for its side effect of printing the rendered
+table.

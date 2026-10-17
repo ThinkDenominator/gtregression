@@ -1,12 +1,10 @@
-# Side-by-side forest plots: univariate vs multivariable
+# Plot crude and adjusted estimates side by side
 
 Creates two aligned forest plots from compatible `gtregression`
 regression objects such as crude and adjusted outputs from
 [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md),
 [`multi_reg()`](https://gtregression.thinkdenominator.com/reference/multi_reg.md),
-[`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md),
-or
-[`surv_reg()`](https://gtregression.thinkdenominator.com/reference/surv_reg.md).
+survival regression, or other supported model families.
 
 ## Usage
 
@@ -42,11 +40,18 @@ plot_reg_combine(
 
 - tbl_uni:
 
-  A univariate `gtregression` object.
+  The first `gtregression` object: crude results (for example
+  [`uni_reg()`](https://gtregression.thinkdenominator.com/reference/uni_reg.md),
+  or
+  [`cox_reg()`](https://gtregression.thinkdenominator.com/reference/cox_reg.md)
+  without adjustment), or exposure-specific adjusted results
+  (`adjust_for` without `multivariable = TRUE`).
 
 - tbl_multi:
 
-  A multivariable `gtregression` object.
+  The second `gtregression` object from the same model family: the
+  adjusted or single multivariable model. When both objects are
+  adjusted, the second panel is labelled "Mutually Adjusted".
 
 - title_uni, title_multi:
 

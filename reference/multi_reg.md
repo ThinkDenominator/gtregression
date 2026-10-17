@@ -29,7 +29,12 @@ multi_reg(
 - outcome:
 
   Character scalar; name of the outcome variable. Quoted and bare names
-  are accepted.
+  are accepted. For binary-outcome approaches (`"logit"`, `"firth"`,
+  `"logbinomial"`, `"robpoisson"`) the outcome may be numeric 0/1 or 1/2
+  (2 is the event; integer or double), logical (`TRUE` is the event), or
+  a two-level factor or character variable (the second level is the
+  event, which is reported in a message). The same factor, character and
+  logical coding is accepted by `"poisson"`.
 
 - exposures:
 
@@ -163,6 +168,14 @@ If exposure variables have a `"label"` attribute, for example from
 those labels are used automatically in the displayed table and plots.
 Internal matching still uses the original column names.
 
+Confidence intervals are Wald intervals; for `approach = "linear"` they
+use the t distribution with the residual degrees of freedom (as
+[`confint()`](https://rdrr.io/r/stats/confint.html) for `lm`). Factor
+exposures are always fitted with treatment contrasts. Log-binomial
+models that fail with the default starting values are refitted from the
+intercept `log(mean(y))`; if the model still cannot be fitted the error
+names the approach and suggests `approach = "robpoisson"`.
+
 In default mode (`adjust_for = NULL`), all exposures are included in a
 single multivariable model. In adjusted mode, one model is fitted per
 exposure, adjusting for the variables specified in `adjust_for`.
@@ -181,6 +194,25 @@ multi_reg(endometrial_data, HG, c(NV, PI, EH), approach = firth, format = gt)$ta
 #> Registered S3 method overwritten by 'lme4':
 #>   method           from
 #>   na.action.merMod car 
+#> logistf::logistf(formula = formula, data = data)
+#> 
+#> Model fitted by Penalized ML
+#> Coefficients:
+#>                    coef   se(coef) lower 0.95  upper 0.95      Chisq
+#> (Intercept)  3.77455951 1.43900672  1.0825371  7.20928050  8.1980136
+#> NV1          2.92927330 1.46497415  0.6097244  7.85463171  6.7984572
+#> PI          -0.03475175 0.03789237 -0.1244587  0.04045547  0.7468285
+#> EH          -2.60416387 0.75362838 -4.3651832 -1.23272106 17.7593175
+#>                        p method
+#> (Intercept) 4.193628e-03      2
+#> NV1         9.123668e-03      2
+#> PI          3.874822e-01      2
+#> EH          2.506867e-05      2
+#> 
+#> Method: 1-Wald, 2-Profile penalized log-likelihood, 3-None
+#> 
+#> Likelihood ratio test=43.65582 on 3 df, p=1.78586e-09, n=79
+#> Wald test = 21.66965 on 3 df, p = 7.641345e-05
 
 
   

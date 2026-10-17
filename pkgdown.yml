@@ -3,6 +3,7 @@ pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   causal-mediation: causal-mediation.html
+  choose-model: choose-model.html
   confounding-interaction: confounding-interaction.html
   customize-export: customize-export.html
   descriptive-tables: descriptive-tables.html
@@ -10,11 +11,14 @@ articles:
   function-options: function-options.html
   gtregression-app: gtregression-app.html
   gtregression-intro: gtregression-intro.html
+  merge-tables: merge-tables.html
   regression-tables: regression-tables.html
+  risk-difference: risk-difference.html
+  special-models: special-models.html
   stratified-analysis: stratified-analysis.html
   survival-analysis: survival-analysis.html
   visualise-results: visualise-results.html
-last_built: 2026-08-25T06:26Z
+last_built: 2026-10-17T06:44Z
 urls:
   reference: https://gtregression.thinkdenominator.com/reference
   article: https://gtregression.thinkdenominator.com/articles

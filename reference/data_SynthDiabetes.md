@@ -53,5 +53,4 @@ A data frame with 768 observations and 9 variables:
 
 ## Source
 
-[`mlbench::SynthDiabetes2`](https://rdrr.io/pkg/mlbench/man/SynthDiabetes.html),
-available in mlbench version 2.1-11 or later.
+`mlbench::SynthDiabetes2`, available in mlbench version 2.1-11 or later.

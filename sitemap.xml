@@ -3,6 +3,7 @@
 <url><loc>https://gtregression.thinkdenominator.com/LICENSE-text.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/LICENSE.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/causal-mediation.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/articles/choose-model.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/confounding-interaction.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/customize-export.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/descriptive-tables.html</loc></url>
@@ -11,7 +12,10 @@
 <url><loc>https://gtregression.thinkdenominator.com/articles/gtregression-app.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/gtregression-intro.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/index.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/articles/merge-tables.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/regression-tables.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/articles/risk-difference.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/articles/special-models.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/stratified-analysis.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/survival-analysis.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/articles/visualise-results.html</loc></url>
@@ -23,9 +27,13 @@
 <url><loc>https://gtregression.thinkdenominator.com/reference/check_convergence.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/check_ph.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/compare_models.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/competing_risk_reg.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/conditional_logit_reg.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/cox_reg.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/cuminc_plot.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/data_SynthDiabetes.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/data_birthwt.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/data_competing_risk.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/data_diabetes_mediation.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/data_endometrial.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/data_epilepsy.html</loc></url>
@@ -47,8 +55,10 @@
 <url><loc>https://gtregression.thinkdenominator.com/reference/dot-validate_exposures.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/forest_df.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/forest_reg.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/gtregression_addin.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/gtregression_app.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/identify_confounder.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/import_data.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/index.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/interaction_models.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/km_plot.html</loc></url>
@@ -58,6 +68,11 @@
 <url><loc>https://gtregression.thinkdenominator.com/reference/merge_tables.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/modify_table.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/multi_reg.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/multilevel_reg.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/multinomial_reg.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/ordinal_reg.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/plot.gtregression_ph.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/plot_cox_survival.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/plot_mediation.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/plot_model_fit.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/plot_reg.html</loc></url>
@@ -65,6 +80,7 @@
 <url><loc>https://gtregression.thinkdenominator.com/reference/plot_surv_fit.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/print.gtregression.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/print.gtregression_reg_check.html</loc></url>
+<url><loc>https://gtregression.thinkdenominator.com/reference/risk_difference.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/rmst_table.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/save_docx.html</loc></url>
 <url><loc>https://gtregression.thinkdenominator.com/reference/save_forest.html</loc></url>

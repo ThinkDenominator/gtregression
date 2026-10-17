@@ -1,4 +1,4 @@
-# Descriptive Summary Table (no gtsummary) using gt/flextable
+# Descriptive summary table
 
 Publication-ready summary of categorical and continuous variables
 (optionally stratified). Mimics the OG gtsummary style: \* column
@@ -39,6 +39,8 @@ descriptive_table(
 - by:
 
   Optional single grouping variable. Quoted and bare names are accepted.
+  If it is also listed in \`exposures\`, it is left out of the
+  summarised variables, with a message.
 
 - percent:
 
@@ -50,7 +52,9 @@ descriptive_table(
 
 - show_missing:
 
-  "ifany" (default) or "no"
+  "ifany" (default) or "no". With "ifany", a "(Missing)" row (n and % of
+  the column N) is added under every variable that has missing values,
+  categorical or continuous.
 
 - show_dichotomous:
 
@@ -73,7 +77,8 @@ descriptive_table(
 
   optional named list for single-row binaries (e.g.,
   list(sex="Female")); formula entries like list(sex ~ "Female") are
-  also accepted
+  also accepted. The value must be one of the observed levels of the
+  variable.
 
 - format:
 
@@ -114,3 +119,12 @@ If variables have a `"label"` attribute, for example from
 [`labelled::var_label()`](https://larmarange.github.io/labelled/reference/var_label.html),
 those labels are used automatically in the displayed table. Internal
 matching still uses the original column names.
+
+Variable types: factor, character and logical variables are shown as n
+(%) per level (logical: `FALSE`/`TRUE`); numeric variables with exactly
+two distinct values are shown as categories; numeric variables with a
+single distinct value are shown as one category (n, 100%) unless a
+numeric `statistic` is requested for them; other numeric variables are
+continuous. Levels of numeric variables shown as categories are sorted
+by value. Date and date-time variables are not summarised: they are
+excluded and named in a message.

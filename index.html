@@ -5,15 +5,20 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Home • gtregression</title>
+<title>gtregression • gtregression</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
-<meta property="og:title" content="Home">
-<meta name="description" content="Publication-ready regression, survival, mediation, diagnostics, and Word-friendly outputs">
-<meta property="og:description" content="Publication-ready regression, survival, mediation, diagnostics, and Word-friendly outputs">
+<meta property="og:title" content="gtregression">
+<meta name="description" content="Publication-ready regression, survival and risk-difference tables, forest plots and survival curves for health research, with Word-ready export.
+">
+<meta property="og:description" content="Publication-ready regression, survival and risk-difference tables, forest plots and survival curves for health research, with Word-ready export.
+">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
 <link rel="stylesheet" href="https://thinkdenominator.com/analytics-consent.css">
 <script>window.TD_GA_MEASUREMENT_ID = "G-3DE4ZZV06B";</script><script defer src="https://thinkdenominator.com/analytics-consent.js"></script>
 </head>
@@ -21,11 +26,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="index.html">gtregression</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,26 +39,47 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="reference/index.html">Functions</a></li>
+<li class="nav-item"><a class="nav-link" href="articles/gtregression-intro.html">Get started</a></li>
 <li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-workflows" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Workflows</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-workflows">
-<li><a class="dropdown-item" href="articles/gtregression-intro.html">Start Here</a></li>
-    <li><a class="dropdown-item" href="articles/function-options.html">Function Options</a></li>
-    <li><a class="dropdown-item" href="articles/gtregression-app.html">App Manual</a></li>
-    <li><a class="dropdown-item" href="articles/descriptive-tables.html">Tables</a></li>
-    <li><a class="dropdown-item" href="articles/regression-tables.html">Regression</a></li>
-    <li><a class="dropdown-item" href="articles/survival-analysis.html">Survival</a></li>
-    <li><a class="dropdown-item" href="articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
-    <li><a class="dropdown-item" href="articles/causal-mediation.html">Causal Mediation</a></li>
-    <li><a class="dropdown-item" href="articles/visualise-results.html">Visualise</a></li>
-    <li><a class="dropdown-item" href="articles/stratified-analysis.html">Stratify</a></li>
-    <li><a class="dropdown-item" href="articles/diagnostics-selection.html">Diagnostics</a></li>
-    <li><a class="dropdown-item" href="articles/customize-export.html">Export</a></li>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
+<li><h6 class="dropdown-header" data-toc-skip>Choose</h6></li>
+    <li><a class="dropdown-item" href="articles/choose-model.html">Which function should I use?</a></li>
+    <li><a class="dropdown-item" href="articles/function-options.html">Function options</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Tables</h6></li>
+    <li><a class="dropdown-item" href="articles/descriptive-tables.html">Descriptive tables</a></li>
+    <li><a class="dropdown-item" href="articles/regression-tables.html">Regression tables</a></li>
+    <li><a class="dropdown-item" href="articles/special-models.html">Special study designs</a></li>
+    <li><a class="dropdown-item" href="articles/risk-difference.html">Risk difference and NNT</a></li>
+    <li><a class="dropdown-item" href="articles/stratified-analysis.html">Stratified analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Survival</h6></li>
+    <li><a class="dropdown-item" href="articles/survival-analysis.html">Survival analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Interpret</h6></li>
+    <li><a class="dropdown-item" href="articles/confounding-interaction.html">Confounding and interaction</a></li>
+    <li><a class="dropdown-item" href="articles/causal-mediation.html">Causal mediation</a></li>
+    <li><a class="dropdown-item" href="articles/diagnostics-selection.html">Diagnostics and model selection</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Output</h6></li>
+    <li><a class="dropdown-item" href="articles/visualise-results.html">Visualise results</a></li>
+    <li><a class="dropdown-item" href="articles/merge-tables.html">Merge and customise tables</a></li>
+    <li><a class="dropdown-item" href="articles/customize-export.html">Customise and export</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>App</h6></li>
+    <li><a class="dropdown-item" href="articles/gtregression-app.html">App manual</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="articles/index.html">All guides</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">News</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/ThinkDenominator/gtregression/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
@@ -64,14 +90,20 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="gtreg-hero">
 <div>
+<div class="gtreg-kicker">
+<p>R package for health research</p>
+</div>
 <div class="page-header"><h1>
 gtregression
 </h1></div>
-<p>
-Publication-ready regression and survival analysis tables, plots, and forest plots for real-world health data. Fit models, compare estimates, visualise results, and export manuscript-ready outputs without hand-formatting every coefficient.
+<p class="gtreg-lead">
+From model to manuscript. Fit regression and survival models, and get tables, forest plots and survival curves ready for your paper, without hand-formatting a single coefficient.
 </p>
 <div class="gtreg-actions">
-<p><a href="https://gtregression.thinkdenominator.com/articles/gtregression-intro.html">Start the workflow</a><a class="secondary" href="https://gtregression.thinkdenominator.com/reference/">Explore functions</a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/gtregression-intro.html">Get started</a><a class="secondary" href="https://gtregression.thinkdenominator.com/articles/choose-model.html">Which function?</a></p>
+</div>
+<div class="gtreg-install">
+<p><code>install.packages("gtregression")</code></p>
 </div>
 </div>
 <div>
@@ -82,73 +114,46 @@ Publication-ready regression and survival analysis tables, plots, and forest plo
 
 <!-- badges: end -->
 <div class="section level2">
-<h2 id="publication-ready-regression-survival-and-mediation-outputs">Publication-Ready Regression, Survival, and Mediation Outputs<a class="anchor" aria-label="anchor" href="#publication-ready-regression-survival-and-mediation-outputs"></a>
+<h2 id="what-you-can-make">What you can make<a class="anchor" aria-label="anchor" href="#what-you-can-make"></a>
 </h2>
-<p><code>gtregression</code> helps you move from model to manuscript: fit regression models, produce clean tables, visualise estimates, merge outputs, and export results without hand-formatting every coefficient.</p>
-<p>It supports logistic, log-binomial, Poisson, robust Poisson, negative binomial, linear, Cox, parametric survival, and causal mediation workflows, including adjusted and stratified models.</p>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr>
-<th>Build</th>
-<th>What you get</th>
-</tr></thead>
-<tbody>
-<tr>
-<td>Descriptive tables</td>
-<td>Grouped summaries with row or column percentages</td>
-</tr>
-<tr>
-<td>Regression tables</td>
-<td>Crude, adjusted, stratified, linear, Cox, and parametric survival outputs</td>
-</tr>
-<tr>
-<td>Survival analysis</td>
-<td>Kaplan-Meier curves, survival summaries, RMST, log-rank tests, Cox PH checks, and survival predictions</td>
-</tr>
-<tr>
-<td>Mediation analysis</td>
-<td>Direct, indirect, total, and proportion mediated effects with causal caveats</td>
-</tr>
-<tr>
-<td>Visualisations</td>
-<td>Regression plots, survival curves, fitted survival curves, and forest tables</td>
-</tr>
-<tr>
-<td>Interpretation helpers</td>
-<td>Confounding, interaction, mediation, convergence, collinearity, model selection, and survival diagnostics</td>
-</tr>
-<tr>
-<td>Exports</td>
-<td>HTML, PDF, PNG, and Word-ready outputs</td>
-</tr>
-</tbody>
-</table>
+<div class="gtreg-gallery">
+<p><a class="gtreg-card" href="https://gtregression.thinkdenominator.com/articles/merge-tables.html"> <img src="reference/figures/home-table.png" alt="Merged descriptive, crude and adjusted regression table"><span class="gtreg-card-title">Manuscript tables</span> <span class="gtreg-card-text">Descriptive, crude and adjusted results merged into one table, with every footnote kept.</span> </a></p>
+<p><a class="gtreg-card" href="https://gtregression.thinkdenominator.com/articles/visualise-results.html"> <img src="reference/figures/home-forest.png" alt="Forest plot of crude and adjusted odds ratios"><span class="gtreg-card-title">Forest plots</span> <span class="gtreg-card-text">Crude and adjusted estimates side by side, straight from the fitted models.</span> </a></p>
+<p><a class="gtreg-card" href="https://gtregression.thinkdenominator.com/articles/survival-analysis.html"> <img src="reference/figures/home-km.png" alt="Kaplan-Meier curves with a number-at-risk table"><span class="gtreg-card-title">Survival analysis</span> <span class="gtreg-card-text">Kaplan-Meier curves, Cox and parametric models, competing risks and RMST.</span> </a></p>
+<p><a class="gtreg-card" href="https://gtregression.thinkdenominator.com/articles/risk-difference.html"> <img src="reference/figures/home-rd.png" alt="Adjusted risk difference table with number needed to harm"><span class="gtreg-card-title">Absolute effects</span> <span class="gtreg-card-text">Risk differences and the number needed to treat, crude or adjusted.</span> </a></p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="from-data-to-manuscript">From Data to Manuscript<a class="anchor" aria-label="anchor" href="#from-data-to-manuscript"></a>
+<h2 id="new-in-120">New in 1.2.0<a class="anchor" aria-label="anchor" href="#new-in-120"></a>
+</h2>
+<div class="gtreg-new">
+<div>
+<p><strong>Risk difference and NNT</strong> <span class="gtreg-new-text"><code><a href="reference/risk_difference.html">risk_difference()</a></code> reports absolute risks, the risk difference and NNTB/NNTH, crude or adjusted.</span></p>
+</div>
+<div>
+<p><strong>More study designs</strong> <span class="gtreg-new-text">Matched case-control, multilevel, ordinal, multinomial and competing-risk regression tables.</span></p>
+</div>
+<div>
+<p><strong>Richer survival tools</strong> <span class="gtreg-new-text">Proportional-hazards plots, delayed entry, clustering, weights and adjusted survival curves.</span></p>
+</div>
+<div>
+<p><strong>Better merging</strong> <span class="gtreg-new-text">Merge any number of tables, keep each block’s notes, and choose a table theme.</span></p>
+</div>
+</div>
+<p><a href="https://gtregression.thinkdenominator.com/news/index.html">Read the full list of changes</a>.</p>
+</div>
+<div class="section level2">
+<h2 id="from-data-to-manuscript">From data to manuscript<a class="anchor" aria-label="anchor" href="#from-data-to-manuscript"></a>
 </h2>
 <div class="gtreg-analysis-path">
-<div class="gtreg-path-intro">
-<div class="gtreg-kicker">
-<p>One connected workflow</p>
-</div>
-<div class="section level3">
-<h3 id="start-with-the-question-finish-with-a-result-you-can-use">Start with the question. Finish with a result you can use.<a class="anchor" aria-label="anchor" href="#start-with-the-question-finish-with-a-result-you-can-use"></a>
-</h3>
-<p>Each step leaves an inspectable object behind, so beginners have a clear path and experienced analysts retain full control.</p>
-</div>
-</div>
 <div class="gtreg-path-steps">
 <div class="gtreg-path-step">
 <p><span class="gtreg-path-number">01</span></p>
 <div class="gtreg-path-copy">
 <p><strong>Prepare</strong></p>
-<p>Check variables, labels, levels, and missing data.</p>
+<p>Check variables, labels, levels and missing data.</p>
 </div>
-<p><code>dissect(data)</code> <span class="gtreg-path-result">Analysis-ready data</span></p>
+<p><span class="gtreg-path-code"><code><a href="reference/dissect.html">dissect()</a></code></span> <span class="gtreg-path-result">Analysis-ready data</span></p>
 </div>
 <div class="gtreg-path-step">
 <p><span class="gtreg-path-number">02</span></p>
@@ -156,98 +161,100 @@ Publication-ready regression and survival analysis tables, plots, and forest plo
 <p><strong>Describe</strong></p>
 <p>Build a clear baseline table before modelling.</p>
 </div>
-<p><code>descriptive_table(...)</code> <span class="gtreg-path-result">Table 1</span></p>
+<p><span class="gtreg-path-code"><code><a href="reference/descriptive_table.html">descriptive_table()</a></code></span> <span class="gtreg-path-result">Table 1</span></p>
 </div>
 <div class="gtreg-path-step">
 <p><span class="gtreg-path-number">03</span></p>
 <div class="gtreg-path-copy">
 <p><strong>Model</strong></p>
-<p>Fit crude, adjusted, stratified, or survival models.</p>
+<p>Fit crude, adjusted, stratified or survival models.</p>
 </div>
-<p><code>uni_reg() + multi_reg()</code> <span class="gtreg-path-result">Effect estimates</span></p>
+<p><span class="gtreg-path-code"><code><a href="reference/uni_reg.html">uni_reg()</a></code> <code><a href="reference/multi_reg.html">multi_reg()</a></code></span> <span class="gtreg-path-result">Effect estimates</span></p>
 </div>
 <div class="gtreg-path-step">
 <p><span class="gtreg-path-number">04</span></p>
 <div class="gtreg-path-copy">
 <p><strong>Interpret</strong></p>
-<p>Review assumptions, confounding, interaction, and fit.</p>
+<p>Check assumptions, confounding, interaction and fit.</p>
 </div>
-<p><code>check_*() + compare_models()</code> <span class="gtreg-path-result">Defensible model</span></p>
+<p><span class="gtreg-path-code"><code><a href="reference/check_ph.html">check_ph()</a></code> <code><a href="reference/compare_models.html">compare_models()</a></code></span> <span class="gtreg-path-result">A defensible model</span></p>
 </div>
 <div class="gtreg-path-step">
 <p><span class="gtreg-path-number">05</span></p>
 <div class="gtreg-path-copy">
 <p><strong>Publish</strong></p>
-<p>Merge, visualise, and export polished outputs.</p>
+<p>Merge, visualise and export.</p>
 </div>
-<p><code>forest_reg() + save_table()</code> <span class="gtreg-path-result">Manuscript-ready output</span></p>
+<p><span class="gtreg-path-code"><code><a href="reference/merge_tables.html">merge_tables()</a></code> <code><a href="reference/save_table.html">save_table()</a></code></span> <span class="gtreg-path-result">Manuscript-ready output</span></p>
 </div>
 </div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="a-five-minute-example">A five-minute example<a class="anchor" aria-label="anchor" href="#a-five-minute-example"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gtregression.thinkdenominator.com/">gtregression</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"data_birthwt"</span>, package <span class="op">=</span> <span class="st">"gtregression"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">birthwt</span> <span class="op">&lt;-</span> <span class="va">data_birthwt</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    race <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">race</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"White"</span>, <span class="st">"Black"</span>, <span class="st">"Other"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    smoke <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">smoke</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    ht <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">ht</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">low</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Normal BW"</span>, <span class="st">"Low BW"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt</span><span class="op">$</span><span class="va">smoke</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Smoking during pregnancy"</span></span>
+<span><span class="va">exposures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"race"</span>, <span class="st">"smoke"</span>, <span class="st">"ht"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Baseline characteristics by outcome</span></span>
+<span><span class="va">desc</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/descriptive_table.html">descriptive_table</a></span><span class="op">(</span><span class="va">birthwt</span>, exposures <span class="op">=</span> <span class="va">exposures</span>, by <span class="op">=</span> <span class="st">"low"</span>,</span>
+<span>                          show_dichotomous <span class="op">=</span> <span class="st">"all_levels"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># One model per exposure, then one adjusted model</span></span>
+<span><span class="va">crude</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/uni_reg.html">uni_reg</a></span><span class="op">(</span><span class="va">birthwt</span>, outcome <span class="op">=</span> <span class="st">"low"</span>, exposures <span class="op">=</span> <span class="va">exposures</span>, approach <span class="op">=</span> <span class="st">"logit"</span><span class="op">)</span></span>
+<span><span class="va">adjusted</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/multi_reg.html">multi_reg</a></span><span class="op">(</span><span class="va">birthwt</span>, outcome <span class="op">=</span> <span class="st">"low"</span>, exposures <span class="op">=</span> <span class="va">exposures</span>, approach <span class="op">=</span> <span class="st">"logit"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># One table for the paper, and a forest plot</span></span>
+<span><span class="va">table_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/merge_tables.html">merge_tables</a></span><span class="op">(</span><span class="va">desc</span>, <span class="va">crude</span>, <span class="va">adjusted</span>,</span>
+<span>                        spanners <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Low birth weight"</span>, <span class="st">"Crude"</span>, <span class="st">"Adjusted"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">forest</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/forest_reg.html">forest_reg</a></span><span class="op">(</span><span class="fu"><a href="reference/forest_df.html">forest_df</a></span><span class="op">(</span><span class="va">crude</span>, <span class="va">adjusted</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Save</span></span>
+<span><span class="fu"><a href="reference/save_table.html">save_table</a></span><span class="op">(</span><span class="va">table_2</span>, filename <span class="op">=</span> <span class="st">"table-2"</span>, format <span class="op">=</span> <span class="st">"docx"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/save_forest.html">save_forest</a></span><span class="op">(</span><span class="va">forest</span>, filename <span class="op">=</span> <span class="st">"forest-plot"</span>, format <span class="op">=</span> <span class="st">"png"</span><span class="op">)</span></span></code></pre></div>
+<p>Variable labels set with <code>attr(x, "label")</code> or <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code> appear in every table and plot. Each result keeps its fitted models (<code>adjusted$models</code>) and table data (<code>adjusted$table_body</code>), so nothing is hidden.</p>
+</div>
+<div class="section level2">
+<h2 id="find-your-way">Find your way<a class="anchor" aria-label="anchor" href="#find-your-way"></a>
+</h2>
+<div class="gtreg-tasks">
+<p><a href="https://gtregression.thinkdenominator.com/articles/descriptive-tables.html"><strong>Describe data</strong><span class="gtreg-task-text">Baseline tables with row or column percentages.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/regression-tables.html"><strong>Regression tables</strong><span class="gtreg-task-text">Logistic, risk ratio, count, linear and Firth models.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/special-models.html"><strong>Special designs</strong><span class="gtreg-task-text">Matched, multilevel, ordinal, multinomial and competing risks.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/survival-analysis.html"><strong>Survival analysis</strong><span class="gtreg-task-text">Kaplan-Meier, Cox, parametric models and predictions.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/risk-difference.html"><strong>Risk difference and NNT</strong><span class="gtreg-task-text">Absolute effects for two-group comparisons.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/stratified-analysis.html"><strong>Stratified analysis</strong><span class="gtreg-task-text">The same model within each subgroup.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/confounding-interaction.html"><strong>Confounding and interaction</strong><span class="gtreg-task-text">Screen confounders and test effect modification.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/causal-mediation.html"><strong>Causal mediation</strong><span class="gtreg-task-text">Direct and indirect effects with clear caveats.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/diagnostics-selection.html"><strong>Diagnostics</strong><span class="gtreg-task-text">Convergence, collinearity, fit and model comparison.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/visualise-results.html"><strong>Visualise</strong><span class="gtreg-task-text">Regression plots, forest plots and survival curves.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/merge-tables.html"><strong>Merge and customise</strong><span class="gtreg-task-text">Combine tables, apply themes, style with flextable.</span></a></p>
+<p><a href="https://gtregression.thinkdenominator.com/articles/customize-export.html"><strong>Export</strong><span class="gtreg-task-text">Word, HTML, PDF and image output.</span></a></p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="why-it-exists">Why It Exists<a class="anchor" aria-label="anchor" href="#why-it-exists"></a>
+<h2 id="built-on-trusted-r-packages">Built on trusted R packages<a class="anchor" aria-label="anchor" href="#built-on-trusted-r-packages"></a>
 </h2>
-<p>Many students, researchers, and public health analysts need regression outputs that are readable, reproducible, and report-ready. <code>gtregression</code> keeps the R syntax approachable while preserving transparent model objects underneath.</p>
-</div>
-<div class="section level2">
-<h2 id="built-on-trusted-r-packages">Built on Trusted R Packages<a class="anchor" aria-label="anchor" href="#built-on-trusted-r-packages"></a>
-</h2>
-<p><code>gtregression</code> is intentionally a readable interface over established R packages. The package uses widely trusted modelling, tidying, plotting, and reporting tools so users can inspect fitted models and understand the statistical engines behind each output.</p>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr>
-<th>Area</th>
-<th>Core packages used</th>
-</tr></thead>
-<tbody>
-<tr>
-<td>Data handling and tidy workflows</td>
-<td>
-<code>dplyr</code>, <code>purrr</code>, <code>tibble</code>, <code>rlang</code>
-</td>
-</tr>
-<tr>
-<td>Model fitting</td>
-<td>
-<code>stats</code>, <code>MASS</code>, <code>survival</code>, <code>risks</code>, <code>logistf</code>
-</td>
-</tr>
-<tr>
-<td>Robust and diagnostic inference</td>
-<td>
-<code>sandwich</code>, <code>lmtest</code>, <code>broom</code>, <code>broom.helpers</code>
-</td>
-</tr>
-<tr>
-<td>Tables and Word-ready reporting</td>
-<td>
-<code>flextable</code>, <code>officer</code>, <code>gt</code>
-</td>
-</tr>
-<tr>
-<td>Figures and forest plots</td>
-<td>
-<code>ggplot2</code>, <code>patchwork</code>, <code>forestploter</code>, <code>scales</code>
-</td>
-</tr>
-<tr>
-<td>Optional development and checking tools</td>
-<td>
-<code>testthat</code>, <code>knitr</code>, <code>rmarkdown</code>, <code>pkgdown</code>, <code>car</code>, <code>forcats</code>, <code>ggtext</code>
-</td>
-</tr>
-</tbody>
-</table>
-<p>The user-facing functions return objects with fitted models, table bodies, and display metadata that advanced users can audit, modify, or reuse.</p>
+<p><code>gtregression</code> is a readable interface over established packages: <code>stats</code>, <code>survival</code>, <code>MASS</code>, <code>risks</code> and <code>logistf</code> fit the models; <code>broom</code>, <code>sandwich</code> and <code>lmtest</code> handle inference; <code>flextable</code>, <code>officer</code> and <code>gt</code> build the tables; <code>ggplot2</code>, <code>patchwork</code> and <code>forestploter</code> draw the figures. The fitted models stay inside every result, so each number can be traced back to its source.</p>
 </div>
 <div class="section level2">
 <h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>
 </h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># CRAN</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"gtregression"</span><span class="op">)</span></span>
 <span></span>
@@ -255,207 +262,10 @@ Publication-ready regression and survival analysis tables, plots, and forest plo
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"ThinkDenominator/gtregression"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="five-minute-workflow">Five-Minute Workflow<a class="anchor" aria-label="anchor" href="#five-minute-workflow"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gtregression.thinkdenominator.com/">gtregression</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"data_birthwt"</span>, package <span class="op">=</span> <span class="st">"gtregression"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">birthwt_data</span> <span class="op">&lt;-</span> <span class="va">data_birthwt</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    race <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">race</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>,</span>
-<span>                  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"White"</span>, <span class="st">"Black"</span>, <span class="st">"Other"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    smoke <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">smoke</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    ht <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">ht</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    ui <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">ui</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span>, <span class="st">"Yes"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">low</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Normal BW"</span>, <span class="st">"Low BW"</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="va">exposures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"race"</span>, <span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">age</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Maternal age"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">lwt</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Maternal weight"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">birthwt_data</span><span class="op">$</span><span class="va">smoke</span>, <span class="st">"label"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Smoking during pregnancy"</span></span>
-<span></span>
-<span><span class="va">desc</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/descriptive_table.html">descriptive_table</a></span><span class="op">(</span></span>
-<span>  <span class="va">birthwt_data</span>,</span>
-<span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
-<span>  by <span class="op">=</span> <span class="st">"low"</span>,</span>
-<span>  percent <span class="op">=</span> <span class="st">"column"</span>,</span>
-<span>  show_overall <span class="op">=</span> <span class="st">"last"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">uni</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/uni_reg.html">uni_reg</a></span><span class="op">(</span></span>
-<span>  <span class="va">birthwt_data</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
-<span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/multi_reg.html">multi_reg</a></span><span class="op">(</span></span>
-<span>  <span class="va">birthwt_data</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
-<span>  exposures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"smoke"</span>, <span class="st">"ht"</span>, <span class="st">"ui"</span><span class="op">)</span>,</span>
-<span>  adjust_for <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"lwt"</span>, <span class="st">"race"</span><span class="op">)</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"logit"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="reference/plot_reg.html">plot_reg</a></span><span class="op">(</span><span class="va">multi</span>, title <span class="op">=</span> <span class="st">"Adjusted Regression for Low Birth Weight"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">forest_reg</span> <span class="op">=</span> <span class="fu"><a href="reference/forest_reg.html">forest_reg</a></span><span class="op">(</span><span class="fu"><a href="reference/forest_df.html">forest_df</a></span><span class="op">(</span><span class="va">uni</span>, <span class="va">multi</span><span class="op">)</span><span class="op">)</span> </span>
-<span></span>
-<span><span class="fu"><a href="reference/merge_tables.html">merge_tables</a></span><span class="op">(</span><span class="va">desc</span>, <span class="va">uni</span>, <span class="va">multi</span><span class="op">)</span></span></code></pre></div>
-<p>Variable labels set with <code>attr(x, "label")</code> or <code><a href="https://larmarange.github.io/labelled/reference/var_label.html" class="external-link">labelled::var_label()</a></code> are used automatically in display tables and plots, while original column names remain available internally for merging, modification, and testing.</p>
-<p>Objects stay inspectable:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">desc</span><span class="op">$</span><span class="va">table</span></span>
-<span><span class="va">uni</span><span class="op">$</span><span class="va">table</span></span>
-<span><span class="va">multi</span><span class="op">$</span><span class="va">table</span></span>
-<span><span class="va">multi</span><span class="op">$</span><span class="va">models</span></span></code></pre></div>
-<p>Optional model-fit statistics can be requested without changing the publication table:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">uni_stats</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/uni_reg.html">uni_reg</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">birthwt_data</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"low"</span>,</span>
-<span>  exposures <span class="op">=</span> <span class="va">exposures</span>,</span>
-<span>  approach <span class="op">=</span> <span class="st">"logit"</span>,</span>
-<span>  model_stats <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">uni_stats</span><span class="op">$</span><span class="va">model_stats</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="browse-by-task">Browse by Task<a class="anchor" aria-label="anchor" href="#browse-by-task"></a>
-</h2>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr>
-<th>Task</th>
-<th>Start here</th>
-</tr></thead>
-<tbody>
-<tr>
-<td>First workflow</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/gtregression-intro.html">Start Here</a></td>
-</tr>
-<tr>
-<td>Descriptive summaries</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/descriptive-tables.html">Descriptive Tables</a></td>
-</tr>
-<tr>
-<td>Regression tables</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/regression-tables.html">Regression Tables</a></td>
-</tr>
-<tr>
-<td>Survival analysis</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/survival-analysis.html">Survival Analysis</a></td>
-</tr>
-<tr>
-<td>Causal mediation</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/causal-mediation.html">Causal Mediation</a></td>
-</tr>
-<tr>
-<td>Visualise estimates</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/visualise-results.html">Visualise Results</a></td>
-</tr>
-<tr>
-<td>Stratified models</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/stratified-analysis.html">Stratified Analysis</a></td>
-</tr>
-<tr>
-<td>Diagnostics and selection</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/diagnostics-selection.html">Diagnostics</a></td>
-</tr>
-<tr>
-<td>Confounding and interaction</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/confounding-interaction.html">Confounding &amp; Interaction</a></td>
-</tr>
-<tr>
-<td>Merge and export</td>
-<td><a href="https://gtregression.thinkdenominator.com/articles/customize-export.html">Customize and Export</a></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level2">
-<h2 id="function-map">Function Map<a class="anchor" aria-label="anchor" href="#function-map"></a>
-</h2>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr>
-<th>Workflow</th>
-<th>Functions</th>
-</tr></thead>
-<tbody>
-<tr>
-<td>Describe</td>
-<td>
-<code><a href="reference/descriptive_table.html">descriptive_table()</a></code>, <code><a href="reference/dissect.html">dissect()</a></code>
-</td>
-</tr>
-<tr>
-<td>Model</td>
-<td>
-<code><a href="reference/uni_reg.html">uni_reg()</a></code>, <code><a href="reference/multi_reg.html">multi_reg()</a></code>, <code><a href="reference/cox_reg.html">cox_reg()</a></code>, <code><a href="reference/surv_reg.html">surv_reg()</a></code>
-</td>
-</tr>
-<tr>
-<td>Survival</td>
-<td>
-<code><a href="reference/km_plot.html">km_plot()</a></code>, <code><a href="reference/km_risk_table.html">km_risk_table()</a></code>, <code><a href="reference/survival_summary.html">survival_summary()</a></code>, <code><a href="reference/survival_quantiles.html">survival_quantiles()</a></code>, <code><a href="reference/survival_prob.html">survival_prob()</a></code>, <code><a href="reference/rmst_table.html">rmst_table()</a></code>, <code><a href="reference/logrank_test.html">logrank_test()</a></code>, <code><a href="reference/check_ph.html">check_ph()</a></code>, <code><a href="reference/surv_model_compare.html">surv_model_compare()</a></code>, <code><a href="reference/plot_surv_fit.html">plot_surv_fit()</a></code>, <code><a href="reference/surv_predict.html">surv_predict()</a></code>
-</td>
-</tr>
-<tr>
-<td>Stratify</td>
-<td>
-<code><a href="reference/stratified_uni_reg.html">stratified_uni_reg()</a></code>, <code><a href="reference/stratified_multi_reg.html">stratified_multi_reg()</a></code>
-</td>
-</tr>
-<tr>
-<td>Visualise</td>
-<td>
-<code><a href="reference/plot_reg.html">plot_reg()</a></code>, <code><a href="reference/plot_reg_combine.html">plot_reg_combine()</a></code>, <code><a href="reference/forest_df.html">forest_df()</a></code>, <code><a href="reference/forest_reg.html">forest_reg()</a></code>
-</td>
-</tr>
-<tr>
-<td>Diagnose</td>
-<td>
-<code><a href="reference/check_convergence.html">check_convergence()</a></code>, <code><a href="reference/check_collinearity.html">check_collinearity()</a></code>, <code><a href="reference/check_ph.html">check_ph()</a></code>, <code><a href="reference/select_models.html">select_models()</a></code>
-</td>
-</tr>
-<tr>
-<td>Interpret</td>
-<td>
-<code><a href="reference/identify_confounder.html">identify_confounder()</a></code>, <code><a href="reference/interaction_models.html">interaction_models()</a></code>, <code><a href="reference/mediation_analysis.html">mediation_analysis()</a></code>, <code><a href="reference/plot_mediation.html">plot_mediation()</a></code>
-</td>
-</tr>
-<tr>
-<td>Polish and export</td>
-<td>
-<code><a href="reference/modify_table.html">modify_table()</a></code>, <code><a href="reference/merge_tables.html">merge_tables()</a></code>, <code><a href="reference/save_table.html">save_table()</a></code>, <code><a href="reference/save_plot.html">save_plot()</a></code>, <code><a href="reference/save_docx.html">save_docx()</a></code>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use <code>gtregression</code> in your work, please cite it as:</p>
 <p>Polani R, Eliyas SK, Sakthivel M, Kaviprawin M, Krishnamoorthy Y, Majella MG. <em>gtregression: Tools for Creating Publication-Ready Regression Tables.</em> Zenodo. <a href="https://doi.org/10.5281/zenodo.16905349" class="external-link uri">https://doi.org/10.5281/zenodo.16905349</a></p>
-</div>
-<div class="section level2">
-<h2 id="acknowledgements">Acknowledgements<a class="anchor" aria-label="anchor" href="#acknowledgements"></a>
-</h2>
-<p><code>gtregression</code> builds on the R ecosystem, especially <code>stats</code>, <code>survival</code>, <code>MASS</code>, <code>risks</code>, <code>logistf</code>, <code>broom</code>, <code>broom.helpers</code>, <code>sandwich</code>, <code>lmtest</code>, <code>dplyr</code>, <code>purrr</code>, <code>tibble</code>, <code>rlang</code>, <code>flextable</code>, <code>officer</code>, <code>gt</code>, <code>ggplot2</code>, <code>patchwork</code>, <code>forestploter</code>, and <code>scales</code>.</p>
 </div>
 
   </main><aside class="col-md-3"><div class="links">
@@ -464,12 +274,9 @@ Publication-ready regression and survival analysis tables, plots, and forest plo
 <li><a href="https://cloud.r-project.org/package=gtregression" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/ThinkDenominator/gtregression/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/ThinkDenominator/gtregression/issues" class="external-link">Report a bug</a></li>
-<li><a href="articles/gtregression-intro.html">Start Here</a></li>
-<li><a href="articles/visualise-results.html">Visualise Regression Results</a></li>
-<li><a href="articles/survival-analysis.html">Survival Analysis</a></li>
-<li><a href="articles/confounding-interaction.html">Confounding &amp; Interaction</a></li>
-<li><a href="articles/causal-mediation.html">Causal Mediation</a></li>
-<li><a href="reference/index.html">Function Overview</a></li>
+<li><a href="articles/choose-model.html">Which function should I use?</a></li>
+<li><a href="articles/function-options.html">Function options</a></li>
+<li><a href="news/index.html">What's new</a></li>
 </ul>
 </div>
 
@@ -480,7 +287,6 @@ Publication-ready regression and survival analysis tables, plots, and forest plo
 <li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
-
 
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
@@ -505,14 +311,10 @@ Publication-ready regression and survival analysis tables, plots, and forest plo
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/ThinkDenominator/gtregression/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/ThinkDenominator/gtregression/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
-<li><a href="https://gtregression.thinkdenominator.com/"><img src="https://github.com/ThinkDenominator/gtregression/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></li>
 <li><a href="https://CRAN.R-project.org/package=gtregression" class="external-link"><img src="https://www.r-pkg.org/badges/version/gtregression" alt="CRAN status"></a></li>
-<li><a href="https://cran.r-project.org/web/checks/check_results_gtregression.html" class="external-link"><img src="https://badges.cranchecks.info/worst/gtregression.svg" alt="CRAN checks"></a></li>
-<li><a href="https://cranlogs.r-pkg.org/downloads/total/last-month/gtregression" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/last-month/gtregression" alt="CRAN downloads"></a></li>
-<li><a href="https://CRAN.R-project.org/package=gtregression" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/gtregression" alt="CRAN downloads total"></a></li>
-<li><a href="https://lifecycle.r-lib.org/articles/stages.html#stable" class="external-link"><img src="https://img.shields.io/badge/lifecycle-stable-brightgreen.svg" alt="Lifecycle: stable"></a></li>
-<li><a href="https://github.com/ThinkDenominator/gtregression/blob/main/LICENSE.md" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></li>
+<li><a href="https://CRAN.R-project.org/package=gtregression" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/gtregression" alt="CRAN downloads"></a></li>
 <li><a href="https://app.codecov.io/gh/ThinkDenominator/gtregression" class="external-link"><img src="https://codecov.io/gh/ThinkDenominator/gtregression/branch/main/graph/badge.svg" alt="Codecov"></a></li>
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#stable" class="external-link"><img src="https://img.shields.io/badge/lifecycle-stable-brightgreen.svg" alt="Lifecycle: stable"></a></li>
 <li><a href="https://doi.org/10.5281/zenodo.16905349" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.16905349.svg" alt="DOI"></a></li>
 </ul>
 </div>

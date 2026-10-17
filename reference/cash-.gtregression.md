@@ -20,6 +20,11 @@ x$name
 
   Field name to access.
 
+## Value
+
+The requested element of `x`, or `NULL` if `x` has no element of that
+name. `engine` and `format` are treated as aliases of each other.
+
 ## Details
 
 Common fields: - table, table_display, table_body - models,

@@ -74,6 +74,10 @@ A list with the following components:
 
 - `best_model`: The best-fitting model object based on lowest AIC.
 
+- `n_used`, `n_excluded`: number of complete cases used for every
+  candidate model and number of rows excluded because of missing values
+  in the outcome or any candidate variable.
+
 - `all_models`: A named list of the accepted stepwise models.
 
 - `direction`: Stepwise selection direction used.
@@ -87,6 +91,14 @@ Treat stepwise selection as a screening tool. It is best used alongside
 the study question, clinical judgement, and model diagnostics rather
 than as an automatic final-model rule.
 
+Information criteria are only comparable between models fitted to the
+same observations. `select_models()` therefore restricts the data to
+complete cases across the outcome (or `time` and `event`) and all
+candidate variables before selection, reports the N used and the number
+of rows excluded in a message and in the table note, and stores them as
+`n_used` and `n_excluded`. Backward (and stepwise) selection can remove
+the last variable and so reach the intercept-only model.
+
 ## Examples
 
 ``` r
@@ -98,6 +110,7 @@ stepwise <- select_models(
   approach = "linear",
   direction = "forward"
 )
+#> select_models(): all candidate models are fitted to the same N = 189 complete cases.
 stepwise$results_table
 #> # A tibble: 3 × 9
 #>   model_id formula   model_terms n_predictors   AIC   BIC logLik deviance adj_r2
