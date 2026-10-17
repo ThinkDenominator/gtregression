@@ -1,4 +1,4 @@
-#' Compare Prespecified Regression Models
+#' Compare prespecified regression models
 #'
 #' Compare gtregression candidate models side by side using model-fit statistics.
 #' This is intended for transparent model comparison after you have already
@@ -15,8 +15,14 @@
 #'   calculated sequentially by comparing each model with the previous model.
 #'   Use this only when models are nested and supplied in the intended order.
 #' @param primary_exposure Optional exposure or exact coefficient name to track
-#'   across models. For Cox models this can be used to show the hazard ratio
-#'   and percentage change in the log-effect estimate across candidate models.
+#'   across models. Quoted and bare names are accepted; a bare name resolves
+#'   to a model variable first, not to a workspace object of the same name.
+#'   For Cox models this can be used to show the hazard ratio and its
+#'   percentage change across candidate models. "Change from first" is
+#'   \code{100 * (estimate - first) / |first|} computed on the displayed
+#'   scale: the ratio (OR, RR, IRR, HR, time ratio) for exponentiated models
+#'   and the coefficient for linear models. This is the same scale as the
+#'   change-in-estimate reported by \code{identify_confounder()}.
 #' @param exponentiate Logical. If \code{NULL}, Cox, logistic, Poisson,
 #'   negative-binomial, and parametric survival models are exponentiated by
 #'   default, while linear models are not.
@@ -122,13 +128,25 @@ compare_models <- function(...,
   format <- match.arg(format, c("flextable", "gt", "tibble"))
   theme <- .choice_arg(substitute(theme), env = parent.frame())
   theme <- theme[1]
+  .validate_theme_arg(theme)
   theme <- .resolve_theme(theme)
 
+  # A bare name resolves to a model variable (or exact coefficient name) first,
+  # as in the other functions, not to a workspace object of the same name.
   primary_exposure <- .vars_arg(
     substitute(primary_exposure),
     env = parent.frame(),
-    allow_null = TRUE
+    allow_null = TRUE,
+    data_names = .compare_models_variable_names(models)
   )
+  if (!is.null(primary_exposure) &&
+      (!is.character(primary_exposure) || length(primary_exposure) != 1L ||
+       is.na(primary_exposure) || !nzchar(primary_exposure))) {
+    stop(
+      "`primary_exposure` must be a single variable or coefficient name.",
+      call. = FALSE
+    )
+  }
 
   model_names <- .compare_model_names(models, model_names, input_names = input_names)
   names(models) <- model_names
@@ -265,7 +283,8 @@ compare_models <- function(...,
 #' @noRd
 .is_compare_gtregression_model <- function(x) {
   inherits(x, "gtregression") &&
-    (inherits(x, "multi_reg") || inherits(x, "cox_reg") || inherits(x, "surv_reg")) &&
+    (inherits(x, "multi_reg") || inherits(x, "cox_reg") ||
+       inherits(x, "surv_reg") || inherits(x, "conditional_logit_reg")) &&
     is.list(x$models) &&
     length(x$models) > 0L
 }
@@ -370,9 +389,13 @@ compare_models <- function(...,
     }
   }
 
-  ref_coef <- out$primary_log_estimate[is.finite(out$primary_log_estimate)][1]
-  if (!is.na(ref_coef) && is.finite(ref_coef) && !isTRUE(all.equal(ref_coef, 0))) {
-    out$primary_pct_change <- ((out$primary_log_estimate - ref_coef) / abs(ref_coef)) * 100
+  # "Change from first": percentage change of the displayed estimate (the
+  # ratio for exponentiated models, the coefficient for linear models)
+  # relative to the first model. This is the same scale as the
+  # change-in-estimate used by identify_confounder().
+  ref_est <- out$primary_estimate[is.finite(out$primary_estimate)][1]
+  if (!is.na(ref_est) && is.finite(ref_est) && !isTRUE(all.equal(ref_est, 0))) {
+    out$primary_pct_change <- ((out$primary_estimate - ref_est) / abs(ref_est)) * 100
   }
 
   out$best_AIC <- is.finite(out$AIC) & out$AIC == min(out$AIC, na.rm = TRUE)
@@ -599,6 +622,18 @@ compare_models <- function(...,
   }
   out <- tryCatch(summary(model)$concordance[1], error = function(e) NA_real_)
   .safe_numeric(out)
+}
+
+#' Variable and coefficient names available in the compared models
+#' @keywords internal
+#' @noRd
+.compare_models_variable_names <- function(models) {
+  out <- unlist(lapply(models, function(fit) {
+    vars <- tryCatch(all.vars(stats::formula(fit)), error = function(e) NULL)
+    coefs <- tryCatch(names(stats::coef(fit)), error = function(e) NULL)
+    c(vars, coefs)
+  }), use.names = FALSE)
+  unique(out[!is.na(out) & nzchar(out)])
 }
 
 #' @keywords internal

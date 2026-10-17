@@ -1,0 +1,181 @@
+---
+title: "Special Regression Models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Special Regression Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+gtregression 1.2.0 adds focused workflows for common study designs that need
+more than ordinary linear or logistic regression. Choose a model from the
+**outcome structure and study design**, not from the effect measure you would
+prefer to report.
+
+## Choose the right model
+
+| Research setting | Function | Main reported effect |
+|---|---|---|
+| Individually matched case-control study | `conditional_logit_reg()` | Matched odds ratio |
+| Patients grouped within one clustering variable | `multilevel_reg()` | Adjusted beta or odds ratio |
+| Ordered outcome with three or more levels | `ordinal_reg()` | Common odds ratio |
+| Unordered outcome with three or more levels | `multinomial_reg()` | Outcome-specific odds ratios |
+| Time-to-event outcome with competing events | `competing_risk_reg()` | Subdistribution hazard ratio |
+
+These functions return familiar gtregression objects. Supported results can be
+modified, merged, plotted, converted to forest data, and exported using the
+same downstream workflow as the core regression functions.
+
+## Matched case-control studies
+
+Use `conditional_logit_reg()` when cases and controls were matched and each row
+contains a matched-set identifier. The matched-set variable defines the risk
+sets; it is not estimated as an ordinary predictor.
+
+```{r conditional-logit, eval=FALSE}
+matched_result <- conditional_logit_reg(
+  matched_data,
+  outcome = case,
+  exposures = exposure,
+  matched_set = matched_set,
+  adjust_for = c(age, smoking),
+  model_stats = TRUE
+)
+
+matched_result
+matched_result$model_stats
+```
+
+Do not use ordinary logistic regression merely because the outcome is binary:
+that would ignore the matching used in the study design.
+
+## Multilevel models
+
+Use `multilevel_reg()` when observations are clustered within one grouping
+variable, such as patients within clinics. Version 1.2.0 intentionally supports
+a random-intercept model with one grouping variable.
+
+```{r multilevel, eval=FALSE}
+clinic_result <- multilevel_reg(
+  clinic_data,
+  outcome = improved,
+  exposures = treatment,
+  group = clinic,
+  adjust_for = c(age, sex),
+  approach = "logit",
+  model_stats = TRUE
+)
+
+clinic_result
+clinic_result$model_stats
+```
+
+The table reports fixed effects. The grouping variable is named in the note but
+does not receive a coefficient. Inspect the cluster count, random-intercept
+variance, ICC, convergence information, and singular-fit guidance.
+
+## Ordered outcomes
+
+Use `ordinal_reg()` only when the outcome levels have a meaningful order. The
+factor level order defines the direction of the effect.
+
+```{r ordinal, eval=FALSE}
+recovery_data$recovery <- ordered(
+  recovery_data$recovery,
+  levels = c("Poor", "Fair", "Good", "Excellent")
+)
+
+recovery_result <- ordinal_reg(
+  recovery_data,
+  outcome = recovery,
+  exposures = c(treatment, age),
+  adjust_for = sex,
+  model_stats = TRUE
+)
+
+recovery_result
+recovery_result$assumption_tests
+```
+
+An odds ratio above one indicates greater odds of being in a higher outcome
+category, subject to the proportional-odds assumption. Confirm the displayed
+outcome order and inspect the term-level assumption checks.
+
+## Unordered outcomes
+
+Use `multinomial_reg()` when the outcome categories have no defensible order.
+The first factor level is the reference outcome unless it is explicitly
+relevelled.
+
+```{r multinomial, eval=FALSE}
+destination_data$destination <- stats::relevel(
+  destination_data$destination,
+  ref = "Home"
+)
+
+destination_result <- multinomial_reg(
+  destination_data,
+  outcome = destination,
+  exposures = c(treatment, age),
+  adjust_for = frailty,
+  model_stats = TRUE
+)
+
+destination_result
+names(destination_result$per_outcome)
+plot_reg(destination_result$per_outcome[["Rehabilitation"]])
+```
+
+The publication table shows one comparison for each non-reference outcome.
+Use `$per_outcome` when a plot or forest table should focus on one comparison.
+
+## Competing risks
+
+Cumulative incidence estimates absolute event probability while accounting for
+competing events. Fine-Gray regression models the subdistribution hazard. These
+answer related but different questions.
+
+```{r competing-risks, eval=FALSE}
+cuminc_plot(
+  data_competing_risk,
+  time = follow_up_months,
+  event = outcome,
+  event_of_interest = Relapse,
+  censor_code = Censored,
+  by = treatment
+)
+
+fine_gray_result <- competing_risk_reg(
+  data_competing_risk,
+  time = follow_up_months,
+  event = outcome,
+  event_of_interest = Relapse,
+  censor_code = Censored,
+  exposures = treatment,
+  adjust_for = c(age, stage),
+  model_stats = TRUE
+)
+
+fine_gray_result
+```
+
+Do not interpret a subdistribution hazard ratio as a risk ratio. A
+cause-specific Cox model, Fine-Gray model, cumulative-incidence curve, and
+Kaplan-Meier curve are not interchangeable.
+
+## Continue the workflow
+
+```{r downstream, eval=FALSE}
+modify_table(fine_gray_result, caption = "Relapse analysis")
+plot_reg(fine_gray_result)
+forest_reg(forest_df(fine_gray_result))
+save_table(fine_gray_result)
+```
+
+For full reproducible checks, see the scripts in `dev/manual-tests/` in the
+source repository. The app exposes these workflows under **Special Models** and
+**Competing Risks**, while keeping core regression choices uncluttered.

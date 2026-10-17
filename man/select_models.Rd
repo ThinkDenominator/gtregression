@@ -54,6 +54,9 @@ A list with the following components:
   model metrics (AIC, BIC, deviance, log-likelihood, and adjusted R-squared
   for linear models).
   \item \code{best_model}: The best-fitting model object based on lowest AIC.
+  \item \code{n_used}, \code{n_excluded}: number of complete cases used for
+  every candidate model and number of rows excluded because of missing
+  values in the outcome or any candidate variable.
   \item \code{all_models}: A named list of the accepted stepwise models.
   \item \code{direction}: Stepwise selection direction used.
   \item \code{table}: A formatted \code{gt_tbl} or \code{flextable} when
@@ -68,6 +71,14 @@ steps, model-fit metrics, and the lowest-AIC model.
 Treat stepwise selection as a screening tool. It is best used alongside the
 study question, clinical judgement, and model diagnostics rather than as an
 automatic final-model rule.
+
+Information criteria are only comparable between models fitted to the same
+observations. \code{select_models()} therefore restricts the data to
+complete cases across the outcome (or \code{time} and \code{event}) and
+all candidate variables before selection, reports the N used and the number
+of rows excluded in a message and in the table note, and stores them as
+\code{n_used} and \code{n_excluded}. Backward (and stepwise) selection can
+remove the last variable and so reach the intercept-only model.
 }
 \examples{
 data <- data_birthwt

@@ -36,6 +36,26 @@ program with.
 
 ## Describe and Inspect Data
 
+### `import_data()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `file` | required | existing file path | Dataset to import. |
+| `format` | `NULL` | supported extension such as `"csv"`, `"xlsx"`, or `"dta"` | Overrides extension detection, including for extensionless Shiny upload paths. |
+| `sheet` | `NULL` | Excel sheet name or number | Selects an Excel worksheet; the first sheet is used by default. |
+| `header` | `TRUE` | `TRUE`, `FALSE` | Indicates whether a delimited file contains column names. |
+| `sep` | `NULL` | delimiter such as `","`, `";"`, or `"\t"` | Overrides the format-aware delimiter for CSV, TSV, or TXT. |
+| `na` | `c("", "NA")` | character vector | Values interpreted as missing. |
+| `encoding` | `"UTF-8"` | valid text encoding | Encoding for delimited text files. |
+| `name_repair` | `"check_unique"` | `"check_unique"`, `"unique"`, `"minimal"` | Preserves and checks names, repairs them reproducibly, or preserves them without validation. |
+| `...` | none | reader-specific arguments | Passes additional options to the selected reader. |
+
+```r
+analysis_data <- import_data("data/analysis.csv")
+
+stata_data <- import_data("data/analysis.dta")
+```
+
 ### `descriptive_table()`
 
 | Argument | Default | Available options or input | What it does |
@@ -101,6 +121,109 @@ descriptive_table(
 | `model_stats` | `FALSE` | `TRUE`, `FALSE` | Attaches model-fit statistics. |
 | `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference category rows. |
 
+### `conditional_logit_reg()`
+
+Use conditional logistic regression when cases and controls are linked through
+matched sets. This is different from adding the matching variables to an
+ordinary logistic regression model.
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Matched case-control dataset. |
+| `outcome` | required | binary column | Identifies cases and controls. |
+| `exposures` | required | column names | Variables for which matched odds ratios are reported. |
+| `matched_set` | required | one column name | Links every case to its matched control or controls. |
+| `adjust_for` | `NULL` | column names or `NULL` | Adds covariates to each exposure model. |
+| `multivariable` | `FALSE` | `TRUE`, `FALSE` | Fits all exposures in one conditional logistic model. |
+| `multivariate` | `NULL` | `TRUE`, `FALSE`, `NULL` | Convenience alias for `multivariable`. |
+| `model_stats` | `FALSE` | `TRUE`, `FALSE` | Returns matched-set, case, control, N, AIC, and log-likelihood summaries. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
+| `theme` | `"minimal"` | table theme preset | Table styling. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Controls categorical reference rows. Multilevel references remain visible. |
+
+The matched-set identifier is used to condition the model and therefore does
+not receive an odds ratio. Sets without both a case and a control are reported
+and excluded because they provide no information to the conditional analysis.
+
+### `multilevel_reg()`
+
+Use this focused workflow when observations are clustered, such as patients
+within clinics or pupils within schools, and a random-intercept model is
+appropriate.
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Clustered analysis dataset. |
+| `outcome` | required | one column name | Continuous outcome for `linear` or binary outcome for `logit`. |
+| `exposures` | required | column names | Fixed-effect predictors reported in the table. |
+| `group` | required | one grouping column | Defines clusters and receives a random intercept; it is not reported as a coefficient. |
+| `adjust_for` | `NULL` | column names or `NULL` | Adds fixed-effect covariates without displaying them as table rows. |
+| `approach` | `"linear"` | `"linear"`, `"logit"` | Fits a linear or binary logistic mixed-effects model. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Selects the publication-table engine. |
+| `theme` | `"minimal"` | table theme preset | Styles the output table. |
+| `model_stats` | `FALSE` | `TRUE`, `FALSE` | Returns model fit, N, clusters, variance components, ICC, and singular-fit status. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Controls categorical reference rows. Multilevel references remain visible. |
+
+Linear models report beta coefficients and an observed-scale ICC. Logistic
+models report odds ratios and a latent-scale ICC calculated with residual
+variance pi-squared over three. Fixed-effect p-values use a Wald normal
+approximation. A singular-fit warning means the estimated random-intercept
+variance is close to zero and the need for a multilevel model should be
+reconsidered. This function intentionally supports one random intercept;
+random slopes, crossed effects, and nested random-effects formulas should be
+fitted using specialist workflows.
+
+### `ordinal_reg()`
+
+Use ordinal logistic regression when an outcome has three or more naturally
+ordered categories, such as poor, fair, good, and excellent. The outcome must
+be an ordered factor so the direction of the common odds ratio is explicit.
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Ordinal-outcome analysis dataset. |
+| `outcome` | required | one ordered-factor column | Defines categories from lower to higher through its factor-level order. |
+| `exposures` | required | column names | Predictors reported as common odds ratios. |
+| `adjust_for` | `NULL` | column names or `NULL` | Adds covariates to each exposure model without reporting them. |
+| `multivariable` | `FALSE` | `TRUE`, `FALSE` | Fits and reports all exposures in one joint model. |
+| `multivariate` | `NULL` | `TRUE`, `FALSE`, `NULL` | Convenience alias for `multivariable`. |
+| `assumption_test` | `TRUE` | `TRUE`, `FALSE` | Returns term-level likelihood-ratio checks of proportional odds. |
+| `model_stats` | `FALSE` | `TRUE`, `FALSE` | Returns AIC, BIC, log-likelihood, N, outcome-level count, and convergence. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Selects the publication-table engine. |
+| `theme` | `"minimal"` | table theme preset | Styles the output table. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Controls categorical reference rows. Multilevel references remain visible. |
+
+An odds ratio above one means greater odds of being in a higher outcome
+category, assuming proportional odds. Inspect `$assumption_tests` before
+interpreting the common odds ratio. A small p-value indicates that the effect
+may differ across outcome thresholds; it does not mean that the predictor has
+no association with the outcome.
+
+### `multinomial_reg()`
+
+Use multinomial logistic regression when an outcome has three or more
+categories without a natural order, such as discharge destination. The first
+factor level is the reference outcome category.
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Nominal-outcome analysis dataset. |
+| `outcome` | required | one unordered-factor column | Defines the outcome; its first level is the reference category. |
+| `exposures` | required | column names | Predictors reported in every outcome comparison. |
+| `adjust_for` | `NULL` | column names or `NULL` | Adds covariates to each exposure model without reporting them. |
+| `multivariable` | `FALSE` | `TRUE`, `FALSE` | Fits and reports all exposures in one joint model. |
+| `multivariate` | `NULL` | `TRUE`, `FALSE`, `NULL` | Convenience alias for `multivariable`. |
+| `model_stats` | `FALSE` | `TRUE`, `FALSE` | Returns AIC, BIC, log-likelihood, N, outcome-level count, and convergence. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Selects the publication-table engine. |
+| `theme` | `"minimal"` | table theme preset | Styles the output table. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Controls predictor reference rows. Multilevel references remain visible. |
+
+The main table displays one column for each non-reference outcome compared with
+the reference outcome. Use `relevel()` before fitting to change that reference.
+For a focused graph, select a comparison from `$per_outcome`, for example
+`plot_reg(result$per_outcome[["Rehabilitation"]])`. The same component can be
+passed to `forest_df()` and `forest_reg()`.
+
 ### `stratified_uni_reg()`
 
 | Argument | Default | Available options or input | What it does |
@@ -141,12 +264,19 @@ descriptive_table(
 | `exposures` | required | column names | Variables to report or use in a full multivariable Cox model. |
 | `adjust_for` | `NULL` | column names or `NULL` | Adds adjustment covariates while reporting only `exposures`. |
 | `stratifier` | `NULL` | one column name or `NULL` | Repeats Cox analyses within strata. |
+| `baseline_strata` | `NULL` | categorical column names or `NULL` | Fits one Cox model with separate baseline hazards across strata and common HRs for the reported predictors. No HR is estimated for the strata variables. |
+| `time_start` | `NULL` | numeric column name or `NULL` | Uses `Surv(time_start, time, event)` for delayed entry or start-stop observations. |
+| `cluster` | `NULL` | column name or `NULL` | Calculates cluster-robust sandwich standard errors for correlated observations. |
+| `weights` | `NULL` | non-negative numeric column name or `NULL` | Applies case weights. |
+| `robust` | `NULL` | `TRUE`, `FALSE`, `NULL` | Controls robust sandwich variance; clustering implies robust variance. |
+| `ties` | `"efron"` | `"efron"`, `"breslow"`, `"exact"` | Selects the tied-event method. |
+| `control` | `NULL` | named list or `NULL` | Supplies selected `coxph.control()` settings. |
 | `interaction` | `NULL` | interaction specification or `NULL` | Fits interaction terms. |
 | `multivariable` | `FALSE` | `TRUE`, `FALSE` | If `TRUE`, fits one Cox model using all variables in `exposures`. |
 | `multivariate` | `NULL` | `TRUE`, `FALSE`, `NULL` | Backward-compatible alias for `multivariable`. |
 | `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
 | `theme` | `"minimal"` | table theme preset | Table styling. |
-| `show_sample` | `"events"` | `"events"`, `"n"`, `"both"`, `"none"` | Controls displayed sample columns in stratified Cox tables. |
+| `show_sample` | `"both"` | `"events"`, `"n"`, `"both"`, `"none"` | Controls displayed sample columns in stratified Cox tables. |
 | `model_stats` | `FALSE` | `TRUE`, `FALSE` | Attaches AIC, BIC, log-likelihood, concordance, N, and events. |
 | `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference category rows. |
 
@@ -166,7 +296,7 @@ descriptive_table(
 | `distribution` | `"weibull"` | `"weibull"`, `"exponential"`, `"lognormal"`, `"loglogistic"` | Parametric survival distribution. |
 | `format` | `"flextable"` | `"flextable"`, `"gt"` | Output table engine. |
 | `theme` | `"minimal"` | table theme preset | Table styling. |
-| `show_sample` | `"events"` | `"events"`, `"n"`, `"both"`, `"none"` | Controls displayed sample columns in stratified survival tables. |
+| `show_sample` | `"both"` | `"events"`, `"n"`, `"both"`, `"none"` | Controls displayed sample columns in stratified survival tables. |
 | `model_stats` | `FALSE` | `TRUE`, `FALSE` | Attaches model-fit statistics. |
 | `show_ref` | `TRUE` | `TRUE`, `FALSE` | Displays or hides reference category rows. |
 
@@ -202,6 +332,80 @@ descriptive_table(
 | `theme` | `"classic"` | `"classic"`, `"minimal"`, `"bw"`, `"light"`, `"none"` | ggplot theme style. |
 | `grid` | `FALSE` | `TRUE`, `FALSE` | Adds grid lines when `TRUE`. |
 | `base_size` | `13` | number | Base font size. |
+
+### `cuminc_plot()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Competing-risk dataset. |
+| `time` | required | one numeric column | Follow-up time. |
+| `event` | required | one column with distinct event codes | Identifies censoring, the event of interest, and competing events. |
+| `event_of_interest` | required | one observed event code or label | Selects the cumulative-incidence function to plot. |
+| `censor_code` | `0` | one observed code or label | Explicitly identifies censored observations. |
+| `by` | `NULL` | one grouping column or `NULL` | Draws grouped curves and enables Gray's test. |
+| `conf.int` | `TRUE` | `TRUE`, `FALSE` | Shows pointwise 95% confidence intervals. |
+| `p_value` | `TRUE` | `TRUE`, `FALSE` | Displays Gray's test p-value for grouped curves. |
+| `p_value_position` | `NULL` | numeric `c(x, y)` or `NULL` | Positions the Gray's test annotation. |
+| `break_time_by` | `NULL` | positive number or `NULL` | Controls x-axis intervals. |
+| `xlim`, `ylim` | `NULL` | numeric ranges or `NULL` | Controls visible plot limits. |
+| `xlab`, `ylab` | `"Time"`, `"Cumulative incidence"` | character | Changes axis labels. |
+| `title`, `subtitle`, `caption` | `NULL` | character or `NULL` | Adds publication figure text. |
+| `legend_title` | `NULL` | character or `NULL` | Changes the group legend heading. |
+| `legend_position` | `NULL` | `"bottom"`, `"top"`, `"right"`, `"left"`, `"none"` | Controls the legend location. |
+| `palette` | `NULL` | colour vector or `NULL` | Changes curve and confidence-band colours. |
+| `y_percent` | `TRUE` | `TRUE`, `FALSE` | Displays cumulative incidence as percentages or proportions. |
+| `theme` | `"classic"` | `"classic"`, `"minimal"`, `"bw"`, `"light"` | Selects the plot theme. |
+| `grid` | `FALSE` | `TRUE`, `FALSE` | Shows or hides major grid lines. |
+| `base_size` | `13` | positive number | Controls the base font size. |
+
+`cuminc_plot()` requires at least one competing event in addition to the event
+of interest. A Kaplan-Meier failure curve is not a substitute because treating
+competing events as ordinary censoring generally overestimates event risk.
+
+```r
+cuminc_plot(
+  data_competing_risk,
+  time = follow_up_months,
+  event = outcome,
+  event_of_interest = Relapse,
+  censor_code = Censored,
+  by = treatment
+)
+```
+
+### `competing_risk_reg()`
+
+| Argument | Default | Available options or input | What it does |
+|---|---:|---|---|
+| `data` | required | data frame | Competing-risk dataset. |
+| `time` | required | one numeric column | Follow-up time. |
+| `event` | required | one column with distinct event codes | Identifies censoring and every event type. |
+| `event_of_interest` | required | one observed code or label | Selects the event modelled by Fine-Gray regression. |
+| `exposures` | required | column names | Variables reported in the table. |
+| `censor_code` | `0` | one observed code or label | Explicitly identifies censoring. |
+| `adjust_for` | `NULL` | column names or `NULL` | Fits one adjusted model per exposure and reports the exposure SHR. |
+| `multivariable` | `FALSE` | `TRUE`, `FALSE` | Fits one model containing and reporting all exposures. |
+| `multivariate` | `NULL` | `TRUE`, `FALSE`, `NULL` | Alias for `multivariable`. |
+| `format` | `"flextable"` | `"flextable"`, `"gt"` | Selects the publication-table engine. |
+| `theme` | `"minimal"` | table theme preset | Styles the output table. |
+| `model_stats` | `FALSE` | `TRUE`, `FALSE` | Returns N, event counts, pseudo-log-likelihood, and convergence. |
+| `show_ref` | `TRUE` | `TRUE`, `FALSE` | Controls categorical reference rows. |
+
+The reported SHR is a subdistribution hazard ratio for cumulative incidence.
+It is not a cause-specific Cox hazard ratio. The output footnote names the event
+of interest and confirms that competing events were retained.
+
+```r
+relapse_model <- competing_risk_reg(
+  data_competing_risk,
+  time = follow_up_months,
+  event = outcome,
+  event_of_interest = Relapse,
+  censor_code = Censored,
+  exposures = treatment,
+  adjust_for = c(age, stage)
+)
+```
 
 ### `survival_summary()`
 
@@ -270,6 +474,8 @@ descriptive_table(
 | `check_ph()` | `transform` | `"km"` | `"km"`, `"rank"`, `"identity"` | Chooses time transform for proportional hazards test. |
 | `check_ph()` | `alpha` | `0.05` | number | Threshold used to flag possible PH violation. |
 | `check_ph()` | `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
+| `plot(check_ph(...))` | `model`, `term` | `NULL` | model/term name or position | Draws scaled Schoenfeld residual diagnostics. Select `model` when several Cox models were checked. |
+| `plot_cox_survival()` | `model`, `newdata`, `by` | required, `NULL`, `NULL` | Cox model/result, profile data, categorical model variable | Draws adjusted Cox survival curves at supplied or representative covariate profiles. |
 
 ## Regression Plots and Model Fit
 
@@ -295,7 +501,7 @@ descriptive_table(
 
 | Argument | Default | Available options or input | What it does |
 |---|---:|---|---|
-| `tbl_uni`, `tbl_multi` | required | two compatible regression objects | Plots crude and adjusted estimates side by side. |
+| `tbl_uni`, `tbl_multi` | required | two compatible regression objects from the same model family | Plots crude and adjusted estimates side by side. Supports standard, Cox, parametric survival, Fine-Gray, conditional logistic, ordinal, and individual multinomial outcome objects. |
 | `title_uni`, `title_multi`, `caption` | `NULL` | character or `NULL` | Plot labels. |
 | `ref_line`, `order_y`, `log_x` | automatic/`NULL`/`FALSE` | number, order vector, logical | Controls the null line, order, and scale; set `log_x = TRUE` for a ratio-scale log axis. |
 | `xlim_uni`, `breaks_uni` | `NULL` | numeric vectors or `NULL` | Axis control for the crude plot. |
@@ -303,7 +509,7 @@ descriptive_table(
 | `point_color`, `errorbar_color` | `"#6B7280"` | colour values | Styles non-significant estimates and confidence intervals with neutral grey. |
 | `sig_color`, `sig_errorbar_color` | `"#0072B2"` | colour values or `NULL` | Highlights estimates whose confidence interval excludes the null with accessible blue. |
 | `point_size`, `point_stroke`, `ci_linewidth` | `2.8`, `0.55`, `0.55` | positive numbers | Controls estimate marker size, marker outline, and confidence-interval thickness. |
-| `base_size`, `show_ref`, `alpha` | `12`, `TRUE`, `0.05` | number, logical, number | Controls readability, reference rows, and highlighting. |
+| `base_size`, `show_ref`, `alpha` | `12`, `NULL`, `0.05` | number, `TRUE`, `FALSE`, `NULL`, number | Controls readability, reference rows, and highlighting. `NULL` inherits the source-table reference setting. |
 | `show_adjustment_note` | `TRUE` | `TRUE`, `FALSE` | Adds adjustment note when available. |
 
 ### `plot_model_fit()`
@@ -414,7 +620,7 @@ replace, residual and influence plots.
 | `format` | `"flextable"` | `"flextable"`, `"gt"`, `"tibble"` | Output format. |
 | `theme` | `"minimal"` | table theme preset | Table styling. |
 
-#### Compare Models in the gtregression App
+#### Compare Models in the GT Regression App
 
 The R function above compares already fitted gtregression objects. The app adds
 a candidate-model builder in **Advanced > Compare models**, fits the requested
@@ -511,6 +717,23 @@ every candidate. The app's **Code** panel contains the complete `multi_reg()`,
 | `spanners` | `NULL` | character vector or `NULL` | Adds group headers above merged table blocks. |
 | `theme` | `"minimal"` | table theme preset | Table styling. |
 | `format` | `"flextable"` | `"flextable"`, `"gt"` | Output engine for the merged table, independent of the input-table formats. |
+
+The inputs do not need to be different table types. Two or more univariable or
+multivariable tables can be combined for complete-case, best-case, worst-case,
+or other sensitivity analyses. Use a clear `spanners` label for every model:
+
+```r
+merge_tables(
+  primary_model,
+  best_case_model,
+  worst_case_model,
+  spanners = c("Primary", "Best case", "Worst case")
+)
+```
+
+Rows are matched using the underlying variable and category rather than their
+position. A predictor absent from one scenario remains in the merged table with
+blank cells for that scenario.
 
 For descriptive + crude + adjusted tables, keep binary-variable rows consistent.
 The recommended publication layout is `show_dichotomous = "all_levels"` in

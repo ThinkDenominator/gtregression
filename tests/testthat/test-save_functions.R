@@ -114,6 +114,9 @@ test_that("docx flextables are fitted without unsafe font shrinking", {
   natural <- .fit_flextable_docx_width(ft, table_width = 6.5, fit_width = FALSE)
 
   expect_lte(sum(flextable::flextable_dim(fitted)$widths), 6.5)
+  expect_equal(sum(fitted$header$colwidths), 6.5, tolerance = 1e-8)
+  expect_equal(sum(fitted$body$colwidths), 6.5, tolerance = 1e-8)
+  expect_equal(sum(fitted$footer$colwidths), 6.5, tolerance = 1e-8)
   expect_s3_class(unfitted, "flextable")
   expect_gt(sum(flextable::flextable_dim(natural)$widths),
             sum(flextable::flextable_dim(fitted)$widths))
@@ -274,4 +277,55 @@ test_that("save_docx validates inputs and rejects gt tables for Word export", {
   )
   expect_true(file.exists(out))
   unlink(out)
+})
+
+test_that("save_forest keeps the en dash in PDF and PNG exports without device warnings", {
+  # A forest-style grid object whose labels hold the package-standard CI text.
+  ci <- "0.95 (0.89–1.01)"
+  plot <- grid::gTree(children = grid::gList(
+    grid::textGrob("age", y = 0.7),
+    grid::gTree(children = grid::gList(grid::textGrob(ci, y = 0.4)))
+  ))
+  expect_setequal(.forest_text_labels(plot), c("age", ci))
+
+  base <- tempfile("gtregression-endash-")
+  expect_no_warning(
+    out_pdf <- suppressMessages(save_forest(plot, filename = base, format = "pdf",
+                                            width = 4, height = 2, padding = 0))
+  )
+  expect_no_warning(
+    out_png <- suppressMessages(save_forest(plot, filename = base, format = "png",
+                                            width = 4, height = 2, padding = 0, dpi = 72))
+  )
+  expect_true(file.exists(out_pdf) && file.size(out_pdf) > 0)
+  expect_true(file.exists(out_png) && file.size(out_png) > 0)
+
+  # The standard-font PDF is written with an encoding that contains the en
+  # dash, and the page content draws the en dash (octal 226), not a hyphen.
+  read_pdf <- function(path) readBin(path, "raw", file.size(path))
+  page_bytes <- function(bytes) {
+    from <- grepRaw("stream\n", bytes, fixed = TRUE) + 7L
+    to <- grepRaw("endstream", bytes, fixed = TRUE) - 1L
+    memDecompress(bytes[from:to], type = "gzip")
+  }
+  has_bytes <- function(bytes, pattern) length(grepRaw(pattern, bytes, fixed = TRUE)) > 0
+  bytes <- read_pdf(out_pdf)
+  if (has_bytes(bytes, "WinAnsiEncoding")) {
+    page <- page_bytes(bytes)
+    en_dash <- c(charToRaw("0.89"), as.raw(0x96), charToRaw("1.01"))
+    expect_true(has_bytes(page, en_dash))
+    expect_false(has_bytes(page, "0.89-1.01"))
+    expect_false(has_bytes(page, "0.89...1.01"))
+  }
+
+  # Plain ASCII labels use the same standard PDF device and fonts as before.
+  ascii <- grid::textGrob("smoke Yes 1.23 (0.50-2.00)")
+  expect_no_warning(
+    out_ascii <- suppressMessages(save_forest(ascii, filename = paste0(base, "-ascii"),
+                                              format = "pdf", width = 4, height = 2, padding = 0))
+  )
+  ascii_bytes <- read_pdf(out_ascii)
+  expect_true(has_bytes(ascii_bytes, "Helvetica"))
+  expect_true(has_bytes(page_bytes(ascii_bytes), "0.50-2.00"))
+  unlink(c(out_pdf, out_png, out_ascii))
 })

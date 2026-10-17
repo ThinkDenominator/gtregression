@@ -2,7 +2,7 @@
 % Please edit documentation in R/descriptive_table.R
 \name{descriptive_table}
 \alias{descriptive_table}
-\title{Descriptive Summary Table (no gtsummary) using gt/flextable}
+\title{Descriptive summary table}
 \usage{
 descriptive_table(
   data,
@@ -26,13 +26,16 @@ descriptive_table(
 recommended in scripts, and bare names are also accepted.}
 
 \item{by}{Optional single grouping variable. Quoted and bare names are
-accepted.}
+accepted. If it is also listed in `exposures`, it is left out of the
+summarised variables, with a message.}
 
 \item{percent}{"column" (default) or "row"; aliases like "col"/"rows" accepted}
 
 \item{digits}{integer; decimals for \% and continuous stats (default 1)}
 
-\item{show_missing}{"ifany" (default) or "no"}
+\item{show_missing}{"ifany" (default) or "no". With "ifany", a
+"(Missing)" row (n and \% of the column N) is added under every variable
+that has missing values, categorical or continuous.}
 
 \item{show_dichotomous}{"all_levels" (default) or "single_row"}
 
@@ -46,7 +49,8 @@ values are \code{"mean"}, \code{"median"}, \code{"mode"},
 numeric ordinal variables that should be shown as n (\%).}
 
 \item{value}{optional named list for single-row binaries (e.g., list(sex="Female"));
-formula entries like list(sex ~ "Female") are also accepted}
+formula entries like list(sex ~ "Female") are also accepted. The value
+must be one of the observed levels of the variable.}
 
 \item{format}{"flextable" (default) or "gt"}
 
@@ -75,4 +79,13 @@ Publication-ready summary of categorical and continuous variables
 If variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the
 displayed table. Internal matching still uses the original column names.
+
+Variable types: factor, character and logical variables are shown as
+n (\%) per level (logical: \code{FALSE}/\code{TRUE}); numeric variables
+with exactly two distinct values are shown as categories; numeric variables
+with a single distinct value are shown as one category (n, 100\%) unless a
+numeric \code{statistic} is requested for them; other numeric variables
+are continuous. Levels of numeric variables shown as categories are sorted
+by value. Date and date-time variables are not summarised: they are
+excluded and named in a message.
 }

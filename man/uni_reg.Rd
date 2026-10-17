@@ -2,7 +2,7 @@
 % Please edit documentation in R/uni_reg.R
 \name{uni_reg}
 \alias{uni_reg}
-\title{Univariate regression}
+\title{Univariable regression}
 \usage{
 uni_reg(
   data,
@@ -19,7 +19,13 @@ uni_reg(
 \item{data}{A data frame containing the outcome and exposure variables.}
 
 \item{outcome}{Character scalar; outcome column name. Quoted and bare names
-are accepted.}
+are accepted.
+For binary-outcome approaches (\code{"logit"}, \code{"firth"},
+\code{"logbinomial"}, \code{"robpoisson"}) the outcome may be numeric
+0/1 or 1/2 (2 is the event; integer or double), logical (\code{TRUE} is
+the event), or a two-level factor or character variable (the second
+level is the event, which is reported in a message). The same factor,
+character and logical coding is accepted by \code{"poisson"}.}
 
 \item{exposures}{Character vector; exposure column names. Quoted names are
 recommended in scripts, and bare names are also accepted.}
@@ -77,6 +83,15 @@ If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the
 displayed table and plots. Internal matching still uses the original column
 names.
+
+Confidence intervals are Wald intervals; for \code{approach = "linear"}
+they use the t distribution with the residual degrees of freedom (as
+\code{confint()} for \code{lm}), consistent with the t-based p-values.
+Factor exposures are always fitted with treatment contrasts (each level
+versus the reference), whatever \code{options(contrasts = )} or a
+\code{contrasts} attribute says. An exposure whose model cannot be fitted
+is kept in the table with a dash and named in a footnote and in
+\code{failed_exposures}.
 }
 \examples{
 d <- mtcars

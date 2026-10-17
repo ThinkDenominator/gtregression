@@ -25,7 +25,8 @@ test_that("select_models works for logit approaches and all directions", {
     )
 
     expect_type(result, "list")
-    expect_named(result, c("results_table", "best_model", "all_models", "direction"))
+    expect_named(result, c("results_table", "best_model", "all_models", "direction",
+                           "n_used", "n_excluded"))
     expect_equal(result$direction, direction)
     expect_s3_class(result$results_table, "tbl_df")
     expect_s3_class(result$best_model, "glm")

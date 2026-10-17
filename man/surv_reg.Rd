@@ -17,7 +17,7 @@ surv_reg(
   distribution = "weibull",
   format = c("flextable", "gt"),
   theme = c("minimal"),
-  show_sample = "events",
+  show_sample = "both",
   model_stats = FALSE,
   show_ref = TRUE
 )
@@ -70,10 +70,13 @@ accepted.}
 
 \item{theme}{Table styling preset.}
 
-\item{show_sample}{For stratified parametric survival tables, controls which
-sample-size columns are shown in the publication table. One of
-\code{"events"} (default), \code{"n"}, \code{"both"}, or \code{"none"}.
-Model statistics, when requested, still retain both N and event counts.}
+\item{show_sample}{For stratified parametric survival tables
+(\code{stratifier} supplied), controls which sample-size columns are shown
+in the publication table. One of \code{"both"} (default; N and events),
+\code{"n"}, \code{"events"}, or \code{"none"}. Model statistics, when
+requested, still retain both N and event counts. This argument is ignored
+when \code{stratifier} is not supplied: non-stratified tables always show
+the model N column and report the number of events in a footnote.}
 
 \item{model_stats}{Logical; if \code{TRUE}, extract model-fit statistics
 including AIC, BIC, log-likelihood, scale, number of events, and N.}
@@ -124,12 +127,22 @@ Interaction terms specified via \code{interaction} are included using
 standard formula expansion (for example, \code{trt*prior}). Interaction
 effects are displayed as additional rows beneath the corresponding exposure.
 
-Stratified parametric survival tables show event counts by default. Use
-\code{show_sample = "n"}, \code{show_sample = "both"}, or
-\code{show_sample = "none"} to control the displayed sample columns. Crude
-stratified tables calculate these counts for each exposure-specific model;
-adjusted and multivariable stratified tables use the corresponding fitted
-model within each stratum.
+Stratified parametric survival tables show both N and event counts by
+default (\code{show_sample = "both"}). Use \code{show_sample = "n"},
+\code{show_sample = "events"}, or \code{show_sample = "none"} to control the
+displayed sample columns. All counts are taken from the fitted model within
+each stratum. When models within a stratum use different numbers of
+observations, the footnote reports the range. Rows with a missing
+\code{stratifier} value are excluded and counted in a footnote.
+\code{show_sample} has no effect without \code{stratifier}.
+
+Complete-case analysis is used: each model uses the rows that are complete
+for its own variables. Unused factor levels are dropped for each fitted
+model, so the reference category shown as \code{"Ref."} is the first level
+present in the data used by that model. Ordered factors are analysed with
+treatment (category-versus-reference) contrasts. Data in which every
+observation is an event are accepted; follow-up times must be greater than
+zero.
 
 If exposure variables have a \code{"label"} attribute, for example from
 \code{labelled::var_label()}, those labels are used automatically in the

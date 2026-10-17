@@ -37,10 +37,13 @@
 #' @param format Output table format; one of \code{"flextable"} (default) or
 #'   \code{"gt"}.
 #' @param theme Table styling preset.
-#' @param show_sample For stratified parametric survival tables, controls which
-#'   sample-size columns are shown in the publication table. One of
-#'   \code{"events"} (default), \code{"n"}, \code{"both"}, or \code{"none"}.
-#'   Model statistics, when requested, still retain both N and event counts.
+#' @param show_sample For stratified parametric survival tables
+#'   (\code{stratifier} supplied), controls which sample-size columns are shown
+#'   in the publication table. One of \code{"both"} (default; N and events),
+#'   \code{"n"}, \code{"events"}, or \code{"none"}. Model statistics, when
+#'   requested, still retain both N and event counts. This argument is ignored
+#'   when \code{stratifier} is not supplied: non-stratified tables always show
+#'   the model N column and report the number of events in a footnote.
 #' @param model_stats Logical; if \code{TRUE}, extract model-fit statistics
 #'   including AIC, BIC, log-likelihood, scale, number of events, and N.
 #' @param show_ref Logical; if \code{TRUE} (default), display reference-category
@@ -70,12 +73,22 @@
 #' standard formula expansion (for example, \code{trt*prior}). Interaction
 #' effects are displayed as additional rows beneath the corresponding exposure.
 #'
-#' Stratified parametric survival tables show event counts by default. Use
-#' \code{show_sample = "n"}, \code{show_sample = "both"}, or
-#' \code{show_sample = "none"} to control the displayed sample columns. Crude
-#' stratified tables calculate these counts for each exposure-specific model;
-#' adjusted and multivariable stratified tables use the corresponding fitted
-#' model within each stratum.
+#' Stratified parametric survival tables show both N and event counts by
+#' default (\code{show_sample = "both"}). Use \code{show_sample = "n"},
+#' \code{show_sample = "events"}, or \code{show_sample = "none"} to control the
+#' displayed sample columns. All counts are taken from the fitted model within
+#' each stratum. When models within a stratum use different numbers of
+#' observations, the footnote reports the range. Rows with a missing
+#' \code{stratifier} value are excluded and counted in a footnote.
+#' \code{show_sample} has no effect without \code{stratifier}.
+#'
+#' Complete-case analysis is used: each model uses the rows that are complete
+#' for its own variables. Unused factor levels are dropped for each fitted
+#' model, so the reference category shown as \code{"Ref."} is the first level
+#' present in the data used by that model. Ordered factors are analysed with
+#' treatment (category-versus-reference) contrasts. Data in which every
+#' observation is an event are accepted; follow-up times must be greater than
+#' zero.
 #'
 #' If exposure variables have a \code{"label"} attribute, for example from
 #' \code{labelled::var_label()}, those labels are used automatically in the
@@ -162,14 +175,16 @@ surv_reg <- function(data,
                      distribution = "weibull",
                      format = c("flextable", "gt"),
                      theme = c("minimal"),
-                     show_sample = "events",
+                     show_sample = "both",
                      model_stats = FALSE,
                      show_ref = TRUE) {
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
-  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame(),
+                         data_names = names(data))
+  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(),
+                          allow_null = TRUE, data_names = names(data))
   stratifier <- .survival_optional_single_var_arg(
     substitute(stratifier),
     data = data,
@@ -220,6 +235,7 @@ surv_reg <- function(data,
   }
   show_sample <- match.arg(show_sample, show_sample_choices)
   theme <- .resolve_theme(theme)
+  if (is.character(exposures)) exposures <- unique(exposures)
   adjusted_mode <- !is.null(adjust_for) && length(adjust_for) > 0
   fmt_class <- if (format == "gt") "gt_surv" else "ft_surv"
 
@@ -249,7 +265,8 @@ surv_reg <- function(data,
       show_sample = show_sample,
       model_stats = model_stats,
       show_ref = show_ref,
-      fmt_class = fmt_class
+      fmt_class = fmt_class,
+      event_note = .survival_event_level_note(data, event)
     ))
   }
 
@@ -301,15 +318,18 @@ surv_reg <- function(data,
     )
     .must_be_display_df_multi(display_df)
   }
+  display_df <- .add_model_n_column(display_df, core$models)
 
   footnotes <- c(
     .abbrev_note("survreg"),
     paste0("Distribution: ", distribution, "."),
-    if (isTRUE(show_ref) && any(core$table_body$ref %in% TRUE)) .ref_note() else NULL,
+    if (.has_visible_reference(core$table_body, show_ref)) .ref_note() else NULL,
     if (adjusted_mode) .display_adjustment_note(adjust_for, variable_labels) else NULL,
     if (isTRUE(multivariable)) "Adjusted for the other variables in the model." else NULL,
+    .survival_event_level_note(data, event),
     if (!is.null(interaction)) .interaction_note(interaction) else NULL,
-    NULL
+    .model_n_footnote(core$models),
+    .survival_events_note(.survival_model_events(core$models))
   )
 
   .message_hidden_ref_rows("surv_reg", core$table_body, show_ref)
@@ -447,12 +467,29 @@ surv_reg <- function(data,
   if (sum(data_model[[event]] == 1, na.rm = TRUE) == 0) {
     stop("`event` must include at least one event for this parametric survival model.", call. = FALSE)
   }
-  if (sum(data_model[[event]] == 0, na.rm = TRUE) == 0) {
-    stop("`event` must include at least one censored observation for this parametric survival model.", call. = FALSE)
+  if (any(data_model[[time]] <= 0, na.rm = TRUE)) {
+    stop(
+      "`time` must be greater than zero for parametric survival models.",
+      call. = FALSE
+    )
   }
 
   .validate_exposures(data_model, predictors)
-  data_model
+  .survival_prepare_predictors(data_model, predictors)
+}
+
+#' Number of events in the rows actually used by a survreg fit
+#' @keywords internal
+#' @noRd
+.survreg_event_count <- function(fit, fallback = NA_integer_) {
+  y <- tryCatch(
+    stats::model.response(stats::model.frame(fit)),
+    error = function(e) NULL
+  )
+  if (inherits(y, "Surv") && identical(attr(y, "type"), "right")) {
+    return(as.integer(sum(y[, "status"] == 1, na.rm = TRUE)))
+  }
+  as.integer(fallback)
 }
 
 #' @keywords internal
@@ -465,7 +502,9 @@ surv_reg <- function(data,
   tryCatch(
     {
       fit <- survival::survreg(fml, data = data, dist = distribution, model = TRUE)
-      attr(fit, "gtregression_events") <- sum(data[[event]] == 1, na.rm = TRUE)
+      attr(fit, "gtregression_events") <- .survreg_event_count(
+        fit, fallback = sum(data[[event]] == 1, na.rm = TRUE)
+      )
       attr(fit, "gtregression_distribution") <- distribution
       fit
     },
@@ -486,18 +525,9 @@ surv_reg <- function(data,
   }
 
   rn <- rownames(coefs)
-  rn_clean <- gsub("`", "", rn, fixed = TRUE)
-  exposure_clean <- gsub("`", "", exposure, fixed = TRUE)
-
-  keep <- rn_clean != "(Intercept)" &
-    rn_clean != "Log(scale)" &
-    (rn_clean == exposure_clean |
-       (startsWith(rn_clean, exposure_clean) & !grepl(":", rn_clean, fixed = TRUE)) |
-       (!is.null(interaction) &
-          grepl(":", rn_clean, fixed = TRUE) &
-          vapply(strsplit(rn_clean, ":", fixed = TRUE),
-                 function(parts) any(startsWith(parts, exposure_clean) | parts == exposure_clean),
-                 logical(1))))
+  term_map <- .coefficient_term_map(fit, rn)
+  keep <- rn != "(Intercept)" & rn != "Log(scale)" &
+    vapply(term_map, .term_contains_variable, logical(1), variable = exposure)
   idx <- which(keep)
 
   df_nonref <- NULL
@@ -508,13 +538,13 @@ surv_reg <- function(data,
     p <- if (length(p_col)) coefs[idx, p_col[1]] else NA_real_
     z <- stats::qnorm(0.975)
 
-    levels_out <- vapply(rn_clean[idx], function(term) {
-      if (grepl(":", term, fixed = TRUE)) {
-        return(paste(strsplit(term, ":", fixed = TRUE)[[1]], collapse = " x "))
-      }
-      lvl <- sub(paste0("^", exposure_clean), "", term)
-      if (identical(lvl, "")) exposure else lvl
-    }, character(1))
+    levels_out <- mapply(
+      .survival_coefficient_display_level,
+      coefficient = rn[idx],
+      term = term_map[idx],
+      MoreArgs = list(exposure = exposure, fit = fit),
+      USE.NAMES = FALSE
+    )
 
     df_nonref <- data.frame(
       exposure = exposure,

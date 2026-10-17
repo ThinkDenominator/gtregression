@@ -1,6 +1,6 @@
 {
   "title": "gtregression: Tools for Creating Publication-Ready Regression Tables",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "The gtregression R package simplifies regression modelling and reporting through publication-ready tables, plots, diagnostics, survival analysis, and causal mediation workflows. It is designed for accessible, reproducible epidemiological and clinical research, particularly in Low- and Middle-Income Countries (LMICs).",
   "creators": [
     {

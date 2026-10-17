@@ -67,16 +67,6 @@ Footnotes and caveats are styled compactly by default across flextable and gt
 outputs, which keeps abbreviation notes and adjustment notes readable without
 making final tables unnecessarily tall.
 
-> **Figure placeholder: anatomy of a gtregression table.** Add the slide image
-> here to identify the caption, headers, characteristic labels, category levels,
-> sample-size columns, abbreviations, automatic adjustment note, and custom
-> caveat. The intended asset path is
-> `vignettes/figures/modify-table-anatomy.png`.
-
-<!-- When the image is added, replace the callout above with:
-![Anatomy of a gtregression table](figures/modify-table-anatomy.png)
--->
-
 ### Customisation Options At A Glance
 
 | Table part | Argument | Default | What it changes | Example |
@@ -118,10 +108,13 @@ birthwt_custom <- modify_table(
   caveat = "Adjusted for maternal age, maternal weight, and maternal race."
 )
 
-birthwt_custom
+birthwt_custom$table
 ```
 
 ## Merge Tables
+
+For a full guide to merging three or more tables, sensitivity analyses, themes
+and flextable styling, see [Merge and Customise Tables](merge-tables.html).
 
 `merge_tables()` combines descriptive, crude, and adjusted results. Matching is
 based on the original variable names, so merged tables remain aligned even when
@@ -167,6 +160,24 @@ adjustment note from `multi_reg()`, are retained unchanged. The adjustment note
 uses the same display labels as the multivariable table; labels supplied through
 variable metadata or `modify_table()` are therefore reflected in the note. The
 same rule applies to adjusted `cox_reg()` and `surv_reg()` tables.
+
+### Sensitivity Analyses
+
+Tables of the same type can be merged. This is useful when primary,
+complete-case, best-case, and worst-case models need to be presented together:
+
+```r
+sensitivity_table <- merge_tables(
+  primary_model,
+  best_case_model,
+  worst_case_model,
+  spanners = c("Primary", "Best case", "Worst case")
+)
+```
+
+`merge_tables()` aligns rows by the original variable and category. Predictors
+that are not included in every model are retained and shown as blank in the
+scenarios where they were not fitted.
 
 Use `modify_table(remove_adjustment_note = TRUE, caveat = "...")` when a
 custom manuscript note is preferred.

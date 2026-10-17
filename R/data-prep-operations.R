@@ -60,7 +60,9 @@ gt_dp_show_missing <- function(data, variable, label = "Missing") {
   values <- data[[variable]]
   affected <- is.na(values)
   if (!any(affected)) stop("This variable has no missing values to show as a category.", call. = FALSE)
-  existing <- unique(as.character(values[!is.na(values)]))
+  # An existing factor keeps its level order (and so its reference category);
+  # the missing category is appended last.
+  existing <- if (is.factor(values)) levels(values) else unique(as.character(values[!is.na(values)]))
   if (label %in% existing) {
     stop(
       "The missing-value label is already a recorded value. Choose a different label.",
@@ -94,7 +96,8 @@ gt_dp_set_type <- function(data, variable, type, levels = character()) {
     levels <- trimws(as.character(levels))
     levels <- levels[nzchar(levels)]
     observed <- unique(as.character(values[!is.na(values)]))
-    if (!length(levels)) levels <- observed
+    # Without an explicit order, an existing factor keeps its own level order.
+    if (!length(levels)) levels <- if (is.factor(values)) levels(values) else observed
     omitted <- setdiff(observed, levels)
     if (length(omitted)) {
       stop(paste0("Level order is missing observed value(s): ", paste(omitted, collapse = ", "), "."), call. = FALSE)
@@ -272,40 +275,108 @@ gt_dp_filter <- function(data, variable1, operator1, value1,
     before = nrow(data), included = sum(condition %in% TRUE),
     excluded = sum(condition %in% FALSE), unknown = sum(is.na(condition))
   )
-  data[which(condition %in% TRUE), , drop = FALSE]
+  result <- data[which(condition %in% TRUE), , drop = FALSE]
+  # Plain sequential row names, as dplyr::filter() gives in the generated code.
+  if (is.data.frame(result) && !inherits(result, "tbl_df")) rownames(result) <- NULL
+  result
 }
 
-gt_dp_code_line <- function(operation, ...) {
+# ---- Reproducible code ------------------------------------------------------
+# Every applied change is stored as structured arguments and rendered here for
+# a named data object. Nothing is rewritten textually afterwards, so values,
+# labels and names can never be altered by code generation.
+
+gt_dp_name_code <- function(name) {
+  name <- as.character(name)
+  ifelse(make.names(name) == name, name, paste0("`", gsub("`", "\\\\`", name), "`"))
+}
+
+gt_dp_column_code <- function(data_name, variable) {
+  paste0(data_name, "$", gt_dp_name_code(variable))
+}
+
+gt_dp_string_code <- function(x) encodeString(as.character(x), quote = '"')
+
+# A numeric literal that parses back to exactly the same double.
+gt_dp_number_code <- function(x) {
+  x <- as.numeric(x)
+  short <- as.character(x)
+  if (identical(as.numeric(short), x)) short else deparse(x, control = "digits17")
+}
+
+# One comparison exactly as gt_dp_condition() evaluates it: numerically when
+# the column is numeric and the value is a number, otherwise as text.
+gt_dp_condition_code <- function(column_code, numeric_column, operator, value, value2 = "") {
+  value_num <- suppressWarnings(as.numeric(value))
+  if (operator %in% c("between", "outside")) {
+    lower <- gt_dp_number_code(value)
+    upper <- gt_dp_number_code(value2)
+    if (identical(operator, "between")) {
+      return(paste0("(", column_code, " >= ", lower, " & ", column_code, " <= ", upper, ")"))
+    }
+    return(paste0("(", column_code, " < ", lower, " | ", column_code, " > ", upper, ")"))
+  }
+  if (isTRUE(numeric_column) && !is.na(value_num)) {
+    return(paste(column_code, operator, gt_dp_number_code(value_num)))
+  }
+  paste0("as.character(", column_code, ") ", operator, " ", gt_dp_string_code(value))
+}
+
+gt_dp_code_line <- function(operation, ..., data = "data") {
   args <- list(...)
-  quote_value <- function(x) encodeString(as.character(x), quote = '"')
+  col <- function(variable) gt_dp_column_code(data, variable)
+  vec <- function(x) paste0("c(", paste(gt_dp_string_code(x), collapse = ", "), ")")
   switch(operation,
-    rename = paste0("data <- dplyr::rename(data, ", args$new_name, " = ", args$variable, ")"),
+    rename = paste0(data, " <- dplyr::rename(", data, ", ", gt_dp_name_code(args$new_name), " = ", gt_dp_name_code(args$variable), ")"),
     label = if (nzchar(args$label)) {
-      paste0("attr(data$", args$variable, ", \"label\") <- ", quote_value(args$label))
+      paste0("attr(", col(args$variable), ", \"label\") <- ", gt_dp_string_code(args$label))
     } else {
-      paste0("attr(data$", args$variable, ", \"label\") <- NULL")
+      paste0("attr(", col(args$variable), ", \"label\") <- NULL")
     },
-    recode = paste0("data$", args$variable, " <- dplyr::recode(as.character(data$", args$variable,
-      "), ", paste(paste0(quote_value(args$from), " = ", quote_value(args$to)), collapse = ", "), ")"),
-    missing = paste0("data$", args$variable, "[as.character(data$", args$variable, ") %in% ",
-      "c(", paste(quote_value(args$codes), collapse = ", "), ")] <- NA"),
-    missing_category = paste0("data$", args$variable, " <- factor(ifelse(is.na(data$", args$variable, "), ",
-      quote_value(args$label), ", as.character(data$", args$variable, ")))") ,
-    type = switch(args$type,
-      factor = paste0(
-        "data$", args$variable, " <- factor(data$", args$variable,
-        ", levels = c(", paste(quote_value(args$levels), collapse = ", "), "))"
-      ),
-      ordered = paste0(
-        "data$", args$variable, " <- ordered(data$", args$variable,
-        ", levels = c(", paste(quote_value(args$levels), collapse = ", "), "))"
-      ),
-      numeric = paste0("data$", args$variable, " <- as.numeric(as.character(data$", args$variable, "))"),
-      text = paste0("data$", args$variable, " <- as.character(data$", args$variable, ")")
+    recode = paste0(col(args$variable), " <- dplyr::recode(as.character(", col(args$variable),
+      "), ", paste(paste0(gt_dp_string_code(args$from), " = ", gt_dp_string_code(args$to)), collapse = ", "), ")"),
+    missing = paste0(col(args$variable), "[as.character(", col(args$variable), ") %in% ", vec(args$codes), "] <- NA"),
+    missing_category = paste0(
+      col(args$variable), " <- factor(ifelse(is.na(", col(args$variable), "), ", gt_dp_string_code(args$label),
+      ", as.character(", col(args$variable), ")), levels = ", vec(args$levels), ")"
     ),
-    keep = paste0("data <- dplyr::select(data, ", paste(args$variables, collapse = ", "), ")"),
-    filter = paste0("data <- dplyr::filter(data, ", args$expression, ")"),
+    type = switch(args$type,
+      factor = paste0(col(args$variable), " <- factor(as.character(", col(args$variable), "), levels = ", vec(args$levels), ")"),
+      ordered = paste0(col(args$variable), " <- factor(as.character(", col(args$variable), "), levels = ", vec(args$levels), ", ordered = TRUE)"),
+      numeric = paste0(col(args$variable), " <- as.numeric(as.character(", col(args$variable), "))"),
+      text = paste0(col(args$variable), " <- as.character(", col(args$variable), ")")
+    ),
+    keep = paste0(data, " <- dplyr::select(", data, ", ", paste(gt_dp_name_code(args$variables), collapse = ", "), ")"),
+    filter = {
+      clause <- function(variable, operator, value, numeric) {
+        gt_dp_condition_code(gt_dp_name_code(variable), numeric, operator, value)
+      }
+      expression <- clause(args$variable1, args$operator1, args$value1, args$numeric1)
+      if (length(args$variable2) && nzchar(args$variable2) && nzchar(args$value2)) {
+        connector <- if (identical(args$connector, "OR")) " | " else " & "
+        expression <- paste0(expression, connector, clause(args$variable2, args$operator2, args$value2, args$numeric2))
+      }
+      paste0(data, " <- dplyr::filter(", data, ", ", expression, ")")
+    },
+    calculate = switch(args$mode,
+      single = paste0(col(args$new_name), " <- ", col(args$source), " ", args$operator, " ", gt_dp_number_code(args$number)),
+      two_variables = paste0(col(args$new_name), " <- ", col(args$source), " ", args$operator, " ", col(args$second)),
+      ratio_power = paste0(col(args$new_name), " <- ", col(args$source), " / (", col(args$second), " ^ ", gt_dp_number_code(args$number), ")")
+    ),
+    groups = {
+      conditions <- vapply(seq_along(args$operators), function(index) {
+        gt_dp_condition_code(col(args$variable), args$numeric, args$operators[[index]], args$values[[index]], args$values2[[index]])
+      }, character(1))
+      rules <- paste0("  ", conditions, " ~ ", gt_dp_string_code(args$results))
+      paste0(col(args$new_name), " <- dplyr::case_when(\n", paste(rules, collapse = ",\n"),
+        ",\n  TRUE ~ ", gt_dp_string_code(args$default), "\n)")
+    },
     transform = args$code,
     ""
   )
+}
+
+# Render a list of stored steps (each list(operation, args)) for a data object.
+gt_dp_render_steps <- function(steps, data = "data") {
+  vapply(steps, function(step) do.call(gt_dp_code_line, c(list(step$operation), step$args, list(data = data))), character(1))
 }

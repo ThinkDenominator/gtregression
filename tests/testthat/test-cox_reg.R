@@ -37,6 +37,8 @@ test_that("cox_reg returns crude hazard ratio tables", {
   expect_true("HR (95% CI)" %in% names(res$table_display))
   expect_true("Treatment group" %in% res$table_display$Characteristic)
   expect_true("Ref." %in% res$table_display[["HR (95% CI)"]])
+  level_labels <- res$table_display$Characteristic[!res$table_display$is_header]
+  expect_true(all(grepl("^  ", level_labels)))
   expect_null(res$model_stats)
   expect_equal(
     attr(res$table_display, "row_exposure")[res$table_display$is_header],
@@ -268,9 +270,17 @@ test_that("cox_reg validates survival inputs", {
   df <- lung_cox_data()
   df$bad_event <- 1
 
+  # Data without censored observations are valid for a Cox model.
+  all_events <- cox_reg(df, time = "time", event = "bad_event", exposures = "age")
+  direct <- survival::coxph(survival::Surv(time, bad_event) ~ age, data = df)
+  expect_equal(
+    unname(stats::coef(all_events$models$age)), unname(stats::coef(direct)),
+    tolerance = 1e-8
+  )
+  df$no_event <- 0
   expect_error(
-    cox_reg(df, time = "time", event = "bad_event", exposures = "age"),
-    "`event` must include at least one censored observation"
+    cox_reg(df, time = "time", event = "no_event", exposures = "age"),
+    "at least one event"
   )
   expect_error(
     cox_reg(df, time = "time", event = "status", exposures = "missing_var"),
@@ -555,11 +565,11 @@ test_that("cox_reg supports stratified crude and adjusted Cox tables", {
   expect_s3_class(crude, "cox_reg")
   expect_equal(crude$source, "stratified_cox_reg")
   expect_true(crude$stratified)
-  expect_equal(crude$show_sample, "events")
+  expect_equal(crude$show_sample, "both")
   expect_false(crude$adjusted_mode)
   expect_equal(crude$by, "trt")
   expect_equal(crude$levels, c("Standard treatment", "Test treatment"))
-  expect_false("..N__Standard treatment" %in% names(crude$table_display))
+  expect_true("..N__Standard treatment" %in% names(crude$table_display))
   expect_true("..Events__Standard treatment" %in% names(crude$table_display))
   expect_true("..eff__Standard treatment" %in% names(crude$table_display))
   expect_true("..p__Test treatment" %in% names(crude$table_display))
@@ -578,7 +588,7 @@ test_that("cox_reg supports stratified crude and adjusted Cox tables", {
   expect_s3_class(adjusted, "stratified_cox_reg")
   expect_true(adjusted$adjusted_mode)
   expect_equal(adjusted$adjust_for, c("age", "karno"))
-  expect_false("..N__Standard treatment" %in% names(adjusted$table_display))
+  expect_true("..N__Standard treatment" %in% names(adjusted$table_display))
   expect_true("..Events__Standard treatment" %in% names(adjusted$table_display))
   expect_true("..eff__Standard treatment" %in% names(adjusted$table_display))
   expect_s3_class(adjusted$model_stats, "data.frame")
@@ -671,11 +681,11 @@ test_that("cox_reg supports stratified multivariable Cox tables", {
 
   expect_s3_class(res, "stratified_cox_reg")
   expect_true(res$multivariable)
-  expect_equal(res$show_sample, "events")
+  expect_equal(res$show_sample, "both")
   expect_false(res$adjusted_mode)
   expect_named(res$models, c("Standard treatment", "Test treatment"))
   expect_named(res$models[["Standard treatment"]], "multivariable_model")
-  expect_false("..N__Standard treatment" %in% names(res$table_display))
+  expect_true("..N__Standard treatment" %in% names(res$table_display))
   expect_true("..Events__Standard treatment" %in% names(res$table_display))
   expect_true("..eff__Standard treatment" %in% names(res$table_display))
   expect_true(any(trimws(res$table_display$Characteristic) %in% c("Age", "age")))
@@ -730,6 +740,197 @@ test_that("cox_reg validates stratifier inputs and supports stratified forest da
   expect_equal(attr(forest_data, "forest_meta")$stratifier, "trt")
   expect_true(attr(forest_data, "forest_meta")$side_by_side_strata)
   expect_equal(length(attr(forest_data, "forest_estimates")$est), 2L)
+})
+
+test_that("cox_reg supports baseline-hazard stratification in one model", {
+  df <- lung_cox_data()
+  attr(df$celltype, "label") <- "Tumour cell type"
+
+  res <- cox_reg(
+    df,
+    time = time,
+    event = status,
+    exposures = age,
+    baseline_strata = celltype,
+    model_stats = TRUE
+  )
+  # Unqualified strata() is recognised by every survival version; the
+  # namespaced form `survival::strata()` is not treated as a stratum by
+  # survival < 3.7 and would be fitted as an ordinary covariate.
+  strata <- survival::strata
+  direct <- survival::coxph(
+    survival::Surv(time, status) ~ age + strata(celltype),
+    data = df,
+    model = TRUE
+  )
+  expect_false(any(grepl("strata", names(stats::coef(direct)))))
+  expect_equal(
+    as.numeric(stats::logLik(res$models$age)),
+    as.numeric(stats::logLik(direct)),
+    tolerance = 1e-8
+  )
+
+  expect_equal(
+    unname(stats::coef(res$models$age)["age"]),
+    unname(stats::coef(direct)["age"]),
+    tolerance = 1e-8
+  )
+  expect_identical(res$baseline_strata, "celltype")
+  expect_false(any(res$table_body$exposure == "celltype"))
+  expect_match(
+    paste(res$footnotes, collapse = " "),
+    "Baseline hazard stratified by Tumour cell type"
+  )
+  expect_match(paste(res$footnotes, collapse = " "), "No hazard ratio")
+  expect_s3_class(plot_reg(res), "ggplot")
+  expect_s3_class(forest_reg(forest_df(res)), "gtregression_forest")
+  expect_s3_class(check_ph(res, format = "tibble"), "tbl_df")
+  expect_true(is.data.frame(res$model_stats))
+})
+
+test_that("cox_reg supports multiple baseline strata in a multivariable model", {
+  df <- lung_cox_data()
+  df$trt <- factor(df$trt)
+
+  res <- suppressWarnings(
+    cox_reg(
+      df,
+      time = time,
+      event = status,
+      exposures = c(age, karno),
+      baseline_strata = c(celltype, trt),
+      multivariable = TRUE
+    )
+  )
+  strata <- survival::strata
+  direct <- survival::coxph(
+    survival::Surv(time, status) ~ age + karno + strata(celltype, trt),
+    data = df,
+    model = TRUE
+  )
+  expect_named(stats::coef(direct), c("age", "karno"))
+
+  expect_equal(stats::coef(res$models[[1]]), stats::coef(direct), tolerance = 1e-8)
+  expect_identical(res$baseline_strata, c("celltype", "trt"))
+  expect_false(any(res$table_body$exposure %in% c("celltype", "trt")))
+})
+
+test_that("cox_reg validates baseline-hazard strata", {
+  df <- lung_cox_data()
+
+  expect_error(
+    cox_reg(
+      df, time, status, age,
+      stratifier = trt,
+      baseline_strata = celltype
+    ),
+    "either `stratifier`"
+  )
+  expect_error(
+    cox_reg(df, time, status, age, baseline_strata = age),
+    "must not overlap"
+  )
+  expect_error(
+    cox_reg(df, time, status, age, baseline_strata = karno),
+    "must be categorical"
+  )
+  expect_error(
+    cox_reg(df, time, status, age, baseline_strata = absent),
+    "not found"
+  )
+
+  df$one_level <- factor("only")
+  expect_error(
+    cox_reg(df, time, status, age, baseline_strata = one_level),
+    "at least two observed levels"
+  )
+})
+
+test_that("cox_reg supports delayed entry", {
+  skip_if_not_installed("survival")
+
+  df <- lung_cox_data()
+  df$entry <- 0
+  out <- cox_reg(df, time, status, age, time_start = entry)
+  direct <- survival::coxph(
+    survival::Surv(entry, time, status) ~ age,
+    data = transform(df, status = .cox_event01(status))
+  )
+
+  expect_equal(stats::coef(out$models[[1]]), stats::coef(direct), tolerance = 1e-8)
+  expect_identical(out$time_start, "entry")
+  expect_match(paste(out$footnotes, collapse = " "), "entry time")
+})
+
+test_that("cox_reg supports clustered robust variance", {
+  skip_if_not_installed("survival")
+
+  df <- lung_cox_data()
+  df$centre <- factor(rep(seq_len(12), length.out = nrow(df)))
+  out <- cox_reg(df, time, status, age, cluster = centre)
+  direct <- survival::coxph(
+    survival::Surv(time, status) ~ age,
+    data = transform(df, status = .cox_event01(status)),
+    cluster = centre
+  )
+
+  expect_equal(stats::coef(out$models[[1]]), stats::coef(direct), tolerance = 1e-8)
+  expect_equal(
+    summary(out$models[[1]])$coefficients[, "robust se"],
+    summary(direct)$coefficients[, "robust se"],
+    tolerance = 1e-8
+  )
+  expect_identical(out$cluster, "centre")
+})
+
+test_that("cox_reg supports case weights, ties, and control", {
+  skip_if_not_installed("survival")
+
+  df <- lung_cox_data()
+  df$case_weight <- rep(c(1, 2), length.out = nrow(df))
+  out <- cox_reg(
+    df, time, status, age,
+    weights = case_weight,
+    robust = TRUE,
+    ties = breslow,
+    control = list(iter.max = 30)
+  )
+  direct <- survival::coxph(
+    survival::Surv(time, status) ~ age,
+    data = transform(df, status = .cox_event01(status)),
+    weights = case_weight,
+    robust = TRUE,
+    ties = "breslow",
+    control = survival::coxph.control(iter.max = 30)
+  )
+
+  expect_equal(stats::coef(out$models[[1]]), stats::coef(direct), tolerance = 1e-8)
+  expect_identical(out$ties, "breslow")
+  expect_identical(out$weights, "case_weight")
+})
+
+test_that("cox_reg validates advanced Cox arguments", {
+  df <- lung_cox_data()
+  df$entry <- df$time
+  df$centre <- 1
+  df$case_weight <- -1
+
+  expect_error(cox_reg(df, time, status, age, time_start = entry), "less than")
+  expect_error(cox_reg(df, time, status, age, cluster = centre), "two observed")
+  expect_error(cox_reg(df, time, status, age, weights = case_weight), "greater than zero")
+  expect_error(cox_reg(df, time, status, age, robust = NA), "`robust`")
+  expect_error(cox_reg(df, time, status, age, ties = invalid), "efron|breslow|exact")
+  expect_error(cox_reg(df, time, status, age, control = list(bad = 1)), "Invalid `control`")
+})
+
+test_that("cox_reg warns about sparse baseline-hazard strata", {
+  df <- lung_cox_data()
+  df$sparse_group <- factor(ifelse(seq_len(nrow(df)) <= 3L, "Small", "Main"))
+
+  expect_warning(
+    cox_reg(df, time, status, age, baseline_strata = sparse_group),
+    "Sparse baseline-hazard strata"
+  )
 })
 test_that("cox_reg displays every level of character predictors", {
   set.seed(412)

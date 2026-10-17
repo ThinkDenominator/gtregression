@@ -1,18 +1,65 @@
 #' Get ordered levels for a stratifier
+#'
+#' Factor: level order (unused levels dropped by the callers' loops). Numeric
+#' and logical stratifiers are ordered by value; character stratifiers keep the
+#' order of first appearance.
 #' @keywords internal
 .strata_levels <- function(data, stratifier) {
   v <- data[[stratifier]]
   if (is.factor(v)) {
     levels(stats::na.omit(v))
+  } else if (is.numeric(v) || is.logical(v)) {
+    sort(unique(stats::na.omit(v)))
   } else {
     unique(stats::na.omit(v))
   }
+}
+
+#' Remove rows with a missing stratifier and name an empty-string stratum
+#'
+#' An empty-string level cannot be used as a list or column name, so it is
+#' shown as "(blank)".
+#' @keywords internal
+#' @noRd
+.strata_prepare_data <- function(data, stratifier) {
+  data <- data[!is.na(data[[stratifier]]), , drop = FALSE]
+  v <- data[[stratifier]]
+  blank <- "(blank)"
+  if (is.factor(v) && any(levels(v) == "")) {
+    levels(v)[levels(v) == ""] <- blank
+    data[[stratifier]] <- v
+  } else if (is.character(v) && any(v == "")) {
+    v[v == ""] <- blank
+    data[[stratifier]] <- v
+  }
+  data
+}
+
+#' Put each stratum's columns in the order N, effect, p-value
+#' @keywords internal
+#' @noRd
+.strata_order_columns <- function(wide, spanners) {
+  ids <- unlist(lapply(spanners, function(nm) {
+    paste0(c("..N__", "..Events__", "..eff__", "..p__"), nm)
+  }), use.names = FALSE)
+  ids <- ids[ids %in% names(wide)]
+  lead <- intersect(c("Characteristic", "is_header"), names(wide))
+  rest <- setdiff(names(wide), c(lead, ids))
+  row_exposure <- attr(wide, "row_exposure", exact = TRUE)
+  variable_labels <- attr(wide, "variable_labels", exact = TRUE)
+  wide <- wide[, c(lead, ids, rest), drop = FALSE]
+  .attach_display_metadata(wide, row_exposure = row_exposure,
+                           variable_labels = variable_labels)
 }
 #' Build canonical row skeleton (exposure headers + factor levels)
 #' @keywords internal
 #' @noRd
 .strata_build_skeleton <- function(data, exposures, variable_labels = NULL, show_ref = TRUE) {
-  is_factor <- vapply(exposures, function(x) is.factor(data[[x]]), logical(1))
+  is_factor <- vapply(
+    exposures,
+    function(x) is.factor(data[[x]]) || is.character(data[[x]]),
+    logical(1)
+  )
   label_map <- variable_labels
   if (is.null(label_map)) {
     label_map <- .var_label_map(data, exposures)
@@ -20,7 +67,11 @@
 
   levels_map <- lapply(
     exposures,
-    function(x) if (is.factor(data[[x]])) levels(data[[x]]) else NULL
+    function(x) {
+      value <- data[[x]]
+      if (is.character(value)) value <- factor(value)
+      if (is.factor(value)) levels(value) else NULL
+    }
   )
   names(levels_map) <- exposures
 
@@ -37,7 +88,7 @@
 
     if (is_factor[[x]]) {
       levels_to_show <- levels_map[[x]]
-      if (!isTRUE(show_ref) && length(levels_to_show) > 0L) {
+      if (!isTRUE(show_ref) && length(levels_to_show) == 2L) {
         levels_to_show <- levels_to_show[-1]
       }
 
@@ -106,7 +157,7 @@
       factor_levels <- unique(td_exp$level)
       factor_levels <- factor_levels[!is.na(factor_levels)]
       factor_levels <- factor_levels[factor_levels != x]
-      if (!isTRUE(show_ref)) {
+      if (!isTRUE(show_ref) && length(factor_levels) == 2L) {
         ref_levels <- unique(td_exp$level[td_exp$ref %in% TRUE])
         factor_levels <- setdiff(factor_levels, ref_levels)
       }
@@ -166,7 +217,10 @@
 
   fmt_est_ci <- function(est, lo, hi, digits = 2) {
     f <- function(z) formatC(z, digits = digits, format = "f", big.mark = ",")
-    paste0(f(est), " (", f(lo), "\u2013", f(hi), ")")
+    out <- paste0(f(est), " (", f(lo), "\u2013", f(hi), ")")
+    # non-estimable coefficient: blank cell, as in the non-stratified tables
+    out[is.na(est)] <- ""
+    out
   }
 
   N_vec   <- character(nrow(skeleton))
@@ -247,7 +301,10 @@
 .strata_pull_cols_multi <- function(td, skeleton) {
   fmt_est_ci <- function(est, lo, hi, digits = 2) {
     f <- function(z) formatC(z, digits = digits, format = "f", big.mark = ",")
-    paste0(f(est), " (", f(lo), "\u2013", f(hi), ")")
+    out <- paste0(f(est), " (", f(lo), "\u2013", f(hi), ")")
+    # non-estimable coefficient: blank cell, as in the non-stratified tables
+    out[is.na(est)] <- ""
+    out
   }
 
   eff <- character(nrow(skeleton))
@@ -364,7 +421,7 @@
 
       if (!is.null(fit)) {
         n_vec[i] <- tryCatch(
-          as.character(as.integer(stats::nobs(fit))),
+          as.character(.model_observation_count(fit)),
           error = function(e) ""
         )
       }
@@ -385,7 +442,7 @@
   widths <- integer(length(spanners))
 
   for (i in seq_along(spanners)) {
-    nm <- sub("^.*=\\s*", "", spanners[i])
+    nm <- spanners[i]
     ids <- c(
       paste0("..N__", nm),
       paste0("..Events__", nm),

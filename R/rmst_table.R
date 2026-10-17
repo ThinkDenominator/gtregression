@@ -13,9 +13,13 @@
 #' @param by Optional grouping variable for separate RMST estimates. Quoted and
 #'   bare names are accepted.
 #' @param tau Restriction time for RMST. For example, \code{tau = 365} reports
-#'   mean survival time restricted to the first 365 days of follow-up.
+#'   mean survival time restricted to the first 365 days of follow-up. If
+#'   \code{tau} is beyond the last follow-up time of a group, the estimate
+#'   extrapolates the survival curve; a warning is raised and a footnote is
+#'   added to the table.
 #' @param digits Number of digits for displayed survival time summaries.
-#' @param conf.level Confidence level for RMST confidence intervals.
+#' @param conf.level Confidence level for RMST confidence intervals. The
+#'   column headers show the level used, for example \code{"RMST (90\% CI)"}.
 #' @param format Output format. One of \code{"flextable"} (default),
 #'   \code{"gt"}, or \code{"tibble"}.
 #' @param theme Table styling preset.
@@ -74,7 +78,8 @@ rmst_table <- function(data,
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
-  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE)
+  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE,
+                  data_names = names(data))
   format <- .choice_arg(
     substitute(format),
     env = parent.frame(),
@@ -102,16 +107,23 @@ rmst_table <- function(data,
   fit <- survival::survfit(.km_formula(time, event, by), data = data_clean)
   sm <- summary(fit, rmean = tau)
   table_body <- .rmst_table_body(sm, by = by, tau = tau, conf.level = conf.level)
+  tau_note <- .rmst_tau_note(data_clean, time, by, tau)
+  if (!is.null(tau_note)) {
+    warning(tau_note, call. = FALSE)
+  }
 
   if (format == "tibble") {
     return(tibble::as_tibble(table_body))
   }
 
-  table_display <- .rmst_table_display(table_body, digits = digits)
+  table_display <- .rmst_table_display(
+    table_body, digits = digits, conf.level = conf.level
+  )
   tbl <- .build_rmst_table(
     table_display,
     format = format,
-    theme = theme
+    theme = theme,
+    extra_note = tau_note
   )
 
   res <- list(
@@ -124,6 +136,7 @@ rmst_table <- function(data,
     by = by,
     tau = tau,
     conf.level = conf.level,
+    footnotes = c(.rmst_base_note(), tau_note),
     format = format,
     source = "rmst_table"
   )
@@ -183,6 +196,59 @@ rmst_table <- function(data,
   data_clean
 }
 
+#' Note raised when `tau` lies beyond the observed follow-up of a group
+#'
+#' Beyond the last follow-up time the Kaplan-Meier curve is carried forward at
+#' its last value, so the RMST is an extrapolation.
+#'
+#' @keywords internal
+#' @noRd
+.rmst_tau_note <- function(data, time, by, tau) {
+  last_time <- if (is.null(by)) {
+    stats::setNames(max(data[[time]], na.rm = TRUE), "Overall")
+  } else {
+    groups <- factor(data[[by]])
+    vapply(
+      split(data[[time]], groups, drop = TRUE),
+      function(x) max(x, na.rm = TRUE),
+      numeric(1)
+    )
+  }
+  beyond <- last_time < tau
+  if (!any(beyond)) {
+    return(NULL)
+  }
+  detail <- if (is.null(by)) {
+    format(unname(last_time), trim = TRUE)
+  } else {
+    paste0(
+      names(last_time)[beyond], " (", format(last_time[beyond], trim = TRUE), ")",
+      collapse = ", "
+    )
+  }
+  paste0(
+    "tau (", format(tau, trim = TRUE), ") exceeds the last follow-up time ",
+    if (is.null(by)) "(" else "in: ", detail, if (is.null(by)) ")" else "",
+    "; the survival curve is extrapolated at its last value up to tau, ",
+    "so RMST should be interpreted with caution."
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.rmst_base_note <- function() {
+  paste(
+    "RMST is restricted mean survival time up to tau.",
+    "For two groups, the difference is the second group minus the first group."
+  )
+}
+
+#' @keywords internal
+#' @noRd
+.rmst_ci_label <- function(conf.level = 0.95) {
+  paste0(format(round(100 * conf.level, 2), trim = TRUE, drop0trailing = TRUE), "% CI")
+}
+
 #' @keywords internal
 #' @noRd
 .rmst_table_body <- function(sm, by = NULL, tau, conf.level = 0.95) {
@@ -195,7 +261,7 @@ rmst_table <- function(data,
   group <- if (is.null(by)) {
     "Overall"
   } else {
-    sub("^.*=", "", rownames(tab))
+    sub("^[^=]*=", "", rownames(tab))
   }
 
   z <- stats::qnorm(1 - (1 - conf.level) / 2)
@@ -256,7 +322,7 @@ rmst_table <- function(data,
 
 #' @keywords internal
 #' @noRd
-.rmst_table_display <- function(table_body, digits = 1) {
+.rmst_table_display <- function(table_body, digits = 1, conf.level = 0.95) {
   fmt_num <- function(x) {
     ifelse(
       is.na(x),
@@ -298,29 +364,32 @@ rmst_table <- function(data,
     )
   )
 
-  data.frame(
+  out <- data.frame(
     Group = table_body$Group,
     Tau = fmt_num(table_body$Tau),
     N = ifelse(is.na(table_body$N), "", as.character(table_body$N)),
     Events = ifelse(is.na(table_body$Events), "", as.character(table_body$Events)),
-    `RMST (95% CI)` = rmst_txt,
-    `RMST difference (95% CI)` = diff_txt,
+    rmst = rmst_txt,
+    difference = diff_txt,
     `p-value` = fmt_p(table_body$p.value),
     check.names = FALSE,
     stringsAsFactors = FALSE
   )
+  ci_label <- .rmst_ci_label(conf.level)
+  names(out)[names(out) == "rmst"] <- paste0("RMST (", ci_label, ")")
+  names(out)[names(out) == "difference"] <- paste0("RMST difference (", ci_label, ")")
+  out
 }
 
 #' @keywords internal
 #' @noRd
 .build_rmst_table <- function(display,
                               format = c("flextable", "gt"),
-                              theme = c("minimal")) {
+                              theme = c("minimal"),
+                              extra_note = NULL) {
   format <- match.arg(format, c("flextable", "gt"))
-  note <- paste(
-    "RMST is restricted mean survival time up to tau.",
-    "For two groups, the difference is the second group minus the first group."
-  )
+  note <- .rmst_base_note()
+  center_cols <- setdiff(names(display), "Group")
 
   if (format == "gt") {
     tbl <- gt::gt(display) |>
@@ -328,14 +397,17 @@ rmst_table <- function(data,
       gt::cols_align(align = "left", columns = "Group") |>
       gt::cols_align(
         align = "center",
-        columns = c("Tau", "N", "Events", "RMST (95% CI)", "RMST difference (95% CI)", "p-value")
+        columns = dplyr::all_of(center_cols)
       ) |>
       gt::tab_style(
         style = gt::cell_text(weight = "bold"),
         locations = gt::cells_column_labels()
       ) |>
-      gt::tab_source_note(gt::md(note)) |>
-      .compact_gt_source_notes()
+      gt::tab_source_note(gt::md(note))
+    if (!is.null(extra_note)) {
+      tbl <- gt::tab_source_note(tbl, extra_note)
+    }
+    tbl <- .compact_gt_source_notes(tbl)
 
     if ("header_shaded" %in% theme) {
       tbl <- gt::tab_options(tbl, column_labels.background.color = "#f6f8fa")
@@ -354,7 +426,7 @@ rmst_table <- function(data,
   ft <- flextable::align(ft, j = "Group", align = "left", part = "all")
   ft <- flextable::align(
     ft,
-    j = c("Tau", "N", "Events", "RMST (95% CI)", "RMST difference (95% CI)", "p-value"),
+    j = center_cols,
     align = "center",
     part = "all"
   )
@@ -368,7 +440,7 @@ rmst_table <- function(data,
   if ("compact" %in% theme) {
     ft <- flextable::padding(ft, padding = 2, part = "body")
   }
-  ft <- flextable::add_footer_lines(ft, values = note)
+  ft <- flextable::add_footer_lines(ft, values = c(note, extra_note))
   ft <- .compact_flex_footer(ft)
   ft <- flextable::italic(ft, italic = TRUE, part = "footer")
   flextable::autofit(ft)

@@ -46,11 +46,10 @@ mod_data_prep_ui <- function(id) {
       shiny::actionButton(ns("reset"), "Reset all"),
       shiny::tags$hr(),
       shiny::tags$strong("Analysis dataset: "),
-      shiny::actionButton(ns("continue_original"), "Use original data", class = "btn-default"),
-      shiny::actionButton(ns("use_prepared"), "Use prepared data", class = "btn-success"),
+      shiny::textOutput(ns("analysis_dataset"), inline = TRUE),
       shiny::tags$p(
         class = "help-copy",
-        "Original data is active automatically after loading. Choose prepared data only after applying changes."
+        "Analyses always use the current working data: the original data until you apply a change, then the prepared data. Undo, Redo and Reset update it immediately."
       ),
       shiny::tags$hr(),
       shiny::tags$strong("Download the prepared data: "),
@@ -69,28 +68,57 @@ mod_data_prep_ui <- function(id) {
 mod_data_prep_server <- function(id, source_data) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    state <- shiny::reactiveValues(raw_data = NULL, working_data = NULL, history = list(), redo_stack = list(), result = NULL, using_prepared = FALSE)
-    shiny::observeEvent(source_data(), {
+    # One authoritative working dataset: it is the original data until a change
+    # is applied, and Apply, Undo, Redo and Reset all update it. Analyses use it.
+    state <- shiny::reactiveValues(raw_data = NULL, working_data = NULL, history = list(), redo_stack = list(), renames = list(), source_id = 0L)
+    gtx_safe_observe_event(source_data(), {
       state$raw_data <- source_data(); state$working_data <- source_data()
-      state$history <- list(); state$redo_stack <- list(); state$result <- state$raw_data; state$using_prepared <- FALSE
+      state$history <- list(); state$redo_stack <- list(); state$renames <- list()
+      prefill(list())
+      # Identifies the imported dataset; preparation changes keep it.
+      state$source_id <- shiny::isolate(state$source_id) + 1L
     }, ignoreInit = FALSE)
+    # Variable-name changes, in order, as the working data moves between
+    # states (Apply, Undo, Redo, Reset), so that selections elsewhere in the
+    # app can follow a renamed variable.
+    rename_events <- function(entry, reverse = FALSE) {
+      events <- lapply(Filter(function(st) identical(st$operation, "rename"), entry$steps %||% list()), function(st) {
+        if (reverse) c(from = st$args$new_name, to = st$args$variable) else c(from = st$args$variable, to = st$args$new_name)
+      })
+      if (reverse) rev(events) else events
+    }
+    log_renames <- function(events) if (length(events)) state$renames <- c(state$renames, events)
+    # A variable chosen elsewhere in the Prepare workspace (variable-first
+    # actions). Fields that choose a variable start from it when it applies.
+    focus_in <- function(choices) {
+      focus <- shiny::isolate(input$focus_variable) %||% ""
+      if (nzchar(focus) && focus %in% choices) focus else NULL
+    }
     variables <- shiny::reactive(names(state$working_data %||% data.frame()))
     operation <- shiny::reactiveVal("label")
+    # Quick-start values for the fields of the chosen operation. Fields read
+    # them when they are created, so values reach inputs that only exist
+    # after nested controls render (no timing-dependent updates).
+    prefill <- shiny::reactiveVal(list())
+    pf <- function(id, default) {
+      value <- prefill()[[id]]
+      if (is.null(value)) default else value
+    }
     transform_mode <- shiny::reactiveVal("arithmetic")
     choose_operation <- function(selected_operation, mode = NULL) {
       operation(selected_operation)
       if (!is.null(mode)) transform_mode(mode)
     }
-    shiny::observeEvent(input$menu_rename, choose_operation("rename"), ignoreInit = TRUE)
-    shiny::observeEvent(input$menu_label, choose_operation("label"), ignoreInit = TRUE)
-    shiny::observeEvent(input$menu_recode, choose_operation("recode"), ignoreInit = TRUE)
-    shiny::observeEvent(input$menu_type, choose_operation("type"), ignoreInit = TRUE)
-    shiny::observeEvent(input$menu_missing, choose_operation("missing"), ignoreInit = TRUE)
-    shiny::observeEvent(input$menu_filter, choose_operation("filter"), ignoreInit = TRUE)
-    shiny::observeEvent(input$menu_keep, choose_operation("keep"), ignoreInit = TRUE)
-    shiny::observeEvent(input$menu_calculation, choose_operation("transform", "arithmetic"), ignoreInit = TRUE)
-    shiny::observeEvent(input$menu_groups, choose_operation("transform", "case_when"), ignoreInit = TRUE)
-    shiny::observeEvent(list(operation(), input$variable), {
+    gtx_safe_observe_event(input$menu_rename, { prefill(list()); choose_operation("rename") }, ignoreInit = TRUE)
+    gtx_safe_observe_event(input$menu_label, { prefill(list()); choose_operation("label") }, ignoreInit = TRUE)
+    gtx_safe_observe_event(input$menu_recode, { prefill(list()); choose_operation("recode") }, ignoreInit = TRUE)
+    gtx_safe_observe_event(input$menu_type, { prefill(list()); choose_operation("type") }, ignoreInit = TRUE)
+    gtx_safe_observe_event(input$menu_missing, { prefill(list()); choose_operation("missing") }, ignoreInit = TRUE)
+    gtx_safe_observe_event(input$menu_filter, { prefill(list()); choose_operation("filter") }, ignoreInit = TRUE)
+    gtx_safe_observe_event(input$menu_keep, { prefill(list()); choose_operation("keep") }, ignoreInit = TRUE)
+    gtx_safe_observe_event(input$menu_calculation, { prefill(list()); choose_operation("transform", "arithmetic") }, ignoreInit = TRUE)
+    gtx_safe_observe_event(input$menu_groups, { prefill(list()); choose_operation("transform", "case_when") }, ignoreInit = TRUE)
+    gtx_safe_observe_event(list(operation(), input$variable), {
       if (!identical(operation(), "label")) return(NULL)
       variable <- input$variable %||% ""
       if (!nzchar(variable) || !variable %in% names(state$working_data)) return(NULL)
@@ -99,6 +127,17 @@ mod_data_prep_server <- function(id, source_data) {
         shiny::updateTextInput(session, "variable_label", value = label)
       }, once = TRUE)
     }, ignoreInit = TRUE)
+    gtx_safe_observe_event(input$focus_variable, {
+      focus <- input$focus_variable %||% ""
+      data <- state$working_data
+      if (!nzchar(focus) || is.null(data) || !focus %in% names(data)) return(NULL)
+      for (id in c("variable", "group_variable", "variable1")) shiny::updateSelectInput(session, id, selected = focus)
+      if (is.numeric(data[[focus]])) shiny::updateSelectInput(session, "transform_source", selected = focus)
+    }, ignoreInit = TRUE)
+    focus_variable <- function() {
+      focus <- input$focus_variable %||% ""
+      if (nzchar(focus) && focus %in% names(state$working_data)) focus else ""
+    }
     numeric_variable <- function(preferred = NULL) {
       data <- state$working_data
       if (is.null(data)) return("")
@@ -106,62 +145,40 @@ mod_data_prep_server <- function(id, source_data) {
       if (!length(candidates)) return("")
       if (!is.null(preferred) && preferred %in% candidates) preferred else candidates[[1L]]
     }
-    after_controls_render <- function(code) session$onFlushed(code, once = TRUE)
-    shiny::observeEvent(input$template_age, {
-      variable <- numeric_variable("age")
+    gtx_safe_observe_event(input$template_age, {
+      variable <- numeric_variable(if (nzchar(focus_variable())) focus_variable() else "age")
       if (!nzchar(variable)) return(shiny::showNotification("Age groups needs a numeric variable. Choose Create groups after importing suitable data.", type = "warning"))
+      prefill(list(group_variable = variable, group_count = "2", rule_op_1 = ">=", rule_value_1 = "65",
+        rule_result_1 = "65 or older", rule_default = "Under 65", transform_new = paste0(variable, "_group")))
       choose_operation("transform", "case_when")
-      after_controls_render(function() {
-        shiny::updateSelectInput(session, "group_variable", selected = variable)
-        shiny::updateRadioButtons(session, "group_count", selected = "2")
-        shiny::updateSelectInput(session, "rule_op_1", selected = ">=")
-        shiny::updateTextInput(session, "rule_value_1", value = "65")
-        shiny::updateTextInput(session, "rule_result_1", value = "65 or older")
-        shiny::updateTextInput(session, "rule_default", value = "Under 65")
-        shiny::updateTextInput(session, "transform_new", value = paste0(variable, "_group"))
-      })
       shiny::showNotification("Age-group starter loaded. Check the cut-off and labels before applying.", type = "message")
     }, ignoreInit = TRUE)
-    shiny::observeEvent(input$template_binary, {
+    gtx_safe_observe_event(input$template_binary, {
       data <- state$working_data
       candidates <- names(data)[vapply(data, function(x) {
         values <- sort(unique(as.character(x[!is.na(x)])))
         identical(values, c("0", "1"))
       }, logical(1))]
       if (!length(candidates)) return(shiny::showNotification("No variable coded exactly 0 and 1 was found. Choose Recode values and select a variable yourself.", type = "warning"))
+      if (focus_variable() %in% candidates) candidates <- c(focus_variable(), setdiff(candidates, focus_variable()))
+      # Labels are matched to the recorded values 0 and 1, whatever order
+      # they are listed in.
+      prefill(list(variable = candidates[[1L]], recode_map = c("0" = "No", "1" = "Yes")))
       choose_operation("recode")
-      after_controls_render(function() {
-        shiny::updateSelectInput(session, "variable", selected = candidates[[1L]])
-        after_controls_render(function() {
-          shiny::updateTextInput(session, "recode_to_1", value = "No")
-          shiny::updateTextInput(session, "recode_to_2", value = "Yes")
-        })
-      })
       shiny::showNotification("0/1 recoding starter loaded. Confirm that 0 means No and 1 means Yes before applying.", type = "message")
     }, ignoreInit = TRUE)
-    shiny::observeEvent(input$template_bmi, {
-      variable <- numeric_variable()
+    gtx_safe_observe_event(input$template_bmi, {
+      variable <- numeric_variable(focus_variable())
       if (!nzchar(variable)) return(shiny::showNotification("BMI-style calculation needs numeric variables.", type = "warning"))
+      prefill(list(calculation_mode = "ratio_power", transform_source = variable, transform_number = 2, transform_new = "bmi"))
       choose_operation("transform", "arithmetic")
-      after_controls_render(function() {
-        shiny::updateRadioButtons(session, "calculation_mode", selected = "ratio_power")
-        after_controls_render(function() {
-          shiny::updateSelectInput(session, "transform_source", selected = variable)
-          shiny::updateNumericInput(session, "transform_number", value = 2)
-          shiny::updateTextInput(session, "transform_new", value = "bmi")
-        })
-      })
       shiny::showNotification("BMI-style starter loaded. Choose weight in kg and height in metres before applying.", type = "message")
     }, ignoreInit = TRUE)
-    shiny::observeEvent(input$template_missing, {
-      variable <- numeric_variable()
+    gtx_safe_observe_event(input$template_missing, {
+      variable <- numeric_variable(focus_variable())
       if (!nzchar(variable)) return(shiny::showNotification("This starter needs a variable that contains recorded missing-data codes.", type = "warning"))
+      prefill(list(variable = variable, missing_action = "to_na", codes = "99, 999"))
       choose_operation("missing")
-      after_controls_render(function() {
-        shiny::updateSelectInput(session, "variable", selected = variable)
-        shiny::updateRadioButtons(session, "missing_action", selected = "to_na")
-        shiny::updateTextInput(session, "codes", value = "99, 999")
-      })
       shiny::showNotification("Missing-code starter loaded. Replace 99/999 unless those are genuinely your missing-data codes.", type = "message")
     }, ignoreInit = TRUE)
     output$operation_hint <- shiny::renderUI({
@@ -204,24 +221,24 @@ mod_data_prep_server <- function(id, source_data) {
     output$controls <- shiny::renderUI({
       ns <- session$ns; vars <- variables(); shiny::req(length(vars))
       if (identical(operation(), "rename")) shiny::tagList(
-        shiny::selectInput(ns("variable"), "Existing variable", vars), shiny::textInput(ns("new_name"), "New variable name")
+        shiny::selectInput(ns("variable"), "Existing variable", vars, selected = pf("variable", focus_in(vars))), shiny::textInput(ns("new_name"), "New variable name")
       ) else if (identical(operation(), "label")) shiny::tagList(
-        shiny::selectInput(ns("variable"), "Variable", vars),
+        shiny::selectInput(ns("variable"), "Variable", vars, selected = pf("variable", focus_in(vars))),
         shiny::textInput(ns("variable_label"), "Display label", placeholder = "Example: Maternal age"),
         shiny::tags$p(class = "help-copy", "Use the short internal name when selecting variables for analysis. This label is used in publication-ready output."),
         shiny::uiOutput(ns("label_level_mapping"))
       ) else if (identical(operation(), "recode")) shiny::tagList(
-        shiny::selectInput(ns("variable"), "Variable", vars),
+        shiny::selectInput(ns("variable"), "Variable", vars, selected = pf("variable", focus_in(vars))),
         shiny::uiOutput(ns("recode_mapping")),
         shiny::checkboxInput(ns("recode_ordered"), "Treat as ordered categorical, in the order shown", FALSE),
         shiny::tags$p(class = "help-copy", "The recoded variable is categorical. Tick this only when the displayed order has a genuine meaning, such as None, Mild, Moderate, Severe.")
       ) else if (identical(operation(), "type")) shiny::tagList(
-        shiny::selectInput(ns("variable"), "Variable", vars),
+        shiny::selectInput(ns("variable"), "Variable", vars, selected = pf("variable", focus_in(vars))),
         shiny::selectInput(ns("variable_type"), "Treat this variable as", c("Categorical" = "factor", "Ordered categorical" = "ordered", "Numeric" = "numeric", "Text" = "text")),
         shiny::uiOutput(ns("type_order_grid"))
       ) else if (identical(operation(), "missing")) shiny::tagList(
-        shiny::selectInput(ns("variable"), "Variable", vars),
-        shiny::radioButtons(ns("missing_action"), "What do you want to do?", c("Convert recorded codes to missing (NA)" = "to_na", "Show existing missing values as a category" = "show_category"), selected = "to_na"),
+        shiny::selectInput(ns("variable"), "Variable", vars, selected = pf("variable", focus_in(vars))),
+        shiny::radioButtons(ns("missing_action"), "What do you want to do?", c("Convert recorded codes to missing (NA)" = "to_na", "Show existing missing values as a category" = "show_category"), selected = pf("missing_action", "to_na")),
         shiny::uiOutput(ns("missing_controls"))
       ) else if (identical(operation(), "transform")) {
         mode <- transform_mode()
@@ -231,15 +248,15 @@ mod_data_prep_server <- function(id, source_data) {
         else if (identical(mode, "arithmetic")) shiny::tagList(
           shiny::tags$strong("Create a new numeric variable."),
           shiny::tags$p(class = "help-copy", "Choose a common calculation pattern. Your original variables are always retained."),
-          shiny::radioButtons(ns("calculation_mode"), "Calculation type", c("Adjust one variable" = "single", "Combine two variables" = "two_variables", "Divide by another variable raised to a power" = "ratio_power"), selected = "single"),
+          shiny::radioButtons(ns("calculation_mode"), "Calculation type", c("Adjust one variable" = "single", "Combine two variables" = "two_variables", "Divide by another variable raised to a power" = "ratio_power"), selected = pf("calculation_mode", "single")),
           shiny::uiOutput(ns("calculation_controls"))
         ) else shiny::tagList(
           shiny::tags$strong("Create a new grouped variable."),
           shiny::tags$p(class = "help-copy", "Choose one source variable, decide how many groups you need, then give each group a clear label. Groups are checked from top to bottom; the first matching condition wins."),
-          shiny::selectInput(ns("group_variable"), "Variable to group", vars),
-          shiny::radioButtons(ns("group_count"), "How many groups?", c("Two groups" = "2", "Three groups" = "3", "Four groups" = "4"), selected = "2", inline = TRUE),
+          shiny::selectInput(ns("group_variable"), "Variable to group", vars, selected = pf("group_variable", focus_in(vars))),
+          shiny::radioButtons(ns("group_count"), "How many groups?", c("Two groups" = "2", "Three groups" = "3", "Four groups" = "4"), selected = pf("group_count", "2"), inline = TRUE),
           shiny::uiOutput(ns("group_rules")),
-          shiny::textInput(ns("transform_new"), "Name for the new grouped variable", placeholder = "Example: age_group")
+          shiny::textInput(ns("transform_new"), "Name for the new grouped variable", value = pf("transform_new", ""), placeholder = "Example: age_group")
         )
       } else if (identical(operation(), "keep")) shiny::tagList(
         shiny::tags$strong("Choose the variables for your analysis dataset."),
@@ -255,19 +272,29 @@ mod_data_prep_server <- function(id, source_data) {
         shiny::uiOutput(ns("filter_conditions"))
       )
     })
+    # Values listed for recoding/ordering: an existing factor's own level order
+    # (so its reference category is kept); otherwise order of appearance.
+    level_order_values <- function(x) {
+      if (is.factor(x)) return(levels(x))
+      unique(as.character(x[!is.na(x)]))
+    }
     recode_values <- shiny::reactive({
       variable <- input$variable %||% ""
       data <- state$working_data
       if (!nzchar(variable) || is.null(data) || !variable %in% names(data)) return(character())
-      unique(as.character(data[[variable]][!is.na(data[[variable]])]))
+      level_order_values(data[[variable]])
     })
+    recode_start <- function(value) {
+      map <- prefill()$recode_map
+      if (!is.null(map) && identical(prefill()$variable, input$variable) && value %in% names(map)) map[[value]] else value
+    }
     output$recode_mapping <- shiny::renderUI({
       values <- recode_values()
       if (!length(values)) return(shiny::tags$p(class = "help-copy", "This variable has no observed values to recode."))
       rows <- lapply(seq_along(values), function(index) {
         shiny::tags$tr(
           shiny::tags$td(shiny::tags$code(values[[index]])),
-          shiny::tags$td(shiny::textInput(ns(paste0("recode_to_", index)), NULL, value = values[[index]]))
+          shiny::tags$td(shiny::textInput(ns(paste0("recode_to_", index)), NULL, value = recode_start(values[[index]])))
         )
       })
       shiny::tags$div(class = "gtx-recode-map",
@@ -324,7 +351,7 @@ mod_data_prep_server <- function(id, source_data) {
       variable <- input$variable %||% ""
       data <- state$working_data
       if (!nzchar(variable) || is.null(data) || !variable %in% names(data)) return(character())
-      unique(as.character(data[[variable]][!is.na(data[[variable]])]))
+      level_order_values(data[[variable]])
     })
     output$type_order_grid <- shiny::renderUI({
       variable_type <- input$variable_type %||% "factor"
@@ -371,7 +398,7 @@ mod_data_prep_server <- function(id, source_data) {
         )
       } else {
         shiny::tagList(
-          shiny::textInput(ns("codes"), "Recorded codes to convert to missing", placeholder = "Example: 999, Unknown, N/A"),
+          shiny::textInput(ns("codes"), "Recorded codes to convert to missing", value = pf("codes", ""), placeholder = "Example: 999, Unknown, N/A"),
           shiny::tags$p(class = "help-copy", "Use this only for codes that truly mean no value was recorded. R uses NA to represent missing data.")
         )
       }
@@ -392,20 +419,20 @@ mod_data_prep_server <- function(id, source_data) {
       rule_rows <- lapply(seq_len(count - 1L), function(index) {
         shiny::tags$div(class = "gtx-step",
           shiny::tags$strong(paste("Group", index)),
-          shiny::selectInput(ns(paste0("rule_op_", index)), "Include values that", operators),
-          shiny::textInput(ns(paste0("rule_value_", index)), "Value or lower bound", placeholder = if (index == 1L) "Example: 35" else "Example: 65"),
+          shiny::selectInput(ns(paste0("rule_op_", index)), "Include values that", operators, selected = pf(paste0("rule_op_", index), NULL)),
+          shiny::textInput(ns(paste0("rule_value_", index)), "Value or lower bound", value = pf(paste0("rule_value_", index), ""), placeholder = if (index == 1L) "Example: 35" else "Example: 65"),
           shiny::conditionalPanel(
             condition = sprintf("input['%s'] === 'between' || input['%s'] === 'outside'", ns(paste0("rule_op_", index)), ns(paste0("rule_op_", index))),
             shiny::textInput(ns(paste0("rule_value2_", index)), "Upper bound", placeholder = "Example: 64")
           ),
-          shiny::textInput(ns(paste0("rule_result_", index)), "Group label", placeholder = if (index == 1L) "Example: Older adult" else "Example: Adult")
+          shiny::textInput(ns(paste0("rule_result_", index)), "Group label", value = pf(paste0("rule_result_", index), ""), placeholder = if (index == 1L) "Example: Older adult" else "Example: Adult")
         )
       })
       shiny::tagList(
         rule_rows,
         shiny::tags$div(class = "gtx-step",
           shiny::tags$strong(paste("Group", count, "(everyone else)")),
-          shiny::textInput(ns("rule_default"), "Group label", placeholder = "Example: Younger adult")
+          shiny::textInput(ns("rule_default"), "Group label", value = pf("rule_default", ""), placeholder = "Example: Younger adult")
         )
       )
     })
@@ -415,7 +442,7 @@ mod_data_prep_server <- function(id, source_data) {
       shiny::tagList(
         shiny::tags$div(class = "gtx-step",
           shiny::tags$strong("Condition 1"),
-          shiny::selectInput(ns("variable1"), "Variable", vars),
+          shiny::selectInput(ns("variable1"), "Variable", vars, selected = focus_in(vars)),
           shiny::selectInput(ns("operator1"), "Keep when", operators),
           shiny::textInput(ns("value1"), "Value", placeholder = "Example: 18")
         ),
@@ -423,10 +450,10 @@ mod_data_prep_server <- function(id, source_data) {
         shiny::uiOutput(ns("filter_second_condition"))
       )
     })
-    shiny::observeEvent(input$keep_all, {
+    gtx_safe_observe_event(input$keep_all, {
       shiny::updateSelectizeInput(session, "keep_vars", selected = variables(), server = TRUE)
     }, ignoreInit = TRUE)
-    shiny::observeEvent(input$keep_none, {
+    gtx_safe_observe_event(input$keep_none, {
       shiny::updateSelectizeInput(session, "keep_vars", selected = character(), server = TRUE)
     }, ignoreInit = TRUE)
     output$filter_second_condition <- shiny::renderUI({
@@ -445,23 +472,23 @@ mod_data_prep_server <- function(id, source_data) {
       mode <- input$calculation_mode %||% "single"
       if (!length(numeric_vars)) return(shiny::tags$p(class = "help-copy", "No numeric variables are available."))
       if (identical(mode, "single")) return(shiny::tagList(
-        shiny::selectInput(ns("transform_source"), "Numeric variable", numeric_vars),
+        shiny::selectInput(ns("transform_source"), "Numeric variable", numeric_vars, selected = focus_in(numeric_vars)),
         shiny::selectInput(ns("transform_operator"), "Calculation", c("Add a number" = "+", "Subtract a number" = "-", "Multiply by a number" = "*", "Divide by a number" = "/", "Raise to a power" = "^")),
         shiny::numericInput(ns("transform_number"), "Number", 1),
         shiny::textInput(ns("transform_new"), "Name for the new variable", placeholder = "Example: weight_kg")
       ))
       if (identical(mode, "two_variables")) return(shiny::tagList(
-        shiny::selectInput(ns("transform_source"), "First numeric variable", numeric_vars),
+        shiny::selectInput(ns("transform_source"), "First numeric variable", numeric_vars, selected = focus_in(numeric_vars)),
         shiny::selectInput(ns("transform_operator"), "Calculation", c("Add" = "+", "Subtract second from first" = "-", "Multiply" = "*", "Divide first by second" = "/")),
         shiny::selectInput(ns("transform_second"), "Second numeric variable", numeric_vars),
         shiny::textInput(ns("transform_new"), "Name for the new variable", placeholder = "Example: total_score")
       ))
       shiny::tagList(
-        shiny::selectInput(ns("transform_source"), "Numerator variable", numeric_vars),
+        shiny::selectInput(ns("transform_source"), "Numerator variable", numeric_vars, selected = pf("transform_source", focus_in(numeric_vars))),
         shiny::selectInput(ns("transform_second"), "Denominator variable", numeric_vars),
-        shiny::numericInput(ns("transform_number"), "Denominator power", 2),
+        shiny::numericInput(ns("transform_number"), "Denominator power", pf("transform_number", 2)),
         shiny::tags$p(class = "help-copy", "This calculates numerator / (denominator ^ power). For BMI, use weight in kg divided by height in metres with power 2."),
-        shiny::textInput(ns("transform_new"), "Name for the new variable", placeholder = "Example: bmi")
+        shiny::textInput(ns("transform_new"), "Name for the new variable", value = pf("transform_new", ""), placeholder = "Example: bmi")
       )
     })
     selected_variable <- shiny::reactive({
@@ -601,19 +628,27 @@ mod_data_prep_server <- function(id, source_data) {
       if (is.null(content)) return(NULL)
       shiny::tags$div(class = "gtx-note", shiny::tags$strong("Before you apply: "), content$message, content$table)
     })
-    apply_change <- function(label, after, code) {
-      state$history <- c(state$history, list(list(label = label, before = state$working_data, after = after, code = code)))
+    # Each change stores structured code steps (rendered for any data object
+    # name) and a dataset without the operations' internal bookkeeping
+    # attributes, so the working data equals the result of the generated code.
+    apply_change <- function(label, after, steps) {
+      for (name in grep("^gt_dp_", names(attributes(after)), value = TRUE)) attr(after, name) <- NULL
+      code <- paste(gt_dp_render_steps(steps, "data"), collapse = "\n")
+      entry <- list(label = label, before = state$working_data, after = after, code = code, steps = steps)
+      state$history <- c(state$history, list(entry))
       state$working_data <- after; state$redo_stack <- list()
+      log_renames(rename_events(entry))
     }
-    shiny::observeEvent(input$apply, {
+    step <- function(operation, ...) list(operation = operation, args = list(...))
+    gtx_safe_observe_event(input$apply, {
       shiny::req(state$working_data)
       tryCatch({
         if (identical(operation(), "rename")) {
           after <- gt_dp_rename(state$working_data, input$variable, input$new_name)
-          apply_change(paste("Rename", input$variable, "to", input$new_name), after, gt_dp_code_line("rename", variable = input$variable, new_name = input$new_name))
+          apply_change(paste("Rename", input$variable, "to", input$new_name), after, list(step("rename", variable = input$variable, new_name = trimws(input$new_name))))
         } else if (identical(operation(), "label")) {
           label <- trimws(input$variable_label %||% "")
-          after <- gt_dp_set_label(state$working_data, input$variable, label)
+          after <- state$working_data
           from <- label_level_values()
           to <- trimws(label_level_labels())
           level_change <- length(from) && !identical(from, to)
@@ -622,56 +657,58 @@ mod_data_prep_server <- function(id, source_data) {
             after <- gt_dp_recode(after, input$variable, from, to, TRUE)
             after <- gt_dp_set_type(after, input$variable, "factor", to)
           }
+          # The display label is set last so that relabelling categories keeps it.
+          after <- gt_dp_set_label(after, input$variable, label)
           action_label <- if (nzchar(label)) {
             paste("Label", input$variable, "as", label)
           } else {
             paste("Remove display label from", input$variable)
           }
           if (level_change) action_label <- paste(action_label, "and update category labels")
-          code <- gt_dp_code_line("label", variable = input$variable, label = label)
+          steps <- list()
           if (level_change) {
-            code <- paste(
-              code,
-              gt_dp_code_line("recode", variable = input$variable, from = from, to = to),
-              gt_dp_code_line("type", variable = input$variable, type = "factor", levels = to),
-              sep = "\n"
+            steps <- list(
+              step("recode", variable = input$variable, from = from, to = to),
+              step("type", variable = input$variable, type = "factor", levels = base::levels(after[[input$variable]]))
             )
           }
-          apply_change(action_label, after, code)
+          steps <- c(steps, list(step("label", variable = input$variable, label = label)))
+          apply_change(action_label, after, steps)
         } else if (identical(operation(), "recode")) {
           from <- recode_values(); to <- recode_labels()
           if (!length(from) || any(!nzchar(to))) stop("Enter a new label for every displayed recorded value.", call. = FALSE)
           after <- gt_dp_recode(state$working_data, input$variable, from, to, TRUE)
           recoded <- attr(after, "gt_dp_affected")
-          code <- gt_dp_code_line("recode", variable = input$variable, from = from, to = to)
           recode_type <- if (isTRUE(input$recode_ordered)) "ordered" else "factor"
-          after <- gt_dp_set_type(after, input$variable, recode_type, to)
+          # New categories follow the listed (original level) order; values
+          # combined under one label take the position of the first of them.
+          after <- gt_dp_set_type(after, input$variable, recode_type, unique(trimws(to)))
           final_levels <- base::levels(after[[input$variable]])
-          code <- paste(code, gt_dp_code_line("type", variable = input$variable, type = recode_type, levels = final_levels), sep = "\n")
+          steps <- list(
+            step("recode", variable = input$variable, from = from, to = to),
+            step("type", variable = input$variable, type = recode_type, levels = final_levels)
+          )
           type_label <- if (identical(recode_type, "ordered")) " as ordered categorical" else " as categorical"
-          apply_change(paste0("Recode ", input$variable, " (", recoded, " cells)", type_label), after, code)
+          apply_change(paste0("Recode ", input$variable, " (", recoded, " cells)", type_label), after, steps)
         } else if (identical(operation(), "type")) {
           level_values <- if (identical(input$variable_type, "ordered")) type_levels() else character()
           after <- gt_dp_set_type(state$working_data, input$variable, input$variable_type, level_values)
           final_levels <- if (input$variable_type %in% c("factor", "ordered")) base::levels(after[[input$variable]]) else character()
-          apply_change(paste("Set", input$variable, "as", switch(input$variable_type, factor = "categorical", ordered = "ordered categorical", numeric = "numeric", text = "text")), after, gt_dp_code_line("type", variable = input$variable, type = input$variable_type, levels = final_levels))
+          apply_change(paste("Set", input$variable, "as", switch(input$variable_type, factor = "categorical", ordered = "ordered categorical", numeric = "numeric", text = "text")), after, list(step("type", variable = input$variable, type = input$variable_type, levels = final_levels)))
         } else if (identical(operation(), "missing")) {
           if (identical(input$missing_action %||% "to_na", "show_category")) {
             after <- gt_dp_show_missing(state$working_data, input$variable, input$missing_label)
-            apply_change(paste("Show missing values in", input$variable, "as", input$missing_label, "(", attr(after, "gt_dp_affected"), "cells)"), after, gt_dp_code_line("missing_category", variable = input$variable, label = input$missing_label))
+            apply_change(paste("Show missing values in", input$variable, "as", input$missing_label, "(", attr(after, "gt_dp_affected"), "cells)"), after, list(step("missing_category", variable = input$variable, label = trimws(input$missing_label), levels = base::levels(after[[input$variable]]))))
           } else {
             codes <- trimws(strsplit(input$codes, ",", fixed = TRUE)[[1L]]); after <- gt_dp_define_missing(state$working_data, input$variable, codes)
-            apply_change(paste("Convert missing-data codes in", input$variable, "to NA (", attr(after, "gt_dp_affected"), "cells)"), after, gt_dp_code_line("missing", variable = input$variable, codes = codes))
+            apply_change(paste("Convert missing-data codes in", input$variable, "to NA (", attr(after, "gt_dp_affected"), "cells)"), after, list(step("missing", variable = input$variable, codes = codes[nzchar(codes)])))
           }
         } else if (identical(operation(), "transform")) {
           if (identical(transform_mode(), "arithmetic")) {
             mode <- input$calculation_mode %||% "single"
             after <- gt_dp_calculate(state$working_data, input$transform_source, input$transform_new, mode, input$transform_operator %||% "+", input$transform_number %||% 1, input$transform_second %||% NULL)
-            code <- switch(mode,
-              single = paste0("data$", input$transform_new, " <- data$", input$transform_source, " ", input$transform_operator, " ", input$transform_number),
-              two_variables = paste0("data$", input$transform_new, " <- data$", input$transform_source, " ", input$transform_operator, " data$", input$transform_second),
-              ratio_power = paste0("data$", input$transform_new, " <- data$", input$transform_source, " / (data$", input$transform_second, " ^ ", input$transform_number, ")")
-            )
+            steps <- list(step("calculate", mode = mode, source = input$transform_source, new_name = trimws(input$transform_new),
+              operator = input$transform_operator %||% "+", number = input$transform_number %||% 1, second = input$transform_second %||% ""))
           } else {
             count <- suppressWarnings(as.integer(input$group_count %||% 2L))
             count <- if (count %in% 2:4) count else 2L
@@ -686,68 +723,70 @@ mod_data_prep_server <- function(id, source_data) {
             range_complete <- !operators %in% c("between", "outside") | nzchar(values2)
             if (any(!nzchar(values)) || any(!nzchar(results)) || !all(range_complete) || !nzchar(input$rule_default %||% "")) stop("Complete every group condition and label, including both bounds for ranges and the everyone-else group.", call. = FALSE)
             after <- gt_dp_transform_case_when(state$working_data, input$transform_new, variables, operators, values, results, input$rule_default, values2)
-            rules <- which(nzchar(variables) & nzchar(values) & nzchar(results))
-            value_code <- function(value) {
-              number <- suppressWarnings(as.numeric(value))
-              if (is.numeric(state$working_data[[group_variable]]) && is.finite(number)) format(number, scientific = FALSE, trim = TRUE) else encodeString(value, quote = '"')
-            }
-            condition_code <- function(index) {
-              variable_code <- paste0("data$", variables[[index]])
-              if (identical(operators[[index]], "between")) return(paste0("dplyr::between(", variable_code, ", ", value_code(values[[index]]), ", ", value_code(values2[[index]]), ")"))
-              if (identical(operators[[index]], "outside")) return(paste0("(", variable_code, " < ", value_code(values[[index]]), " | ", variable_code, " > ", value_code(values2[[index]]), ")"))
-              paste(variable_code, operators[[index]], value_code(values[[index]]))
-            }
-            rule_code <- vapply(rules, function(index) paste0("  ", condition_code(index), " ~ ", encodeString(results[[index]], quote = '"')), character(1))
-            code <- if (length(indices) == 1L) paste0("data$", input$transform_new, " <- ifelse(", condition_code(1L), ", ", encodeString(results[[1L]], quote = '"'), ", ", encodeString(input$rule_default, quote = '"'), ")") else paste0("data$", input$transform_new, " <- dplyr::case_when(\n", paste(rule_code, collapse = ",\n"), ",\n  TRUE ~ ", encodeString(input$rule_default, quote = '"'), "\n)")
+            steps <- list(step("groups", new_name = trimws(input$transform_new), variable = group_variable,
+              numeric = is.numeric(state$working_data[[group_variable]]), operators = operators, values = values,
+              values2 = values2, results = results, default = input$rule_default))
           }
-          apply_change(paste("Create", input$transform_new, "(", attr(after, "gt_dp_affected"), "values matched)"), after, gt_dp_code_line("transform", code = code))
+          apply_change(paste("Create", input$transform_new, "(", attr(after, "gt_dp_affected"), "values matched)"), after, steps)
         } else if (identical(operation(), "keep")) {
           after <- gt_dp_keep_variables(state$working_data, input$keep_vars)
-          apply_change(paste("Keep", ncol(after), "variable(s); remove", attr(after, "gt_dp_affected")), after, gt_dp_code_line("keep", variables = names(after)))
+          apply_change(paste("Keep", ncol(after), "variable(s); remove", attr(after, "gt_dp_affected")), after, list(step("keep", variables = names(after))))
         } else {
           variable2 <- if (isTRUE(input$filter_second)) input$variable2 %||% "" else ""
           value2 <- if (isTRUE(input$filter_second)) input$value2 %||% "" else ""
           after <- gt_dp_filter(state$working_data, input$variable1, input$operator1, input$value1, input$connector %||% "AND", variable2, input$operator2 %||% "==", value2)
           counts <- attr(after, "gt_dp_filter_counts")
-          expression <- paste(input$variable1, input$operator1, encodeString(input$value1, quote = '"'))
-          if (nzchar(variable2) && nzchar(value2)) {
-            connector <- if (identical(input$connector, "OR")) " | " else " & "
-            expression <- paste0(expression, connector, variable2, " ", input$operator2, " ", encodeString(value2, quote = '"'))
-          }
-          apply_change(paste0("Filter: before ", counts[["before"]], "; included ", counts[["included"]], "; excluded ", counts[["excluded"]], "; unknown ", counts[["unknown"]]), after, gt_dp_code_line("filter", expression = expression))
+          numeric_column <- function(variable) nzchar(variable) && is.numeric(state$working_data[[variable]])
+          filter_step <- step("filter",
+            variable1 = input$variable1, operator1 = input$operator1, value1 = input$value1, numeric1 = numeric_column(input$variable1),
+            connector = input$connector %||% "AND", variable2 = variable2, operator2 = input$operator2 %||% "==", value2 = value2,
+            numeric2 = numeric_column(variable2))
+          apply_change(paste0("Filter: before ", counts[["before"]], "; included ", counts[["included"]], "; excluded ", counts[["excluded"]], "; unknown ", counts[["unknown"]]), after, list(filter_step))
         }
         shiny::showNotification("Change applied. Undo is available.", type = "message")
       }, error = function(e) shiny::showNotification(conditionMessage(e), type = "error", duration = NULL))
     })
-    shiny::observeEvent(input$undo, { if (length(state$history)) { last <- state$history[[length(state$history)]]; state$history <- utils::head(state$history, -1L); state$redo_stack <- c(state$redo_stack, list(last)); state$working_data <- last$before } })
-    shiny::observeEvent(input$redo, { if (length(state$redo_stack)) { last <- state$redo_stack[[length(state$redo_stack)]]; state$redo_stack <- utils::head(state$redo_stack, -1L); state$history <- c(state$history, list(last)); state$working_data <- last$after } })
-    shiny::observeEvent(input$reset, {
+    gtx_safe_observe_event(input$undo, { if (length(state$history)) { last <- state$history[[length(state$history)]]; state$history <- utils::head(state$history, -1L); state$redo_stack <- c(state$redo_stack, list(last)); state$working_data <- last$before; log_renames(rename_events(last, reverse = TRUE)) } })
+    gtx_safe_observe_event(input$redo, { if (length(state$redo_stack)) { last <- state$redo_stack[[length(state$redo_stack)]]; state$redo_stack <- utils::head(state$redo_stack, -1L); state$history <- c(state$history, list(last)); state$working_data <- last$after; log_renames(rename_events(last)) } })
+    gtx_safe_observe_event(input$reset, {
       shiny::showModal(shiny::modalDialog(
         title = "Reset all data-preparation changes?",
         "This restores the original imported dataset and clears the change log. You cannot undo a reset.",
         footer = shiny::tagList(shiny::modalButton("Cancel"), shiny::actionButton(ns("confirm_reset"), "Reset all changes", class = "btn-danger"))
       ))
     }, ignoreInit = TRUE)
-    shiny::observeEvent(input$confirm_reset, {
-      state$working_data <- state$raw_data; state$history <- list(); state$redo_stack <- list(); state$result <- state$raw_data; state$using_prepared <- FALSE
+    gtx_safe_observe_event(input$confirm_reset, {
+      undone <- unlist(lapply(rev(state$history), rename_events, reverse = TRUE), recursive = FALSE)
+      state$working_data <- state$raw_data; state$history <- list(); state$redo_stack <- list()
+      log_renames(undone)
       shiny::removeModal()
-      shiny::showNotification("Data preparation reset. Original data is active for analysis.", type = "message")
+      shiny::showNotification("Data preparation reset. Analyses use the original data.", type = "message")
     }, ignoreInit = TRUE)
-    shiny::observeEvent(input$continue_original, { state$result <- state$raw_data; state$using_prepared <- FALSE; shiny::showNotification("Analyses will use the original data.", type = "message") })
-    shiny::observeEvent(input$use_prepared, { state$result <- state$working_data; state$using_prepared <- TRUE; shiny::showNotification("Analyses will use the prepared data.", type = "message") })
+    prepared <- shiny::reactive(length(state$history) > 0L)
+    output$analysis_dataset <- shiny::renderText({
+      n <- length(state$history)
+      if (n) paste0("prepared data (", n, " change", if (n == 1L) "" else "s", ")") else "original data"
+    })
     output$preview <- gt::render_gt({ gt::gt(utils::head(state$working_data, 10L)) })
     output$status <- shiny::renderText({
-      analysis_state <- if (isTRUE(state$using_prepared)) {
-        "analyses use prepared data"
-      } else if (!is.null(state$result)) {
-        "analyses use original data"
-      } else {
+      analysis_state <- if (is.null(state$working_data)) {
         "original data will be active after loading"
+      } else if (isTRUE(prepared())) {
+        "analyses use prepared data"
+      } else {
+        "analyses use original data"
       }
       paste(nrow(state$working_data), "prepared rows |", ncol(state$working_data), "variables |", length(state$history), "applied change(s) |", analysis_state)
     })
     output$history <- shiny::renderText({ if (!length(state$history)) "No changes applied." else paste(vapply(state$history, `[[`, character(1), "label"), collapse = "\n") })
     prep_code <- shiny::reactive({ if (!length(state$history)) "# No data-preparation changes applied." else paste(vapply(state$history, `[[`, character(1), "code"), collapse = "\n") })
+    # The same code rendered for another data object (e.g. analysis_data);
+    # generated structurally, never by rewriting text.
+    code_for <- function(data_name = "data") {
+      if (!length(state$history)) return("")
+      steps <- unlist(lapply(state$history, `[[`, "steps"), recursive = FALSE)
+      paste(gt_dp_render_steps(steps, data_name), collapse = "\n")
+    }
     output$code <- shiny::renderText(prep_code())
     output$download_code <- shiny::downloadHandler(
       filename = function() "gtregression-data-prep.R",
@@ -770,6 +809,8 @@ mod_data_prep_server <- function(id, source_data) {
         }
       }
     )
-    list(result = shiny::reactive(state$result), working_data = shiny::reactive(state$working_data), changed = shiny::reactive(length(state$history) > 0L), using_prepared = shiny::reactive(state$using_prepared), code = prep_code)
+    list(result = shiny::reactive(state$working_data), working_data = shiny::reactive(state$working_data), changed = prepared, using_prepared = prepared, changes = shiny::reactive(length(state$history)), can_redo = shiny::reactive(length(state$redo_stack) > 0L),
+      history_labels = shiny::reactive(vapply(state$history, `[[`, character(1), "label")),
+      renames = shiny::reactive(state$renames), source_id = shiny::reactive(state$source_id), code = prep_code, code_for = code_for)
   })
 }

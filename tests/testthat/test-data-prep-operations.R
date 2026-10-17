@@ -1,4 +1,5 @@
 test_that("internal data-preparation helpers apply safe, traceable changes", {
+  skip_on_cran()
   data <- data.frame(
     age = c(20, 30, 999),
     sex = c("M", "F", "Unknown"),
@@ -39,6 +40,7 @@ test_that("internal data-preparation helpers apply safe, traceable changes", {
 })
 
 test_that("group creation respects first-match order and numeric ranges", {
+  skip_on_cran()
   data <- data.frame(age = c(20, 34, 35, 64, 65, 80))
 
   grouped <- gt_dp_transform_case_when(
@@ -99,7 +101,8 @@ test_that("group creation respects first-match order and numeric ranges", {
   )
 })
 
-test_that("Data Prep activates original data by default and supports prepared-data choice", {
+test_that("Data Prep uses the original data until a change is applied, then the working data", {
+  skip_on_cran()
   skip_if_not_installed("shiny")
   source_data <- shiny::reactiveVal(data.frame(
     age = c(20, 30),
@@ -115,20 +118,20 @@ test_that("Data Prep activates original data by default and supports prepared-da
     expect_identical(session$returned$result(), source_data())
     expect_false(session$returned$using_prepared())
 
-    session$setInputs(continue_original = 1)
+    session$setInputs(menu_rename = 1)
     session$flushReact()
-    expect_identical(session$returned$result(), source_data())
-    expect_false(session$returned$using_prepared())
-
-    session$setInputs(use_prepared = 1)
+    session$setInputs(variable = "group", new_name = "arm")
+    session$setInputs(apply = 1)
     session$flushReact()
     expect_identical(session$returned$result(), session$returned$working_data())
+    expect_identical(names(session$returned$result()), c("age", "arm"))
     expect_true(session$returned$using_prepared())
     }
   ))
 })
 
 test_that("Set display label can also polish categorical levels", {
+  skip_on_cran()
   skip_if_not_installed("shiny")
   source_data <- shiny::reactiveVal(data.frame(
     smoking = factor(c("N", "Y"), levels = c("N", "Y")),
@@ -156,12 +159,15 @@ test_that("Set display label can also polish categorical levels", {
       prepared <- session$returned$working_data()
       expect_identical(attr(prepared$smoking, "label"), "Smoking during pregnancy")
       expect_identical(levels(prepared$smoking), c("No", "Yes"))
-      expect_false(session$returned$using_prepared())
+      # Applying a change makes the prepared data the analysis dataset.
+      expect_true(session$returned$using_prepared())
+      expect_identical(session$returned$result(), prepared)
     }
   ))
 })
 
 test_that("Data Prep module retains its core recovery and reuse controls", {
+  skip_on_cran()
   ui_text <- paste(deparse(body(mod_data_prep_ui)), collapse = " ")
   server_text <- paste(deparse(body(mod_data_prep_server)), collapse = " ")
 

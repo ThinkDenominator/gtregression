@@ -7,21 +7,34 @@
 gtregression_app(..., launch.browser = NULL)
 }
 \arguments{
-\item{...}{Additional arguments passed to \code{shiny::runApp()}.}
+\item{...}{Additional arguments passed to \code{shiny::runApp()}, for
+example \code{port}.}
 
-\item{launch.browser}{Logical; passed to \code{shiny::runApp()}. The default
-uses the RStudio Viewer when available, otherwise opens a browser only in
-interactive sessions.}
+\item{launch.browser}{Passed to \code{shiny::runApp()}. The default opens
+the app in your web browser in interactive sessions. Supply a function
+such as \code{rstudioapi::viewer} to choose another viewer.}
 }
 \value{
 Invisibly returns the result of \code{shiny::runApp()}.
 }
 \description{
-Open a menu-driven Shiny app for common \pkg{gtregression} workflows:
-data import, descriptive tables, regression tables, survival analysis,
-diagnostics, causal mediation, plots, and exports.
+Open GT Regression, the graphical interface for \pkg{gtregression}: data
+import and preparation, descriptive tables, regression tables, survival
+analysis, diagnostics, causal mediation, plots, exports and reproducible R
+code.
 }
 \details{
+\code{gtregression_app()} opens GT Regression in your web browser. The
+RStudio Addin (\emph{Addins > GT Regression app}) opens exactly the same
+application in an RStudio dialog window through
+\code{\link{gtregression_addin}()}; only the window differs.
+
+The app runs in your local R session, so data frames in your global
+environment can be chosen from the Data workspace (\emph{R Environment}).
+Selected data are copied into the app as read-only snapshots; the source
+objects are not modified. Files can also be imported, and example data are
+included.
+
 The app is intentionally kept out of the core package startup path. Shiny and
 other interface packages are suggested dependencies and are loaded only when
 \code{gtregression_app()} is called.
@@ -40,6 +53,6 @@ if (interactive()) {
 
 }
 \seealso{
-\code{compare_models()}, \code{multi_reg()}, \code{cox_reg()},
-  \code{surv_reg()}
+\code{\link{gtregression_addin}}, \code{compare_models()},
+  \code{multi_reg()}, \code{cox_reg()}, \code{surv_reg()}
 }

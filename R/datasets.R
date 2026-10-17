@@ -75,6 +75,41 @@
 #' \code{mlbench::SynthDiabetes2} (\pkg{mlbench} version 2.1-11 or later).
 "data_diabetes_mediation"
 
+#' Synthetic Competing-Risk Oncology Dataset
+#'
+#' A synthetic clinical follow-up dataset for teaching cumulative incidence and
+#' competing-risk regression. The primary event is cancer relapse, while death
+#' before relapse is a competing event because it prevents a later relapse from
+#' being observed.
+#'
+#' @format A data frame with 500 observations and 8 variables:
+#' \describe{
+#'   \item{patient_id}{Synthetic patient identifier.}
+#'   \item{follow_up_months}{Observed follow-up time in months.}
+#'   \item{outcome}{First observed outcome: \code{Censored}, \code{Relapse}, or
+#'   \code{Death without relapse}.}
+#'   \item{treatment}{Randomized treatment group: \code{Standard} or
+#'   \code{Intervention}.}
+#'   \item{age}{Age at baseline in years.}
+#'   \item{sex}{Recorded sex: \code{Female} or \code{Male}.}
+#'   \item{stage}{Disease stage at baseline: \code{I}, \code{II}, or
+#'   \code{III}.}
+#'   \item{performance_status}{Baseline performance score from 0 to 2, with
+#'   higher values indicating greater functional limitation.}
+#' }
+#'
+#' @details
+#' These data are entirely synthetic and do not correspond to real people.
+#' Latent times to relapse and death were generated from separate exponential
+#' event processes and compared with an independently generated censoring time.
+#' The intervention lowers the simulated relapse rate, while age, disease
+#' stage, and performance status influence one or both event processes. The
+#' dataset is intended for teaching workflow and interpretation, not for
+#' clinical inference or benchmarking estimators.
+#'
+#' @source Generated deterministically for the gtregression package.
+"data_competing_risk"
+
 #' Infertility Matched Case-Control Study
 #'
 #' investigating the relationship between infertility and abortions.

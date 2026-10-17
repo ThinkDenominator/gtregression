@@ -1,0 +1,4 @@
+Name: GT Regression app
+Description: Open GT Regression in an RStudio dialog window
+Binding: gtregression_addin
+Interactive: true

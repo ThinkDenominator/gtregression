@@ -85,30 +85,52 @@
 #' Normalize common header aliases to visible table_display names
 #' @keywords internal
 #' @noRd
-.normalize_header_labels <- function(header_labels, display_df, approach = NULL) {
+.normalize_header_labels <- function(header_labels, display_df, approach = NULL,
+                                     visible_labels = NULL) {
   .must_be_named_character(header_labels, "header_labels", allow_null = TRUE)
   if (is.null(header_labels)) {
     return(NULL)
   }
 
-  out <- header_labels
-  effect_cols <- setdiff(names(display_df), c("Characteristic", "is_header", "N", "p-value"))
-  effect_col <- if (length(effect_cols) == 1L) effect_cols else NA_character_
-  aliases <- c(
-    estimate = effect_col,
-    p.value = "p-value",
-    p_value = "p-value",
-    pvalue = "p-value",
-    N = "N"
+  cols <- setdiff(names(display_df), c("Characteristic", "is_header"))
+  visible <- stats::setNames(cols, cols)
+  if (!is.null(visible_labels)) {
+    matched <- intersect(cols, names(visible_labels))
+    visible[matched] <- as.character(visible_labels[matched])
+  }
+  is_n <- visible == "N" | cols == "N"
+  is_p <- visible == "p-value" | cols == "p-value"
+  is_events <- visible == "Events"
+  aliases <- list(
+    estimate = cols[!is_n & !is_p & !is_events],
+    p.value = cols[is_p],
+    p_value = cols[is_p],
+    pvalue = cols[is_p],
+    N = cols[is_n]
   )
 
-  for (nm in names(out)) {
-    if (!nm %in% names(display_df) && nm %in% names(aliases) && !is.na(aliases[[nm]])) {
-      names(out)[names(out) == nm] <- aliases[[nm]]
+  out <- character()
+  bad <- character()
+  for (i in seq_along(header_labels)) {
+    nm <- names(header_labels)[i]
+    targets <- if (nm %in% names(display_df)) {
+      nm
+    } else if (nm %in% names(aliases) && length(aliases[[nm]])) {
+      aliases[[nm]]
+    } else if (nm %in% visible) {
+      # A visible label (e.g. "OR (95% CI)" in a merged or multinomial table)
+      # addresses every column that shows it.
+      cols[visible == nm]
+    } else {
+      character()
     }
+    if (!length(targets)) {
+      bad <- c(bad, nm)
+      next
+    }
+    out[targets] <- unname(header_labels[[i]])
   }
 
-  bad <- setdiff(names(out), names(display_df))
   if (length(bad)) {
     stop(
       "`header_labels` contains columns not found in the table: ",
@@ -182,8 +204,11 @@
   }
 
   spanners <- tbl$levels
-  theme <- if (!is.null(tbl$theme)) tbl$theme else "minimal"
-  format <- tolower(tbl$format)
+  theme <- .resolve_theme(if (!is.null(tbl$theme)) tbl$theme else "minimal")
+  format <- .format1(tbl$format)
+  if (is.na(format)) {
+    format <- if (inherits(tbl$table, "gt_tbl")) "gt" else "flextable"
+  }
 
   if (inherits(tbl, "stratified_uni_reg")) {
     effect_label <- .stratified_effect_label(header_labels, .get_effect_label(tbl$approach))
@@ -252,13 +277,19 @@
 }
 
 # ---------- main: modify labels/headers/notes and rebuild (gtregression only) ----------
-#' Modify Regression/Descriptive Tables (labels, headers, caption, notes)
+#' Modify table labels, headers, captions and notes
 #'
 #' Works with objects created by this package (class \code{"gtregression"}):
 #' \code{uni_reg()}, \code{multi_reg()}, \code{cox_reg()}, \code{surv_reg()},
 #' stratified regression outputs, \code{descriptive_table()}, and
 #' \code{merge_tables()}.
 #' No \pkg{gtsummary} dependency or fallback.
+#'
+#' For \code{risk_difference()} tables only the generic operations are
+#' available: \code{caption}, \code{caveat}, \code{variable_labels} (outcome,
+#' exposure and adjustment variables), \code{level_labels} (the two groups and
+#' the event), \code{header_labels} and \code{remove_abbreviations}. The
+#' other arguments are refused with an error and nothing is changed.
 #'
 #' @param gt_table Table object produced by this package (must contain
 #'   \code{$table_display}).
@@ -279,8 +310,12 @@
 #'   from univariable and stratified package tables. For stratified survival
 #'   outputs, event columns are retained unless the original table was created
 #'   with \code{show_sample = "none"}.
-#' @param remove_N_obs Logical; if \code{TRUE}, suppresses multivariable
-#'   complete-case footnote.
+#'   Footnotes that only explain the removed column are dropped as well; the
+#'   complete-observation footnote (\code{N = ... complete observations
+#'   included in the model.}) is kept. Use \code{remove_N_obs} to remove it.
+#' @param remove_N_obs Logical; if \code{TRUE}, suppresses the
+#'   complete-observation (complete-case) footnote, in every wording used by
+#'   the package tables.
 #' @param remove_abbreviations Logical; if \code{TRUE}, removes the
 #'   Abbreviations footnote line.
 #' @param remove_adjustment_note Logical; if \code{TRUE}, removes the automatic
@@ -335,6 +370,13 @@ modify_table <- function(gt_table,
     stop("`modify_table()` expects a gtregression object from this package (with $table_display).",
          call. = FALSE)
   }
+  if (inherits(tbl, "mediation_analysis")) {
+    stop(
+      "`modify_table()` does not support `mediation_analysis()` results. ",
+      "Edit the mediation table with flextable or gt functions on `$table`.",
+      call. = FALSE
+    )
+  }
 
   .must_be_named_character(variable_labels, "variable_labels", allow_null = TRUE)
   .must_be_named_character(header_labels, "header_labels", allow_null = TRUE)
@@ -353,6 +395,36 @@ modify_table <- function(gt_table,
     stop("`caveat` must be NULL or a single character string.", call. = FALSE)
   }
 
+  # risk_difference() tables have their own layout: only the safe generic
+  # operations are applied, by a dedicated helper.
+  if (inherits(tbl, "risk_difference")) {
+    unsupported <- c(
+      if (!isTRUE(bold_labels)) "bold_labels",
+      if (isTRUE(bold_levels)) "bold_levels",
+      if (isTRUE(italic_labels)) "italic_labels",
+      if (isTRUE(italic_levels)) "italic_levels",
+      if (isTRUE(remove_N)) "remove_N",
+      if (isTRUE(remove_N_obs)) "remove_N_obs",
+      if (isTRUE(remove_adjustment_note)) "remove_adjustment_note"
+    )
+    return(.rd_modify_table(
+      tbl,
+      variable_labels = variable_labels,
+      level_labels = level_labels,
+      header_labels = header_labels,
+      caption = caption,
+      caveat = caveat,
+      remove_abbreviations = remove_abbreviations,
+      unsupported = unsupported
+    ))
+  }
+
+  # --------- what the reader currently sees (before any change) ----------
+  # Column order, visible labels, spanners and notes are read from the source
+  # object so that a call without arguments leaves the content unchanged.
+  header_spec <- .header_spec(tbl)
+  source_footnotes <- .collect_footnotes(tbl)
+
   # --------- relabel display safely ----------
   tbl$table_display <- .relabel_display(
     tbl$table_display,
@@ -369,37 +441,55 @@ modify_table <- function(gt_table,
 
   # --------- optionally drop N columns ----------
   if (isTRUE(remove_N)) {
-    n_cols <- names(tbl$table_display)[
-      names(tbl$table_display) == "N" |
-        startsWith(names(tbl$table_display), "..N__")
+    display_names <- names(tbl$table_display)
+    labelled_n <- names(header_spec$labels)[header_spec$labels == "N"]
+    n_cols <- display_names[
+      display_names == "N" |
+        startsWith(display_names, "..N__") |
+        display_names %in% labelled_n
     ]
     tbl$table_display <- .drop_display_columns(tbl$table_display, n_cols)
   }
 
   if (!.is_stratified_regression_output(tbl)) {
-    header_labels <- .normalize_header_labels(header_labels, tbl$table_display, tbl$approach)
+    header_labels <- .normalize_header_labels(
+      header_labels, tbl$table_display, tbl$approach,
+      visible_labels = header_spec$labels
+    )
   }
 
   # --------- collect/compose footnotes ----------
-  footnotes <- character(0)
-  # Existing package objects store their complete display notes in `$footnotes`.
-  # Retain these first so a presentation-only modification never loses them.
-  if (!is.null(tbl$footnotes)) footnotes <- c(footnotes, tbl$footnotes)
+  # Start from the notes of the source table, in their original order.
+  footnotes <- source_footnotes
   # Some older objects attach notes to the object or rendered inner table.
   ft_attr1 <- attr(tbl, "footnotes", exact = TRUE)
   if (!is.null(ft_attr1)) footnotes <- c(footnotes, ft_attr1)
   ft_attr2 <- if (!is.null(tbl$table)) attr(tbl$table, "footnotes", exact = TRUE) else NULL
   if (!is.null(ft_attr2)) footnotes <- c(footnotes, ft_attr2)
-  # abbreviations line (unless removed)
+
+  # Replace a note in place (keeping note order) or append it when absent.
+  set_note <- function(notes, pattern, value) {
+    hit <- grep(pattern, notes)
+    if (!length(hit)) return(c(notes, value))
+    notes[hit[1L]] <- value
+    if (length(hit) > 1L) notes <- notes[-hit[-1L]]
+    notes
+  }
+
+  # abbreviations line: added only when the source table has none
   if (!isTRUE(remove_abbreviations) && !is.null(tbl$approach) &&
+      !any(.is_abbreviation_note(footnotes)) &&
       exists(".abbrev_note", mode = "function")) {
     footnotes <- c(footnotes, .abbrev_note(tbl$approach))
   }
   if (isTRUE(remove_abbreviations)) {
-    footnotes <- footnotes[!grepl("^Abbreviations:", footnotes)]
+    # Ordinal, conditional-logit and multinomial tables write this line
+    # without the "Abbreviations:" prefix.
+    footnotes <- footnotes[!.is_abbreviation_note(footnotes)]
   }
-  # multivariable N note (unless removed)
-  if (!isTRUE(remove_N_obs) && inherits(tbl, "multi_reg")) {
+  # multivariable N note: added only when the source table has none
+  if (!isTRUE(remove_N_obs) && inherits(tbl, "multi_reg") &&
+      !any(.is_n_note(footnotes))) {
     if (!is.null(tbl$models) && !is.null(tbl$models$multivariable_model)) {
       n_used <- tryCatch(stats::nobs(tbl$models$multivariable_model),
                          error = function(e) NA_integer_)
@@ -411,7 +501,12 @@ modify_table <- function(gt_table,
     }
   }
   if (isTRUE(remove_N_obs)) {
-    footnotes <- footnotes[!grepl("^N = .*complete observations", footnotes)]
+    # every wording of the complete-observation note
+    footnotes <- footnotes[!.is_n_note(footnotes)]
+  }
+  if (isTRUE(remove_N)) {
+    # notes that only explain the N column that was just removed
+    footnotes <- footnotes[!.is_n_note(footnotes, column_only = TRUE)]
   }
   # default descriptive notes (if none)
   if (!length(footnotes) && inherits(tbl, "descriptive_table")) {
@@ -420,15 +515,39 @@ modify_table <- function(gt_table,
       "Continuous variables shown as Median (IQR)."
     )
   }
-  # Keep the multivariable adjustment note aligned with the labels currently
-  # visible in the table, including adjustment variables not shown as rows.
-  if (inherits(tbl, c("multi_reg", "cox_reg", "surv_reg")) &&
+  # Keep the notes that name variables aligned with the labels currently
+  # visible in the table. Notes are rewritten only when labels are supplied,
+  # and stay in their original position.
+  adjustment_note_classes <- c(
+    "multi_reg", "cox_reg", "surv_reg", "conditional_logit_reg",
+    "competing_risk_reg", "ordinal_reg", "multinomial_reg", "multilevel_reg"
+  )
+  relabelled <- !is.null(variable_labels)
+  if (inherits(tbl, adjustment_note_classes) &&
       !is.null(tbl$adjust_for) &&
-      length(tbl$adjust_for) && exists(".display_adjustment_note", mode = "function")) {
-    footnotes <- footnotes[!grepl("^Adjusted for ", footnotes)]
-    footnotes <- c(
-      footnotes,
+      length(tbl$adjust_for) && exists(".display_adjustment_note", mode = "function") &&
+      (relabelled || !any(grepl("^Adjusted for ", footnotes)))) {
+    footnotes <- set_note(
+      footnotes, "^Adjusted for ",
       .display_adjustment_note(tbl$adjust_for, tbl$variable_labels)
+    )
+  }
+  if (inherits(tbl, "conditional_logit_reg") &&
+      !is.null(tbl$matched_set) && length(tbl$matched_set) == 1L &&
+      (relabelled || !any(grepl("^Matched by set identifier:", footnotes)))) {
+    matched_label <- .label_var(tbl$matched_set, tbl$variable_labels)
+    footnotes <- set_note(
+      footnotes, "^Matched by set identifier:",
+      paste0("Matched by set identifier: ", matched_label, ".")
+    )
+  }
+  if (inherits(tbl, "multilevel_reg") &&
+      !is.null(tbl$group) && length(tbl$group) == 1L &&
+      (relabelled || !any(grepl("^Random-intercept model clustered by ", footnotes)))) {
+    group_label <- .label_var(tbl$group, tbl$variable_labels)
+    footnotes <- set_note(
+      footnotes, "^Random-intercept model clustered by ",
+      paste0("Random-intercept model clustered by ", group_label, ".")
     )
   }
   if (isTRUE(remove_adjustment_note)) {
@@ -442,181 +561,40 @@ modify_table <- function(gt_table,
     tbl$caption <- caption
   }
 
-  # --------- reorder visible columns for univariate: N → Effect → p-value ----------
-  reorder_univariate_cols <- function(display_df) {
-    stopifnot(all(c("Characteristic","is_header") %in% names(display_df)))
-    cols <- names(display_df)
-    body_cols <- setdiff(cols, c("Characteristic","is_header"))
-    if (length(body_cols)) {
-      # classic uni layout has exactly one effect col + optional N + p-value
-      hasN   <- "N" %in% body_cols
-      hasP   <- "p-value" %in% body_cols
-      effect <- setdiff(body_cols, c("N","p-value"))
-      if (hasP && length(effect) == 1L) {
-        ord <- c("Characteristic", if (hasN) "N", effect, "p-value")
-        return(display_df[, ord, drop = FALSE])
-      }
-    }
-    # otherwise: drop is_header and keep as-is
-    display_df[, setdiff(names(display_df), "is_header"), drop = FALSE]
+  # --------- visible columns, labels and spanners ----------
+  display_cols <- setdiff(names(tbl$table_display), c("Characteristic", "is_header"))
+  cols <- header_spec$cols[header_spec$cols %in% display_cols]
+  labels <- header_spec$labels[cols]
+  if (!is.null(header_labels)) {
+    renamed <- intersect(names(header_labels), cols)
+    labels[renamed] <- unname(header_labels[renamed])
   }
+  levels <- lapply(header_spec$levels, function(level) {
+    groups <- lapply(level$cols, function(x) x[x %in% cols])
+    keep <- lengths(groups) > 0L
+    list(label = level$label[keep], cols = groups[keep])
+  })
+  levels <- levels[vapply(levels, function(level) length(level$label) > 0L, logical(1))]
 
-  # --------- builders (gt / flextable) ----------
-  .build_pkg_gt <- function(display_df, header_labels, footnotes) {
-    stopifnot(requireNamespace("gt", quietly = TRUE))
-    out <- reorder_univariate_cols(display_df)
+  theme <- .resolve_theme(if (!is.null(tbl$theme)) tbl$theme else "minimal")
+  # Single regression tables use the same flextable theme function as their
+  # source builder; descriptive, multinomial and merged tables keep the
+  # lighter styling of theirs.
+  single_regression <- !length(levels) &&
+    !inherits(tbl, c("descriptive_table", "merged_table", "multinomial_reg"))
 
-    merged_labels <- NULL
-    if (inherits(tbl, "merged_table") && !is.null(tbl$column_labels)) {
-      merged_labels <- c(
-        Characteristic = "Characteristic",
-        unlist(tbl$column_labels, use.names = TRUE)
-      )
-      merged_labels <- merged_labels[names(merged_labels) %in% names(out)]
+  if (inherits(tbl, c("merged_table", "multinomial_reg"))) {
+    if (!is.null(tbl$column_labels)) {
+      tbl$column_labels <- lapply(tbl$column_labels, function(x) {
+        x <- x[names(x) %in% cols]
+        x[] <- unname(labels[names(x)])
+        x
+      })
     }
-
-    lab_values <- if (!is.null(merged_labels)) merged_labels else header_labels
-    if (!is.null(header_labels)) {
-      lab_values[names(header_labels)] <- unname(header_labels)
-    }
-    lab_list <- if (!is.null(lab_values)) as.list(lab_values) else NULL
-    names(lab_list) <- names(lab_values)
-
-    tb <- gt::gt(out) |>
-      gt::cols_label(.list = lab_list) |>
-      gt::cols_align("left",   columns = "Characteristic") |>
-      gt::cols_align("center", columns = setdiff(names(out), "Characteristic")) |>
-      gt::sub_missing(columns = setdiff(names(out), "Characteristic"), missing_text = "") |>
-      gt::tab_options(
-        table.font.names         = "system-ui",
-        data_row.padding         = gt::px(4),
-        heading.background.color = "white",
-        table.background.color   = "white",
-        source_notes.padding     = gt::px(2)
-      )
-
-    # bold column labels
-    tb <- gt::tab_style(tb, gt::cell_text(weight = "bold"),
-                        locations = gt::cells_column_labels())
-    # bold variable headers (on demand; note: many tables already bold by default)
-    if (isTRUE(bold_labels)) {
-      hdr_idx <- which(display_df$is_header %in% TRUE)
-      if (length(hdr_idx)) {
-        tb <- gt::tab_style(tb, gt::cell_text(weight = "bold"),
-                            locations = gt::cells_body(rows = hdr_idx, columns = "Characteristic"))
-      }
-    }
-    # optional bold levels
-    if (isTRUE(bold_levels)) {
-      lvl_idx <- which(display_df$is_header %in% FALSE)
-      if (length(lvl_idx)) {
-        tb <- gt::tab_style(tb, gt::cell_text(weight = "bold"),
-                            locations = gt::cells_body(rows = lvl_idx, columns = "Characteristic"))
-      }
-    }
-    # indent levels
-    tb <- gt::tab_style(tb, gt::cell_text(indent = gt::px(12)),
-                        locations = gt::cells_body(rows = display_df$is_header %in% FALSE,
-                                                   columns = "Characteristic"))
-    if (inherits(tbl, "merged_table") && !is.null(tbl$spanners) &&
-        !is.null(tbl$column_labels)) {
-      start <- 2L
-      for (i in seq_along(tbl$spanners)) {
-        cols_i <- names(tbl$column_labels[[i]])
-        cols_i <- cols_i[cols_i %in% names(out)]
-        k <- length(cols_i)
-        if (k > 0) {
-          tb <- gt::tab_spanner(
-            tb,
-            label = tbl$spanners[i],
-            columns = names(out)[start:(start + k - 1L)]
-          )
-          start <- start + k
-        }
-      }
-      tb <- gt::tab_style(tb, gt::cell_text(weight = "bold"),
-                          locations = gt::cells_column_spanners())
-    }
-    # caption
-    if (!is.null(caption)) tb <- gt::tab_caption(tb, caption = caption)
-    # footnotes
-    if (length(footnotes)) {
-      tb <- gt::tab_source_note(tb, source_note = gt::md(paste(footnotes, collapse = "  \n")))
-    }
-    tb
-  }
-
-  .build_pkg_flex <- function(display_df, header_labels, footnotes) {
-    stopifnot(requireNamespace("flextable", quietly = TRUE))
-    out <- reorder_univariate_cols(display_df)
-
-    # NA -> "" (older flextable compat)
-    out[] <- lapply(out, function(x) { x[is.na(x)] <- ""; x })
-
-    merged_labels <- NULL
-    if (inherits(tbl, "merged_table") && !is.null(tbl$column_labels)) {
-      merged_labels <- c(
-        Characteristic = "Characteristic",
-        unlist(tbl$column_labels, use.names = TRUE)
-      )
-      merged_labels <- merged_labels[names(merged_labels) %in% names(out)]
-    }
-
-    labels <- stats::setNames(names(out), names(out))
-    if (!is.null(merged_labels)) {
-      labels[names(merged_labels)] <- unname(merged_labels)
-    }
-    if (!is.null(header_labels)) {
-      labels[names(header_labels)] <- unname(header_labels)
-    }
-
-    ft <- flextable::flextable(out)
-    ft <- flextable::set_header_labels(ft, values = labels)
-    if (inherits(tbl, "merged_table") && !is.null(tbl$spanners) &&
-        !is.null(tbl$column_labels)) {
-      widths <- c(
-        1L,
-        vapply(tbl$column_labels, function(x) {
-          sum(names(x) %in% names(out))
-        }, integer(1))
-      )
-      keep <- c(TRUE, widths[-1] > 0)
-      ft <- flextable::add_header_row(
-        ft,
-        values = c("", tbl$spanners)[keep],
-        colwidths = widths[keep]
-      )
-    }
-    ft <- flextable::align(ft, j = "Characteristic", align = "left",  part = "all")
-    ft <- flextable::align(ft, j = setdiff(names(out), "Characteristic"), align = "center", part = "all")
-    ft <- flextable::bold(ft, part = "header", bold = TRUE)
-
-    # bold variable headers (on demand)
-    if (isTRUE(bold_labels)) {
-      hdr_idx <- which(display_df$is_header %in% TRUE)
-      if (length(hdr_idx)) ft <- flextable::bold(ft, i = hdr_idx, j = "Characteristic", bold = TRUE, part = "body")
-    }
-    # optional bold levels
-    if (isTRUE(bold_levels)) {
-      lvl_idx <- which(display_df$is_header %in% FALSE)
-      if (length(lvl_idx)) ft <- flextable::bold(ft, i = lvl_idx, j = "Characteristic", bold = TRUE, part = "body")
-    }
-    # indent levels
-    lvl_idx <- which(display_df$is_header %in% FALSE)
-    if (length(lvl_idx)) ft <- flextable::padding(ft, i = lvl_idx, j = "Characteristic",
-                                                  padding.left = 14, part = "body")
-    # caption
-    if (!is.null(caption)) ft <- flextable::set_caption(ft, caption = caption)
-    # footnotes
-    if (length(footnotes)) {
-      ft <- flextable::add_footer_lines(ft, values = footnotes)
-      ft <- flextable::align(ft, part = "footer", align = "left")
-      ft <- flextable::padding(ft, part = "footer", padding.top = 0, padding.bottom = 0)
-      ft <- flextable::line_spacing(ft, part = "footer", space = 0.9)
-    }
-
-    ft <- flextable::autofit(ft)
-    ft
+  } else if (!is.null(tbl$header_labels)) {
+    kept <- intersect(names(tbl$header_labels), cols)
+    tbl$header_labels <- tbl$header_labels[kept]
+    tbl$header_labels[kept] <- unname(labels[kept])
   }
 
   apply_body_text_style <- function(rendered, display_df) {
@@ -674,13 +652,29 @@ modify_table <- function(gt_table,
   }
 
   # --------- rebuild rendered table ----------
+  format <- .format1(tbl$format)
   strata_table <- .rebuild_modified_stratified_table(tbl, tbl$table_display, footnotes, header_labels)
   if (!is.null(strata_table)) {
+    if (!is.null(caption)) {
+      strata_table <- if (inherits(strata_table, "gt_tbl")) {
+        gt::tab_caption(strata_table, caption = caption)
+      } else {
+        flextable::set_caption(strata_table, caption = caption)
+      }
+    }
     tbl$table <- strata_table
-  } else if (identical(tolower(tbl$format), "gt") || inherits(tbl$table, "gt_tbl")) {
-    tbl$table <- .build_pkg_gt(tbl$table_display, header_labels, footnotes)
-  } else if (identical(tolower(tbl$format), "flextable") || inherits(tbl$table, "flextable")) {
-    tbl$table <- .build_pkg_flex(tbl$table_display, header_labels, footnotes)
+  } else if (inherits(tbl$table, "gt_tbl") ||
+             (!inherits(tbl$table, "flextable") && identical(format, "gt"))) {
+    tbl$table <- .render_gt_table(
+      tbl$table_display, cols, labels, levels, theme, footnotes,
+      caption = caption
+    )
+  } else if (inherits(tbl$table, "flextable") || identical(format, "flextable")) {
+    tbl$table <- .render_flex_table(
+      tbl$table_display, cols, labels, levels, theme, footnotes,
+      caption = caption, vanilla = single_regression,
+      body_top_rule = !inherits(tbl, "descriptive_table")
+    )
   }
 
   tbl$table <- apply_body_text_style(tbl$table, tbl$table_display)

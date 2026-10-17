@@ -2,7 +2,7 @@
 % Please edit documentation in R/compare_models.R
 \name{compare_models}
 \alias{compare_models}
-\title{Compare Prespecified Regression Models}
+\title{Compare prespecified regression models}
 \usage{
 compare_models(
   ...,
@@ -30,8 +30,14 @@ calculated sequentially by comparing each model with the previous model.
 Use this only when models are nested and supplied in the intended order.}
 
 \item{primary_exposure}{Optional exposure or exact coefficient name to track
-across models. For Cox models this can be used to show the hazard ratio
-and percentage change in the log-effect estimate across candidate models.}
+across models. Quoted and bare names are accepted; a bare name resolves
+to a model variable first, not to a workspace object of the same name.
+For Cox models this can be used to show the hazard ratio and its
+percentage change across candidate models. "Change from first" is
+\code{100 * (estimate - first) / |first|} computed on the displayed
+scale: the ratio (OR, RR, IRR, HR, time ratio) for exponentiated models
+and the coefficient for linear models. This is the same scale as the
+change-in-estimate reported by \code{identify_confounder()}.}
 
 \item{exponentiate}{Logical. If \code{NULL}, Cox, logistic, Poisson,
 negative-binomial, and parametric survival models are exponentiated by

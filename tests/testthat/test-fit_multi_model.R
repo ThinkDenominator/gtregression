@@ -54,17 +54,19 @@ test_that(".fit_multi_model returns correct model class for each approach", {
   expect_s3_class(m_negbin, "glm")
 })
 
-test_that(".fit_multi_model returns NULL and warns on failure", {
+test_that(".fit_multi_model stops with an informative error on failure", {
   df_fail <- data.frame(
     outcome = c(1, 0, 1, 0),
     x1 = factor("only", levels = "only"),  # one-level factor
     x2 = factor("only", levels = "only")
   )
 
-  expect_warning({
-    model <- .fit_multi_model(df_fail, outcome = "outcome", exposures = c("x1", "x2"), approach = "logit")
-    expect_null(model)
-  }, regexp = "Model fitting failed")
+  # Previously: warning + NULL, after which multi_reg() could only say
+  # "Model fitting failed.". The error now names the exposures and approach.
+  expect_error(
+    .fit_multi_model(df_fail, outcome = "outcome", exposures = c("x1", "x2"), approach = "logit"),
+    regexp = "Model fitting failed for exposure\\(s\\) x1, x2 using approach 'logit'"
+  )
 })
 
 test_that(".fit_multi_model supports Firth logistic regression when logistf is available", {

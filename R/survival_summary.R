@@ -63,7 +63,8 @@ survival_summary <- function(data,
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
-  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE)
+  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE,
+                  data_names = names(data))
   format <- .choice_arg(
     substitute(format),
     env = parent.frame(),
@@ -134,6 +135,9 @@ survival_summary <- function(data,
   if (!is.null(by) && (!is.character(by) || length(by) != 1L || !by %in% names(data))) {
     stop("`by` must be NULL or a single grouping variable in `data`.", call. = FALSE)
   }
+  if (!is.null(by) && by %in% c(time, event)) {
+    stop("`by` must be a separate grouping variable, not the time or event variable.", call. = FALSE)
+  }
   if (!is.numeric(data[[time]])) {
     stop("`time` must be numeric.", call. = FALSE)
   }
@@ -175,7 +179,7 @@ survival_summary <- function(data,
   group <- if (is.null(by)) {
     "Overall"
   } else {
-    sub("^.*=", "", rownames(tab))
+    sub("^[^=]*=", "", rownames(tab))
   }
 
   records <- as.numeric(tab$records)

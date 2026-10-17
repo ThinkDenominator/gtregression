@@ -1,6 +1,6 @@
 # R/print.R
 
-#' Print gtregression objects (unified)
+#' Print gtregression objects
 #'
 #' Prints the rendered table for any object produced by this package
 #' (objects that include class \code{"gtregression"}), regardless of subtype
@@ -10,6 +10,9 @@
 #'
 #' @param x An object with class \code{"gtregression"}.
 #' @param ... Ignored. Present for compatibility with the generic.
+#'
+#' @return \code{x}, invisibly. Called for its side effect of printing the
+#'   rendered table.
 #'
 #' @export
 print.gtregression <- function(x, ...) {

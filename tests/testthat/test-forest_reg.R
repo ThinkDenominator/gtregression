@@ -297,6 +297,36 @@ test_that("forest_reg builds forest objects from data frames and regression obje
   expect_error(print(res_df, autofit = NA), "`autofit` must be")
 })
 
+test_that("forest_df reports and forest_reg draws infinite confidence limits", {
+  skip_if_not_installed("forestploter")
+
+  df <- birthwt_forest_data()
+  uni <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("smoke", "ht"),
+    approach = logit
+  )
+  target <- which(!uni$table_body$ref)[1]
+  uni$table_body$conf.high[target] <- Inf
+
+  forest_data <- forest_df(uni)
+  infinite_row <- which(is.infinite(attr(forest_data, "hi")))
+  expect_length(infinite_row, 1L)
+  expect_match(
+    forest_data[["OR (95% CI)"]][infinite_row],
+    "\u221e",
+    fixed = TRUE
+  )
+
+  result <- forest_reg(forest_data, quiet = TRUE)
+  expect_s3_class(result, "gtregression_forest")
+  expect_true(result$meta$infinite_intervals_clipped)
+  expect_null(result$meta$requested_xlim)
+  expect_true(all(is.finite(result$meta$xlim)))
+  expect_true(is.infinite(attr(result$input_data, "hi")[infinite_row]))
+})
+
 test_that("forest_reg preserves forest_df effect headers in plotted data", {
   skip_if_not_installed("forestploter")
 
@@ -561,6 +591,20 @@ test_that("forest_reg validates missing inputs", {
     forest_reg(df = data.frame(Characteristic = "x"), strata_fill = NA_character_),
     "`strata_fill` must be"
   )
+})
+
+test_that("forest_reg retains but does not forward deprecated effects", {
+  df <- birthwt_forest_data()
+  uni <- uni_reg(
+    df,
+    outcome = "low",
+    exposures = c("age", "smoke"),
+    approach = logit
+  )
+
+  result <- forest_reg(uni = uni, effects = "Odds ratio", quiet = TRUE)
+
+  expect_s3_class(result, "gtregression_forest")
 })
 
 test_that("forest_df accepts multi-only and desc-only inputs", {

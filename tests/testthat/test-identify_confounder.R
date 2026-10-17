@@ -363,3 +363,20 @@ test_that("identify_confounder validates inputs clearly", {
     "not a valid approach"
   )
 })
+
+test_that("continuous candidates are not treated as categorical strata", {
+  df <- birthwt_confounder_data()
+
+  result <- identify_confounder(
+    df, low, smoke, age,
+    approach = logit,
+    method = both,
+    emm_test = both,
+    format = gt
+  )
+
+  expect_equal(result$n_strata_total, 0L)
+  expect_true(is.na(result$mh_estimate))
+  expect_match(result$mh_status, "continuous")
+  expect_true(is.na(result$emm_statistic))
+})

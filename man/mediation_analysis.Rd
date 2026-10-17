@@ -57,7 +57,8 @@ intervals.}
 
 \item{format}{One of \code{"flextable"} (default) or \code{"gt"}.}
 
-\item{theme}{Table theme.}
+\item{theme}{Table theme: a preset (\code{"minimal"}, \code{"clinical"},
+\code{"striped"}, \code{"shaded"}, \code{"jama"}) or theme primitives.}
 }
 \value{
 A list of class \code{c("gtregression", "mediation_analysis", ...)}
@@ -87,7 +88,16 @@ knowledge before interpreting the estimates causally.
 
 For \code{outcome_approach = "linear"}, effects are mean differences. For
 \code{outcome_approach = "logit"}, effects are predicted probability
-differences, not odds ratios.
+differences, not odds ratios. With a logit outcome the effects are evaluated
+with the mediator set to its predicted mean under each exposure value (the
+mean is plugged into the outcome model). Because the logistic function is
+non-linear this is an approximation to the effects obtained by averaging
+over the mediator distribution; the table footnote states this.
+
+Bootstrap replicates in which a model cannot be fitted are excluded from
+the percentile intervals and p-values; a warning and the table footnote
+report how many failed (also stored as \code{boot_failed}). The interval
+column is labelled with \code{conf_level}.
 }
 \examples{
 med <- mediation_analysis(

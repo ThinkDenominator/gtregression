@@ -4,14 +4,20 @@
 \alias{forest_df}
 \title{Build a compatible data frame for forest plots}
 \usage{
-forest_df(uni, multi = NULL, desc = NULL, digits = 2)
+forest_df(uni = NULL, multi = NULL, desc = NULL, digits = 2)
 }
 \arguments{
-\item{uni}{A \code{gtregression} object from \code{uni_reg()}. If
-\code{multi} is supplied without \code{uni}, the multivariable object is
-plotted as a single effect column.}
+\item{uni}{A \code{gtregression} regression object, usually the crude
+results (for example \code{uni_reg()}, \code{cox_reg()},
+\code{conditional_logit_reg()} or \code{ordinal_reg()}). If \code{multi}
+is supplied without \code{uni}, the adjusted object is plotted as a single
+effect column.}
 
-\item{multi}{Optional \code{gtregression} object from \code{multi_reg()}.}
+\item{multi}{Optional adjusted object of the same model family, for example
+\code{multi_reg()} or a model fitted with \code{multivariable = TRUE}.
+Exposure-specific adjusted results (\code{adjust_for}) and the single
+multivariable model can also be shown together; the second column is
+then labelled "Mutually adjusted".}
 
 \item{desc}{Optional descriptive table object from \code{descriptive_table()}.}
 
@@ -30,6 +36,12 @@ that will be passed to the forest plot. Stratified regression objects are
 also supported when supplied one at a time; the returned data frame keeps the
 characteristic rows once and places strata side by side as separate effect
 columns for \code{forest_reg()}.
+}
+\details{
+Effect columns use the same header as the source tables, for
+  example "Matched OR (95\% CI)" for \code{conditional_logit_reg()} and
+  "Common OR (95\% CI)" for \code{ordinal_reg()}, and the estimates and
+  intervals are taken unchanged from each result's \code{table_body}.
 }
 \examples{
 birthwt_data <- data_birthwt |>

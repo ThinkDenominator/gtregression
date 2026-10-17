@@ -45,5 +45,3 @@
 
 # Tool/editor metadata
 ^.*~$
-^\.positai$
-^\.claude$

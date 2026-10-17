@@ -74,8 +74,8 @@ check_convergence <- function(data,
   if (!is.data.frame(data)) {
     stop("`data` must be a data frame.", call. = FALSE)
   }
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
-  outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame(), data_names = names(data))
+  outcome <- .vars_arg(substitute(outcome), env = parent.frame(), data_names = names(data))
   if (!is.character(exposures) || length(exposures) < 1L ||
       anyNA(exposures) || any(!nzchar(exposures))) {
     stop("`exposures` must be a non-empty character vector.", call. = FALSE)

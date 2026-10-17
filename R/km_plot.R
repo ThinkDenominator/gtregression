@@ -118,7 +118,8 @@ km_plot <- function(data,
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
-  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE)
+  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE,
+                  data_names = names(data))
   theme <- .km_theme_arg(substitute(theme), env = parent.frame())
   title_face <- .km_title_face_arg(substitute(title_face), env = parent.frame())
   legend_position <- .km_legend_position_arg(substitute(legend_position), env = parent.frame())
@@ -162,6 +163,13 @@ km_plot <- function(data,
   plot_data <- .km_tidy_survfit(fit)
   risk_breaks <- .km_time_breaks(data_clean[[time]], break_time_by, xlim)
   risk_data <- .km_risk_table(fit, risk_breaks)
+  # Both panels must share one x range, otherwise the risk numbers do not sit
+  # under the matching time on the curve.
+  panel_xlim <- if (is.null(xlim)) {
+    range(c(0, data_clean[[time]], risk_breaks), na.rm = TRUE)
+  } else {
+    xlim
+  }
   logrank_p <- .km_logrank_p(data_clean, time, event, by)
   ylim <- .km_normalize_ylim(ylim, y_percent = y_percent)
 
@@ -197,7 +205,8 @@ km_plot <- function(data,
     grid = grid,
     base_size = base_size,
     logrank_p = if (isTRUE(p_value)) logrank_p else NA_real_,
-    p_value_position = p_value_position
+    p_value_position = p_value_position,
+    panel_xlim = panel_xlim
   )
 
   out <- main_plot
@@ -210,7 +219,8 @@ km_plot <- function(data,
       palette = palette,
       theme = theme,
       grid = grid,
-      base_size = base_size
+      base_size = base_size,
+      panel_xlim = panel_xlim
     )
     out <- patchwork::wrap_plots(main_plot, risk_plot, ncol = 1, heights = c(3, 1))
   }
@@ -243,6 +253,9 @@ km_plot <- function(data,
   }
   if (!is.null(by) && (!is.character(by) || length(by) != 1L || !by %in% names(data))) {
     stop("`by` must be NULL or a single grouping variable in `data`.", call. = FALSE)
+  }
+  if (!is.null(by) && by %in% c(time, event)) {
+    stop("`by` must be a separate grouping variable, not the time or event variable.", call. = FALSE)
   }
   if (!is.numeric(data[[time]])) {
     stop("`time` must be numeric.", call. = FALSE)
@@ -356,7 +369,7 @@ km_plot <- function(data,
   strata <- if (is.null(sm$strata)) {
     rep("Overall", length(sm$time))
   } else {
-    sub("^.*=", "", as.character(sm$strata))
+    sub("^[^=]*=", "", as.character(sm$strata))
   }
 
   out <- data.frame(
@@ -406,7 +419,7 @@ km_plot <- function(data,
   strata <- if (is.null(sm$strata)) {
     rep("Overall", length(sm$time))
   } else {
-    sub("^.*=", "", as.character(sm$strata))
+    sub("^[^=]*=", "", as.character(sm$strata))
   }
   out <- data.frame(
     time = sm$time,
@@ -528,7 +541,8 @@ km_plot <- function(data,
 .km_main_plot <- function(plot_data, conf.int, censor, xlim, ylim, breaks, xlab, ylab,
                           title, subtitle, caption, title_size, title_face,
                           legend_title, legend_position, palette, y_percent, theme, grid,
-                          base_size, logrank_p, p_value_position) {
+                          base_size, logrank_p, p_value_position,
+                          panel_xlim = xlim) {
   p <- ggplot2::ggplot(
     plot_data,
     ggplot2::aes(x = .data$time, y = .data$survival, color = .data$strata)
@@ -606,14 +620,15 @@ km_plot <- function(data,
       ggplot2::scale_fill_manual(values = pal, guide = "none")
   }
 
-  p <- p + ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+  p <- p + ggplot2::coord_cartesian(xlim = panel_xlim, ylim = ylim)
 
   p
 }
 
 #' @keywords internal
 #' @noRd
-.km_risk_plot <- function(risk_data, breaks, xlim, xlab, palette, theme, grid, base_size) {
+.km_risk_plot <- function(risk_data, breaks, xlim, xlab, palette, theme, grid, base_size,
+                          panel_xlim = xlim) {
   p <- ggplot2::ggplot(
     risk_data,
     ggplot2::aes(x = .data$time, y = .data$strata, label = .data$n.risk,
@@ -634,8 +649,8 @@ km_plot <- function(data,
     levs <- levels(risk_data$strata)
     p <- p + ggplot2::scale_color_manual(values = stats::setNames(palette[seq_along(levs)], levs))
   }
-  if (!is.null(xlim)) {
-    p <- p + ggplot2::coord_cartesian(xlim = xlim)
+  if (!is.null(panel_xlim)) {
+    p <- p + ggplot2::coord_cartesian(xlim = panel_xlim)
   }
   p
 }

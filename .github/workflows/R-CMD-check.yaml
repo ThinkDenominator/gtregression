@@ -32,6 +32,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # gdtools (used by flextable) is linked against the X11 libraries that
+      # XQuartz provides; the macOS runner image does not include them.
+      - name: Install XQuartz (macOS)
+        if: runner.os == 'macOS'
+        run: brew install --cask xquartz
+
       - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-r@v2

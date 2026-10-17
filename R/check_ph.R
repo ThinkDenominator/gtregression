@@ -29,6 +29,11 @@
 #' term or for the global model test. This should be interpreted with plots,
 #' clinical knowledge, follow-up patterns, and modelling purpose.
 #'
+#' The returned table retains the underlying \code{cox.zph} diagnostics. Use
+#' \code{plot()} to draw scaled Schoenfeld residual plots. When several models
+#' were checked, select one by name or position with the \code{model} argument;
+#' use \code{term} to draw a single model term.
+#'
 #' @examples
 #' lung_data <- data_lungcancer
 #' lung_data$trt <- factor(lung_data$trt, levels = c(1, 2),
@@ -43,6 +48,8 @@
 #'
 #' check_ph(cox_fit)
 #' check_ph(cox_fit, format = tibble)
+#' ph <- check_ph(cox_fit)
+#' plot(ph, model = "trt")
 #'
 #' @importFrom survival cox.zph
 #' @export
@@ -71,21 +78,41 @@ check_ph <- function(model,
   }
 
   model_list <- .check_ph_model_list(model)
+  diagnostics <- lapply(
+    names(model_list),
+    function(nm) {
+      tryCatch(
+        survival::cox.zph(model_list[[nm]], transform = transform),
+        error = function(e) {
+          stop(
+            "Could not compute proportional hazards test for model '", nm,
+            "': ", conditionMessage(e), call. = FALSE
+          )
+        }
+      )
+    }
+  )
+  names(diagnostics) <- names(model_list)
   out <- do.call(
     rbind,
-    lapply(names(model_list), function(nm) {
-      .check_ph_one_model(model_list[[nm]], model_name = nm,
-                          transform = transform, alpha = alpha)
+    lapply(names(diagnostics), function(nm) {
+      .check_ph_one_model(diagnostics[[nm]], model_name = nm, alpha = alpha)
     })
   )
   rownames(out) <- NULL
 
   if (format == "tibble") {
-    return(tibble::as_tibble(out))
+    result <- tibble::as_tibble(out)
+  } else {
+    result <- .build_check_ph_table(
+      out, format = format, alpha = alpha, transform = transform
+    )
   }
 
-  .build_check_ph_table(out, format = format, alpha = alpha,
-                        transform = transform)
+  attr(result, "ph_diagnostics") <- diagnostics
+  attr(result, "ph_transform") <- transform
+  class(result) <- c("gtregression_ph", class(result))
+  result
 }
 
 #' @keywords internal
@@ -112,20 +139,7 @@ check_ph <- function(model,
 
 #' @keywords internal
 #' @noRd
-.check_ph_one_model <- function(fit, model_name, transform, alpha) {
-  zph <- tryCatch(
-    survival::cox.zph(fit, transform = transform),
-    error = function(e) {
-      stop(
-        "Could not compute proportional hazards test for model '",
-        model_name,
-        "': ",
-        conditionMessage(e),
-        call. = FALSE
-      )
-    }
-  )
-
+.check_ph_one_model <- function(zph, model_name, alpha) {
   tab <- as.data.frame(zph$table)
   tab$Term <- rownames(tab)
   rownames(tab) <- NULL
@@ -155,6 +169,84 @@ check_ph <- function(model,
   )
 
   out[, c("Model", "Term", "Test", "Chi.square", "df", "p.value", "Interpretation")]
+}
+
+#' Plot proportional hazards diagnostics
+#'
+#' Plot scaled Schoenfeld residual diagnostics retained by \code{check_ph()}.
+#'
+#' @param x An object returned by \code{check_ph()}.
+#' @param model Model to plot. Supply its name or position. This is required
+#'   when \code{check_ph()} evaluated more than one Cox model.
+#' @param term Optional model term to plot. Supply its name or position. When
+#'   omitted, all terms in the selected model are plotted.
+#' @param ... Additional arguments passed to \code{plot.cox.zph()}.
+#'
+#' @return The input object, invisibly.
+#' @keywords internal
+#' @export
+plot.gtregression_ph <- function(x, model = NULL, term = NULL, ...) {
+  diagnostics <- attr(x, "ph_diagnostics", exact = TRUE)
+  if (is.null(diagnostics) || !length(diagnostics)) {
+    stop("No proportional hazards diagnostics are stored in `x`.", call. = FALSE)
+  }
+
+  model_index <- .check_ph_plot_index(
+    model,
+    choices = names(diagnostics),
+    what = "model",
+    required = length(diagnostics) > 1L
+  )
+  zph <- diagnostics[[model_index]]
+
+  term_index <- NULL
+  if (!is.null(term)) {
+    term_names <- setdiff(rownames(zph$table), "GLOBAL")
+    term_index <- .check_ph_plot_index(
+      term, choices = term_names, what = "term", required = FALSE
+    )
+  }
+
+  if (is.null(term_index)) {
+    graphics::plot(zph, ...)
+  } else {
+    graphics::plot(zph, var = term_index, ...)
+  }
+  invisible(x)
+}
+
+#' @keywords internal
+#' @noRd
+.check_ph_plot_index <- function(value, choices, what, required) {
+  if (is.null(value)) {
+    if (isTRUE(required)) {
+      stop(
+        "Select a `", what, "` to plot. Available ", what, "s: ",
+        paste(choices, collapse = ", "), ".",
+        call. = FALSE
+      )
+    }
+    return(1L)
+  }
+
+  if (is.numeric(value) && length(value) == 1L && !is.na(value) &&
+      value == floor(value) && value >= 1L && value <= length(choices)) {
+    return(as.integer(value))
+  }
+  if (is.character(value) && length(value) == 1L && !is.na(value) &&
+      value %in% choices) {
+    return(match(value, choices))
+  }
+  stop(
+    "`", what, "` must be a name or position. Available ", what, "s: ",
+    paste(choices, collapse = ", "), ".",
+    call. = FALSE
+  )
+}
+
+#' @export
+print.gtregression_ph <- function(x, ...) {
+  NextMethod("print")
 }
 
 #' @keywords internal

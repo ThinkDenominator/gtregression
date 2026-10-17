@@ -245,7 +245,7 @@ diabetes_med <- mediation_analysis(
   seed = 123
 )
 
-diabetes_med
+diabetes_med$table
 ```
 
 The underlying values remain available for audit, reporting, or custom

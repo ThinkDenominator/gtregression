@@ -11,6 +11,11 @@
 
 \item{name}{Field name to access.}
 }
+\value{
+The requested element of \code{x}, or \code{NULL} if \code{x} has
+  no element of that name. \code{engine} and \code{format} are treated as
+  aliases of each other.
+}
 \description{
 Works for any object from this package, since they all carry class
 `"gtregression"`. Returns NULL (quietly) if the field is not present.

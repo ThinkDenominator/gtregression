@@ -61,6 +61,8 @@ test_that("multi_reg returns a gtregression object for default logit models", {
                     "is_header") %in% names(res$table_display)))
   expect_true(any(res$table_body$ref))
   expect_true("Ref." %in% res$table_display[["Adjusted OR (95% CI)"]])
+  level_labels <- res$table_display$Characteristic[!res$table_display$is_header]
+  expect_true(all(grepl("^  ", level_labels)))
   expect_true(any(grepl("Ref. = reference category", res$table$`_source_notes`,
                         fixed = TRUE)))
   expect_true("Regression diagnostics available only for 'linear' models." %in% res$reg_check)
@@ -126,6 +128,28 @@ test_that("multi_reg explains how to show reference rows when hidden", {
   expect_false("Ref." %in% res$table_display[["Adjusted OR (95% CI)"]])
   expect_false(any(grepl("Ref. = reference category", res$table$`_source_notes`,
                          fixed = TRUE)))
+})
+
+test_that("multi_reg retains multilevel references when binary references are hidden", {
+  df <- birthwt_multi_data()
+
+  expect_message(
+    res <- multi_reg(
+      data = df,
+      outcome = low,
+      exposures = c(smoke, race),
+      approach = logit,
+      show_ref = FALSE
+    ),
+    "Reference rows are retained for categorical variables with more than two levels.",
+    fixed = TRUE
+  )
+
+  display <- res$table_display
+  expect_equal(sum(display$Characteristic == "smoke"), 1L)
+  expect_true("White" %in% trimws(display$Characteristic))
+  expect_true("Ref." %in% display[["Adjusted OR (95% CI)"]])
+  expect_true(any(grepl("Ref. = reference category", res$footnotes, fixed = TRUE)))
 })
 
 test_that("multi_reg optionally returns model-fit statistics", {
@@ -320,7 +344,8 @@ test_that("multi_reg supports interaction terms in logit models", {
     paste(deparse(stats::formula(res$models$smoke)), collapse = " "),
     "smoke \\* ht"
   )
-  expect_equal(res$table_body$level, c("No", "Yes"))
+  expect_true(all(c("No", "Yes", "smoke: Yes x ht: Yes") %in%
+                    res$table_body$level))
 })
 
 test_that("multi_reg returns diagnostics for linear models", {

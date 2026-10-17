@@ -1,0 +1,343 @@
+---
+title: "Merge and Customise Tables"
+description: "Combine two or more tables side by side, label each block, and finish the result with modify_table() or flextable."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Merge and Customise Tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE, warning = FALSE)
+```
+
+A manuscript table often brings several analyses together: the baseline
+characteristics, the crude estimates and the adjusted estimates, or a primary
+analysis next to its sensitivity analyses. `merge_tables()` places any number
+of `gtregression` tables side by side, aligns the rows by variable and
+category, and keeps every footnote.
+
+This article covers:
+
+- merging two, three or more tables;
+- labelling each block with `spanners`;
+- keeping binary rows consistent;
+- merging sensitivity analyses and survival models;
+- relabelling the merged table with `modify_table()`;
+- further styling with `flextable` functions;
+- saving the result.
+
+## Example data
+
+```{r setup}
+library(gtregression)
+library(dplyr)
+
+data("data_birthwt", package = "gtregression")
+
+birthwt <- data_birthwt |>
+  mutate(
+    race = factor(race, levels = c(1, 2, 3), labels = c("White", "Black", "Other")),
+    smoke = factor(smoke, levels = c(0, 1), labels = c("No", "Yes")),
+    ht = factor(ht, levels = c(0, 1), labels = c("No", "Yes")),
+    ui = factor(ui, levels = c(0, 1), labels = c("No", "Yes")),
+    low = factor(low, levels = c(0, 1), labels = c("Normal BW", "Low BW"))
+  )
+
+attr(birthwt$age, "label") <- "Maternal age (years)"
+attr(birthwt$lwt, "label") <- "Maternal weight (lb)"
+attr(birthwt$race, "label") <- "Race"
+attr(birthwt$smoke, "label") <- "Smoking during pregnancy"
+attr(birthwt$ht, "label") <- "History of hypertension"
+attr(birthwt$ui, "label") <- "Uterine irritability"
+
+exposures <- c("age", "lwt", "race", "smoke", "ht", "ui")
+```
+
+## Build the tables you want to combine
+
+Use the same binary layout in every table you plan to merge. Showing both
+levels in the descriptive table and the reference row in each regression table
+gives one row per category across the whole merged table.
+
+```{r build}
+desc <- descriptive_table(
+  birthwt,
+  exposures = exposures,
+  by = "low",
+  show_dichotomous = "all_levels"
+)
+
+crude <- uni_reg(
+  birthwt,
+  outcome = "low",
+  exposures = exposures,
+  approach = "logit",
+  show_ref = TRUE
+)
+
+adjusted <- multi_reg(
+  birthwt,
+  outcome = "low",
+  exposures = exposures,
+  approach = "logit",
+  show_ref = TRUE
+)
+```
+
+## Merge two tables
+
+Supply the tables in the order they should appear, and one spanner label per
+table.
+
+```{r merge-two}
+crude_adjusted <- merge_tables(
+  crude,
+  adjusted,
+  spanners = c("Crude", "Adjusted")
+)
+
+crude_adjusted$table
+```
+
+## Merge three or more tables
+
+There is no limit of two: pass as many tables as you need. The classic
+"Table 2" combines the descriptive summary, the crude estimates and the
+adjusted estimates.
+
+```{r merge-three}
+table_2 <- merge_tables(
+  desc,
+  crude,
+  adjusted,
+  spanners = c("Low birth weight", "Crude", "Adjusted")
+)
+
+table_2$table
+```
+
+Rows are matched on the underlying variable and category, not on the visible
+label, so the tables stay aligned even when labels differ. A variable that
+appears in some tables but not in others is kept and left blank where it was
+not analysed.
+
+If one table shows binary variables as a single row and another shows both
+levels, `merge_tables()` warns and names the settings that make them
+compatible (`show_dichotomous = "all_levels"` with `show_ref = TRUE`, or
+`show_dichotomous = "single_row"` with `show_ref = FALSE`, used consistently).
+
+## Sensitivity analyses side by side
+
+Tables of the same type can be merged too. Here a primary model is shown next
+to a model restricted to mothers without hypertension and a model with fewer
+covariates.
+
+```{r sensitivity}
+primary <- multi_reg(
+  birthwt,
+  outcome = "low",
+  exposures = c("smoke", "race", "ui"),
+  adjust_for = c("age", "lwt"),
+  approach = "logit",
+  show_ref = TRUE
+)
+
+no_hypertension <- multi_reg(
+  filter(birthwt, ht == "No"),
+  outcome = "low",
+  exposures = c("smoke", "race", "ui"),
+  adjust_for = c("age", "lwt"),
+  approach = "logit",
+  show_ref = TRUE
+)
+
+fewer_covariates <- multi_reg(
+  birthwt,
+  outcome = "low",
+  exposures = c("smoke", "race", "ui"),
+  adjust_for = "age",
+  approach = "logit",
+  show_ref = TRUE
+)
+
+sensitivity <- merge_tables(
+  primary,
+  no_hypertension,
+  fewer_covariates,
+  spanners = c("Primary analysis", "Without hypertension", "Age-adjusted only")
+)
+
+sensitivity$table
+```
+
+Each adjustment note is carried over from its own table, so readers can see
+exactly what each block was adjusted for.
+
+## Survival tables
+
+Cox and parametric survival tables merge in the same way. Unadjusted and
+adjusted hazard ratios are a common pair.
+
+```{r survival}
+data("data_lungcancer", package = "gtregression")
+
+lung <- data_lungcancer |>
+  mutate(
+    trt = factor(trt, levels = c(1, 2), labels = c("Standard", "Test")),
+    celltype = factor(celltype)
+  )
+
+cox_crude <- cox_reg(
+  lung,
+  time = "time",
+  event = "status",
+  exposures = c("trt", "celltype", "karno"),
+  show_ref = TRUE
+)
+
+cox_adjusted <- cox_reg(
+  lung,
+  time = "time",
+  event = "status",
+  exposures = c("trt", "celltype", "karno"),
+  multivariable = TRUE,
+  show_ref = TRUE
+)
+
+survival_table <- merge_tables(
+  cox_crude,
+  cox_adjusted,
+  spanners = c("Unadjusted HR", "Adjusted HR")
+)
+
+survival_table$table
+```
+
+## Relabel with modify_table()
+
+`modify_table()` works on merged tables. Use the original variable names on
+the left-hand side; the visible labels can be anything.
+
+```{r modify}
+table_2_final <- modify_table(
+  table_2,
+  variable_labels = c(lwt = "Weight at last menstrual period (lb)"),
+  level_labels = list(smoke = c(Yes = "Smoker", No = "Non-smoker")),
+  caption = "Table 2. Factors associated with low birth weight",
+  caveat = "Odds ratios from logistic regression; adjusted estimates include all listed characteristics."
+)
+
+table_2_final$table
+```
+
+## Choose a table theme
+
+Every table function and `merge_tables()` accept a `theme`. Presets are
+`"minimal"` (the default), `"clinical"`, `"striped"`, `"shaded"` and `"jama"`.
+You can also combine primitives: `"plain"`, `"zebra"`, `"lines"`,
+`"labels_bold"`, `"compact"` and `"header_shaded"`.
+
+```{r themes}
+jama_table <- merge_tables(
+  crude,
+  adjusted,
+  spanners = c("Crude", "Adjusted"),
+  theme = "jama"
+)
+
+jama_table$table
+
+custom_theme_table <- merge_tables(
+  crude,
+  adjusted,
+  spanners = c("Crude", "Adjusted"),
+  theme = c("zebra", "compact", "labels_bold")
+)
+
+custom_theme_table$table
+```
+
+## Fine-tune with flextable
+
+The merged table is an ordinary `flextable` stored in `$table`. Anything the
+[flextable](https://ardata-fr.github.io/flextable-book/) package can do can be
+applied to it: fonts, colours, widths, alignment or highlighting particular
+cells. Take the table out, change it, and keep the result.
+
+```{r flextable}
+library(flextable)
+
+ft <- table_2_final$table
+
+ft <- ft |>
+  font(fontname = "Arial", part = "all") |>
+  fontsize(size = 9, part = "all") |>
+  color(color = "#0F5C5F", part = "header") |>
+  bg(bg = "#EEF6F6", part = "header") |>
+  align(j = 2:ncol_keys(ft), align = "center", part = "all") |>
+  autofit()
+
+ft
+```
+
+To change particular cells, refer to columns by their keys and to rows by
+number or by a condition on the cell values. Each block of a merged table has
+its own keys, ending in `_p1`, `_p2`, `_p3` and so on, in the order the
+tables were merged.
+
+```{r flextable-keys}
+ft$col_keys
+```
+
+For example, to bold the adjusted p-values below 0.05 (the third block):
+
+```{r flextable-highlight}
+adjusted_p <- ft$col_keys[startsWith(ft$col_keys, "p.value") & endsWith(ft$col_keys, "_p3")]
+p_values <- suppressWarnings(as.numeric(sub("<", "", ft$body$dataset[[adjusted_p]])))
+
+ft <- bold(ft, i = which(p_values < 0.05), j = adjusted_p, part = "body")
+ft
+```
+
+Changes made this way apply to the flextable only. Keep the original
+`gtregression` object if you want to merge it again later, and apply flextable
+styling as the final step.
+
+For HTML-first work, use `format = "gt"` in `merge_tables()` and style the
+result with the [gt](https://gt.rstudio.com/) package in the same way.
+
+## Save the result
+
+`save_table()` accepts the `gtregression` object or a styled flextable. The
+file type is set by `format`.
+
+```{r save, eval = FALSE}
+save_table(table_2_final, filename = "table-2", format = "docx")
+save_table(ft, filename = "table-2-styled", format = "docx")
+save_table(table_2_final, filename = "table-2", format = "html")
+```
+
+Several tables can go into one Word document with `save_docx()`:
+
+```{r save-docx, eval = FALSE}
+save_docx(
+  tables = list(table_2_final, primary),
+  filename = "results",
+  titles = c("Table 2. Low birth weight", "Table 3. Sensitivity analyses")
+)
+```
+
+## Which tables can be merged?
+
+| Can be merged | Notes |
+|---|---|
+| `descriptive_table()` | Use `show_dichotomous` consistently. |
+| `uni_reg()`, `multi_reg()` and the stratified functions | Use `show_ref` consistently. |
+| `cox_reg()`, `surv_reg()`, `competing_risk_reg()` | Crude and adjusted pairs, or sensitivity analyses. |
+| `ordinal_reg()`, `multinomial_reg()`, `multilevel_reg()`, `conditional_logit_reg()` | Each keeps its own estimate type and notes. |
+| A merged table | Merge again, or relabel with `modify_table()`. |
+
+`risk_difference()` tables are designed to stand alone and are not merged;
+see [Risk Difference and NNT](risk-difference.html).

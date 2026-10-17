@@ -58,6 +58,41 @@ test_that("check_ph returns formatted tables", {
   expect_s3_class(check_ph(fit, format = gt), "gt_tbl")
 })
 
+test_that("check_ph retains diagnostics for base plot dispatch", {
+  skip_if_not_installed("survival")
+
+  df <- lung_ph_data()
+  fit <- survival::coxph(
+    survival::Surv(time, status) ~ trt + age,
+    data = df,
+    x = TRUE,
+    y = TRUE,
+    model = TRUE
+  )
+  out <- check_ph(fit, format = tibble)
+
+  expect_s3_class(out, "gtregression_ph")
+  expect_s3_class(attr(out, "ph_diagnostics")[[1]], "cox.zph")
+
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  expect_invisible(plot(out, term = "age"))
+  expect_error(plot(out, term = "missing"), "Available terms")
+})
+
+test_that("check_ph plot requires model selection for multiple models", {
+  skip_if_not_installed("survival")
+
+  df <- lung_ph_data()
+  result <- cox_reg(df, time, status, c(trt, age), adjust_for = karno)
+  out <- check_ph(result, format = tibble)
+
+  expect_error(plot(out), "Select a `model`")
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  expect_invisible(plot(out, model = "age"))
+})
+
 test_that("check_ph validates inputs", {
   skip_if_not_installed("survival")
 

@@ -37,6 +37,8 @@ test_that("surv_reg returns crude time-ratio tables", {
   expect_true("Time Ratio (95% CI)" %in% names(res$table_display))
   expect_true("Treatment group" %in% res$table_display$Characteristic)
   expect_true("Ref." %in% res$table_display[["Time Ratio (95% CI)"]])
+  level_labels <- res$table_display$Characteristic[!res$table_display$is_header]
+  expect_true(all(grepl("^  ", level_labels)))
   expect_null(res$model_stats)
   expect_equal(
     attr(res$table_display, "row_exposure")[res$table_display$is_header],
@@ -325,9 +327,17 @@ test_that("surv_reg validates survival and distribution inputs", {
   df <- lung_surv_data()
   df$bad_event <- 1
 
+  # Data without censored observations are valid for a parametric model.
+  all_events <- surv_reg(df, time = "time", event = "bad_event", exposures = "age")
+  direct <- survival::survreg(survival::Surv(time, bad_event) ~ age, data = df)
+  expect_equal(
+    unname(stats::coef(all_events$models$age)), unname(stats::coef(direct)),
+    tolerance = 1e-8
+  )
+  df$no_event <- 0
   expect_error(
-    surv_reg(df, time = "time", event = "bad_event", exposures = "age"),
-    "`event` must include at least one censored observation"
+    surv_reg(df, time = "time", event = "no_event", exposures = "age"),
+    "at least one event"
   )
   expect_error(
     surv_reg(df, time = "time", event = "status", exposures = "missing_var"),
@@ -425,12 +435,12 @@ test_that("surv_reg supports stratified crude and adjusted survival tables", {
   expect_s3_class(crude, "surv_reg")
   expect_equal(crude$source, "stratified_surv_reg")
   expect_true(crude$stratified)
-  expect_equal(crude$show_sample, "events")
+  expect_equal(crude$show_sample, "both")
   expect_false(crude$adjusted_mode)
   expect_equal(crude$by, "trt")
   expect_equal(crude$distribution, "weibull")
   expect_equal(crude$levels, c("Standard treatment", "Test treatment"))
-  expect_false("..N__Standard treatment" %in% names(crude$table_display))
+  expect_true("..N__Standard treatment" %in% names(crude$table_display))
   expect_true("..Events__Standard treatment" %in% names(crude$table_display))
   expect_true("..eff__Standard treatment" %in% names(crude$table_display))
   expect_named(crude$per_stratum, c("Standard treatment", "Test treatment"))
@@ -450,7 +460,7 @@ test_that("surv_reg supports stratified crude and adjusted survival tables", {
   expect_true(adjusted$adjusted_mode)
   expect_equal(adjusted$adjust_for, c("age", "karno"))
   expect_equal(adjusted$distribution, "lognormal")
-  expect_false("..N__Standard treatment" %in% names(adjusted$table_display))
+  expect_true("..N__Standard treatment" %in% names(adjusted$table_display))
   expect_true("..Events__Standard treatment" %in% names(adjusted$table_display))
   expect_true("..eff__Standard treatment" %in% names(adjusted$table_display))
   expect_s3_class(adjusted$model_stats, "data.frame")
@@ -546,11 +556,11 @@ test_that("surv_reg supports stratified multivariable survival tables", {
 
   expect_s3_class(res, "stratified_surv_reg")
   expect_true(res$multivariable)
-  expect_equal(res$show_sample, "events")
+  expect_equal(res$show_sample, "both")
   expect_false(res$adjusted_mode)
   expect_named(res$models, c("Standard treatment", "Test treatment"))
   expect_named(res$models[["Standard treatment"]], "multivariable_model")
-  expect_false("..N__Standard treatment" %in% names(res$table_display))
+  expect_true("..N__Standard treatment" %in% names(res$table_display))
   expect_true("..Events__Standard treatment" %in% names(res$table_display))
   expect_true("..eff__Standard treatment" %in% names(res$table_display))
   expect_true(any(trimws(res$table_display$Characteristic) %in% c("Age", "age")))

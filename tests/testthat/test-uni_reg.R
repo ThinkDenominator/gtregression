@@ -21,7 +21,8 @@ test_that("uni_reg returns a gtregression object for binary logistic models", {
   expect_named(
     res,
     c("table", "table_body", "table_display", "models",
-      "model_summaries", "model_stats", "variable_labels", "footnotes", "reg_check",
+      "model_summaries", "model_stats", "variable_labels", "footnotes",
+      "failed_exposures", "reg_check",
       "approach", "format", "source", "show_ref")
   )
   expect_null(res$model_stats)
@@ -31,6 +32,8 @@ test_that("uni_reg returns a gtregression object for binary logistic models", {
   expect_true(all(c("Characteristic", "OR (95% CI)", "p-value", "N",
                     "is_header") %in% names(res$table_display)))
   expect_true("Ref." %in% res$table_display[["OR (95% CI)"]])
+  level_labels <- res$table_display$Characteristic[!res$table_display$is_header]
+  expect_true(all(grepl("^  ", level_labels)))
   expect_true(any(grepl("Ref. = reference category", res$table$`_source_notes`,
                         fixed = TRUE)))
 })
@@ -75,6 +78,31 @@ test_that("uni_reg explains how to show reference rows when hidden", {
   expect_false("Ref." %in% res$table_display[["OR (95% CI)"]])
   expect_false(any(grepl("Ref. = reference category", res$table$`_source_notes`,
                          fixed = TRUE)))
+})
+
+test_that("uni_reg retains multilevel references when binary references are hidden", {
+  df <- mtcars
+  df$am <- as.integer(df$am)
+  df$vs <- factor(df$vs, levels = c(0, 1), labels = c("No", "Yes"))
+  df$cyl <- factor(df$cyl)
+
+  expect_message(
+    res <- uni_reg(
+      data = df,
+      outcome = am,
+      exposures = c(vs, cyl),
+      approach = logit,
+      show_ref = FALSE
+    ),
+    "Reference rows are retained for categorical variables with more than two levels.",
+    fixed = TRUE
+  )
+
+  display <- res$table_display
+  expect_equal(sum(display$Characteristic == "vs"), 1L)
+  expect_true("4" %in% trimws(display$Characteristic))
+  expect_true("Ref." %in% display[["OR (95% CI)"]])
+  expect_true(any(grepl("Ref. = reference category", res$footnotes, fixed = TRUE)))
 })
 
 test_that("uni_reg optionally returns model-fit statistics", {
@@ -159,8 +187,11 @@ test_that("uni_reg supports logbinomial and old hyphenated alias", {
 
 test_that("uni_reg supports poisson and negative binomial count models", {
   df <- data.frame(
-    count = c(0, 1, 2, 3, 1, 4, 2, 5, 3, 6),
-    exposure = c(0, 1, 0, 1, 0, 1, 0, 1, 0, 1)
+    count = c(
+      0, 0, 1, 1, 2, 10, 0, 1, 3, 12,
+      1, 2, 2, 4, 5, 18, 1, 3, 7, 22
+    ),
+    exposure = rep(0:1, each = 10)
   )
 
   pois <- uni_reg(df, outcome = "count", exposures = "exposure", approach = poisson)
@@ -308,4 +339,35 @@ test_that("uni_reg displays every level of character predictors", {
   expect_equal(nrow(rows), 3L)
   expect_true(all(c("Associated", "Combined", "Elementary") %in%
                     trimws(res$table_display$Characteristic)))
+})
+
+test_that("uni_reg reference-codes ordered predictors", {
+  set.seed(101)
+  df <- data.frame(
+    outcome = rbinom(120, 1, 0.4),
+    grade = ordered(rep(c("Low", "Middle", "High"), 40),
+                    levels = c("Low", "Middle", "High"))
+  )
+
+  result <- uni_reg(df, outcome, grade, format = "gt")
+  terms <- names(stats::coef(result$models$grade))
+
+  expect_true(any(grepl("Middle", terms, fixed = TRUE)))
+  expect_true(any(grepl("High", terms, fixed = TRUE)))
+  expect_false(any(grepl("\\.L$|\\.Q$", terms)))
+})
+
+test_that("uni_reg normalises numeric binary outcomes coded 1 and 2", {
+  set.seed(102)
+  df <- data.frame(
+    outcome = sample(c(1, 2), 120, replace = TRUE),
+    exposure = rnorm(120)
+  )
+
+  result <- uni_reg(df, outcome, exposure, format = "gt")
+  fitted_outcome <- stats::model.response(
+    stats::model.frame(result$models$exposure)
+  )
+
+  expect_setequal(unique(fitted_outcome), c(0, 1))
 })

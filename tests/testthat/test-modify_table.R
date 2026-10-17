@@ -178,6 +178,113 @@ test_that("modify_table works for Cox and survival regression tables", {
   expect_true(any(aft_no_adjustment_note$footnotes == "Adjusted parametric survival model."))
 })
 
+test_that("modify_table keeps new-model adjustment notes aligned with labels", {
+  skip_if_not_installed("cmprsk")
+  skip_if_not_installed("ordinal")
+  skip_if_not_installed("nnet")
+
+  fine_gray <- competing_risk_reg(
+    data_competing_risk,
+    time = follow_up_months,
+    event = outcome,
+    event_of_interest = Relapse,
+    censor_code = Censored,
+    exposures = treatment,
+    adjust_for = c(age, stage)
+  )
+  fine_gray_modified <- modify_table(
+    fine_gray,
+    variable_labels = c(age = "Participant age", stage = "Cancer stage")
+  )
+
+  set.seed(76)
+  ordinal_data <- data.frame(
+    recovery = ordered(
+      sample(c("Poor", "Partial", "Complete"), 180, replace = TRUE),
+      levels = c("Poor", "Partial", "Complete")
+    ),
+    treatment = factor(rep(c("Standard", "Intervention"), each = 90)),
+    age = stats::rnorm(180, 60, 9)
+  )
+  ordinal_model <- ordinal_reg(
+    ordinal_data, recovery, treatment, adjust_for = age
+  )
+  ordinal_modified <- modify_table(
+    ordinal_model,
+    variable_labels = c(age = "Participant age")
+  )
+
+  multinomial_model <- multinomial_reg(
+    iris, Species, Sepal.Length, adjust_for = Sepal.Width
+  )
+  multinomial_modified <- modify_table(
+    multinomial_model,
+    variable_labels = c(Sepal.Width = "Sepal width")
+  )
+
+  expect_true(any(
+    fine_gray_modified$footnotes ==
+      "Adjusted for Participant age and Cancer stage"
+  ))
+  expect_false(any(fine_gray_modified$footnotes == "Adjusted for age and stage"))
+  expect_true(any(ordinal_modified$footnotes == "Adjusted for Participant age"))
+  expect_true(any(multinomial_modified$footnotes == "Adjusted for Sepal width"))
+
+  hidden <- modify_table(fine_gray, remove_adjustment_note = TRUE)
+  expect_false(any(grepl("^Adjusted for ", hidden$footnotes)))
+})
+
+test_that("modify_table refreshes matching and clustering notes", {
+  skip_if_not_installed("survival")
+  skip_if_not_installed("lme4")
+
+  matched_model <- conditional_logit_reg(
+    data_infertility,
+    outcome = case,
+    exposures = spontaneous,
+    matched_set = stratum
+  )
+  matched_modified <- modify_table(
+    matched_model,
+    variable_labels = c(stratum = "Matched study set")
+  )
+
+  set.seed(19)
+  clustered <- data.frame(
+    clinic = factor(rep(seq_len(20), each = 10)),
+    treatment = factor(rep(c("Standard", "Intervention"), 100)),
+    age = stats::rnorm(200, 60, 8)
+  )
+  clinic_effect <- stats::rnorm(20, 0, 1.5)
+  clustered$score <- 40 +
+    2 * (clustered$treatment == "Intervention") +
+    0.15 * clustered$age + clinic_effect[clustered$clinic] +
+    stats::rnorm(200)
+  multilevel_model <- multilevel_reg(
+    clustered,
+    outcome = score,
+    exposures = treatment,
+    adjust_for = age,
+    group = clinic
+  )
+  multilevel_modified <- modify_table(
+    multilevel_model,
+    variable_labels = c(age = "Participant age", clinic = "Study clinic")
+  )
+
+  expect_true(any(
+    matched_modified$footnotes ==
+      "Matched by set identifier: Matched study set."
+  ))
+  expect_true(any(
+    multilevel_modified$footnotes ==
+      "Random-intercept model clustered by Study clinic."
+  ))
+  expect_true(any(
+    multilevel_modified$footnotes == "Adjusted for Participant age"
+  ))
+})
+
 test_that("modify_table preserves stratified Cox sample-column controls", {
   skip_if_not_installed("survival")
 
@@ -301,14 +408,13 @@ test_that("modified input labels still align when tables are merged", {
 
   expect_equal(sum(trimws(merged$table_display$Characteristic) == "Smoking status"), 1L)
 
-  header_text <- vapply(
-    merged$table$header$content$data,
-    function(part) part$txt[1],
-    character(1)
-  )
+  # version-independent reader (the header storage differs between
+  # flextable releases)
+  header_text <- as.vector(.flex_part_text(merged$table, "header"))
   expect_false(any(grepl("_p[0-9]+$", header_text)))
-  expect_true(all(c("Descriptive", "Crude", "Low BW", "OR (95% CI)", "p-value") %in%
+  expect_true(all(c("Descriptive", "Crude", "OR (95% CI)", "p-value") %in%
                     header_text))
+  expect_true(any(grepl("^Low BW, N=[0-9]+$", header_text)))
 })
 
 test_that("modify_table works for flextable outputs", {

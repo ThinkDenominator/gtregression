@@ -60,8 +60,17 @@ plot_reg <- function(tbl,
                      alpha = 0.05,
                      show_adjustment_note = TRUE) {
 
+  .rd_reject(list(tbl), "plot_reg")
   if (!inherits(tbl, "gtregression")) {
     stop("`tbl` must be a gtregression object.", call. = FALSE)
+  }
+
+  if (inherits(tbl, "multinomial_reg")) {
+    stop(
+      "A multinomial model has multiple outcome comparisons. Use ",
+      "`plot_reg(x$per_outcome[[\"category\"]])` for one comparison.",
+      call. = FALSE
+    )
   }
 
   source_type <- tbl$source
@@ -140,10 +149,14 @@ plot_reg <- function(tbl,
 
   base_label <- dplyr::case_when(
     approach %in% c("logit", "firth") ~ "Odds Ratio",
+    approach == "conditional_logit" ~ "Matched Odds Ratio",
+    approach == "ordinal_logit" ~ "Common Odds Ratio",
+    approach == "multinomial_logit" ~ "Odds Ratio",
     approach == "logbinomial" ~ "Risk Ratio",
     approach %in% c("poisson", "negbin") ~ "Incidence Rate Ratio",
     approach == "robpoisson" ~ "Risk Ratio",
     approach == "cox" ~ "Hazard Ratio",
+    approach == "fine_gray" ~ "Subdistribution Hazard Ratio",
     approach == "survreg" ~ "Time Ratio",
     approach == "linear" ~ "Beta Coefficient",
     TRUE ~ "Effect Size"
@@ -155,148 +168,9 @@ plot_reg <- function(tbl,
     x_axis_label <- paste0(x_axis_label, " (log scale)")
   }
 
-  # ---- build header order from raw table_body names ----
-  exposure_order <- unique(df_body$exposure)
-
-  if (!is.null(order_y)) {
-    exposure_order <- c(
-      intersect(order_y, exposure_order),
-      setdiff(exposure_order, order_y)
-    )
-  }
-
-  # ---- build plotting rows using table_display skeleton + table_body values ----
-  plot_rows <- list()
-
-  for (ex in exposure_order) {
-    dfx <- df_body[df_body$exposure == ex, , drop = FALSE]
-    if (!nrow(dfx)) next
-
-    ex_label <- .label_var(ex, tbl$variable_labels)
-    is_factor_exp <- any(dfx$ref)
-    is_binary_exp <- is_factor_exp && nrow(dfx) == 2L && sum(dfx$ref %in% TRUE) == 1L
-
-    # display rows for this exposure
-    disp_idx <- which(df_disp$is_header & trimws(df_disp$Characteristic) == ex_label)
-    if (!length(disp_idx)) next
-
-    start_i <- disp_idx[1]
-    end_i <- if (start_i < nrow(df_disp)) {
-      next_headers <- which(df_disp$is_header & seq_len(nrow(df_disp)) > start_i)
-      if (length(next_headers)) min(next_headers) - 1 else nrow(df_disp)
-    } else {
-      nrow(df_disp)
-    }
-
-    disp_block <- df_disp[start_i:end_i, , drop = FALSE]
-
-    # header row
-    main_row <- dfx[!dfx$ref & dfx$level == ex, , drop = FALSE]
-
-    header_plot <- data.frame(
-      exposure = ex,
-      label = ex_label,
-      estimate = NA_real_,
-      conf.low = NA_real_,
-      conf.high = NA_real_,
-      p.value = NA_real_,
-      ref = FALSE,
-      is_header = TRUE,
-      is_data = FALSE,
-      stringsAsFactors = FALSE
-    )
-
-    # continuous exposure: plot estimate on header row
-    if (!is_factor_exp && nrow(main_row)) {
-      header_plot$estimate <- main_row$estimate[1]
-      header_plot$conf.low <- main_row$conf.low[1]
-      header_plot$conf.high <- main_row$conf.high[1]
-      header_plot$p.value <- main_row$p.value[1]
-      header_plot$is_data <- TRUE
-    }
-
-    compact_binary <- is_binary_exp && !isTRUE(show_ref)
-    if (compact_binary) {
-      binary_row <- dfx[!dfx$ref, , drop = FALSE]
-      if (nrow(binary_row)) {
-        header_plot$label <- .plot_binary_label(ex_label, binary_row$level[1])
-        header_plot$estimate <- binary_row$estimate[1]
-        header_plot$conf.low <- binary_row$conf.low[1]
-        header_plot$conf.high <- binary_row$conf.high[1]
-        header_plot$p.value <- binary_row$p.value[1]
-        header_plot$is_header <- TRUE
-        header_plot$is_data <- TRUE
-        plot_rows[[length(plot_rows) + 1]] <- header_plot
-        next
-      }
-    }
-
-    plot_rows[[length(plot_rows) + 1]] <- header_plot
-
-    # categorical levels OR extra rows (e.g. interaction rows)
-    if (nrow(disp_block) > 1) {
-      sub_block <- disp_block[-1, , drop = FALSE]
-
-      for (i in seq_len(nrow(sub_block))) {
-        char_i <- sub_block$Characteristic[i]
-        lab_i <- trimws(char_i)
-
-        row_match <- dfx[dfx$level == lab_i, , drop = FALSE]
-
-        if (!nrow(row_match)) next
-
-        if (isTRUE(row_match$ref[1]) && !show_ref) next
-
-        plot_rows[[length(plot_rows) + 1]] <- data.frame(
-          exposure = ex,
-          label = lab_i,
-          estimate = row_match$estimate[1],
-          conf.low = row_match$conf.low[1],
-          conf.high = row_match$conf.high[1],
-          p.value = row_match$p.value[1],
-          ref = isTRUE(row_match$ref[1]),
-          is_header = FALSE,
-          is_data = !isTRUE(row_match$ref[1]),
-          stringsAsFactors = FALSE
-        )
-      }
-    } else {
-      # handle non-factor extras in table_body not represented in table_display
-      extra_rows <- dfx[!dfx$ref & dfx$level != ex, , drop = FALSE]
-      if (nrow(extra_rows)) {
-        for (i in seq_len(nrow(extra_rows))) {
-          plot_rows[[length(plot_rows) + 1]] <- data.frame(
-            exposure = ex,
-            label = extra_rows$level[i],
-            estimate = extra_rows$estimate[i],
-            conf.low = extra_rows$conf.low[i],
-            conf.high = extra_rows$conf.high[i],
-            p.value = extra_rows$p.value[i],
-            ref = FALSE,
-            is_header = FALSE,
-            is_data = TRUE,
-            stringsAsFactors = FALSE
-          )
-        }
-      }
-    }
-  }
-
-  plot_df <- do.call(rbind, plot_rows)
-
-  # ---- OG-style label rendering ----
-  indent_html <- "<span style='color:white;'>..</span>"
-
-  plot_df$label_clean <- dplyr::case_when(
-    plot_df$is_header ~ paste0("<b>", plot_df$label, "</b>"),
-    plot_df$ref & show_ref ~ paste0(
-      indent_html,
-      plot_df$label,
-      " <span style='color:gray;'>(Ref.)</span>"
-    ),
-    !plot_df$is_header ~ paste0(indent_html, plot_df$label),
-    TRUE ~ NA_character_
-  )
+  # ---- plotting rows keyed on (exposure, level) from table_body ----
+  plot_df <- .plot_rows_from_table(tbl, show_ref = show_ref, order_y = order_y)
+  plot_df$label_clean <- .plot_axis_labels(plot_df$label_clean)
 
   # ---- significance ----
   if (identical(approach, "linear")) {
@@ -394,6 +268,201 @@ plot_reg <- function(tbl,
   }
 
   p
+}
+
+#' Display labels of a regression table, keyed on table_body names
+#'
+#' Rows are identified by the raw exposure name and factor level stored in
+#' `table_body`; the text printed in `table_display` is used only as the
+#' label. A level relabelled with `modify_table(level_labels = )` therefore
+#' keeps its estimate.
+#' @keywords internal
+#' @noRd
+.plot_display_labels <- function(tbl, exposure, body_rows) {
+  display <- tbl$table_display
+  default_header <- .label_var(exposure, tbl$variable_labels)
+  is_factor <- any(body_rows$ref %in% TRUE)
+  body_levels <- as.character(body_rows$level)
+  if (!is_factor) body_levels <- body_levels[body_levels != exposure]
+  level_labels <- stats::setNames(body_levels, body_levels)
+
+  row_exposure <- attr(display, "row_exposure", exact = TRUE)
+  if (length(row_exposure) == nrow(display)) {
+    block <- which(as.character(row_exposure) == exposure)
+  } else {
+    start <- which(display$is_header %in% TRUE &
+                     trimws(display$Characteristic) == default_header)
+    if (length(start)) {
+      later <- which(display$is_header %in% TRUE &
+                       seq_len(nrow(display)) > start[1L])
+      end <- if (length(later)) min(later) - 1L else nrow(display)
+      block <- start[1L]:end
+    } else {
+      block <- integer()
+    }
+  }
+  if (!length(block)) return(NULL)
+
+  header_rows <- block[display$is_header[block] %in% TRUE]
+  header_label <- if (length(header_rows)) {
+    trimws(display$Characteristic[header_rows[1L]])
+  } else {
+    default_header
+  }
+
+  level_rows <- setdiff(block, header_rows)
+  shown <- trimws(as.character(display$Characteristic[level_rows]))
+  if (length(shown) && length(shown) == length(body_levels)) {
+    # Same rows in the same order: the display text is the label.
+    level_labels[] <- shown
+  } else if (length(shown)) {
+    hit <- match(body_levels, shown)
+    level_labels[!is.na(hit)] <- shown[hit[!is.na(hit)]]
+  }
+
+  list(header = header_label, levels = level_labels)
+}
+
+#' Build the plotting rows of one regression table
+#'
+#' One row per axis line with `exposure`, `level` (raw `table_body` names),
+#' `row_key`, the display `label`, the estimate and its interval.
+#' @keywords internal
+#' @noRd
+.plot_rows_from_table <- function(tbl, show_ref = TRUE, order_y = NULL) {
+  df_body <- tbl$table_body
+  df_body$estimate  <- suppressWarnings(as.numeric(df_body$estimate))
+  df_body$conf.low  <- suppressWarnings(as.numeric(df_body$conf.low))
+  df_body$conf.high <- suppressWarnings(as.numeric(df_body$conf.high))
+  df_body$p.value   <- suppressWarnings(as.numeric(df_body$p.value))
+
+  exposure_order <- unique(as.character(df_body$exposure))
+  if (!is.null(order_y)) {
+    exposure_order <- c(
+      intersect(order_y, exposure_order),
+      setdiff(exposure_order, order_y)
+    )
+  }
+
+  one_row <- function(exposure, level, label, values = NULL, ref = FALSE,
+                      is_header = FALSE, is_data = FALSE) {
+    data.frame(
+      exposure = exposure,
+      level = level,
+      label = label,
+      estimate = if (is.null(values)) NA_real_ else values$estimate[1L],
+      conf.low = if (is.null(values)) NA_real_ else values$conf.low[1L],
+      conf.high = if (is.null(values)) NA_real_ else values$conf.high[1L],
+      p.value = if (is.null(values)) NA_real_ else values$p.value[1L],
+      ref = ref,
+      is_header = is_header,
+      is_data = is_data,
+      stringsAsFactors = FALSE
+    )
+  }
+
+  plot_rows <- list()
+  add <- function(row) plot_rows[[length(plot_rows) + 1L]] <<- row
+
+  for (ex in exposure_order) {
+    dfx <- df_body[df_body$exposure == ex, , drop = FALSE]
+    if (!nrow(dfx)) next
+
+    labels <- .plot_display_labels(tbl, ex, dfx)
+    if (is.null(labels)) next
+
+    is_factor_exp <- any(dfx$ref %in% TRUE)
+    is_binary_exp <- is_factor_exp && nrow(dfx) == 2L &&
+      sum(dfx$ref %in% TRUE) == 1L
+
+    if (is_binary_exp && !isTRUE(show_ref)) {
+      binary_row <- dfx[!(dfx$ref %in% TRUE), , drop = FALSE]
+      # A display that already shows the variable on one line keeps its own
+      # label; otherwise name the plotted level.
+      add(one_row(
+        ex, as.character(binary_row$level[1L]),
+        .plot_binary_label(labels$header, binary_row$level[1L]),
+        values = binary_row, is_header = TRUE, is_data = TRUE
+      ))
+      next
+    }
+
+    if (!is_factor_exp) {
+      main_row <- dfx[as.character(dfx$level) == ex, , drop = FALSE]
+      if (nrow(main_row)) {
+        add(one_row(ex, ex, labels$header, values = main_row,
+                    is_header = TRUE, is_data = TRUE))
+      } else {
+        add(one_row(ex, "__header__", labels$header, is_header = TRUE))
+      }
+      extra <- dfx[as.character(dfx$level) != ex, , drop = FALSE]
+      for (i in seq_len(nrow(extra))) {
+        level <- as.character(extra$level[i])
+        add(one_row(ex, level, unname(labels$levels[level]),
+                    values = extra[i, , drop = FALSE], is_data = TRUE))
+      }
+      next
+    }
+
+    add(one_row(ex, "__header__", labels$header, is_header = TRUE))
+    for (i in seq_len(nrow(dfx))) {
+      is_ref <- isTRUE(dfx$ref[i])
+      if (is_ref && !isTRUE(show_ref)) next
+      level <- as.character(dfx$level[i])
+      add(one_row(ex, level, unname(labels$levels[level]),
+                  values = dfx[i, , drop = FALSE],
+                  ref = is_ref, is_data = !is_ref))
+    }
+  }
+
+  if (!length(plot_rows)) {
+    stop("No rows of `table_body` could be matched to `table_display`.",
+         call. = FALSE)
+  }
+  out <- do.call(rbind, plot_rows)
+  rownames(out) <- NULL
+  out$row_key <- paste0(out$exposure, "::", out$level)
+  out$label_clean <- .plot_label_markup(out, show_ref = show_ref)
+  out
+}
+
+#' Axis-label markup for plotting rows (bold headers, indented levels)
+#' @keywords internal
+#' @noRd
+.plot_label_markup <- function(rows, show_ref = TRUE) {
+  indent_html <- "<span style='color:white;'>..</span>"
+  ifelse(
+    rows$is_header %in% TRUE,
+    paste0("<b>", rows$label, "</b>"),
+    ifelse(
+      rows$ref %in% TRUE & isTRUE(show_ref),
+      paste0(indent_html, rows$label, " <span style='color:gray;'>(Ref.)</span>"),
+      paste0(indent_html, rows$label)
+    )
+  )
+}
+
+#' Is ggtext available to render label markup?
+#' @keywords internal
+#' @noRd
+.plot_has_ggtext <- function() {
+  requireNamespace("ggtext", quietly = TRUE)
+}
+
+#' Axis labels as drawn: markup with ggtext, plain text without it
+#'
+#' Without ggtext the axis uses `element_text()`, which would print the HTML
+#' tags literally. The markup is therefore removed and the level indent is
+#' written with spaces.
+#' @keywords internal
+#' @noRd
+.plot_axis_labels <- function(labels, markdown = .plot_has_ggtext()) {
+  if (isTRUE(markdown)) return(labels)
+  out <- gsub("<span style='color:white;'>..</span>", "    ", labels, fixed = TRUE)
+  out <- gsub("<[^>]+>", "", out)
+  out <- gsub("&lt;", "<", out, fixed = TRUE)
+  out <- gsub("&gt;", ">", out, fixed = TRUE)
+  gsub("&amp;", "&", out, fixed = TRUE)
 }
 
 #' Resolve reference-row display for regression plots
@@ -686,6 +755,9 @@ plot_reg <- function(tbl,
 .plot_axis_label <- function(approach, adjusted = FALSE) {
   base <- dplyr::case_when(
     approach %in% c("logit", "firth") ~ "Odds Ratio",
+    approach == "conditional_logit" ~ "Matched Odds Ratio",
+    approach == "ordinal_logit" ~ "Common Odds Ratio",
+    approach == "multinomial_logit" ~ "Odds Ratio",
     approach == "logbinomial" ~ "Risk Ratio",
     approach %in% c("poisson", "negbin") ~ "Incidence Rate Ratio",
     approach == "robpoisson" ~ "Risk Ratio",
@@ -872,6 +944,14 @@ plot_reg <- function(tbl,
 #' @keywords internal
 #' @noRd
 .plot_reg_theme <- function(base_size = 12, stratified = FALSE) {
+  markdown_text <- function(...) {
+    if (.plot_has_ggtext()) {
+      ggtext::element_markdown(...)
+    } else {
+      ggplot2::element_text(...)
+    }
+  }
+
   ggplot2::theme_minimal(base_size = base_size) +
     ggplot2::theme(
       panel.grid.major.y = ggplot2::element_blank(),
@@ -882,8 +962,8 @@ plot_reg <- function(tbl,
       axis.text.x = ggplot2::element_text(colour = "#374151", size = ggplot2::rel(0.9)),
       axis.title.x = ggplot2::element_text(face = "bold", colour = "#1F2937",
                                            margin = ggplot2::margin(t = 8)),
-      axis.text.y = ggtext::element_markdown(hjust = 0, colour = "#1F2937"),
-      axis.text.y.left = ggtext::element_markdown(hjust = 0, colour = "#1F2937"),
+      axis.text.y = markdown_text(hjust = 0, colour = "#1F2937"),
+      axis.text.y.left = markdown_text(hjust = 0, colour = "#1F2937"),
       strip.text = if (stratified) ggplot2::element_text(face = "bold",
                                                          colour = "#1F2937")
       else ggplot2::element_blank(),

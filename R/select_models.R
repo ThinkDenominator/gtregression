@@ -32,6 +32,9 @@
 #'   model metrics (AIC, BIC, deviance, log-likelihood, and adjusted R-squared
 #'   for linear models).
 #'   \item \code{best_model}: The best-fitting model object based on lowest AIC.
+#'   \item \code{n_used}, \code{n_excluded}: number of complete cases used for
+#'   every candidate model and number of rows excluded because of missing
+#'   values in the outcome or any candidate variable.
 #'   \item \code{all_models}: A named list of the accepted stepwise models.
 #'   \item \code{direction}: Stepwise selection direction used.
 #'   \item \code{table}: A formatted \code{gt_tbl} or \code{flextable} when
@@ -42,6 +45,14 @@
 #' Treat stepwise selection as a screening tool. It is best used alongside the
 #' study question, clinical judgement, and model diagnostics rather than as an
 #' automatic final-model rule.
+#'
+#' Information criteria are only comparable between models fitted to the same
+#' observations. \code{select_models()} therefore restricts the data to
+#' complete cases across the outcome (or \code{time} and \code{event}) and
+#' all candidate variables before selection, reports the N used and the number
+#' of rows excluded in a message and in the table note, and stores them as
+#' \code{n_used} and \code{n_excluded}. Backward (and stepwise) selection can
+#' remove the last variable and so reach the intercept-only model.
 #'
 #' @importFrom stats AIC BIC anova as.formula binomial coef cooks.distance
 #' @importFrom stats deviance glm glm.control lm logLik na.omit nobs poisson
@@ -73,7 +84,9 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   if (!is.data.frame(data)) {
     stop("`data` must be a data frame.", call. = FALSE)
   }
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
+  exposures <- .vars_arg(
+    substitute(exposures), env = parent.frame(), data_names = names(data)
+  )
   if (!is.character(exposures) || length(exposures) < 1L ||
       anyNA(exposures) || any(!nzchar(exposures))) {
     stop("`exposures` must be a non-empty character vector.", call. = FALSE)
@@ -90,14 +103,16 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   is_survival <- approach %in% c("cox", "survreg")
 
   if (is_survival) {
-    time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
-    event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
+    time <- .single_var_arg(substitute(time), data = data, env = parent.frame())
+    event <- .single_var_arg(substitute(event), data = data, env = parent.frame())
     outcome <- NULL
   } else {
     if (missing(outcome)) {
       stop("`outcome` must be supplied for non-survival model selection.", call. = FALSE)
     }
-    outcome <- .vars_arg(substitute(outcome), env = parent.frame())
+    outcome <- .vars_arg(
+      substitute(outcome), env = parent.frame(), data_names = names(data)
+    )
     if (!is.character(outcome) || length(outcome) != 1L ||
         is.na(outcome) || !nzchar(outcome)) {
       stop("`outcome` must be a single character variable name.", call. = FALSE)
@@ -123,6 +138,22 @@ select_models <- function(data, outcome, exposures, approach = "logit",
   if (length(missing_vars)) {
     stop("Variables not found: ", paste(missing_vars, collapse = ", "),
          call. = FALSE)
+  }
+  outcome_roles <- if (is_survival) c(time, event) else outcome
+  role_clash <- intersect(exposures, outcome_roles)
+  if (length(role_clash)) {
+    stop(
+      "The outcome variable cannot also be a candidate exposure: ",
+      paste(role_clash, collapse = ", "), ".",
+      call. = FALSE
+    )
+  }
+  if (anyDuplicated(exposures)) {
+    stop(
+      "Duplicate exposure(s): ", paste(unique(exposures[duplicated(exposures)]), collapse = ", "),
+      ". List each exposure once.",
+      call. = FALSE
+    )
   }
   direction <- .choice_arg(
     substitute(direction),
@@ -153,6 +184,42 @@ select_models <- function(data, outcome, exposures, approach = "logit",
     model_data[[outcome]] <- as.integer(model_data[[outcome]]) - 1L
   }
 
+  # All candidate models must be fitted to ONE sample, otherwise AIC/BIC are
+  # not comparable: restrict to complete cases across the outcome (or time and
+  # event) and every candidate variable before selection starts.
+  n_input <- nrow(data)
+  selection_vars <- if (is_survival) {
+    unique(c(time, event, exposures))
+  } else {
+    unique(c(outcome, exposures))
+  }
+  complete_rows <- stats::complete.cases(
+    model_data[, selection_vars, drop = FALSE]
+  )
+  model_data <- model_data[complete_rows, , drop = FALSE]
+  n_used <- nrow(model_data)
+  n_excluded <- n_input - n_used
+  if (n_used == 0L) {
+    stop(
+      "No complete cases across the outcome and all candidate variables.",
+      call. = FALSE
+    )
+  }
+  message(
+    "select_models(): all candidate models are fitted to the same N = ",
+    n_used, " complete cases",
+    if (n_excluded > 0L) {
+      paste0(
+        " (", n_excluded, " of ", n_input,
+        " rows excluded because of missing values in the outcome or a ",
+        "candidate variable)"
+      )
+    } else {
+      ""
+    },
+    "."
+  )
+
   fit_model <- function(vars) {
     if (is_survival) {
       bt <- function(x) paste0("`", gsub("`", "", x, fixed = TRUE), "`")
@@ -161,7 +228,11 @@ select_models <- function(data, outcome, exposures, approach = "logit",
         paste0("survival::Surv(", bt(time), ", ", bt(event), ") ~ ", rhs)
       )
     } else {
-      fmla <- stats::reformulate(vars, response = outcome)
+      fmla <- if (length(vars)) {
+        stats::reformulate(vars, response = outcome)
+      } else {
+        stats::as.formula(paste0("`", outcome, "` ~ 1"))
+      }
     }
     fmla_str <- paste(deparse(fmla), collapse = "")
 
@@ -255,7 +326,9 @@ select_models <- function(data, outcome, exposures, approach = "logit",
     best_forward <- if (length(forward_aics)) min(forward_aics) else Inf
     best_forward_idx <- if (length(forward_aics)) which.min(forward_aics) else NA_integer_
 
-    drop_candidates <- if (length(current_vars) > 1L) {
+    # Dropping the last variable (the intercept-only model) is a candidate
+    # too, as in stats::step().
+    drop_candidates <- if (length(current_vars) >= 1L) {
       lapply(current_vars, function(var) setdiff(current_vars, var))
     } else {
       list()
@@ -297,14 +370,18 @@ select_models <- function(data, outcome, exposures, approach = "logit",
     results_table = metrics_tbl,
     best_model = final_best_model,
     all_models = all_models,
-    direction = direction
+    direction = direction,
+    n_used = n_used,
+    n_excluded = n_excluded
   )
 
   if (format != "tibble") {
     out$table <- .build_select_models_table(
       metrics_tbl,
       direction = direction,
-      format = format
+      format = format,
+      n_used = n_used,
+      n_excluded = n_excluded
     )
   }
 
@@ -316,10 +393,24 @@ select_models <- function(data, outcome, exposures, approach = "logit",
 #' @noRd
 .build_select_models_table <- function(metrics_tbl,
                                        direction = c("forward", "backward", "both"),
-                                       format = c("flextable", "gt")) {
+                                       format = c("flextable", "gt"),
+                                       n_used = NULL,
+                                       n_excluded = NULL) {
   direction <- match.arg(direction, c("forward", "backward", "both"))
   format <- match.arg(format, c("flextable", "gt"))
   direction_note <- paste0("Selection direction: ", direction, ".")
+  if (!is.null(n_used)) {
+    direction_note <- paste0(
+      direction_note,
+      " All models fitted to the same N = ", n_used, " complete cases",
+      if (!is.null(n_excluded) && n_excluded > 0L) {
+        paste0(" (", n_excluded, " rows with missing values excluded)")
+      } else {
+        ""
+      },
+      "."
+    )
+  }
   caveat_note <- paste(
     "Screening aid only; compare candidate models with study design,",
     "clinical or subject-matter judgement, and model diagnostics."

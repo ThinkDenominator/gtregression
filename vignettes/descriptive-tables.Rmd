@@ -63,7 +63,7 @@ desc_column <- descriptive_table(
   theme = clinical
 )
 
-desc_column
+desc_column$table
 ```
 
 ## Row Percentages
@@ -101,7 +101,7 @@ descriptive_table(
   ),
   percent = column,
   show_missing = no
-)
+)$table
 ```
 
 The quoted form is equivalent and often clearer in saved scripts:

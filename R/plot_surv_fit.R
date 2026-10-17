@@ -93,8 +93,10 @@ plot_surv_fit <- function(data,
 
   time <- .cox_single_var_arg(substitute(time), data = data, env = parent.frame())
   event <- .cox_single_var_arg(substitute(event), data = data, env = parent.frame())
-  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE)
-  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(), allow_null = TRUE)
+  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE,
+                  data_names = names(data))
+  adjust_for <- .vars_arg(substitute(adjust_for), env = parent.frame(),
+                          allow_null = TRUE, data_names = names(data))
   distributions <- .surv_distribution_arg(
     substitute(distributions),
     env = parent.frame(),

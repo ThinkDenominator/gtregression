@@ -26,6 +26,15 @@
       out <- tolower(x)
     } else if (is.symbol(x)) {
       out <- tolower(as.character(x))
+      # A symbol that is not a statistic name may be a variable holding one
+      # (for example `s <- "mean"; statistic = s`).
+      if (!out %in% c(allowed, names(aliases)) &&
+          exists(as.character(x), envir = env, inherits = TRUE)) {
+        held <- get(as.character(x), envir = env, inherits = TRUE)
+        if (is.character(held) && length(held) >= 1L && !anyNA(held)) {
+          out <- stats::setNames(tolower(held), names(held))
+        }
+      }
     } else {
       out <- eval(x, envir = env)
       if (!is.character(out)) {
@@ -78,7 +87,7 @@
 }
 
 # ---------- descriptive_table ----------
-#' Descriptive Summary Table (no gtsummary) using gt/flextable
+#' Descriptive summary table
 #'
 #' Publication-ready summary of categorical and continuous variables
 #' (optionally stratified). Mimics the OG gtsummary style:
@@ -90,10 +99,13 @@
 #' @param exposures Character vector of variables to summarise. Quoted names are
 #'   recommended in scripts, and bare names are also accepted.
 #' @param by Optional single grouping variable. Quoted and bare names are
-#'   accepted.
+#'   accepted. If it is also listed in `exposures`, it is left out of the
+#'   summarised variables, with a message.
 #' @param percent "column" (default) or "row"; aliases like "col"/"rows" accepted
 #' @param digits integer; decimals for \% and continuous stats (default 1)
-#' @param show_missing "ifany" (default) or "no"
+#' @param show_missing "ifany" (default) or "no". With "ifany", a
+#'   "(Missing)" row (n and \% of the column N) is added under every variable
+#'   that has missing values, categorical or continuous.
 #' @param show_dichotomous "all_levels" (default) or "single_row"
 #' @param show_overall "no" (default), "first", or "last"
 #' @param statistic Optional summary type for numeric variables. Use a single
@@ -103,7 +115,8 @@
 #'   \code{"count"}, and \code{"categorical"}. Use \code{"categorical"} for
 #'   numeric ordinal variables that should be shown as n (\%).
 #' @param value optional named list for single-row binaries (e.g., list(sex="Female"));
-#'   formula entries like list(sex ~ "Female") are also accepted
+#'   formula entries like list(sex ~ "Female") are also accepted. The value
+#'   must be one of the observed levels of the variable.
 #' @param format "flextable" (default) or "gt"
 #' @param theme preset or primitives
 #'
@@ -111,6 +124,15 @@
 #' If variables have a \code{"label"} attribute, for example from
 #' \code{labelled::var_label()}, those labels are used automatically in the
 #' displayed table. Internal matching still uses the original column names.
+#'
+#' Variable types: factor, character and logical variables are shown as
+#' n (\%) per level (logical: \code{FALSE}/\code{TRUE}); numeric variables
+#' with exactly two distinct values are shown as categories; numeric variables
+#' with a single distinct value are shown as one category (n, 100\%) unless a
+#' numeric \code{statistic} is requested for them; other numeric variables
+#' are continuous. Levels of numeric variables shown as categories are sorted
+#' by value. Date and date-time variables are not summarised: they are
+#' excluded and named in a message.
 #'
 #' @return A list with class \code{c("gtregression", "descriptive_table", ...)}
 #'   containing:
@@ -136,8 +158,10 @@ descriptive_table <- function(data,
                               format = c("flextable","gt"),
                               theme = c("minimal")) {
 
-  exposures <- .vars_arg(substitute(exposures), env = parent.frame())
-  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE)
+  exposures <- .vars_arg(substitute(exposures), env = parent.frame(),
+                         data_names = names(data))
+  by <- .vars_arg(substitute(by), env = parent.frame(), allow_null = TRUE,
+                  data_names = names(data))
   statistic <- .statistic_arg_desc(substitute(statistic), env = parent.frame())
 
   # ---- normalize choices (accept aliases) ----
@@ -164,6 +188,7 @@ descriptive_table <- function(data,
   show_overall     <- match.arg(tolower(show_overall[1]),     c("no","first","last"))
   percent          <- match.arg(percent, c("column","row"))
   format           <- match.arg(tolower(format[1]), c("flextable","gt"))
+  .validate_theme_arg(theme)
   theme            <- .resolve_theme_desc(theme)
 
   # ---- checks ----
@@ -180,6 +205,13 @@ descriptive_table <- function(data,
   data <- as.data.frame(data)
   missing_vars <- setdiff(c(exposures, by), names(data))
   if (length(missing_vars)) stop("Variables not found: ", paste(missing_vars, collapse=", "), call.=FALSE)
+  if (!is.null(by) && by %in% exposures) {
+    exposures <- setdiff(exposures, by)
+    if (!length(exposures)) {
+      stop("`exposures` must contain at least one variable other than `by`.", call. = FALSE)
+    }
+    message("`", by, "` is the `by` variable, so it was left out of `exposures`.")
+  }
   if (!is.null(statistic) && length(statistic) > 1L) {
     unused_stats <- setdiff(names(statistic), exposures)
     if (length(unused_stats)) {
@@ -211,10 +243,53 @@ descriptive_table <- function(data,
     warning("`percent = \"row\"` requires `by`; using column-wise % instead.")
     percent <- "column"
   }
+  # Date and date-time variables have no meaningful n (%) or median (IQR)
+  # summary here: they are excluded and named in a message.
+  is_datetime <- vapply(
+    exposures,
+    function(v) inherits(data[[v]], c("Date", "POSIXt", "difftime")),
+    logical(1)
+  )
+  if (any(is_datetime)) {
+    message(
+      "descriptive_table(): date/time variable(s) are not summarised and were ",
+      "excluded: ", paste(exposures[is_datetime], collapse = ", "), "."
+    )
+    exposures <- exposures[!is_datetime]
+    if (!length(exposures)) {
+      stop(
+        "No variables left to summarise: all `exposures` are date/time ",
+        "variables.",
+        call. = FALSE
+      )
+    }
+    if (!is.null(statistic) && !is.null(names(statistic))) {
+      keep_stat <- !nzchar(names(statistic)) | names(statistic) %in% exposures
+      statistic <- statistic[keep_stat]
+      if (!length(statistic)) statistic <- NULL
+    }
+  }
+  unsupported <- exposures[!vapply(
+    exposures,
+    function(v) {
+      x <- data[[v]]
+      is.numeric(x) || is.factor(x) || is.character(x) || is.logical(x)
+    },
+    logical(1)
+  )]
+  if (length(unsupported)) {
+    stop(
+      "Unsupported variable type for: ", paste(unsupported, collapse = ", "),
+      ". Use numeric, factor, character or logical variables.",
+      call. = FALSE
+    )
+  }
   variable_labels <- .var_label_map(data, exposures)
 
   # ---- helpers ----
-  fmt_num <- function(x, d = digits) formatC(x, digits = d, format="f", big.mark=",")
+  fmt_num <- function(x, d = digits) {
+    formatC(as.numeric(x), digits = d, format = "f", big.mark = ",")
+  }
   fmt_pct <- function(p, d = digits) if (is.na(p)) paste0(fmt_num(0, d), "%") else paste0(fmt_num(100*p, d), "%")
   is_binary <- function(x) { ux <- unique(x[!is.na(x)]); length(ux) == 2 }
   pick_single_level <- function(x) {
@@ -272,6 +347,29 @@ descriptive_table <- function(data,
     NA_character_
   }
 
+  # One rule for "is this variable shown as categories?", used for the rows
+  # and for the footnote: factor, character and logical variables, numeric
+  # variables forced with statistic = "categorical", and numeric variables
+  # with a single distinct value (a constant is a category, not a
+  # distribution) unless the user asked for a numeric summary.
+  is_constant_numeric <- function(v) {
+    x <- data[[v]]
+    is.numeric(x) && length(unique(x[!is.na(x)])) == 1L &&
+      is.na(get_user_stat(v))
+  }
+  is_categorical_var <- function(v) {
+    x <- data[[v]]
+    is.factor(x) || is.character(x) || is.logical(x) ||
+      is_forced_categorical(v) || is_constant_numeric(v)
+  }
+  observed_levels <- function(x) {
+    if (is.factor(x)) return(levels(x))
+    ux <- unique(x[!is.na(x)])
+    # numeric codes sort by value (1, 2, 10), not as text (1, 10, 2)
+    if (is.numeric(x)) return(as.character(sort(ux)))
+    sort(as.character(ux))
+  }
+
   # ---- by levels and group Ns (for headers) ----
   by_levels <- NULL
   group_names <- "Overall"
@@ -279,6 +377,7 @@ descriptive_table <- function(data,
   if (!is.null(by)) {
     bv <- data[[by]]
     by_levels <- if (is.factor(bv)) levels(stats::na.omit(bv)) else unique(stats::na.omit(bv))
+    by_levels <- by_levels[!is.na(by_levels)]
     group_names <- as.character(by_levels)
     group_idx   <- lapply(by_levels, function(g) (data[[by]] == g) & !is.na(data[[by]]))
     names(group_idx) <- group_names
@@ -293,11 +392,19 @@ descriptive_table <- function(data,
   compact_dichotomous_vars <- character()
   for (v in exposures) {
     x <- data[[v]]
-    is_cat <- is.factor(x) || is.character(x) || is_forced_categorical(v)
+    is_cat <- is_categorical_var(v)
     is_bin <- is_binary(x)
 
     if (is_bin && show_dichotomous == "single_row") {
-      pick <- get_single_level(v); if (is.na(pick) || !nzchar(pick)) pick <- pick_single_level(x)
+      pick <- get_single_level(v)
+      if (!is.na(pick) && nzchar(pick) && !pick %in% observed_levels(x)) {
+        stop(
+          "`value` for `", v, "` ('", pick, "') is not one of its observed ",
+          "levels: ", paste(observed_levels(x), collapse = ", "), ".",
+          call. = FALSE
+        )
+      }
+      if (is.na(pick) || !nzchar(pick)) pick <- pick_single_level(x)
       compact_dichotomous_vars <- c(compact_dichotomous_vars, v)
       body_rows[[length(body_rows)+1]] <- data.frame(
         var=v, level=pick, type="dichotomous", stringsAsFactors=FALSE
@@ -318,9 +425,18 @@ descriptive_table <- function(data,
     if (!is_cat && !is_bin) {
       body_rows[[length(body_rows)+1]] <- data.frame(
         var=v, level=v, type="continuous", stringsAsFactors=FALSE
-      ); next
+      )
+      # Missing values of continuous variables are reported like those of
+      # categorical variables.
+      if ((show_missing == "ifany") && any(is.na(x))) {
+        body_rows[[length(body_rows)+1]] <- data.frame(
+          var=v, level="(Missing)", type="categorical_missing",
+          stringsAsFactors=FALSE
+        )
+      }
+      next
     }
-    levels_here <- if (is.factor(x)) levels(x) else sort(unique(as.character(x)))
+    levels_here <- observed_levels(x)
     add_missing <- (show_missing == "ifany") && any(is.na(x))
     for (lv in levels_here) {
       body_rows[[length(body_rows)+1]] <- data.frame(
@@ -366,6 +482,17 @@ descriptive_table <- function(data,
       return(levs)                              # <- do NOT prepend hdr
     }
 
+    # continuous variable with a "(Missing)" row: the summary stays on the
+    # variable row, the missing count is indented underneath
+    if (any(levs$type == "continuous")) {
+      levs$Characteristic <- ifelse(levs$type == "continuous",
+                                    var_lab,
+                                    paste0("  ", levs$level))
+      levs$is_header <- levs$type == "continuous"
+      levs <- levs[, c("Characteristic","is_header","var","level","type"), drop = FALSE]
+      return(levs)
+    }
+
     if (any(levs$type == "dichotomous")) {
       levs$Characteristic <- ifelse(levs$type == "dichotomous",
                                     var_lab,
@@ -408,7 +535,7 @@ descriptive_table <- function(data,
       }
       if (typ == "categorical_missing") {
         n <- sum(is.na(data[[v]][grp_idx]))
-        denom <- sum(!is.na(data[[v]][grp_idx]))
+        denom <- sum(grp_idx, na.rm = TRUE)
         p <- if (denom > 0) n/denom else NA_real_
         cells[i] <- paste0(n, " (", fmt_pct(p, digits), ")"); next
       }
@@ -453,17 +580,15 @@ descriptive_table <- function(data,
   # ---- header labels with N ----
   header_labels <- setNames(
     object = paste0(group_names, ", N=", vapply(group_names, function(gn) {
-      # Use non-missing over all exposures per group as a pragmatic denominator
-      sum(rowSums(!is.na(data[exposures])[group_idx[[gn]], , drop=FALSE]) > 0)
+      sum(group_idx[[gn]], na.rm = TRUE)
     }, numeric(1))),
     nm = group_names
   )
 
   # ---- footnotes ----
   # build continuous stat note
-  cont_vars <- exposures[!vapply(names(data[exposures]), function(v) {
-    x <- data[[v]]
-    is.factor(x) || is.character(x) || is_binary(x) || is_forced_categorical(v)
+  cont_vars <- exposures[!vapply(exposures, function(v) {
+    is_categorical_var(v) || is_binary(data[[v]])
   }, logical(1))]
   stat_used <- if (length(cont_vars)) {
     lbls <- vapply(
@@ -548,7 +673,7 @@ descriptive_table <- function(data,
         ft <- flextable::hline(ft, i=n_body, part="body")
       }
     }
-    if ("compact" %in% theme) ft <- flextable::padding(ft, padding=2, part="body")
+    if ("compact" %in% theme) ft <- flextable::padding(ft, padding.top=2, padding.bottom=2, part="body")
     ft <- flextable::autofit(ft)
     if (length(footnote_lines)) {
       ft <- flextable::add_footer_lines(ft, values=footnote_lines)
@@ -573,6 +698,7 @@ descriptive_table <- function(data,
     table         = tbl,
     table_display = table_display,
     table_body    = table_body,
+    header_labels = header_labels,
     variable_labels = variable_labels,
     by            = by,
     levels        = by_levels,
